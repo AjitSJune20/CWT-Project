@@ -1,0 +1,91 @@
+*** Settings ***
+Force Tags        noram    apollo
+Resource          ../id_traveller_verification.txt
+Resource          ../../complete/complete_verification.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+[1V] [NB] SO Set To Yes - Verify That Select Traveller First Time From A Subunit With Multiple PCC Profile Should Set PCC Profile To Blank
+    [Tags]    us5144
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 2 - SyEx ¦ Amy Apollo DS v2    Arriesgado    Jodie
+    Verify PCC Is Empty
+    [Teardown]    Click Clear All
+
+[1V] [NB] SO Set To Yes - Verify That Select Traveller From The Same Subunit With Multiple PCC Profile Should Set PCC Profile To Blank
+    [Tags]    us5144
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 2 - SyEx ¦ Amy Apollo DS v2    Arriesgado    Jodie
+    Verify PCC Is Empty
+    Select PCC/CompanyProfile/TravellerProfile    1V/24LY/APOLLO2SYEX/ARRIESGADO JO21614795
+    Select Client Account    U1A2E ¦ Apollo 2 - SyEx ¦ Amy Apollo DS v2
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SFOLAS+UA    01Y1    T:$BS1    6    11
+    Book Flight X Months From Now    LASSFO+UA    01Y1    T:$BS2    7    22
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Set Client And Traveler    Apollo 2 - SyEx ¦ Amy Apollo DS v2    Arriesgado    Jodie
+    Verify PCC Is Empty
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1V] [NB] SO Set To Yes - Verify That Select Traveller From Another Subunit With Multiple PCC Profile From A Subunit Should Set PCC Profile To Blank
+    [Tags]    us5144
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 2 - SyEx ¦ Amy Apollo DS v2    Arriesgado    Jodie
+    Verify PCC Is Empty
+    Select PCC/CompanyProfile/TravellerProfile    1V/24LY/APOLLO2SYEX/ARRIESGADO JO21614795
+    Select Client Account    U1A2E ¦ Apollo 2 - SyEx ¦ Amy Apollo DS v2
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SFOLAS+UA    01Y1    T:$BS1    6    11
+    Book Flight X Months From Now    LASSFO+UA    01Y1    T:$BS2    7    22
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Set Client And Traveler    Apollo 2 - SyEx ¦ Amy Apollo DS v2    Arriesgado    Jodie
+    Verify PCC Is Empty
+    [Teardown]    Click Clear All
+
+[1V] [AB] SO Set To Yes - Verify That Select Traveller From Another Subunit With Multiple PCC Profile From A Subunit Should Set PCC Profile To Blank
+    [Tags]    us5144
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify PCC Is Empty
+    Select PCC/CompanyProfile/TravellerProfile    1V/24LY/APOLLO2SYEX/ARRIESGADO JO21614795
+    Select Client Account    U1A2E ¦ Apollo 2 - SyEx ¦ Amy Apollo DS v2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Set Client And Traveler    Apollo 2 - SyEx ¦ Amy Apollo DS v2    Arriesgado    Jodie
+    Verify PCC Is Empty
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Current PCC Is Similar As The PCC That Owns The PNR
+    [Arguments]    ${pcc}
+    Retrieve PNR Details From Travelport    \    QCA
+    Verify Specific Line Is Written In The PNR    ${pcc}
+
+Verify Travelport PCC Is Displayed Correctly
+    [Arguments]    ${pcc}
+    Sleep    5
+    Activate Travelport Window
+    ${is_pcc_correct}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/smartpoint_pcc_${pcc}.png    0.90    ${timeout}
+    Run Keyword If    "${is_pcc_correct}" == "True"    Log    Travelport PCC is displayed correctly as ${pcc}.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Travelport PCC is not displayed correctly as ${pcc}.
+    Take Screenshot
+    [Teardown]    Activate Power Express Window
+
+Verify PCC Is Empty
+    Verify Control Object Text Value Is Correct    [NAME:CcboProfile]    ${EMPTY}

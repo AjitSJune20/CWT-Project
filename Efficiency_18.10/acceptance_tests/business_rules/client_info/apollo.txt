@@ -1,0 +1,47 @@
+*** Settings ***
+Force Tags        apollo
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[1V NORAM][NB] Verify That AX And MC Cards With Expiration Date Will Trigger The Rules
+    [Tags]    us5080    obsolete    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U001RTM    en-US    rmartinez    NORAM QA
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 2 - SyEx ¦ 1V US4846 QA Test    Silver    Thora
+    Select Client Account Value    U1A2E ¦ Apollo 2 - SyEx ¦ 1V US4846 QA Test
+    Select Trip Type Value    Business
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    CLIENT BTA CARD AX/AX************1000/D1214
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    SU Department Name    RULEHIT
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    DENORD+AA    01Y1    ${EMPTY}    8
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    CWT BTA/MC************4440/D0122
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Value Is Correct    SU Department Name    MCCARD
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Value Is Correct    SU Department Name    MANUAL
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+
+[1V NORAM][AB] Verify That Portrait And Manual Create Cards Will Trigger The Rules
+    [Tags]    us5080    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT/VI************1111/D1223-CASTRO CC DESCRIPTION
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Value Is Correct    SU Department Name    CCPORT
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

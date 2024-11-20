@@ -1,0 +1,303 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../../resources/common/global_resources.txt
+Resource          duo_verification.txt
+Resource          ../../resources/common/utilities.txt
+
+*** Test Cases ***
+[AB] Verify That All Panels Are Displayed For PNR With GUID
+    [Tags]    US6440
+    Create A PNR With Client Fees
+    Click Change Team
+    Clear Team Selection
+    Select Team    UK 24HSC Team
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Client Fees
+    Click Clear All
+
+[AB] Verify That All Panels Are Displayed For PNR Without GUID
+    [Tags]    US6440
+    Retrieve PNR Details    ${current_pnr}
+    Remove PNR Remark    GUID    NP
+    Remove PNR Remark    GUID    NP
+    Remove PNR Remark    SYEXGVS    NP
+    Enter GDS Command    R.CWTPTEST    ER    ER
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Client Fees
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Create Portrait Profile Defaults To No And Client Account Is Disabled When Subunit SO Is Set To Yes
+    [Tags]    US6449
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK 24HSC Team
+    Select GDS    Galileo
+    Click Control Button    [NAME:grpPortraitProfileInformation]
+    Search For Client    24HSC UK ¦ US6449 3GDS
+    Set Last Name    PPP
+    Click Search Portrait Profile
+    Click Create Traveller Profile
+    Verify Radio Button Is Selected
+    Populate Add New Traveller    General    Doc    Strange    automation@carlsonwagonlit.com    63    919
+    ...    1234566    No    test
+    Verify Control Object Is Disabled    [NAME:ccboAccountNumber]
+    Click New Booking
+    Click Clear All
+    Create New Booking By Searching For Client    Galileo    Galileo Legacy - Auto ¦ US455    AutoLegacy    EmeaTrvlrOneZero    CDGLHR/AF    ${EMPTY}
+    ...    UK AUTO GALILEO
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Fare Details And Remarks Of PNR Are Correct For PNR That Has No GUID
+    [Tags]    uk    us6434    not_ready
+    Create New Booking And Delete GUID
+    Click Change Team
+    Clear Team Selection
+    Select Team    UK 24HSC Team
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Default And Mandatory Fields Of Fare Tabs    Fare 1    C1 - Client Special Fare Accepted    A6 - Alternative Carrier Declined
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Fare Remarks Are Written For Galileo UK
+    Verify Backoffice Remarks Are Written For Galileo UK    Fare 1
+    Verify Itinerary Remarks Are Written For Galileo UK    Fare 1
+    Get Fare Details    Fare 1
+    Verify Backoffice Remarks Are Written For Galileo UK    Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1G AB] Verify That When Team Is 24HSC, Correct Delivery Method Is Defaulted and Ticketing Line Is Retain In The PNR
+    [Tags]    US6435
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values
+    Click Finish PNR
+    Click Clear All
+    Change Locale, Profile, Team    en-US    AutomationUK    \    #Needed the set-up for team name in DUO
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Air Fare
+    Tick Fare Not Finalised
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    24HSC delivery    #Need to change when new delivery method is made
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Queue Minder Remark Is Present In PNR    \    99    1    3W7F
+    Verify Queue Minder Remark Is Present In PNR    \    90    1    3W7F
+
+[1G AB] Verify That When Team Is 24HSC And The Selected Delivery Method Is 24HSC, Upon Finish PNR The Ticketing Line Is Retain and Follow Up Queues Are Correct
+    [Tags]    US6435
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values
+    Click Finish PNR
+    Click Clear All
+    Change Locale, Profile, Team    en-US    AutomationUK    \    #Needed the set-up for team name in DUO
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Air Fare
+    Tick Fare Not Finalised
+    Click Panel    Delivery
+    Select Delivery Method    24HSC delivery    #Need to change when new delivery method is made
+    Verify On Hold Reasons Is Disabled    Awaiting Customer References    Awaiting Fare Details    Awaiting Approval    Awaiting Form of Payment
+    Verify On Hold Reasons Is Checked    Awaiting Customer References    Awaiting Fare Details    Awaiting Approval    Awaiting Form of Payment
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify TAW Line For On-Hold Reason Is Written In The PNR    3W7F    QC    HOLD AWAITING.APPROVAL
+    Verify Queue Minder Remark Is Present In PNR    \    99    1    3W7F
+    Verify Queue Minder Remark Is Present In PNR    \    90    1    3W7F
+    Verify Queue Minder Remark Is Present In PNR    \    93    1    3W7F
+    Verify On Hold Reasons Remarks Are Written In the PNR
+
+*** Keywords ***
+Create A PNR With Client Fees
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo Legacy - Auto ¦ US455    AutoLegacy    EmeaTrvlrOneZero
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    CDGLHR/AF    01Y1    FQ    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Fees
+    Click Panel    Client Fees
+    Select Fee From Dropdown    Test    Apply Bundled Fee
+    Click Finish PNR
+    Click Clear All
+
+Create New Booking And Delete GUID
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    galileo
+    Create New Booking With One Way Flight Using Default Values    Galileo 15 - Auto ¦ US2643    AutoFifteenTen    OptimizeTrvlrThirty    LHRCDG/AF    ${EMPTY}    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Air Fare Savings Code    D1 - Route Deal Accepted    CS - Client Specific    YC - Economy Client Fare
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Click Finish PNR
+    Get Filed Fare In Galileo    1
+    Click Clear All
+    Retrieve PNR Details    ${current_pnr}
+    Remove PNR Remark    SYEXGVS    NP
+    Retrieve PNR Details    ${current_pnr}
+    Remove PNR Remark    GUID/CT    NP
+    Retrieve PNR Details    ${current_pnr}
+    Remove PNR Remark    GUID/TT    NP
+    Enter GDS Command    DI.1@
+    End And Retrieve PNR
+
+Get Multiple Line Remarks Numbers
+    [Arguments]    @{pnr_remarks}
+    ${line_numbers}    Create List
+    : FOR    ${remark}    IN    @{pnr_remarks}
+    \    ${line_number}    Run Keyword If    "${GDS_switch}" != "amadeus"    Get Line Number In PNR Remarks    ${remark}
+    \    ...    ELSE    Get Line Number In Amadeus PNR Remarks    ${remark}
+    \    Append To List    ${line_numbers}    ${line_number}
+    ${EMPTY}
+    [Return]    ${line_numbers}
+
+Get Filed Fare In Galileo
+    [Arguments]    ${segment_number}    ${current_pnr}=${EMPTY}    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Retrieve PNR Details From Travelport    \    *FF${segment_number}    \    \    False
+    ${filed_fare_line} =    Get Lines Containing String    ${pnr_details}    FARE${SPACE}
+    ${filed_fare_raw} =    Get String Using Marker    ${filed_fare_line}    FARE${SPACE}    ${SPACE}
+    ${filed_fare} =    Remove All Non-Integer (retain period)    ${filed_fare_raw}
+    Set Suite Variable    ${filed_fare}
+    Set Suite Variable    ${filed_fare_${fare_tab_index}}    ${filed_fare}
+    Set Suite Variable    ${currency_and_filed_fare_${fare_tab_index}}    ${filed_fare_raw}
+    [Return]    ${filed_fare}
+
+Verify Fare Remarks Are Written For Galileo UK
+    [Arguments]    ${fare_tab}=Fare 1    ${invoice}=0    ${include_fare_restriction}=True
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Comment    ${currency}    Set Variable    ${currency_and_filed_fare_${fare_tab_index}[0:3]}
+    ${city_route}    Replace String    ${city_route_${fare_tab_index}}    -    ${SPACE}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:H-${high_fare_${fare_tab_index}} C-${charged_fare_${fare_tab_index}} L-${low_fare_${fare_tab_index}} N-${charged_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:HC-${realised_code_value_${fare_tab_index}} LC-${missed_code_value_${fare_tab_index}} CL-${class_code_value_${fare_tab_index}} DEST-${point_of_${fare_tab_index}} TK-ET INV-0
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:CHGS-${changes_value${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:CANX-${cancellation_value${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:REROUTE-${reroute_value${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:MINSTAY-${min_stay_value${fare_tab_index}.upper()}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:MAXSTAY-${max_stay_value${fare_tab_index}.upper()}
+
+Verify Backoffice Remarks Are Written For Galileo UK
+    [Arguments]    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-*9991*${high_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-*9993*${realised_code_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-*9992*${low_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-*9995*${missed_code_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-*9994*${charged_fare_${fare_tab_index}}
+
+Verify Itinerary Remarks Are Written For Galileo UK
+    [Arguments]    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${currency}    Set Variable    ${currency_and_filed_fare_${fare_tab_index}[0:3]}
+    Verify Specific Line Is Written In The PNR    ROUTING : ${city_names_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HIGH FARE : ${currency}${high_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    CHARGED FARE : ${currency}${charged_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    LOWEST FARE : ${currency}${low_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    SAVINGS ACHIEVED VS HIGH FARE ${currency}
+    Verify Specific Line Is Written In The PNR    SAVINGS MISSED VS LOWEST FARE ${currency}
+    Verify Specific Line Is Written In The PNR    MAIN RESTRICTIONS:
+    Verify Specific Line Is Written In The PNR    CHANGE OF RESERVATION : ${changes_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    CANCELLATION : ${cancellation_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    REROUTING : ${reroute_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    VALID ON : ${valid_on_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    MINIMUM STAY : ${min_stay_value_${fare_tab_index}.upper()}
+    Verify Specific Line Is Written In The PNR    MAXIMUM STAY : ${max_stay_value_${fare_tab_index}.upper()}
+
+Verify On Hold Reasons for 24HSC Is Disabled and Checked
+    Verify On Hold Booking Reason Is Disabled    Awaiting Customer references
+    Verify On Hold Booking Reason Is Checked    Awaiting Customer references
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+
+Verify Fare Not Finalised Is Ticked
+    Tick Checkbox
+    Verify Checkbox Is Ticked    [NAME:cchkNotFinalised]
+
+Verify Not Known At Time of Booking Chekbox Is Ticked in Cust Ref Panel
+    Verify Checkbox Is Ticked    [NAME:cChkSkipValidation]
+
+Verify Not Known At Time of Booking Checkbox Is Ticked For FOP in Client Info Panel
+    Verify Checkbox Is Ticked    [NAME:chkNotKnown]
+
+Verify On Hold Reason For Non 24HSC Client Is Disabled And Checked
+    Verify On Hold Booking Reason Is Disabled    Awaiting Approval
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Verify On Hold Booking Reason Is Disabled    Awaiting Form of Payment
+    Verify On Hold Booking Reason Is Checked    Awaiting Form of Payment
+
+Verify On Hold Reasons Is Disabled
+    [Arguments]    @{on_hold_reasons}
+    : FOR    ${on_hold_reason}    IN    @{on_hold_reasons}
+    \    Run Keyword If    ${on_hold_reason} == "Awaiting Customer Referenes"    Verify Awaiting Approval Is Disabled
+    \    ...    ELSE IF    ${on_hold_reason} == "Awaiting Fare Details"    Verify Awaiting Customer Reference Is Disabled
+    \    ...    ELSE IF    ${on_hold_reason} == "Awaiting Approval"    Verify Awaiting Approval Is Disabled
+    \    ...    ELSE IF    ${on_hold_reason} == "Awaiting Form of Payment"    Verify Awaiting Form of Payment Is Disabled
+    [Teardown]    Take Screenshot
+
+Verify Awaiting Approval Is Disabled
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason3]
+
+Verify Awaiting Fare Details Is Disabled
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason2]
+
+Verify Awaiting Form of Payment Is Disabled
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason5]
+
+Verify On Hold Reasons Is Checked
+    [Arguments]    @{on_hold_reasons_state}
+    : FOR    ${onhold_state}    IN    @{on_hold_reasons_state}
+    \    Run Keyword If    ${onhold_state} == "Awaiting Customer Referenes"    Verify Awaiting Customer Reference Is Checked
+    \    ...    ELSE IF    ${onhold_state} == "Awaiting Fare Details"    Verify Awaiting Fare Details Is Checked
+    \    ...    ELSE IF    ${onhold_state} == "Awaiting Approval"    Verify Awaiting Approval Is Checked
+    \    ...    ELSE IF    ${onhold_state} == "Awaiting Form of Payment"    Verify Awaiting Form Of Payment Is Checked
+
+Verify Awaiting Customer Reference Is Checked
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}    ${arg5}    ${arg6}
+    ...    ${arg7}    ${arg8}    ${arg9}
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason1]
+
+Verify Awaiting Customer Reference Is Disabled
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}    ${arg5}    ${arg6}
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason1]
+
+Verify Awaiting Fare Details Is Checked
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}    ${arg5}    ${arg6}
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason2]
+
+Verify Awaiting Approval Is Checked
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason3]
+
+Verify Awaiting Form Of Payment Is Checked
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason5]
+
+Verify On Hold Reasons Remarks Are Written In the PNR
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING FARE DETAILS
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING FORM OF PAYMENT
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING APPROVAL
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING CUSTOMER REFERENCES

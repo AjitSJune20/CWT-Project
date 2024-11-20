@@ -1,0 +1,249 @@
+*** Settings ***
+Force Tags        amadeus    apac
+Resource          ../../../resources/common/common_library.txt
+Resource          ../../../resources/common/core.txt
+Resource          ../../../acceptance_tests/complete/complete_verification.txt
+Resource          ../../../acceptance_tests/gds/gds_verification.txt
+Resource          ../../../acceptance_tests/air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[NB HK] Verify That APIS/SFPD Is Captured And Written Upon Finish PNR
+    [Tags]    US423    hk    howan    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ XYZ Automation HK - US423    BEAR    RJ
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    NRTJFK/AUA    SS1Y1    FXP/S2    5    5
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    Yes
+    Click Check Visa Requirements
+    Click Panel    APIS/SFPD
+    Verify SFPD Section    Secure Flight Passenger Data
+    Verify APIS Passenger And Travel Document Details Section    APIS Passenger and Travel Document Details
+    Verify APIS Other Information And Visa Details Section    APIS Other Information and Visa Details
+    Verify APIS/SFPD Address Section    Address
+    Populate APIS Other Information And Visa Details    Manila    Hong Kong    Pasig    Hong Kong    Star Mall    A1
+    ...    15/12/2010
+    Populate APIS/SFPD Address    Wall Street    Star City    Bahamas    Alaska    0201
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify SFPD Remarks    RJ    FOX    BEAR    02JAN89    M    11
+    ...    A1
+    Verify APIS Passenger And Travel Document Details Remarks    UA    HK1    P    HK    A1    HK
+    ...    02JAN89    M    15DEC20    BEAR    RJ    FOX
+    ...    S2
+    Verify APIS Other Information And Visa Details Remarks    UA    HK1    MANILA    A1    STAR MALL    15DEC10
+    ...    HK    HK    PASIG    S2
+    Verify APIS/SFPD Address Remarks    UA    HK1    R    BS    WALL STREET    STAR CITY
+    ...    AK    0201    S2
+
+[AB HK ] Verify That APIS/SFPD Is Captured And Written Upon Finish PNR
+    [Tags]    US423    hk    howan    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    FRASIN/ALH    SS1Y1    FXP/S3    5    10
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Verify SFPD Section    Secure Flight Passenger Data
+    Verify APIS Passenger And Travel Document Details Section    APIS Passenger and Travel Document Details
+    Verify APIS Other Information And Visa Details Section    APIS Other Information and Visa Details
+    Verify APIS/SFPD Address Section    Address
+    Select Destination Radio Button
+    Populate APIS Other Information And Visa Details    Taguig    Hong Kong    \    Hong Kong    Mega Mall    A1
+    ...    15/12/2010
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That APIS/SFPD Is Captured And Written Upon Finish PNR For HK
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify SFPD Remarks    RJ    FOX    BEAR    02JAN89    M    11
+    ...    A1
+    Verify APIS Passenger And Travel Document Details Remarks    UA    HK1    P    HK    A1    HK
+    ...    02JAN89    M    15DEC20    BEAR    RJ    FOX
+    ...    S2
+    Verify APIS Passenger And Travel Document Details Remarks    LH    HK1    P    HK    A1    HK
+    ...    02JAN89    M    15DEC20    BEAR    RJ    FOX
+    ...    S3
+    Verify APIS Other Information And Visa Details Remarks    UA    HK1    MANILA    A1    STAR MALL    15DEC10
+    ...    HK    HK    PASIG    S2
+    Verify APIS Other Information And Visa Details Remarks    LH    HK1    TAGUIG    A1    MEGA MALL    15DEC10
+    ...    HK    HK    UNKNOWN    S3
+    Verify APIS/SFPD Address Remarks    UA    HK1    R    BS    WALL STREET    STAR CITY
+    ...    AK    0201    S2
+    Verify APIS/SFPD Address Remarks    LH    HK1    D    BS    WALL STREET    STAR CITY
+    ...    AK    0201    S3
+    Amend Booking For Verify That APIS/SFPD Is Captured And Written Upon Finish PNR For HK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That APIS/SFPD Is Captured And Written Upon Finish PNR
+    [Tags]    U423    in    howan    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ XYZ Automation IN - US423    BEAR    RJ
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELHKG/AAI    SS1Y1    FXP/S2    5    5
+    Book Flight X Months From Now    LAXJFK/AAA    SS1Y1    FXP/S3    5    10
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    Yes
+    Click Check Visa Requirements
+    Click Panel    APIS/SFPD
+    Verify SFPD Section    Secure Flight Passenger Data
+    Verify APIS Passenger And Travel Document Details Section    APIS Passenger and Travel Document Details
+    Verify APIS Other Information And Visa Details Section    APIS Other Information and Visa Details
+    Verify APIS/SFPD Address Section    Address
+    Populate APIS Other Information And Visa Details    Manila    India    Pasig    India    Star Mall    A2
+    ...    22/12/2010
+    Populate APIS/SFPD Address    Wall Street    Star City    Bahamas    Alaska    0201
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify SFPD Remarks    RJ    FOX    BEAR    02JAN89    M    22
+    ...    A2
+    Verify APIS Passenger And Travel Document Details Remarks    AI    HK1    P    IN    A2    IN
+    ...    02JAN89    M    22DEC20    BEAR    RJ    FOX
+    ...    S2
+    Verify APIS Passenger And Travel Document Details Remarks    AA    HK1    P    IN    A2    IN
+    ...    02JAN89    M    22DEC20    BEAR    RJ    FOX
+    ...    S3
+    Verify APIS Other Information And Visa Details Remarks    AI    HK1    MANILA    A2    STAR MALL    22DEC10
+    ...    IN    IN    PASIG    S2
+    Verify APIS Other Information And Visa Details Remarks    AA    HK1    MANILA    A2    STAR MALL    22DEC10
+    ...    IN    IN    PASIG    S3
+    Verify APIS/SFPD Address Remarks    AI    HK1    R    BS    WALL STREET    STAR CITY
+    ...    AK    0201    S2
+    Verify APIS/SFPD Address Remarks    AA    HK1    R    BS    WALL STREET    STAR CITY
+    ...    AK    0201    S3
+
+[AB IN] Verify That APIS/SFPD Is Captured And Written Upon Finish PNR
+    [Tags]    US423    in    howan    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Verify APIS Passenger And Travel Document Details Section    APIS Passenger and Travel Document Details
+    Verify APIS Other Information And Visa Details Section    APIS Other Information and Visa Details
+    Populate APIS Other Information And Visa Details    Manila    India    Pasig    India    Star Mall    A2
+    ...    22/12/2010
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That APIS/SFPD Is Captured And Written Upon Finish PNR For IN
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify SFPD Remarks Is Not Written    RJ    FOX    BEAR    02JAN89    M    22
+    ...    A2
+    Verify APIS Passenger And Travel Document Details Remarks    AI    HK1    P    IN    A2    IN
+    ...    02JAN89    M    22DEC20    BEAR    RJ    FOX
+    ...    S2
+    Verify APIS Other Information And Visa Details Remarks    AI    HK1    MANILA    A2    STAR MALL    22DEC10
+    ...    IN    IN    PASIG    S2
+    Verify APIS/SFPD Address Remarks Is Not Written    AI    HK1    R    BS    WALL STREET    STAR CITY
+    ...    AK    0201    S2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That APIS/SFPD Is Captured And Written Upon Finish PNR
+    [Tags]    US423    sg    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ XYZ Automation SG - US423    BEAR    RJ
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXLAS/AAA    SS1Y1    FXP/S2    5    10
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Verify SFPD Section    Secure Flight Passenger Data
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify SFPD Remarks    RJ    FOX    BEAR    02JAN89    M    33
+    ...    A3
+
+[AB SG] Verify That APIS/SFPD Is Captured And Written Upon Finish PNR
+    [Tags]    US423    sg    howan    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    YVRSYD/AAC    SS1Y1    FXP/S3    5    15
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    Yes
+    Click Check Visa Requirements
+    Click Panel    APIS/SFPD
+    Verify SFPD Section    Secure Flight Passenger Data
+    Verify APIS Passenger And Travel Document Details Section    APIS Passenger and Travel Document Details
+    Verify APIS Other Information And Visa Details Section    APIS Other Information and Visa Details
+    Verify APIS/SFPD Address Section    Address
+    Populate APIS Other Information And Visa Details    Taguig    Singapore    \    Singapore    Mega Mall    A3
+    ...    15/12/2010
+    Populate APIS/SFPD Address    WALL STREET    STAR CITY    Bahamas    Alaska    0201
+    Select Destination Radio Button
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That APIS/SFPD Is Captured And Written Upon Finish PNR For SG
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify SFPD Remarks    RJ    FOX    BEAR    02JAN89    M    33
+    ...    A3
+    Verify APIS Passenger And Travel Document Details Remarks    AA    HK1    P    SG    A3    SG
+    ...    02JAN89    M    29DEC20    BEAR    RJ    FOX
+    ...    S2
+    Verify APIS Passenger And Travel Document Details Remarks    AC    HK1    P    SG    A3    SG
+    ...    02JAN89    M    29DEC20    BEAR    RJ    FOX
+    ...    S3
+    Verify APIS Other Information And Visa Details Remarks    AA    HK1    TAGUIG    A3    MEGA MALL    15DEC10
+    ...    SG    SG    UNKNOWN    S2
+    Verify APIS Other Information And Visa Details Remarks    AC    HK1    TAGUIG    A3    MEGA MALL    15DEC10
+    ...    SG    SG    UNKNOWN    S3
+    Verify APIS/SFPD Address Remarks    AA    HK1    D    BS    WALL STREET    STAR CITY
+    ...    AK    0201    S2
+    Verify APIS/SFPD Address Remarks    AC    HK1    D    BS    WALL STREET    STAR CITY
+    ...    AK    0201    S3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That APIS/SFPD Is Captured And Written Upon Finish PNR For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    FRASIN/ALH    SS1Y1    FXP/S3    5    10
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Verify SFPD Section    Secure Flight Passenger Data
+    Verify APIS Passenger And Travel Document Details Section    APIS Passenger and Travel Document Details
+    Verify APIS Other Information And Visa Details Section    APIS Other Information and Visa Details
+    Verify APIS/SFPD Address Section    Address
+    Select Destination Radio Button
+    Populate APIS Other Information And Visa Details    Taguig    Hong Kong    \    Hong Kong    Mega Mall    A1
+    ...    15/12/2010
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Finish PNR
+
+Amend Booking For Verify That APIS/SFPD Is Captured And Written Upon Finish PNR For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Verify APIS Passenger And Travel Document Details Section    APIS Passenger and Travel Document Details
+    Verify APIS Other Information And Visa Details Section    APIS Other Information and Visa Details
+    Populate APIS Other Information And Visa Details    Manila    India    Pasig    India    Star Mall    A2
+    ...    22/12/2010
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Finish PNR
+
+Amend Booking For Verify That APIS/SFPD Is Captured And Written Upon Finish PNR For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    YVRSYD/AAC    SS1Y1    FXP/S4    5    10
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Verify SFPD Section    Secure Flight Passenger Data
+    Verify APIS Passenger And Travel Document Details Section    APIS Passenger and Travel Document Details
+    Verify APIS Other Information And Visa Details Section    APIS Other Information and Visa Details
+    Verify APIS/SFPD Address Section    Address
+    Select Destination Radio Button
+    Populate APIS Other Information And Visa Details    Taguig    Singapore    \    Singapore    Mega Mall    A3
+    ...    15/12/2010
+    Populate APIS/SFPD Address    HIGH    MANILA    Philippines    Texas    1111
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Finish PNR

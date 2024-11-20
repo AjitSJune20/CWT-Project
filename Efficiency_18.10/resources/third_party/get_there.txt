@@ -1,0 +1,180 @@
+*** Settings ***
+Resource          ../common/global_resources.txt
+
+*** Keywords ***
+Click Continue
+    ${is_continue_button_visible}    Run Keyword And Return Status    ExtendedSelenium2Library.Element Should Be Visible    id=SeatmapSkipSeatButton
+    Run Keyword If    ${is_continue_button_visible}    Run Keywords    ExtendedSelenium2Library.Wait Until Element Is Visible    id=SeatmapSkipSeatButton
+    ...    AND    ExtendedSelenium2Library.Click Button    id=SeatmapSkipSeatButton
+    ...    ELSE    Run Keywords    ExtendedSelenium2Library.Wait Until Element Is Visible    id=SeatmapContinueButton
+    ...    AND    ExtendedSelenium2Library.Click Button    id=SeatmapContinueButton
+
+Click Login
+    Wait Until Element Is Visible    name=loginButton
+    Click Button    name=loginButton
+
+Click Multi Destination
+    Wait Until Element Is Visible    id=multipleDestination
+    Click Element    id=multipleDestination
+
+Click One Way
+    Wait Until Element Is Visible    id=oneWay
+    Click Element    id=oneWay
+
+Click Purchase Trip
+    Wait Until Element Is Visible    id=purchaseTrip
+    ExtendedSelenium2Library.Mouse Down    id=purchaseTrip
+    Sleep    2
+    Click Button    id=purchaseTrip
+
+Click Round Trip
+    Wait Until Element Is Visible    id=roundTrip
+    Click Element    id=roundTrip
+
+Click Search
+    Wait Until Element Is Visible    id=begin-search
+    Click Button    id=begin-search
+
+Click Select
+    [Arguments]    ${index}=1
+    Wait Until Element Is Visible    id=AvailabilityButton${index}
+    ExtendedSelenium2Library.Mouse Down    id=AvailabilityButton${index}
+    Click Button    id=AvailabilityButton${index}
+
+Click Skip Car Search
+    Wait Until Element Is Visible    link=Skip car search
+    Click Link    link=Skip car search
+
+Click Skip Hotel Search
+    Wait Until Element Is Visible    link=Skip hotel search
+    Scroll Element Into View    link=Skip hotel search
+    Click Link    link=Skip hotel search
+
+Create PNR In Get There (Round Trip)
+    [Arguments]    ${departure}    ${destination}
+    Navigate To Home Page    http://wcp.getthere.net/getres    chrome
+    Login To Get There    TEST2SG    TEST2SG
+    ${departure_date}    Generate Date X Months From Now    6    2    "%d/%m/%y"
+    ${arrival_date}    Generate Date X Months From Now    6    6    "%d/%m/%y"
+    Click Round Trip
+    Search Round Trip Availability    ${departure}    ${destination}    ${departure_date}    ${arrival_date}
+    Populate Delivery Information    Makati    Makati    2010    Philippines
+    Populate Company Information
+    Tick Acknowledgement
+    Verify Reservation Is Completed
+    Get Record Locator
+    [Teardown]    Close All Browsers
+
+Get Record Locator
+    ${current_pnr}    Get Text    id=qa-record-locator
+    Set Suite Variable    ${current_pnr}
+
+Login To Get There
+    [Arguments]    ${username}    ${password}
+    Set Username    ${username}
+    Set Password    ${password}
+    Click Login
+
+Navigate To Home Page
+    [Arguments]    ${home_page_url}    ${browser}=gc
+    Open Browser    ${home_page_url}    ${browser}
+    Maximize Browser Window
+
+Populate Company Information
+    Tick Fare Rules
+    Tick Transit Visas
+
+Populate Delivery Information
+    [Arguments]    ${address_line}    ${city}    ${zip_code}    ${country}
+    Set Address Line    ${address_line}
+    Set City    ${city}
+    Set Zip Code    ${zip_code}
+    Select Country    ${country}
+
+Search Round Trip Availability
+    [Arguments]    ${departure}    ${destination}    ${departure_date}    ${arrival_date}
+    Set From    ${departure}
+    Set To    ${destination}
+    Set Departure Date    ${departure_date}
+    Set Arrival Date    ${arrival_date}
+    Click Search
+    Select Available Flight    1
+    Skip Seat Select
+    Skip Hotel Search
+    Skip Car Search
+
+Select Address Line
+    [Arguments]    ${address}
+    Press Key    id=address    ${address}
+
+Select Available Flight
+    [Arguments]    ${index}
+    ExtendedSelenium2Library.Mouse Down    xpath=//*[@id="availabilityContent"]/a[${index}]
+    Click Element    xpath=//*[@id="availabilityContent"]/a[${index}]
+    Sleep    2
+    Click Select
+
+Select Country
+    [Arguments]    ${country}
+    Select From List    id=country    ${country}
+
+Set Address Line
+    [Arguments]    ${address}
+    Press Key    id=address    ${address}
+
+Set Arrival Date
+    [Arguments]    ${arrival_date}    ${index}=1
+    Press Key    id=travel-search-dates-${index}    ${arrival_date}
+
+Set City
+    [Arguments]    ${city}
+    Press Key    id=city    ${city}
+
+Set Departure Date
+    [Arguments]    ${departure_date}    ${index}=0
+    ExtendedSelenium2Library.Press Key    id=travel-search-dates-${index}    ${departure_date}
+
+Set From
+    [Arguments]    ${departure}    ${index}=0
+    ExtendedSelenium2Library.Press Key    id=travel-search-origins-${index}    ${departure}
+
+Set Password
+    [Arguments]    ${password}
+    ExtendedSelenium2Library.Input Password    id=pwd    ${password}
+
+Set To
+    [Arguments]    ${destination}    ${index}=0
+    ExtendedSelenium2Library.Press Key    id=travel-search-destinations-${index}    ${destination}
+
+Set Username
+    [Arguments]    ${username}
+    ExtendedSelenium2Library.Press Key    id=user    ${username}
+
+Set Zip Code
+    [Arguments]    ${zip_code}
+    ExtendedSelenium2Library.Press Key    id=zip    ${zip_code}
+
+Skip Car Search
+    Click Skip Car Search
+
+Skip Hotel Search
+    Click Skip Hotel Search
+
+Skip Seat Select
+    Click Continue
+    ${is_alert_modal_visible}    Run Keyword And Return Status    Element Should Be Visible    id=alert-modal
+    Run Keyword If    ${is_alert_modal_visible}    Click Button    xpath=//*[@id="alert-modal"]/div/div/div[2]/button[2]
+
+Tick Acknowledgement
+    ${is_acknowledge_visible}    Run Keyword And Return Status    ExtendedSelenium2Library.Element Should Be Visible    id=acknowledgeOverlappingTrip
+    Run Keyword If    ${is_acknowledge_visible}    ExtendedSelenium2Library.Select Checkbox    id=acknowledgeOverlappingTrip
+
+Tick Fare Rules
+    ExtendedSelenium2Library.Select Checkbox    id=farerules
+
+Tick Transit Visas
+    ExtendedSelenium2Library.Select Checkbox    id=travel_docs
+
+Verify Reservation Is Completed
+    ExtendedSelenium2Library.Execute Javascript    document.getElementById("purchaseTrip").onclick = submitPurchaseTrip()
+    ExtendedSelenium2Library.Element Text Should Be    xpath=//*[@id="titleRecap"]/h1    Reservation complete    Fail: Reservation is not completed

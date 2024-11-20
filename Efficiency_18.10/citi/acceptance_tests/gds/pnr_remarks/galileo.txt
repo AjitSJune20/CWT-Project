@@ -1,0 +1,1589 @@
+*** Settings ***
+Force Tags        galileo    apac
+Resource          ../../../acceptance_tests/gds/gds_verifications.txt
+Resource          ../../../acceptance_tests/air_fare/air_fare_verifications.txt
+Resource          ../gds_verifications.txt
+Resource          ../../air_fare/air_fare_verifications.txt
+
+*** Test Cases ***
+[NB AU] Verify That Merchant Fee Remarks Are Written When Flights Are Domestic Tasman And International
+    [Tags]    citi    us250    us2958    us3045
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    CITI APAC
+    Select GDS    Galileo
+    Set Client And Traveler    Citigroup ¦ Citi AU    TEST    DEBORAH
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Book Flight X Months From Now    SYDMEL/QF    01Y1*    FQS1    6
+    Book Flight X Months From Now    MELAKL/QF    01Y1*    FQS2    6    3
+    Book Flight X Months From Now    AKLHKG/NZ    01Y1*    FQS3    6    6
+    Enter GDS Command    TMU1FS    TMU2FS    TMU3FS
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking    TICK
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    DC    30569309025904    1220
+    Update PNR for EN or GB
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set LFCC Field    QF
+    Populate Fare Tab With Default Values    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Retrieve PNR Details From Travelport    ${EMPTY}    *FFALL
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 1    3.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 1
+    Click Fare Tab    Fare 2
+    Set LFCC Field    QF
+    Populate Fare Tab With Default Values    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 2    3.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 2
+    Click Fare Tab    Fare 3
+    Set LFCC Field    QF
+    Populate Fare Tab With Default Values    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 3    3.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    ${route_code_1}    QF    Non-OBT    AU
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 2    ${route_code_2}    QF    Non-OBT    AU
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 3    ${route_code_3}    NZ    Non-OBT    AU
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 1    ${route_code_1}
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 2    ${route_code_2}
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 3    ${route_code_3}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB NZ] Verify That Merchant Fee Remarks Are Written When Flights Are Domestic Tasman And International
+    [Tags]    citi    us250    us2958    us3045
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    CITI APAC
+    Select GDS    Galileo
+    Set Client And Traveler    Citigroup ¦ NZ-Citi    ANG    SWEE
+    Click New Booking
+    Book Flight X Months From Now    AKLWLG/NZ    01Y1    FQS1    6
+    Book Flight X Months From Now    MELAKL/NZ    01Y1*    FQS2    6    5
+    Book Flight X Months From Now    AKLHKG/NZ    01Y1*    FQS3    6    9
+    Enter GDS Command    TMU1FS    TMU2FS    TMU3FS
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking    TICK
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Update PNR for EN or GB
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set LFCC Field    QF
+    Populate Fare Tab With Default Values    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Retrieve PNR Details From Travelport    ${EMPTY}    *FFALL
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 1    3.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 1    NZ
+    Click Fare Tab    Fare 2
+    Set LFCC Field    QF
+    Populate Fare Tab With Default Values    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 2    3.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 2    NZ
+    Click Fare Tab    Fare 3
+    Set LFCC Field    QF
+    Populate Fare Tab With Default Values    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 3    3.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 3    NZ
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    ${route_code_1}    NZ    Non-OBT    NZ
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 2    ${route_code_2}    NZ    Non-OBT    NZ
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 3    ${route_code_3}    NZ    Non-OBT    NZ
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 1    ${route_code_1}
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 2    ${route_code_2}
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 3    ${route_code_3}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB MY] Verify That Merchant Fee Remarks Are Written When Flights Are Domestic And International
+    [Tags]    citi    us1515    us2958
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    CITI APAC
+    Select GDS    Galileo
+    Set Client And Traveler    Citigroup ¦ MY-Citigroup    BEAR    LEN
+    Click New Booking
+    Book Flight X Months From Now    KULBKI/MH    01Y1*    FQS1    6
+    Book Flight X Months From Now    BKIPEN/MH    01Y1*    FQS2    6    3
+    Book Flight X Months From Now    PENSIN/KA    01Y1*    FQS3    6    6
+    Enter GDS Command    TMU1FS    TMU2FS    TMU3FS
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Update PNR for EN or GB
+    Click Read Booking
+    Retrieve PNR Details From Travelport    ${EMPTY}    *FFALL
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    MH
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 1    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 1    MY
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    MH
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 2    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 2    MY
+    Populate Fare Tab With Default Values    Fare 3
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    1.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 3    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 3    MY
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    ${route_code_1}    MH    Non-OBT    MY
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 2    ${route_code_2}    MH    Non-OBT    MY
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 3    ${route_code_3}    MH    Non-OBT    MY
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 1    ${route_code_1}
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 2    ${route_code_2}
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 3    ${route_code_3}
+    [Teardown]
+
+[AB MY] Verify That Merchant Fee Remarks Are Written When Flights Are Domestic And International
+    [Tags]    citi    us1515    us2958
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Retrieve PNR Details From Travelport    ${EMPTY}    *FFALL
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    MH
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 1    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 1    MY
+    Set Nett Fare Field    515.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 1    MY
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    MH
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 2    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 2    MY
+    Populate Fare Tab With Default Values    Fare 3
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    1.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 3    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 3    MY
+    Set Nett Fare Field    665.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 3    MY
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That Merchant Fee Remarks Are Written When Flights Are Domestic And International For MY If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    ${route_code_1}    MH    Non-OBT    MY
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 2    ${route_code_2}    MH    Non-OBT    MY
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 3    ${route_code_3}    MH    Non-OBT    MY
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 1    ${route_code_1}
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 2    ${route_code_2}
+    Verify Merchant Fee Remark Is Written In The RI Lines    Fare 3    ${route_code_3}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AU] Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable
+    [Tags]    citi    us958
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    CITI APAC
+    Select GDS    Galileo
+    Set Client And Traveler    Citigroup ¦ Citi AU    Test    Len
+    Click New Booking
+    Book Flight X Months From Now    SYDMEL/QF    01Y1*    FQS1    6
+    Book Flight X Months From Now    MELAKL/QF    01Y1*    FQS2    6    5
+    Enter GDS Command    TMU1FS    TMU2FS
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Update PNR
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Fare Tab    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Fare Details    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Panel    Pspt and Visa
+    Populate Pspt And Visa With Values    Passport: Normal    Australia    726726726    24    Unable to confirm
+    Select Visa Requirement    Not Required
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    QANTAS AIRWAYS    ${city_names_with_slash_1}    ${EMPTY}    ${EMPTY}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Itinerary Quote Remarks Are Written In RI    2    QANTAS AIRWAYS    ${city_names_with_slash_2}    ${EMPTY}    ${EMPTY}    ${changes_value_2}
+    ...    ${cancellation_value_2}    ${valid_on_value_2}    ${reroute_value_2}    ${min_stay_value_2}    ${max_stay_value_2}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #DI Lines Fare 2
+    Verify LF RF And SF Remarks Are Written In DI    Fare 2
+    Verify Turnaround Is Written In DI    Fare 2    ${point_of_2}
+    Verify LFCC Is Written In DI    Fare 2    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 2    ${realised_code_value_2}    ${missed_code_value_2}    ${class_code_value_2}
+    Verify Booking Identifier Are Written In DI    Fare 2    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+
+[AB AU] Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable
+    [Tags]    citi    us958
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Fare Tab    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Fare Details    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Panel    Pspt and Visa
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable For AU If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    QANTAS AIRWAYS    ${city_names_with_slash_1}    ${EMPTY}    ${EMPTY}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Itinerary Quote Remarks Are Written In RI    2    QANTAS AIRWAYS    ${city_names_with_slash_2}    ${EMPTY}    ${EMPTY}    ${changes_value_2}
+    ...    ${cancellation_value_2}    ${valid_on_value_2}    ${reroute_value_2}    ${min_stay_value_2}    ${max_stay_value_2}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #DI Lines Fare 2
+    Verify LF RF And SF Remarks Are Written In DI    Fare 2
+    Verify Turnaround Is Written In DI    Fare 2    ${point_of_2}
+    Verify LFCC Is Written In DI    Fare 2    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 2    ${realised_code_value_2}    ${missed_code_value_2}    ${class_code_value_2}
+    Verify Booking Identifier Are Written In DI    Fare 2    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable
+    [Tags]    citi    us958
+    Transaction Fee Data In Powerbase    #Test Data
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Set Client And Traveler    Citigroup ¦ SG-Citigroup    TEST    ALBERT
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQS1    6
+    Book Flight X Months From Now    SYDMEL/QF    01Y1    FQS2    6    6
+    Enter GDS Command    TMU1FS    TMU2FS
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Select Fare Type    Published Fare
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Get Merchant Fee Amount Value    Fare 1
+    Click Fare Tab    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Select Fare Type    Published Fare
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 2
+    Get Fare Details    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 2
+    Get Merchant Fee Amount Value    Fare 2
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    No
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    QANTAS AIRWAYS    ${city_names_with_slash_1}    SGD ${transaction_fee_value_1}    SGD ${merchant_fee_value_1}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Itinerary Quote Remarks Are Written In RI    2    QANTAS AIRWAYS    ${city_names_with_slash_2}    SGD ${transaction_fee_value_2}    SGD ${merchant_fee_value_2}    ${changes_value_2}
+    ...    ${cancellation_value_2}    ${valid_on_value_2}    ${reroute_value_2}    ${min_stay_value_2}    ${max_stay_value_2}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    INT    QF    Non-OBT    SG
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    INT    QF    Non-OBT    SG
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #DI Lines Fare 2
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 2    Offline    INT    QF    Non-OBT    SG
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 2    INT    QF    Non-OBT    SG
+    Verify LF RF And SF Remarks Are Written In DI    Fare 2
+    Verify Turnaround Is Written In DI    Fare 2    ${point_of_2}
+    Verify LFCC Is Written In DI    Fare 2    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 2    ${realised_code_value_2}    ${missed_code_value_2}    ${class_code_value_2}
+    Verify Booking Identifier Are Written In DI    Fare 2    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+
+[AB SG] Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable
+    [Tags]    citi    us958
+    Transaction Fee Data In Powerbase    #Test Data
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Select Fare Type    Published Fare
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Get Merchant Fee Amount Value    Fare 1
+    Click Fare Tab    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Select Fare Type    Published Fare
+    Set LFCC Field    QF
+    Get Fare Details    Fare 2
+    Get Route Code Value    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 2
+    Get Merchant Fee Amount Value    Fare 2
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    No
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test 2
+    Set Ticket Text    Ticket Text Test 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable For SG If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    QANTAS AIRWAYS    ${city_names_with_slash_1}    SGD ${transaction_fee_value_1}    SGD ${merchant_fee_value_1}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Itinerary Quote Remarks Are Written In RI    2    QANTAS AIRWAYS    ${city_names_with_slash_2}    SGD ${transaction_fee_value_2}    SGD ${merchant_fee_value_2}    ${changes_value_2}
+    ...    ${cancellation_value_2}    ${valid_on_value_2}    ${reroute_value_2}    ${min_stay_value_2}    ${max_stay_value_2}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test 2    Ticket Text Test 2
+    #DI Lines Fare 1
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    INT    QF    Non-OBT    SG
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    INT    QF    Non-OBT    SG
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #DI Lines Fare 2
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 2    Offline    INT    QF    Non-OBT    SG
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 2    INT    QF    Non-OBT    SG
+    Verify LF RF And SF Remarks Are Written In DI    Fare 2
+    Verify Turnaround Is Written In DI    Fare 2    ${point_of_2}
+    Verify LFCC Is Written In DI    Fare 2    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 2    ${realised_code_value_2}    ${missed_code_value_2}    ${class_code_value_2}
+    Verify Booking Identifier Are Written In DI    Fare 2    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB NZ] Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable
+    [Tags]    citi    us958
+    Transaction Fee Data In Powerbase    #Test Data
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Enter GDS Command    SEM/34VP/AG
+    Select GDS    Galileo
+    Set Client And Traveler    Citigroup ¦ NZ-Citi    ANG    SWEE
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Click Update PNR
+    Book Flight X Months From Now    AKLWLG/NZ    01Y1    FQS1    6
+    Book Flight X Months From Now    MELAKL/NZ    01Y2    FQS2    6    5
+    Enter GDS Command    TMU1FS    TMU2FS
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Retrieve PNR Details From Travelport    ${EMPTY}    *FFALL
+    Calculate Merchant Fee Amount    Fare 1    AU
+    Click Fare Tab    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 2
+    Get Fare Details    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 2
+    Get Merchant Fee Amount Value    Fare 2
+    Click Panel    Pspt and Visa
+    Select Nationality/Citizenship    New Zealand
+    Set Document Number    111111
+    Select Expiry Date X Months
+    Select Is Doc Valid    No
+    Select Visa Requirement    Required
+    Get Travel Document Details    0
+    Select Visa Requirement    Required
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    AIR NEW ZEALAND    ${city_names_with_slash_1}    NZD ${transaction_fee_value_1}    NZD ${merchant_fee_value_1}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Itinerary Quote Remarks Are Written In RI    2    AIR NEW ZEALAND    ${city_names_with_slash_2}    NZD ${transaction_fee_value_2}    NZD ${merchant_fee_value_2}    ${changes_value_2}
+    ...    ${cancellation_value_2}    ${valid_on_value_2}    ${reroute_value_2}    ${min_stay_value_2}    ${max_stay_value_2}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    DOM    NZ    Non-OBT    NZ
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    DOM    NZ    Non-OBT    NZ
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #DI Lines Fare 2
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 2    Offline    TTAS    NZ    Non-OBT    NZ
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 2    TTAS    NZ    Non-OBT    NZ
+    Verify LF RF And SF Remarks Are Written In DI    Fare 2
+    Verify Turnaround Is Written In DI    Fare 2    ${point_of_2}
+    Verify LFCC Is Written In DI    Fare 2    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 2    ${realised_code_value_2}    ${missed_code_value_2}    ${class_code_value_2}
+    Verify Booking Identifier Are Written In DI    Fare 2    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+
+[AB NZ] Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable
+    [Tags]    citi    us958
+    Transaction Fee Data In Powerbase    #Test Data
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Retrieve PNR Details From Travelport    ${EMPTY}    *FFALL
+    Calculate Merchant Fee Amount    Fare 1    AU
+    Get Fare Details    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 2
+    Get Fare Details    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 2
+    Get Merchant Fee Amount Value    Fare 2
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    No
+    Select Visa Requirement    Not Required
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test 2
+    Set Ticket Text    Ticket Text Test 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable For NZ If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    AIR NEW ZEALAND    ${city_names_with_slash_1}    NZD ${transaction_fee_value_1}    NZD ${merchant_fee_value_1}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Itinerary Quote Remarks Are Written In RI    2    AIR NEW ZEALAND    ${city_names_with_slash_2}    NZD ${transaction_fee_value_2}    NZD ${merchant_fee_value_2}    ${changes_value_2}
+    ...    ${cancellation_value_2}    ${valid_on_value_2}    ${reroute_value_2}    ${min_stay_value_2}    ${max_stay_value_2}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test 2    Ticket Text Test 2
+    #DI Lines Fare 1
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    DOM    NZ    Non-OBT    NZ
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    DOM    NZ    Non-OBT    NZ
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #DI Lines Fare 2
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 2    Offline    TTAS    NZ    Non-OBT    NZ
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 2    TTAS    NZ    Non-OBT    NZ
+    Verify LF RF And SF Remarks Are Written In DI    Fare 2
+    Verify Turnaround Is Written In DI    Fare 2    ${point_of_2}
+    Verify LFCC Is Written In DI    Fare 2    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 2    ${realised_code_value_2}    ${missed_code_value_2}    ${class_code_value_2}
+    Verify Booking Identifier Are Written In DI    Fare 2    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB MY] Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable
+    [Tags]    citi    us253
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/34RY/AG
+    Set Client And Traveler    Citigroup ¦ MY-Citigroup    BEAR    LEN
+    Click Contact Tab In Caller Panel
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Book Flight X Months From Now    PENKUL*MH    01Y1    FQS1    6    7
+    Book Flight X Months From Now    PENSIN*MI    01Y1    FQS2    6    17
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Fare Tab    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Fare Details    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Panel    Pspt and Visa
+    Populate Pspt And Visa With Values    Passport: Normal    Malaysia    726726726    24    Unable to confirm
+    Get Travel Document Details    0
+    Select Visa Requirement    Required
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    MALAYSIAN AIRLINES    ${city_names_with_slash_1}    ${EMPTY}    ${EMPTY}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Itinerary Quote Remarks Are Written In RI    2    SILKAIR    ${city_names_with_slash_2}    ${EMPTY}    ${EMPTY}    ${changes_value_2}
+    ...    ${cancellation_value_2}    ${valid_on_value_2}    ${reroute_value_2}    ${min_stay_value_2}    ${max_stay_value_2}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #DI Lines Fare 2
+    Verify LF RF And SF Remarks Are Written In DI    Fare 2
+    Verify Turnaround Is Written In DI    Fare 2    ${point_of_2}
+    Verify LFCC Is Written In DI    Fare 2    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 2    ${realised_code_value_2}    ${missed_code_value_2}    ${class_code_value_2}
+    Verify Booking Identifier Are Written In DI    Fare 2    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+
+[AB MY] Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable
+    [Tags]    citi    us253
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Fare Tab    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Fare Details    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Panel    Pspt and Visa
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable For MY If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    MALAYSIAN AIRLINES    ${city_names_with_slash_1}    ${EMPTY}    ${EMPTY}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Itinerary Quote Remarks Are Written In RI    2    SILKAIR    ${city_names_with_slash_2}    ${EMPTY}    ${EMPTY}    ${changes_value_2}
+    ...    ${cancellation_value_2}    ${valid_on_value_2}    ${reroute_value_2}    ${min_stay_value_2}    ${max_stay_value_2}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #DI Lines Fare 2
+    Verify LF RF And SF Remarks Are Written In DI    Fare 2
+    Verify Turnaround Is Written In DI    Fare 2    ${point_of_2}
+    Verify LFCC Is Written In DI    Fare 2    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 2    ${realised_code_value_2}    ${missed_code_value_2}    ${class_code_value_2}
+    Verify Booking Identifier Are Written In DI    Fare 2    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That OB Fee Is Not Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Set Client And Traveler    Citigroup ¦ SG-Citigroup    TEST    ALBERT
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Book Flight X Months From Now    SINCDG/AF    01Y1    FQS1    6
+    Book Flight X Months From Now    CDGSIN/AF    01Y1    FQS2    6    5
+    Enter GDS Command    TMU1FS    TMU2FS
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field (If Zero)    20.00
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field (If Zero)    20.00
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Set Nett Fare Field    3000.00
+    Get Nett Fare Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    True    SG
+    Verify That FOP Remark Is Written In The DI Lines    Fare 2    True    SG
+
+[AB SG] Verify That OB Fee Is Not Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field (If Zero)    20.00
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    2500.00
+    Get Nett Fare Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Get Fare Details    Fare 2
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    250.75
+    Get Nett Fare Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Amend Booking Workflow For Verify That OB Fee Is Not Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant SG If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    True    SG
+    Verify That FOP Remark Is Written In The DI Lines    Fare 2    True    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB MY] Verify That OB Fee Is Not Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/34RY/AG
+    Set Client And Traveler    Citigroup ¦ MY-Citigroup    BEAR    LEN
+    Click Contact Tab In Caller Panel
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Book Flight X Months From Now    KULBKK/MH    01Y1    FQS1    6
+    Enter GDS Command    TMU1FS
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    MH
+    Set Fees Field    10.50
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Set Nett Fare Field    0.00
+    Get Nett Fare Value    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    True    MY
+
+[AB MY] Verify That OB Fee Is Not Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    AF
+    Set Fees Field    11.50
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Set Nett Fare Field    3000.00
+    Get Nett Fare Value    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Amend Booking Workflow For Verify That OB Fee Is Not Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant MY If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    True    MY
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Set Client And Traveler    Citigroup ¦ SG-Citigroup    TEST    ALBERT
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Book Flight X Months From Now    SINCDG/AF    01Y1    FQS1    6    2
+    Book Flight X Months From Now    CDGSIN/AF    01Y1    FQS2    6    8
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field (If Zero)    20.00
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Set Nett Fare Field    3000.00
+    Get Nett Fare Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    False    SG
+    Verify That FOP Remark Is Written In The DI Lines    Fare 2    False    SG
+    [Teardown]
+
+[AB SG] Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field    11.99
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    0.00
+    Get Nett Fare Value    Fare 1
+    Select Airline Commission Percentage    0
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Get Fare Details    Fare 2
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    3000.75
+    Get Nett Fare Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Amend Booking Workflow For Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant SG If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    False    SG
+    Verify That FOP Remark Is Written In The DI Lines    Fare 2    False    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB MY] Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/34RY/AG
+    Set Client And Traveler    Citigroup ¦ MY-Citigroup    BEAR    LEN
+    Click Contact Tab In Caller Panel
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Book Flight X Months From Now    KULBKK/MH    01Y1    FQS1    6
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    MH
+    Set Fees Field    10.50
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    350.68
+    Get Nett Fare Value    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    False    MY
+    [Teardown]
+
+[AB MY] Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    AF
+    Set Fees Field    11.50
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Get Nett Fare Value    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Amend Booking Workflow For Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant MY If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    False    MY
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB NZ] Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/34RP/AG
+    Set Client And Traveler    Citigroup ¦ Citi AU    Test    Len
+    Click New Booking
+    Book Flight X Months From Now    SYDLAX*QF    01Y1    FQS1    6    5
+    Book Flight X Months From Now    LAXMEL*QF    01Y1    FQS2    6    10
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Click Update PNR
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    QF
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    0.00
+    Get Nett Fare Value    Fare 1
+    Select Airline Commission Percentage    0
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    AF
+    Set Fees Field    15.56
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    False    NZ
+    Verify That FOP Remark Is Written In The DI Lines    Fare 2    False    NZ
+    [Teardown]
+
+[AB NZ] Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    AF
+    Set Fees Field    44.77
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    100.50
+    Get Nett Fare Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    AF
+    Set Fees Field    5.00
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant NZ If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    False    NZ
+    Verify That FOP Remark Is Written In The DI Lines    Fare 2    False    NZ
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AU] Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/34VP/AG
+    Set Client And Traveler    Citigroup ¦ NZ-Citi    ANG    SWEE
+    Click New Booking
+    Book Flight X Months From Now    SYDLAX*QF    01Y1    FQS1    6    5
+    Book Flight X Months From Now    LAXMEL*QF    01Y1    FQS2    6    10
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Click Update PNR
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    QF
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    550.77
+    Get Nett Fare Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    AF
+    Set Fees Field    5.50
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    False    AU
+    Verify That FOP Remark Is Written In The DI Lines    Fare 2    False    AU
+    [Teardown]
+
+[AB AU] Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant
+    [Tags]    citi    us2541
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    AF
+    Set Fees Field (If Zero)    44.77
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Get Nett Fare Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    AF
+    Set Fees Field    5.00
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    550.77
+    Get Nett Fare Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant AU If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    False    AU
+    Verify That FOP Remark Is Written In The DI Lines    Fare 2    False    AU
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB NZ] Verify That FCX5 Is Written In The DI Lines For Merchant Fee And Transaction Fee When FOP Is CA
+    [Tags]    us2543
+    Transaction Fee Data In Powerbase    #Test Data
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/34VP/AG
+    Set Client And Traveler    Citigroup ¦ NZ-Citi    ANG    SWEE
+    Click New Booking
+    Book Flight X Months From Now    MELAKL/NZ    01Y1*    FQS1    6    5
+    Enter GDS Command    TMU1FS
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking    TICK
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    CA    5555555555554444    1222
+    Update PNR for EN or GB
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set LFCC Field    NZ
+    Populate Fare Tab With Default Values    Fare 1
+    Get Route Code Value    Fare 1
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    True    NZ
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Calculate Merchant Fee Amount    Fare 1    NZ
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    TTAS    NZ    Non-OBT    NZ
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    TTAS    NZ    Non-OBT    NZ
+
+[AB NZ] Verify That FCX5 Is Written In The DI Lines For Merchant Fee And Transaction Fee When FOP Is CA
+    [Tags]    us2543
+    Transaction Fee Data In Powerbase    #Test Data
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set LFCC Field    NZ
+    Populate Fare Tab With Default Values    Fare 1
+    Get Route Code Value    Fare 1
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant NZ If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify That FOP Remark Is Written In The DI Lines    Fare 1    True    NZ
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Calculate Merchant Fee Amount    Fare 1    NZ
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    TTAS    NZ    Non-OBT    NZ
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    TTAS    NZ    Non-OBT    NZ
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow For Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable For AU
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Fare Tab    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Fare Details    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Panel    Pspt and Visa
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable For MY
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Fare Tab    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Fare Details    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Panel    Pspt and Visa
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable For NZ
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Retrieve PNR Details From Travelport    ${EMPTY}    *FFALL
+    Calculate Merchant Fee Amount    Fare 1    AU
+    Get Fare Details    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Fare Details    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Set Merchant Fee Percentage Field    2
+    Get Transaction Fee Amount Value    Fare 2
+    Get Merchant Fee Amount Value    Fare 2
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    No
+    Select Visa Requirement    Not Required
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test 2
+    Set Ticket Text    Ticket Text Test 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That DI And RI Remarks Are Written For Each Filed Fare As Applicable For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Select Fare Type    Published Fare
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Get Air Fare Restrictions    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Get Merchant Fee Amount Value    Fare 1
+    Get Fare Details    Fare 2
+    Get Route Code Value    Fare 2
+    Get Air Fare Restrictions    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    #Select Transaction Fee    11.55
+    Get Merchant Fee Amount Value    Fare 2
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    No
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test 2
+    Set Ticket Text    Ticket Text Test 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That Merchant Fee Remarks Are Written When Flights Are Domestic And International For MY
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Retrieve PNR Details From Travelport    ${EMPTY}    *FFALL
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    MH
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 1    3.24
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 1    MY
+    Set Nett Fare Field    515.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 1    MY
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    MH
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 2    3.24
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 2    MY
+    Populate Fare Tab With Default Values    Fare 3
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    1.00
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 3    3.24
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 3    MY
+    Set Nett Fare Field    665.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 3    MY
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant AU
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field (If Zero)    44.77
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field    5.00
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    550.77
+    Get Nett Fare Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant MY
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field    11.50
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant NZ
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field    44.77
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    100.50
+    Get Nett Fare Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field    5.00
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That OB Fee Is Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field    11.99
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    0.00
+    Get Nett Fare Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Get Fare Details    Fare 2
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    3000.75
+    Get Nett Fare Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That OB Fee Is Not Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant MY
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field    11.50
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    3000.00
+    Get Nett Fare Value    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That OB Fee Is Not Added To The FOP Amount In DI Line When FOP Is Credit Card And CWT Is The Merchant SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Set Fees Field (If Zero)    20.00
+    Get Fees Value    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    2500.00
+    Get Nett Fare Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    AF
+    Get Fare Details    Fare 2
+    Get Fees Value    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    250.75
+    Get Nett Fare Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Verify That FOP Remark Is Written In The DI Lines
+    [Arguments]    ${fare_tab}    ${is_tmu_exist}    ${country}
+    Set Test Variable    ${country}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${credit_card_code}    Identify Form Of Payment Code    ${str_card_type}    ${country}
+    ${cwt_is_merchant}    Run Keyword If    "${is_tmu_exist.upper()}" == "FALSE"    Set Variable    CC
+    ...    ELSE    Set Variable    ${credit_card_code}
+    ${base_or_nett_fare}    Get Variable Value    ${nett_fare_value_${fare_tab_index}}    ${base_fare_value_${fare_tab_index}}
+    ${base_or_nett_fare}    Set Variable If    "${base_or_nett_fare}" == "${EMPTY}" or "${base_or_nett_fare}" == "0.00" or "${base_or_nett_fare}" == "0.0" or "${base_or_nett_fare}" == "0"    ${base_fare_value_${fare_tab_index}}    ${base_or_nett_fare}
+    ${commision_rebate_amount}    Get Variable Value    ${commission_rebate_value_${fare_tab_index}}    0
+    ${markup_amount}    Get Variable Value    ${mark_up_value_${fare_tab_index}}    0
+    ${fop_amount}    Run Keyword If    "${is_tmu_exist.upper()}" == "FALSE"    Evaluate    (${base_or_nett_fare} + ${tax_amount_${fare_tab_index}} + ${fees_value_${fare_tab_index}} + ${markup_amount}) - ${commision_rebate_amount}
+    ...    ELSE    Evaluate    (${base_or_nett_fare} + ${tax_amount_${fare_tab_index}} + ${markup_amount}) - ${commision_rebate_amount}
+    ${fop_amount}    Convert To Float    ${fop_amount}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FOP/*${fare_tab_index}/${cwt_is_merchant}/${str_card_type}${str_card_number}/${fop_amount}

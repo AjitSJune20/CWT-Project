@@ -1,0 +1,257 @@
+*** Settings ***
+Force Tags        apollo
+Resource          ../business_rules_verification.txt
+Resource          ../../policy_check/policy_check_verification.txt
+
+*** Test Cases ***
+[1V NORAM] [NB] Verify That Policy Check Rules Will Display Mandatory Or Pre-populate CDR Fields
+    [Tags]    us5588
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    apollo
+    Set Client And Traveler    Apollo 2 - SyEx ¦ US4693 1V Character Translations    AutoEightThree    USFiveFive
+    Select Client Account Value    U1A2E ¦ Apollo 2 - SyEx ¦ US4693 1V Character Translations
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Not Mandatory    Matrix DP Code
+    Verify CDR Is Not Mandatory    T-Supervisor
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Click Panel    Client Info
+    Comment    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    LAXPAR+AA    01Y1*    T:$B    7
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Country    France Prohibited    ${EMPTY}
+    Click Panel    Cust Refs
+    Verify CDR Is Mandatory    Matrix DP Code
+    Verify CDR Is Enabled And Text Value Is Correct    T-Supervisor    ITDEVOPS
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    LAXDEN+AA    01Y1    T:$BS1    6
+    Click Read Booking
+    Verify Policy Check Panel Is Not Displayed
+    Click Panel    Cust Refs
+    Verify CDR Is Not Mandatory    Matrix DP Code
+    Verify CDR Is Enabled And Text Value Is Correct    Matrix DP Code    ${EMPTY}
+    Verify CDR Is Not Mandatory    T-Supervisor
+    Verify CDR Is Enabled And Text Value Is Correct    T-Supervisor    ${EMPTY}
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U33-ITDEV31
+
+[1V NORAM] [AB] Verify That Policy Check Rules Will Disable Or Hide CDR fields
+    [Tags]    us5588
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Not Mandatory    Matrix DP Code
+    Verify CDR Is Enabled And Text Value Is Correct    Matrix DP Code    ${EMPTY}
+    Verify CDR Is Not Mandatory    T-Supervisor
+    Verify CDR Is Enabled And Text Value Is Correct    T-Supervisor    ${EMPTY}
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Verify Policy Check Panel Is Not Displayed
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    HELOSL+AY    01Y1    T:$BS1    6
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Finnair Prohibited    ${EMPTY}
+    Click Panel    Cust Refs
+    Verify CDR Is Not Mandatory    Matrix DP Code
+    Verify CDR Is Enabled And Text Value Is Correct    Matrix DP Code    ${EMPTY}
+    Verify CDR Is Not Mandatory    T-Supervisor
+    Verify CDR Is Enabled And Text Value Is Correct    T-Supervisor    ${EMPTY}
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    MADLHR+IB    01Y1    T:$BS1    6
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Iberia Prohibited    ${EMPTY}
+    Click Panel    Cust Refs
+    Verify CDR Is Not Mandatory    Matrix DP Code
+    Verify CDR Is Enabled And Text Value Is Correct    Matrix DP Code    ${EMPTY}
+    Verify CDR Is Disabled And Text Value Is Correct    T-Supervisor    AUTOAPPROVE
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    MADLHR+IB    01Y1    T:$BS1    6
+    Book Flight X Months From Now    LHRCDG+AF    01Y1    T:$BS2    7
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Iberia Prohibited    ${EMPTY}
+    Verify Policy Status Is Correct    Country    France Prohibited    ${EMPTY}
+    Click Panel    Cust Refs
+    Verify CDR Is Not Mandatory    Matrix DP Code
+    Verify CDR Is Enabled And Text Value Is Correct    Matrix DP Code    ${EMPTY}
+    Verify CDR Is Disabled And Text Value Is Correct    T-Supervisor    AUTOAPPROVE
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR    Policy Check Rules Will Disable Or Hide CDR Field
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U33-ITDEV31
+    Verify Specific Line Is Written In The PNR    AUTOAPPROVE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1V NORAM] [NB] Verify That Cust Refs Rules Will Pre-populate Policy Check Status
+    [Tags]    us5588
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    apollo
+    Set Client And Traveler    Apollo 15 - Auto ¦ US1434-2    AutoEightFour    USFiveFive
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value Is Correct    ETS User    ITEXPRSS
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    HELOSL+AY    01Y1*    \    7
+    Book Flight X Months From Now    OSLHEL+AY    01Y1*    T:$B    7    5
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    No Hotel Booked    OSL    X1 - Booked online    True
+    Verify Policy Status Is Correct    Air Vendor    Finnair Prohibited    ${EMPTY}
+    Verify Policy Status Is Correct    Country    Norway Prohibited    ${EMPTY}
+    Click Panel    Cust Refs
+    Set CDR Value    ETS User    BUEXPRSS
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    No Hotel Booked    OSL    ${EMPTY}    True
+    Verify Policy Status Is Correct    Air Vendor    Finnair Prohibited    ${EMPTY}
+    Verify Policy Status Is Correct    Country    Norway Prohibited    ${EMPTY}
+    Click Panel    Cust Refs
+    Set CDR Value    ETS User    ITEXPRSS
+    Set CDR Value    Matrix DP Code    SUP678
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    No Hotel Booked    OSL    X1 - Booked online    True
+    Verify Policy Status Is Correct    Air Vendor    Finnair Prohibited    AA - Awaiting Approval
+    Verify Policy Status Is Correct    Country    Norway Prohibited    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U33-ITEXPRSS
+    Verify Specific Line Is Written In The PNR    G*DP/SUP678
+
+[1V NORAM] [AB] Verify That Cust Refs Rules Will Pre-populate Policy Check Status
+    [Tags]    us5588
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare and Segment
+    Click Read Booking
+    Verify Policy Check Panel Is Not Displayed
+    Book Flight X Months From Now    JFKLAX+AA    01Y1    \    7
+    Book Flight X Months From Now    LAXJFK+AA    01Y1    T:$B    7    5
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    No Hotel Booked    LAX    ${EMPTY}    True
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    IT456
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    No Hotel Booked    LAX    H9 - No overnight stay    True
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    HELOSL+AY    01Y1*    T:$B    7
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Finnair Prohibited    ${EMPTY}
+    Verify Policy Status Is Correct    Country    Norway Prohibited    ${EMPTY}
+    Click Panel    Cust Refs
+    Set CDR Value    Matrix DP Code    IT456
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Finnair Prohibited    ${EMPTY}
+    Verify Policy Status Is Correct    Country    Norway Prohibited    HA - Has authority to travel
+    Click Panel    Cust Refs
+    Set CDR Value    Matrix DP Code    SUP678
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Finnair Prohibited    ${EMPTY}
+    Verify Policy Status Is Correct    Country    Norway Prohibited    HA - Has authority to travel
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    JFKLAX+AA    01Y1    T:$BS1    6
+    Book Flight X Months From Now    LAXJFK+AA    01Y1    T:$BS2    6    5
+    Book Flight X Months From Now    HELOSL+AY    01Y1*    T:$BS3    7
+    Book Flight X Months From Now    HELOSL+AY    01Y1*    T:$BS4    7    5
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Matrix DP Code    IT456
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Finnair Prohibited    ${EMPTY}
+    Verify Policy Status Is Correct    Country    Norway Prohibited    HA - Has authority to travel
+    Verify Policy Status Is Correct    No Hotel Booked    LAX    H9 - No overnight stay    True
+    Verify Policy Status Is Correct    No Hotel Booked    JFK    ${EMPTY}    True
+    Verify Policy Status Is Correct    No Hotel Booked    OSL    X1 - Booked online    True
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Pre-populate Policy Check Status for Amend Booking
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    LAXHH9
+    Verify Specific Line Is Written In The PNR    OSLHX1
+    Verify Specific Line Is Written In The PNR    G*DP/IT456
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Pre-populate Policy Check Status for Amend Booking
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    JFKLAX+AA    01Y1    T:$BS1    6
+    Book Flight X Months From Now    LAXJFK+AA    01Y1    T:$BS2    6    5
+    Book Flight X Months From Now    HELOSL+AY    01Y1*    T:$BS3    7
+    Book Flight X Months From Now    HELOSL+AY    01Y1*    T:$BS4    7    5
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Matrix DP Code    IT456
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Finnair Prohibited    ${EMPTY}
+    Verify Policy Status Is Correct    Country    Norway Prohibited    HA - Has authority to travel
+    Verify Policy Status Is Correct    No Hotel Booked    LAX - 3/8/2018    H9 - No overnight stay
+    Verify Policy Status Is Correct    No Hotel Booked    JFK - 3/13/2018    ${EMPTY}
+    Verify Policy Status Is Correct    No Hotel Booked    OSL - 4/8/2018    X1 - Booked online
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Policy Check Rules Will Disable Or Hide CDR Field
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Not Mandatory    Matrix DP Code
+    Verify CDR Is Enabled And Text Value Is Correct    Matrix DP Code    ${EMPTY}
+    Verify CDR Is Not Mandatory    T-Supervisor
+    Verify CDR Is Enabled And Text Value Is Correct    T-Supervisor    ${EMPTY}
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Verify Policy Check Panel Is Not Displayed
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    HELOSL+AY    01Y1    T:$BS1    6
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Finnair Prohibited    ${EMPTY}
+    Click Panel    Cust Refs
+    Verify CDR Is Not Mandatory    Matrix DP Code
+    Verify CDR Is Enabled And Text Value Is Correct    Matrix DP Code    ${EMPTY}
+    Verify CDR Is Not Mandatory    T-Supervisor
+    Verify CDR Is Enabled And Text Value Is Correct    T-Supervisor    ${EMPTY}
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    MADLHR+IB    01Y1    T:$BS1    6
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Iberia Prohibited    ${EMPTY}
+    Click Panel    Cust Refs
+    Verify CDR Is Not Mandatory    Matrix DP Code
+    Verify CDR Is Enabled And Text Value Is Correct    Matrix DP Code    ${EMPTY}
+    Verify CDR Is Disabled And Text Value Is Correct    T-Supervisor    AUTOAPPROVE
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    MADLHR+IB    01Y1    T:$BS1    6
+    Book Flight X Months From Now    LHRCDG+AF    01Y1    T:$BS2    7
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Correct    Air Vendor    Iberia Prohibited    ${EMPTY}
+    Verify Policy Status Is Correct    Country    France Prohibited    ${EMPTY}
+    Click Panel    Cust Refs
+    Verify CDR Is Not Mandatory    Matrix DP Code
+    Verify CDR Is Enabled And Text Value Is Correct    Matrix DP Code    ${EMPTY}
+    Verify CDR Is Disabled And Text Value Is Correct    T-Supervisor    AUTOAPPROVE
+    Verify CDR Is Enabled And Text Value Is Correct    TS-Business Unit Name    ITDEV31
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR

@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        delivery_method

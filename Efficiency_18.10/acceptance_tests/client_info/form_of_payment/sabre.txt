@@ -1,0 +1,435 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../client_info_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Cardholder Name Field Is Pre-populated From 5-CH‡ Line In PNR (Trav Subunit US) With WN Flight During Read Booking And Override 5-CH‡ Existing Value During Finish PNR
+    [Tags]    us2441    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US2441    AUTOSIXTEENSEVEN    NORAMTRVLRFOUR
+    Click New Booking
+    Select Trip Type Value    Personal
+    Click Panel    Client Info
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify Specific Line Is Written In The PNR    -CH‡CH IN SABRE2SYEX
+    Click Panel    Client Info
+    Click Edit Form Of Payment
+    Select Card Type    VI
+    Set Card Number    4111111111111111
+    Set Expiry Date    01    20
+    Click Add Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    PHXLAX‡WN    01Y1    WPRQ‡S1    5
+    Add Hotel/Car Segments Via Sabre GDS    0HHTMXGK1DENIN${departure_date}-OUT${departure_date}/MX MOTEL 6 MINNEAPOLISBROOKLYN C/CORP/79.00/SP-56822/G/SI-¤2741 FREEWAY BLVD‡BROOKLYN CENTER MN 55430‡FONE 1-763-560-9789‡FAX 1-763-560-9796¤/CF-ABC123
+    Add Hotel/Car Segments Via Sabre GDS    0CARZIGK1LAX${departure_date}-${departure_date}/ICAR/RG-USD35.99/CF-ABC123
+    Book Flight X Months From Now    LAXSFO‡WN    01Y1    WPRQ‡S4    5    5
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Cardholder Name Is Visible
+    Verify Cardholder Name Value    CH IN SABRE2SYEX
+    Set Cardholder Name    abcdefghij1234567890 \ /testing-Cardholder-Namefield
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    -CH‡ABCDEFGHIJ1234567890 \ /TESTING-CARDHOLDER-NAMEFIELD
+    Verify Specific Line Is Written In The PNR    1.-*VIXXXXXXXXXXXX1111‡XXXXX
+    Verify CH Line Is Lower Than FOP Line    -CH‡ABCDEFGHIJ1234567890 \ /TESTING-CARDHOLDER-NAMEFIELD
+
+[AB] Verify That Cardholder Name Field Is Pre-populated From 5-CH‡ Line In PNR (Trav Subunit US) With WN Flight During Read Booking And Override 5-CH‡ Existing Value During Finish PNR
+    [Tags]    us2441    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    X4
+    Book Flight X Months From Now    LAXSFO‡WN    01Y1    WPRQ‡S4    5    8
+    Enter GDS Command    5-CH‡TESTING/MANUAL-ADD
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify Specific Line Is Written In The PNR    -CH‡ABCDEFGHIJ1234567890 \ /TESTING-CARDHOLDER-NAMEFIELD
+    Verify The Number Of CH Line Written In The PNR    2
+    Click Panel    Client Info
+    Select Trip Type Value    Personal
+    Click Edit Form Of Payment
+    Select Card Type    VI
+    Set Card Number    4012888888881881
+    Set Expiry Date    02    20
+    Click Add Form Of Payment
+    Update PNR for EN or GB
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Cardholder Name Is Visible
+    Verify Cardholder Name Value    ABCDEFGHIJ1234567890 \ /TESTING-CARDHOLDER-NAMEFIELD
+    Set Cardholder Name    abcdefghij1234567890 \ /testing-CCholder-Namefield-amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Cardholder Name Field Is Pre-populated From 5-CH‡ Line In PNR If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    -CH‡ABCDEFGHIJ1234567890 \ /TESTING-CCHOLDER-NAMEFIELD-AMEND
+    Verify The Number Of CH Line Written In The PNR    1
+    Verify Specific Line Is Written In The PNR    1.-*VIXXXXXXXXXXXX1881‡XXXXX
+    Verify CH Line Is Lower Than FOP Line    -CH‡ABCDEFGHIJ1234567890 \ /TESTING-CCHOLDER-NAMEFIELD-AMEND
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That PNR Will Not Be Updated With Selected FOP Upon Dropdown Change With Success/Failure Status Message
+    [Tags]    us4072    emea    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre FR 16 - Auto ¦ US4072    AutoSeventeenTwo    EmeaTvlrTwo
+    Click New Booking
+    Book Flight X Months From Now    LHRORD‡AA    01Y1    WPRQ    8
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify Specific Line Is Not Written In The PNR    CASH
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *-
+    Verify Specific Line Is Written In The PNR    CASH
+
+[AB FR] Verify That PNR Will Not Be Updated With Selected FOP Upon Dropdown Change With Success/Failure Status Message
+    [Tags]    us4072    emea    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Update FOP button Is Not Displayed
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    CASH
+    Select Form Of Payment    Invoice
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    AGT NON REF
+    Select Form Of Payment    PORTRAIT/VI************0002/D0126-PORTRAIT
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    -*VI4000000000000002‡01/26
+    Select Form Of Payment    NonRef
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    NONREF
+    Select Form Of Payment    Cash
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    CASH
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    -*VI4111111111111111‡12/21
+    Select Form Of Payment    AUTO/MC************4444/D1225
+    Verify Failed Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    -*VI4111111111111111‡12/21
+    Select Form Of Payment    ${EMPTY}
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    NO PSGR DATA
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Verify No Form Of Payment Update Message Was Displayed
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    NO PSGR DATA
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Sabre FOP Update If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *-
+    Verify FOP Line in Remarks    -AGT NON REF
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Manual Credit Card With Same Last 4 Digits Is Written In The K Remarks (CC View Is Turned Off)
+    [Tags]    us4363    us3353    de6232    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4363    autotwo    name
+    Click New Booking
+    Click Panel    Client Info
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO ONE/VI************1111/D1226    BTA AUTO ONE/VI4121111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO TWO/VI************1111/D1226    BTA AUTO TWO/VI4211111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1226-AUTO VI FIRST    PORTRAIT/VI4000000000000002/D1226-AUTO VI FIRST
+    Manually Set Value In Form Of Payment    VI    4000000000000002    12/26
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD‡UA    01Y1    WPRQ
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    VI************0002/D1226
+    Click Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4000000000000002/D1226
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *-    0
+    Verify FOP Line in Remarks    -*VIXXXXXXXXXXXX0002‡XXXXX
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *K‡    0
+    Verify Specific Line Is Written In The PNR    K‡FOP MANUALLY ENTERED CARD
+    Verify Specific Line Is Not Written In The PNR    K‡FOP PORTRAIT CARD
+    Verify Specific Line Is Not Written In The PNR    K‡FOP BTA
+
+[AB] Verify That Manual Credit Card With Same Last 4 Digits Is Displayed By Default And Portrait Credit Card With Same Last 4 Digits Is Written In The K Remarks (CC View Is Turned Off)
+    [Tags]    us4363    us3353    de6096    de6232    noram    de6678
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    GDS/VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO ONE/VI************1111/D1226    BTA AUTO ONE/VI4121111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO TWO/VI************1111/D1226    BTA AUTO TWO/VI4211111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1226-AUTO VI FIRST    PORTRAIT/VI4000000000000002/D1226-AUTO VI FIRST
+    Click Read Booking
+    Select Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Comment    Click Panel    Client Info
+    Comment    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Click Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4000000000000002/D1226
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR    Amend Booking Workflow For Verify Credit Card In FOP
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Verify Credit Card In FOP
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *-    0
+    Verify FOP Line in Remarks    -*VIXXXXXXXXXXXX0002‡XXXXX
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *K‡    0
+    Verify Specific Line Is Written In The PNR    K‡FOP PORTRAIT CARD
+    Verify Specific Line Is Not Written In The PNR    K‡FOP MANUALLY ENTERED CARD
+    Verify Specific Line Is Not Written In The PNR    K‡FOP BTA
+
+[AB] Verify That Portrait Credit Card With Same Last 4 Digits Is Displayed By Default (CC View Is Turned Off)
+    [Tags]    us4363    noram    de6678
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Manual Credit Card With Same Last 4 Digits Is Written In The K Remarks (CC View Is Turned On)
+    [Tags]    us2559    us3353    login_dependent    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4363    auto    name
+    Click New Booking
+    Click Panel    Client Info
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO ONE/VI************1111/D1226    BTA AUTO ONE/VI4121111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO TWO/VI************1111/D1226    BTA AUTO TWO/VI4211111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1226-AUTO VI FIRST    PORTRAIT/VI4000000000000002/D1226-AUTO VI FIRST
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1224-AUTO VI SECOND    PORTRAIT/VI4000000000000002/D1224-AUTO VI SECOND
+    Manually Set Value In Form Of Payment    VI    4000000000000002    12/26
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD‡UA    01Y1    WPRQ
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    VI************0002/D1226
+    Click Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4000000000000002/D1226
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *-    0
+    Verify FOP Line in Remarks    -*VI4000000000000002‡12/26
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *K‡    0
+    Verify Specific Line Is Written In The PNR    K‡FOP MANUALLY ENTERED CARD
+    Verify Specific Line Is Not Written In The PNR    K‡FOP PORTRAIT CARD
+    Verify Specific Line Is Not Written In The PNR    K‡FOP BTA
+
+[AB] Verify That Manual Credit Card With Same Last 4 Digits Is Displayed By Default And Portrait Credit Card #1 With Same Last 4 Digits Is Written In The K Remarks (CC View Is Turned On)
+    [Tags]    us2559    us3353    login_dependent    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    GDS/VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO ONE/VI************1111/D1226    BTA AUTO ONE/VI4121111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO TWO/VI************1111/D1226    BTA AUTO TWO/VI4211111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1226-AUTO VI FIRST    PORTRAIT/VI4000000000000002/D1226-AUTO VI FIRST
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1224-AUTO VI SECOND    PORTRAIT/VI4000000000000002/D1224-AUTO VI SECOND
+    Select Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Click Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4000000000000002/D1226
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Default FOP Verification (Portrait Card #1) If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *-    0
+    Verify FOP Line in Remarks    -*VI4000000000000002‡12/26
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *K‡    0
+    Verify Specific Line Is Written In The PNR    K‡FOP PORTRAIT CARD
+    Verify Specific Line Is Not Written In The PNR    K‡FOP MANUALLY ENTERED CARD
+    Verify Specific Line Is Not Written In The PNR    K‡FOP BTA
+
+[AB] Verify That Portrait Credit Card #1 With Same Last 4 Digits Is Displayed By Default And Portrait Credit Card #2 With Same Last 4 Digits Is Written In The K Remarks (CC View Is Turned On)
+    [Tags]    us2559    login_dependent    de6122    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Select Form Of Payment    PORTRAIT/VI************0002/D1224-AUTO VI SECOND
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1224-AUTO VI SECOND
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Default FOP Verification (Portrait Card #2) If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *-    0
+    Verify FOP Line in Remarks    -*VI4000000000000002‡12/24
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *K‡    0
+    Verify Specific Line Is Written In The PNR    K‡FOP PORTRAIT CARD
+    Verify Specific Line Is Not Written In The PNR    K‡FOP MANUALLY ENTERED CARD
+    Verify Specific Line Is Not Written In The PNR    K‡FOP BTA
+
+[AB] Verify That Portrait Credit Card #2 With Same Last 4 Digits Is Displayed By Default (CC View Is Turned On)
+    [Tags]    us2559    login_dependent    de6122    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1224-AUTO VI SECOND
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Add Hotel/Car Segments Via Sabre GDS
+    [Arguments]    ${add_hotel_commands}
+    Activate Sabre Red Workspace
+    Sleep    2
+    Enter GDS Command    ${add_hotel_commands}
+    [Teardown]    Take Screenshot
+
+Amend Booking Workflow For Sabre FOP Update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Update FOP button Is Not Displayed
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    CASH
+    Select Form Of Payment    Invoice
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    AGT NON REF
+    Select Form Of Payment    PORTRAIT/VI************0002/D0126-PORTRAIT
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    -*VI4000000000000002‡01/26
+    Select Form Of Payment    NonRef
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    NONREF
+    Select Form Of Payment    Cash
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    CASH
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    -*VI4111111111111111‡12/21
+    Select Form Of Payment    AUTO/MC************4444/D1225
+    Verify Failed Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    -*VI4111111111111111‡12/21
+    Select Form Of Payment    ${empty}
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    NO PSGR DATA
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Verify No Form Of Payment Update Message Was Displayed
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify FOP Line in Remarks    NO PSGR DATA
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking Workflow For Default FOP Verification
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    GDS/VI************0002/DXXXX
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO ONE/VI************1111/D1226    BTA AUTO ONE/VI4121111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO TWO/VI************1111/D1226    BTA AUTO TWO/VI4211111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1226-AUTO VI FIRST    PORTRAIT/VI4000000000000002/D1226-AUTO VI FIRST
+    Select Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Click Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4000000000000002/D1226
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+
+Amend Booking Workflow For Default FOP Verification (Portrait Card #1)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    GDS/VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO ONE/VI************1111/D1226    BTA AUTO ONE/VI4121111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO TWO/VI************1111/D1226    BTA AUTO TWO/VI4211111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1226-AUTO VI FIRST    PORTRAIT/VI4000000000000002/D1226-AUTO VI FIRST
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1224-AUTO VI SECOND    PORTRAIT/VI4000000005050002/D1224-AUTO VI SECOND
+    Select Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Click Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4000000000000002/D1226
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+
+Amend Booking Workflow For Default FOP Verification (Portrait Card #2)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Select Form Of Payment    PORTRAIT/VI************0002/D1224-AUTO VI SECOND
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1224-AUTO VI SECOND
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+
+Amend Booking Workflow For Cardholder Name Field Is Pre-populated From 5-CH‡ Line In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *-
+    Verify Specific Line Is Written In The PNR    -CH‡ABCDEFGHIJ1234567890 \ /TESTING-CARDHOLDER-NAMEFIELD
+    Verify The Number Of CH Line Written In The PNR    2
+    Click Panel    Client Info
+    Select Trip Type Value    Personal
+    Click Edit Form Of Payment
+    Select Card Type    VI
+    Set Card Number    4012888888881881
+    Set Expiry Date    02    20
+    Click Add Form Of Payment
+    Update PNR for EN or GB
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Cardholder Name Is Visible
+    Verify Cardholder Name Value    ${SPACE}ABCDEFGHIJ1234567890 \ /TESTING-CARDHOLDER-NAMEFIELD
+    Set Cardholder Name    abcdefghij1234567890 \ /testing-CCholder-Namefield-amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Verify Cardholder Name Is Visible
+    Verify Control Object Is Visible    [NAME:ctxtCardHolderName]    ${title_power_express}
+    [Teardown]    Take Screenshot
+
+Verify Cardholder Name Value
+    [Arguments]    ${expected_cardholder_name_value}
+    ${actual_cardholder_name_value}    Get Control Text Value    [NAME:ctxtCardHolderName]
+    Should Be Equal    ${actual_cardholder_name_value}    ${expected_cardholder_name_value}
+    [Teardown]    Take Screenshot
+
+Verify The Number Of CH Line Written In The PNR
+    [Arguments]    ${expected_count}
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    -CH‡    ${expected_count}
+
+Amend Booking Workflow For Verify Credit Card In FOP
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    GDS/VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO ONE/VI************1111/D1226    BTA AUTO ONE/VI4121111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO TWO/VI************1111/D1226    BTA AUTO TWO/VI4211111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1226-AUTO VI FIRST    PORTRAIT/VI4000000000000002/D1226-AUTO VI FIRST
+    Select Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI FIRST
+    Click Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4000000000000002/D1226
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR

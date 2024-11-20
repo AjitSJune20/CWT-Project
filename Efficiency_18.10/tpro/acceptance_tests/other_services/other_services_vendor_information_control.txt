@@ -1,0 +1,31 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Get Vendor Name
+    ${vendor}    Get Control Text    VendorTextBox
+    Set Suite Variable    ${vendor}
+    [Return]    ${vendor}
+
+Set Email
+    [Arguments]    ${value}
+    Set Control Edit Value    EmailTextBox    ${value}
+    [Teardown]    Take Screenshot
+
+Set Fax No
+    [Arguments]    ${value}
+    Set Control Edit Value    FaxNumberTextBox    ${value}
+    [Teardown]    Take Screenshot
+
+Set Support Email
+    [Arguments]    ${value}
+    Set Control Edit Value    SupportEmailTextBox    ${value}
+    [Teardown]    Take Screenshot
+
+Populate Vendor Info Tab
+    [Arguments]    ${email}    ${fax_no}=${EMPTY}    ${support_email}=${EMPTY}
+    Click Tab In Other Services Panel    Vendor Info
+    Set Email    ${email}
+    Run Keyword If    '${fax_no}'!='${EMPTY}'    Set Fax No    ${fax_no}
+    Run Keyword If    '${support_email}'!='${EMPTY}'    Set Support Email    ${support_email}
+    [Teardown]    Take Screenshot

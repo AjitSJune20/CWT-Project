@@ -1,0 +1,93 @@
+*** Settings ***
+Resource          ../../../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          ../../../../acceptance_tests/policy_check/policy_check_verification.txt
+
+*** Keywords ***
+Verify Air Vendor Policy Remarks Are Written
+    [Arguments]    ${vendor_item_id}    ${policy_reason}    ${policy_status}    ${country}
+    Verify Specific Line Is Written In The PNR    RMM ONHOLD:AWAITING APPROVAL
+    Verify Specific Line Is Written In The PNR    RIR ONHOLD:AWAITING APPROVAL
+    Verify Specific Line Is Written In The PNR    RMJ PCHK:AVP${vendor_item_id}-AA-AIR VENDOR
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR REASON: ${policy_reason}
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR REASON: ${policy_reason}
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: RESTRICTED LIST B CARRIER(S) BELOW HAS BEEN
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ADVICE: RESTRICTED LIST B CARRIER(S) BELOW HAS BEEN
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: BOOKED. PLEASE ADVISE CALLER TO USE DISCRETION
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ADVICE: BOOKED. PLEASE ADVISE CALLER TO USE DISCRETION
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: WHEN USING THIS CARRIER. APPROVAL FROM
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ADVICE: WHEN USING THIS CARRIER. APPROVAL FROM
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: IS REQUIRED PRIOR TO TRAVEL.
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ADVICE: IS REQUIRED PRIOR TO TRAVEL.
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR STATUS: ${policy_status}
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR STATUS: ${policy_status}
+
+Verify Country Policy Remarks Are Written
+    [Arguments]    ${country_item_id}    ${policy_reason}    ${policy_advice}    ${policy_status_country}    ${country}
+    ${policy_status_code}    Get Substring    ${policy_status_country}    0    2
+    Verify Specific Line Is Written In The PNR    RMJ PCHK:PCP${country_item_id}-${policy_status_code}-COUNTRY
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR REASON: ${policy_reason}
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR REASON: ${policy_reason}
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: ${policy_advice}
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ADVICE: ${policy_advice}
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR STATUS: ${policy_status_country}
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR STATUS: ${policy_status_country}
+
+Verify City Policy Remarks Are Written
+    [Arguments]    ${city_item_id}    ${policy_reason}    ${policy_advice}    ${policy_status_city}
+    ${policy_status_code}    Get Substring    ${policy_status_city}    0    2
+    Verify Specific Line Is Written In The PNR    RMJ PCHK:PTP${city_item_id}-${policy_status_code}-CITY
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR REASON: ${policy_reason}
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR REASON: ${policy_reason}
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: ${policy_advice}
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ADVICE: ${policy_advice}
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR STATUS: ${policy_status_city}
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR STATUS: ${policy_status_city}
+
+Verify Yellow Fever Policy Remarks Are Written
+    [Arguments]    ${yellow_country}    ${yellow_policy_status}    ${country}    ${country_item_id}
+    Verify Specific Remark Is Written In The PNR    RIR ******************* HEALTH RECOMMENDATION
+    Verify Specific Remark Is Written In The PNR    \ \ \ \ \ \ *******************
+    Verify Specific Remark Is Written In The PNR    RIR FOR DESTINATIONS: ${yellow_country}
+    Verify Specific Remark Is Written In The PNR    RIR YELLOW FEVER VACCINATION IS REQUIRED 10 DAYS PRIOR TO
+    Verify Specific Remark Is Written In The PNR    \ \ TRAVEL.
+    Verify Specific Remark Is Written In The PNR    RIR A VACCINATION CERTIFICATE IS REQUIRED FOR ALL THE
+    Verify Specific Remark Is Written In The PNR    \ \ TRAVELER
+    Verify Specific Remark Is Written In The PNR    RIR OVER SIX MONTHS OF AGE
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR REASON: ${yellow_country} YELLOW FEVER
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RIR REASON: ${yellow_country} YELLOW FEVER
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: YELLOW FEVER VACCINATION IS REQUIRED.
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RIR ADVICE: YELLOW FEVER VACCINATION IS REQUIRED.
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR STATUS: ${yellow_policy_status}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RIR STATUS: ${yellow_policy_status}
+    ${policy_status_code}    Get Substring    ${yellow_policy_status}    0    2
+    Verify Specific Line Is Written In The PNR    RMJ PCHK:PCP${country_item_id}-${policy_status_code}-COUNTRY
+
+Verify Yellow Fever Policy Remarks Are Not Written
+    [Arguments]    ${yellow_country}    ${yellow_policy_status}
+    Verify Specific Remark Is Not Written In The PNR    RIR ******************* HEALTH RECOMMENDATION
+    Verify Specific Remark Is Not Written In The PNR    RIR FOR DESTINATIONS: ${yellow_country}
+    Verify Specific Remark Is Not Written In The PNR    RIR YELLOW FEVER VACCINATION IS REQUIRED 10 DAYS PRIOR TO
+    Verify Specific Remark Is Not Written In The PNR    RIR A VACCINATION CERTIFICATE IS REQUIRED FOR ALL THE
+    Verify Specific Remark Is Not Written In The PNR    RIR OVER SIX MONTHS OF AGE
+    Verify Specific Remark Is Not Written In The PNR    RIR REASON: ${yellow_country} YELLOW FEVER
+    Verify Specific Remark Is Not Written In The PNR    RIR ADVICE: YELLOW FEVER VACCINATION IS REQUIRED.
+    Verify Specific Remark Is Not Written In The PNR    RIR STATUS: ${yellow_policy_status}
+
+Verify Malaria Policy Remarks Are Written
+    [Arguments]    ${policy_reason}    ${policy_status}    ${country}    ${country_item_id}
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR REASON: ${policy_reason}
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR REASON: ${policy_reason}
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: A COUNTRY ON MALARIA NOTIFICATION LIST BELOW HAS
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ADVICE: A COUNTRY ON MALARIA NOTIFICATION LIST BELOW HAS
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: BEEN BOOKED. PLEASE ADVISE CALLER THAT CWT WILL
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ADVICE: BEEN BOOKED. PLEASE ADVISE CALLER THAT CWT WILL
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: SEND LETTER REGARDING ACTION PRIOR TO TRAVELLING
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ADVICE: SEND LETTER REGARDING ACTION PRIOR TO TRAVELLING    True    True
+    Run Keyword If    "${country}"=="SG" OR "${country}"=="HK"    Verify Specific Line Is Not Written In The PNR    RIR STATUS: ${policy_status}
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR STATUS: ${policy_status}
+    ${policy_status_code}    Get Substring    ${policy_status}    0    2
+    Verify Specific Line Is Written In The PNR    RMJ PCHK:PCP${country_item_id}-${policy_status_code}-COUNTRY
+
+Verify Malaria Policy Remark Is Not Written
+    [Arguments]    ${policy_reason}
+    Verify Specific Line Is Not Written In The PNR    RIR REASON: ${policy_reason}

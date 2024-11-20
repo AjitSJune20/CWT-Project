@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        hotel_info    valid_fail

@@ -1,0 +1,226 @@
+*** Settings ***
+Resource          ../../air_fare/air_fare_verification.txt
+Resource          ../third_party_verification.txt
+Resource          ../../../resources/variables/raildetails_variables.txt
+Resource          mindef.txt
+Resource          ../../../resources/variables/traveller_variables.txt
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verfiy Fare Remark For Mindef Are Written
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:CP${tst_number_${fare_tab_index}}-H-${high_fare_${fare_tab_index}} C-${charged_fare_${fare_tab_index}} L-${low_fare_${fare_tab_index}} N-${charged_fare_${fare_tab_index}}    \    true
+    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:CP${tst_number_${fare_tab_index}}-HC-${realised_code_value_${fare_tab_index}} LC-${missed_code_value_${fare_tab_index}} CL-${class_code_value_${fare_tab_index}} DEST-${point_of_${fare_tab_index}}    \    true
+    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:CP${tst_number_${fare_tab_index}}-CHGS-${changes_value_${fare_tab_index}}    \    true
+    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:CP${tst_number_${fare_tab_index}}-CANX-${cancellation_value_${fare_tab_index}}    \    true
+
+Verify Alternate Fare Basis, Min And Max Fields Are Non-Mandatory
+    [Arguments]    ${fare_tab}    ${fare_class}    ${farebasis}    ${fare_restriction}    ${total_fare}
+    Click Fare Tab    ${fare_tab}
+    ${fare_basis_field}    Determine Multiple Object Name Based On Active Tab    ctxtFareBasisOffer_alt, ctxtFareBasisOffer_alt
+    Select Fare Restriction    2
+    Verify Control Object Field Is Not Mandatory    ${fare_basis_field}
+    Set Alternate Fare Fare Basis    ${EMPTY}
+    Select Changes Dropdown Value    SANS FRAIS
+    Select Cancellation Dropdown Value    50 EUR PENALITE
+    Select Min Stay Dropdown Value    ${EMPTY}
+    Select Max Stay Dropdown Value    ${EMPTY}
+    ${minstay_field}    Determine Multiple Object Name Based On Active Tab    ccboMinStayOBT_alt
+    Verify Control Object Field Is Not Mandatory    ${minstay_field}
+    ${maxstay_field}    Determine Multiple Object Name Based On Active Tab    ccboMaxStayOBT_alt
+    Verify Control Object Field Is Not Mandatory    ${maxstay_field}
+    Click Panel    Recap
+    Verify Panel Is Green    Air Fare
+    Select Alternate Fare Class Code    ${fare_class}
+    Set Alternate Fare Fare Basis    ${farebasis}
+    Select Fare Restriction    ${fare_restriction}
+    Set Alternate Fare Amount    ${total_fare}
+
+Verify Alternate Rail Button
+    [Arguments]    ${fare_tab}    ${default_control_counter}=True
+    Log    ${fare_tab}
+    Log    ${default_control_counter}
+    Click Fare Tab    ${fare_tab}
+    ${alt_rail_obj}    Determine Multiple Object Name Based On Active Tab    AddAlternateRailButton    ${default_control_counter}
+    Log    ${alt_rail_obj}
+    Comment    Verify Control Object Is Visible    ${alt_rail_obj}
+    Set Test Variable    ${alt_rail_obj}
+
+Verify Counter Proposition Rail Remarks Are Written
+    [Arguments]    ${tab_name}
+    @{cp_remark_liines}    Split To Lines    ${cp_details_remarks_${tab_name}}
+    : FOR    ${cp_remark}    IN    @{cp_remark_liines}
+    \    Verify Specific Line Is Written In The PNR    ${cp_remark}    \    true
+    Verify Specific Line Is Written In The PNR    ${cp_details_ttrn_remarks_${tab_name}}    \    true
+
+Verify Amadeus Offer Is Created
+    Activate Amadeus Selling Platform
+    Enter GDS Command    RT    RTOF
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    Verify Text Contains Expected Value    ${data_clipboard}    OFFER
+    ${get_offer_line} =    Get Lines Containing String    ${data_clipboard}    OFFER
+    ${counter}    Set Variable    1
+    : FOR    ${offer}    IN    ${get_offer_line}
+    \    ${offer_total_amount} =    Get String Using Marker    ${offer}    TOTAL    EUR
+    \    ${offer_total_amount} =    Replace String    ${offer_total_amount}    ,    .
+    \    Set Test Variable    ${offer_amount${counter}}    ${offer_total_amount.strip()}
+
+Verify And Populate Alternate Fare Tab For Amadeus Offer
+    [Arguments]    ${fare_tab_name}    ${fare_class}    ${fare_restriction}
+    Verify Details In Alternate Fare Tab for Amadeus Offer    ${fare_tab_name}
+    Populate Alternate Fare With Values    ${fare_tab_name}    ${fare_class}    ${fare_restriction}
+    Convert Fare Values To Mindef CPx Air Remarks    ${fare_tab_name}
+    Convert Fare Values To Mindef CPx TAir Remarks    ${fare_tab_name}    ${fare_restriction}
+    [Teardown]    Take Screenshot
+
+Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab
+    [Arguments]    ${reference_fare_tab}    @{associated_fare_tab}
+    ${reference_fare_tab_index}    Fetch From Right    ${reference_fare_tab}    ${SPACE}
+    Set Test Variable    ${reference_fare_tab_index}
+    Get Fare Details    ${reference_fare_tab}    False
+    : FOR    ${associated_fare_tab}    IN    @{associated_fare_tab}
+    \    ${assoc_fare_tab_index}    Fetch From Right    ${associated_fare_tab}    ${SPACE}
+    \    Set Test Variable    ${assoc_fare_tab_index}
+    \    Get Fare Details    ${associated_fare_tab}    False
+    \    Verify Actual Value Matches Expected Value    ${valid_on_${reference_fare_tab_index}}    ${valid_on_${assoc_fare_tab_index}}
+    \    Verify Actual Value Matches Expected Value    ${cancellation_value_${reference_fare_tab_index}}    ${cancellation_value_${assoc_fare_tab_index}}
+    \    Verify Actual Value Matches Expected Value    ${changes_value_${reference_fare_tab_index}}    ${changes_value_${assoc_fare_tab_index}}
+    \    Verify Actual Value Matches Expected Value    ${min_stay_${reference_fare_tab_index}}    ${min_stay_${assoc_fare_tab_index}}
+    \    Verify Actual Value Matches Expected Value    ${max_stay_${reference_fare_tab_index}}    ${max_stay_${assoc_fare_tab_index}}
+    \    Verify Actual Value Matches Expected Value    ${reroute_value_${reference_fare_tab_index}}    ${reroute_value_${assoc_fare_tab_index}}
+    \    Verify Actual Value Matches Expected Value    ${city_route_${reference_fare_tab_index}}    ${city_route_${assoc_fare_tab_index}}
+    \    Verify Actual Value Matches Expected Value    ${missed_text_value_${reference_fare_tab_index}}    ${missed_text_value_${assoc_fare_tab_index}}
+    \    Verify Actual Value Matches Expected Value    ${realised_text_value_${reference_fare_tab_index}}    ${realised_text_value_${assoc_fare_tab_index}}
+    \    Verify Actual Value Matches Expected Value    ${class_text_value_${reference_fare_tab_index}}    ${class_text_value_${assoc_fare_tab_index}}
+    \    Verify Actual Value Matches Expected Value    ${point_of_${reference_fare_tab_index}}    ${point_of_${assoc_fare_tab_index}}
+
+Verify CP Mindef Remarks Is Not Written
+    [Arguments]    ${alt_num}
+    ${alt_num}    Fetch From Right    ${alt_num}    ${SPACE}
+    ${range} =    Evaluate    ${alt_num}+1
+    : FOR    ${index}    IN RANGE    0    ${range}
+    \    Verify Specific Line Is Not Written In The PNR    RM${SPACE}CP${index} AIR    \    true
+    \    Verify Specific Line Is Not Written In The PNR    RM${SPACE}CP${index} TAIR    \    true
+
+Verify CPx Air Remarks Are Written
+    [Arguments]    ${alternate_num}
+    ${fare_tab_index}    Fetch From Right    ${alternate_num}    ${SPACE}
+    @{splitted_airline_details}    Split To Lines    ${alternate_airline_details_${fare_tab_index}}
+    @{alternate_airline_details}    Create List
+    ${segment_counter}    Set Variable    1
+    : FOR    ${raw_arline_details}    IN    @{splitted_airline_details}
+    \    Get Values on Flight Details    ${raw_arline_details}    ${alternate_num}
+    \    Convert French Date To English    ${month}
+    \    Append To List    ${alternate_airline_details}    RM${SPACE}CP${fare_tab_index}${SPACE}AIR${SPACE}S${segment_counter}/${airline_code}/${flightnumber}/${alternate_class_code${fare_tab_index}}/${flight_date}/${deptime}/${arrtime}/${inbound}/${outbound}
+    \    ${segment_counter}    Evaluate    ${segment_counter} + 1
+    : FOR    ${arline_details}    IN    @{alternate_airline_details}
+    \    Verify Specific Line Is Written In The PNR    ${arline_details}    \    true
+
+Verify CPx TAir Remarks Are Written
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    ${tair_pnr_remarks${fare_tab_index}}    \    true
+
+Verify Default Value For Confirmation Workflow Is Correct
+    [Arguments]    ${value}
+    Verify Control Object Text Value Is Correct    [NAME:ccboMindefWorkflow]    ${value}
+
+Verify Details In Alternate Fare Tab for Amadeus Offer
+    [Arguments]    ${tab_number}
+    Click Panel    Air Fare
+    Verify Offer Amount in Alternate Fare Tab    ${tab_number}
+
+Verify Fare Tabs For Multi Typologies Passengers Are Correct
+    [Arguments]    ${reference_fare_tab}    @{associated_fare_tabs}
+    Click Fare Tab    ${reference_fare_tab}
+    Verify Fare Fields Are Enabled    False    True
+    : FOR    ${associated_fare_tab}    IN    @{associated_fare_tabs}
+    \    Click Fare Tab    ${associated_fare_tab}
+    \    Verify Fare Fields Are Enabled    False    True
+    \    Verify Fare Restrictions Fields Are Disabled
+
+Verify Mindef Booked Proposal Remarks
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    ${air_booked_proposal_line_1_${fare_tab_index}}${air_booked_proposal_line_2_${fare_tab_index}}    \    true
+
+Verify Mindef No Booked Fare Error Is Shown In Recap Panel
+    Click Panel    Recap
+    ${actual_tooltip_text}    Get Tooltip From Error Icon    tlpGeneral
+    Should Be Equal    Votre dossier ne contient pas de proposition réservée    ${actual_tooltip_text}
+    [Teardown]    Take Screenshot
+
+Verify Mindef No Unbooked Fare Error Is Shown In Recap Panel
+    Click Panel    Recap
+    ${actual_tooltip_text}    Get Tooltip From Error Icon    tlpGeneral
+    Should Be Equal    Votre dossier contient des contre propositions - Merci de les annuler pour pouvoir envoyer votre confirmation    ${actual_tooltip_text}
+    [Teardown]    Take Screenshot
+
+Verify Mindef Remarks for Air Booked PNR
+    [Arguments]    ${fare_tab}
+    Verfiy Fare Remark For Mindef Are Written    ${fare_tab}
+    Verify Output Binding Code In PNR Remarks    ${fare_tab}
+    Verify Mindef Booked Proposal Remarks    ${fare_tab}
+
+Verify Offer Amount in Alternate Fare Tab
+    [Arguments]    ${tab_number}
+    ${tab_number_index}    Fetch From Right    ${tab_number}    ${SPACE}
+    Click Fare Tab    ${tab_number}
+    ${total_fare_offer}    Get Total Fare Offer    ${tab_number}
+    Verify Actual Value Matches Expected Value    ${total_fare_offer}    ${offer_amount${tab_number_index}}
+
+Verify Output Binding Code In PNR Remarks
+    [Arguments]    ${tab_name}
+    ${alternate_num} =    Fetch From Right    ${tab_name}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    ${destination_remarks${alternate_num}}    \    True
+    Verify Specific Line Is Written In The PNR    ${classcode_remarks${alternate_num}}    \    True
+    Verify Specific Line Is Written In The PNR    ${realised_remarks${alternate_num}}    \    True
+    Verify Specific Line Is Written In The PNR    ${missed_remarks${alternate_num}}    \    True
+    Verify Specific Line Is Written In The PNR    ${high_remarks${alternate_num}}    \    True
+    Verify Specific Line Is Written In The PNR    ${low_remarks${alternate_num}}    \    True
+
+Verify PRECO Remark Written To PNR
+    [Arguments]    ${remark}
+    Verify Specific Line Is Written In The PNR    ${remark}    \    true
+
+Verify Rail Tab Is Added
+    [Arguments]    ${tab_name}
+    Verify Fare Tab Is Visible    ${tab_name}
+
+Verify That Pspt & Visa And APIS/SFPD Panels Are Not Shown For Mindef
+    Run Keyword And Continue On Failure    Verify Actual Panel Does Not Contain Expected Panel    Pspt and Visa
+    Run Keyword And Continue On Failure    Verify Actual Panel Does Not Contain Expected Panel    APIS/SFPD
+
+Verify Workflow Selections Should Contain
+    [Arguments]    @{expected_workflow_selections}
+    @{actual_workflow_selections}    Get Value From Dropdown List    [NAME:ccboMindefWorkflow]
+    : FOR    ${expected_workflow}    IN    @{expected_workflow_selections}
+    \    List Should Contain Value    ${actual_workflow_selections}    ${expected_workflow}
+
+Verify Default Value In Proposition Box
+    [Arguments]    ${expected_value}
+    Verify Control Object Text Value Is Correct    [NAME:ccboMindefWorkflow]    ${expected_value}
+
+Verify Alternate Fare Basis, Min And Max Fields are Mandatory on First Amend
+    [Arguments]    ${fare_tab}    ${fare_class}    ${farebasis}    ${fare_restriction}    ${total_fare}
+    Click Fare Tab    ${fare_tab}
+    ${fare_basis_field}    Determine Multiple Object Name Based On Active Tab    ctxtFareBasisOffer_alt, ctxtFareBasisOffer_alt
+    Select Fare Restriction    2
+    Verify Control Object Field Is Not Mandatory    ${fare_basis_field}
+    Set Alternate Fare Fare Basis    ${EMPTY}
+    Select Changes Dropdown Value    SANS FRAIS
+    Select Cancellation Dropdown Value    50 EUR PENALITE
+    Select Min Stay Dropdown Value    1J
+    Select Max Stay Dropdown Value    1A
+    ${minstay_field}    Determine Multiple Object Name Based On Active Tab    ccboMinStayOBT_alt
+    Verify Control Object Field Is Not Mandatory    ${minstay_field}
+    ${maxstay_field}    Determine Multiple Object Name Based On Active Tab    ccboMaxStayOBT_alt
+    Verify Control Object Field Is Not Mandatory    ${maxstay_field}
+    Click Panel    Recap
+    Verify Panel Is Green    Air Fare
+    Click Panel    Air Fare
+    Select Alternate Fare Class Code    ${fare_class}
+    Set Alternate Fare Fare Basis    ${farebasis}
+    Select Fare Restriction    ${fare_restriction}
+    Set Alternate Fare Amount    ${total_fare}

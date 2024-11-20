@@ -1,0 +1,37 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../cust_refs_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That Cust Refs Panel Is Green When Mandatory CDRs Are Populated Correctly
+    [Tags]    uat    emea    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    AUTOFIFTEENUK    EMEAUATUKTWO
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    TRVLCOST    029019
+    Verify CDR Value Is Correct    TRVLCOST    029019
+    Verify CDR Field Is Not Visible    PNR-ID
+    Click Panel    Client Info
+    Verify Panel Is Green    Cust Refs
+    [Teardown]    Click Clear All
+
+[NB UK] Verify That CDR Value Containing Ampersand Symbol Is Written In The PNR
+    [Tags]    uat    emea    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Traveller    John
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Cust Refs
+    Set CDR Value    APPROVER    OIL & GAS
+    Tick Not Known At Time Of Booking
+    Click Create Shell
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-*0606*OIL & GAS
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

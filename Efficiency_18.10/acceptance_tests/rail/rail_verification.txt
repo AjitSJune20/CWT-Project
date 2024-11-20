@@ -1,0 +1,252 @@
+*** Settings ***
+Resource          ../../resources/panels/rail.txt
+Resource          sabre_rail.txt
+
+*** Keywords ***
+Get Amadeus Rail Display Total Fare
+    [Arguments]    ${rail_tst_1}    ${rail_tst_2}=${EMPTY}
+    Run Keyword If    '${rail_tst_2}' == '${EMPTY}'    Get Amadeus Rail TST Amount    ${rail_tst_1}
+    Run Keyword If    '${rail_tst_2}' != '${EMPTY}'    Get Amadeus Multiple Rail TSTs Amount    ${rail_tst_1}    ${rail_tst_2}
+    ### Sabre Rail
+
+Verify BOOKED BY RAIL DISPLAY Remark Is Not Written
+    Verify Text Does Not Contain Value    ${pnr_details}    RM BOOKED BY RAIL DISPLAY
+
+Verify BOOKED BY RAIL DISPLAY Remark Is Written
+    Verify Text Contains Expected Value    ${pnr_details}    RM BOOKED BY RAIL DISPLAY
+
+Verify Dematerialized Delivery Method
+    Click Panel    Rail
+    Click Delivery Tab
+    Verify Control Object Is Visible    [NAME:cbemaildemat]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:CBAdditionalEmailDemat]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:TBDematMRC]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:TBDematURL]    ${title_power_express}
+
+Verify Dematerialized Rail Delivery Condition Itinerary Remarks
+    Verify Text Contains Expected Value    ${pnr_details}    <B>RAIL: VOUS AVEZ CHOISI L OPTION E-BILLET</B>
+    Verify Text Contains Expected Value    ${pnr_details}    LE E BILLET EST NOMINATIF ET NON CESSIBLE
+    Verify Text Contains Expected Value    ${pnr_details}    IL EST VALABLE UNIQUEMENT POUR LE TRAIN, LA DATE
+    Verify Text Contains Expected Value    ${pnr_details}    LA CLASSE ET LE PARCOURS DESIGNES.
+    Verify Text Contains Expected Value    ${pnr_details}    POUR EMPRUNTER UN AUTRE TRAIN, VOUS DEVEZ L ECHANGER
+    Verify Text Contains Expected Value    ${pnr_details}    VOUS DEVEZ VOUS MUNIR D UNE PIECE D IDENTITE
+    Verify Text Contains Expected Value    ${pnr_details}    EN COURS DE VALIDITE AVEC PHOTO
+    Verify Text Contains Expected Value    ${pnr_details}    VOUS DEVREZ VOUS MUNIR DE VOTRE CONFIRMATION
+    Verify Text Contains Expected Value    ${pnr_details}    E BILLET CLAIREMENT IMPRIMEE
+    Verify Text Contains Expected Value    ${pnr_details}    OU POUR LES TITULAIRES D UNE CARTE
+    Verify Text Contains Expected Value    ${pnr_details}    FIDELITE LEUR CARTE VOYAGEUR, GRAND VOYAGEUR,
+    Verify Text Contains Expected Value    ${pnr_details}    GRAND VOYAGEUR PLUS OU GRAND VOYAGEUR LE CLUB
+
+Verify E-Ticket Delivery Method
+    Click Panel    Rail
+    Click Delivery Tab
+    Verify Control Object Is Visible    [NAME:RDETKNC]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:RDETKCC]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:RDETKLC]    ${title_power_express}
+
+Verify E-ticket Rail Delivery Condition Itinerary Remarks
+    Verify Text Contains Expected Value    ${pnr_details}    <B>RAIL: VOUS AVEZ CHOISI L OPTION BILLET
+    Verify Text Contains Expected Value    ${pnr_details}    ELECTRONIQUE</B>
+    Verify Text Contains Expected Value    ${pnr_details}    CECI N ETANT PAS UN TITRE DE TRANSPORT,IL EST IMPERATIF
+    Verify Text Contains Expected Value    ${pnr_details}    POUR
+    Verify Text Contains Expected Value    ${pnr_details}    VOTRE VOYAGE DE RETIRER CE BILLET ELECTRONIQUE SUR UNE
+    Verify Text Contains Expected Value    ${pnr_details}    BORNE
+    Verify Text Contains Expected Value    ${pnr_details}    DANS UNE GARE EN FRANCE UNIQUEMENT
+    Verify Text Contains Expected Value    ${pnr_details}    POUR CELA VOUS DEVEZ VOUS MUNIR
+    Verify Text Contains Expected Value    ${pnr_details}    SI VOUS RETIREZ VOTRE BILLET ELECTRONIQUE SNCF DANS
+    Verify Text Contains Expected Value    ${pnr_details}    L HEURE QUI
+    Verify Text Contains Expected Value    ${pnr_details}    PRECEDE LE DEPART DU TRAIN, IL SERA AUTOMATIQUEMENT
+    Verify Text Contains Expected Value    ${pnr_details}    COMPOSTE PAR
+    Verify Text Contains Expected Value    ${pnr_details}    LA BORNE LIBRE SERVICE.
+    Verify Text Contains Expected Value    ${pnr_details}    IL NE SERA ALORS PLUS ECHANGEABLE SUR LES
+    Verify Text Contains Expected Value    ${pnr_details}    BORNES MAIS SEULEMENT AUX GUICHETS DE LA GARE
+
+Verify Error Message is Exists
+    Sleep    2
+    ${error_window}    Win Exists    Error    ${EMPTY}
+    Sleep    1
+    ${get_error_text}    Run Keyword If    "${error_window}" == "1"    Win Get Text    Error    ${EMPTY}
+    Sleep    2
+    Take Screenshot
+    Run Keyword If    "${error_window}" == "1"    Control Click    Error    ${EMPTY}    ${btn_sr_ignore_pnr_yes}
+
+Verify General Rail Remarks
+    Comment    Verify Text Contains Expected Value    ${pnr_details}    RMR NO DU PNR RESARAIL : ${rail_pnr}
+    ${fce_number}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:CwtCBFCE]
+    Run Keyword If    '${fce_number}' != '${EMPTY}'    Verify Text Contains Expected Value    ${pnr_details}    RMR FCE$C${fce_number}
+
+Verify KDS Amadeus Rail Display Remarks
+    [Arguments]    ${rail_tst_1}    ${rail_tst_2}=${EMPTY}
+    Get Amadeus Rail Display Total Fare    ${rail_tst_1}    ${rail_tst_2}
+    Verify Text Contains Expected Value    ${pnr_details}    RMR CP0 COMMENT/${rail_tst_amount}
+    Verify Text Contains Expected Value    ${pnr_details}    RMR TRN DETAILS/${rail_tst_amount}
+    Verify Text Contains Expected Value    ${pnr_details}    RMR TRN STATUS/BOOKED
+    Verify Text Contains Expected Value    ${pnr_details}    RMR AISLE
+    Verify Text Contains Expected Value    ${pnr_details}    RMR FCE
+    Verify Text Contains Expected Value    ${pnr_details}    RMR NO DU PNR RESARAIL : ${current_pnr}
+    Verify Text Contains Expected Value    ${pnr_details}    RIR <B>RAIL
+    Verify Text Contains Expected Value    ${pnr_details}    RIR <B>TARIF APPLIQUE:
+    Verify Text Contains Expected Value    ${pnr_details}    RIR <B>PRIX
+    Verify Text Contains Expected Value    ${pnr_details}    RIR <B>FORMALITES
+    Verify Text Contains Expected Value    ${pnr_details}    RIR <B>VOUS
+    Verify Text Contains Expected Value    ${pnr_details}    RIR <B>DU
+
+Verify KDS Resa Rail Remarks
+    Verify Text Contains Expected Value    ${pnr_details}    RMR CP0 COMMENT/${rail_amount}
+    Verify Text Contains Expected Value    ${pnr_details}    RMR TRN DETAILS/${rail_amount}
+    Verify Text Contains Expected Value    ${pnr_details}    RMR TRN STATUS/BOOKED
+
+Verify Paper Ticket Delivery Method
+    Click Panel    Rail
+    Click Delivery Tab
+    Verify Control Object Is Visible    [NAME:TBMainDelStreet]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:TBMainDelZIP]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:TBMainDelCity]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:TBMainDelCC]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:CBMainDelMode]    ${title_power_express}
+
+Verify Paper Ticket Rail Delivery Condition Itinerary Remarks
+    Verify Text Contains Expected Value    ${pnr_details}    <B>RAIL: VOUS AVEZ CHOISI L OPTION PAPIER</B>
+    Verify Text Contains Expected Value    ${pnr_details}    MODE DE LIVRAISON :
+    Verify Text Contains Expected Value    ${pnr_details}    DATE DE LIVRAISON :
+    Verify Text Contains Expected Value    ${pnr_details}    LES BILLETS SERONT POSTES LE JOUR DE L EMISSION
+
+Verify RMR CP0 Contains Correct Rail Display Amount
+    [Arguments]    ${rail_tst_amount}
+    Verify Text Contains Expected Value    ${pnr_details}    RMR CP0 COMMENT/${rail_tst_amount}
+
+Verify Rail Itinerary If successfully Canceled
+    ${new_title_SabreRed} =    Decode Bytes To String    ${title_SabreRed}    UTF-8
+    ${get_no_itinerary_text}    Win Get Text    ${new_title_SabreRed}    ${EMPTY}
+    ${set_list_num}    Set Variable    0
+    @{list}    Split To Lines    ${get_no_itinerary_text}
+    ${index}    Get Line Count    ${get_no_itinerary_text}
+    : FOR    ${element}    IN RANGE    0    ${index}
+    \    Log    ${list[${element}]}
+    \    ${rail_no_itinerary}    Set Variable If    "${list[${element}]}" == "NO ITINERARY"    True    False
+    \    Run Keyword If    "${list[${element}]}" == "NO ITINERARY"    Exit For Loop
+    Run Keyword If    "${rail_no_itinerary}" == "True"    Log    Rail itinerary was successfully canceled from the PNR
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    Rail itineray was not successflly canceled
+    Take Screenshot
+    Sleep    3
+
+Verify Rail Not Compliant Checkbox Is Not Present
+    Sleep    1
+    ${actual_rail_not_compliance_checkbox_image} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\rail_not_complaint.png    0.80    ${timeout}
+    ${actual_rail_not_compliance_checkbox_image1} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\rail_not_complaint_fr.png    0.90    ${timeout}
+    ${actual_rail_not_compliance_checkbox_visible}    Control Command    ${title_power_express}    ${EMPTY}    ${chk_rail_compliance}    IsVisible    ${EMPTY}
+    Run Keyword If    ("${actual_rail_not_compliance_checkbox_image}" == "True" or "${actual_rail_not_compliance_checkbox_image1}" == "True") and ${actual_rail_not_compliance_checkbox_visible} == 1    Run Keyword and Continue On Failure    FAIL    Rail Not Compliant checkbox is present.
+    ...    ELSE    Log    Rail Not Compliant checkbox is NOT present.
+    [Teardown]    Take Screenshot
+
+Verify Rail Not Compliant Checkbox Is Present And Ticked
+    Sleep    1
+    ${actual_rail_not_compliance_checkbox_image}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\rail_not_complaint_fr.png    0.90    ${timeout}
+    ${actual_rail_not_compliance_checkbox_visible}    Control Command    ${title_power_express}    ${EMPTY}    ${chk_rail_compliance}    IsVisible    ${EMPTY}
+    ${is_checked}    Run Keyword If    "${actual_rail_not_compliance_checkbox_image}" == "True" and ${actual_rail_not_compliance_checkbox_visible} == 1    Get checkbox status    ${chk_rail_compliance}
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    Rail Not Compliant checkbox is not visible.
+    Run Keyword If    "${is_checked}" == "True"    Log    Rail Not Compliant checkbox is present and ticked.
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    Rail Not Compliant checkbox is present and unticked.
+    [Teardown]    Take Screenshot
+
+Verify Rail Not Compliant Checkbox Is Present And Unticked
+    Sleep    1
+    ${actual_rail_not_compliance_checkbox_image} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\rail_not_complaint.png    0.80    ${timeout}
+    ${actual_rail_not_compliance_checkbox_image1}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\rail_not_complaint_fr.png    0.90    ${timeout}
+    ${actual_rail_not_compliance_checkbox_visible}    Control Command    ${title_power_express}    ${EMPTY}    ${chk_rail_compliance}    IsVisible    ${EMPTY}
+    ${is_checked}    Run Keyword If    ("${actual_rail_not_compliance_checkbox_image}" == "True" or "${actual_rail_not_compliance_checkbox_image1}" == "True") and ${actual_rail_not_compliance_checkbox_visible} == 1    Get checkbox status    ${chk_rail_compliance}
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    Rail Not Compliant checkbox is not visible.
+    Run Keyword If    "${is_checked}" == "False"    Log    Rail Not Compliant checkbox is present and unticked.
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    Rail Not Compliant checkbox is present and ticked.
+    [Teardown]    Take Screenshot
+
+Verify Rail Total Price and Rail Currency are the same in OSI 2C RAL line
+    [Arguments]    ${file}    ${rail_total_price_and_currency_value}
+    Sleep    1
+    ${logfiles}    OperatingSystem.Get File    ${file}
+    ${actual_OSI_2C_RAL_line} =    Get Lines Containing String    ${logfiles}    OSI 2C RAL
+    ${rail_total_price_and_currency_value}    Replace String    ${rail_total_price_and_currency_value}    /    ${EMPTY}
+    ${actual_total_price_and_currency_value} =    Run Keyword And Return Status    Should Contain    ${actual_OSI_2C_RAL_line}    ${rail_total_price_and_currency_value}
+    Run Keyword If    "${actual_total_price_and_currency_value}" <> "False"    Log    The Rail Total Price and Rail Currency value in R¥CP0 is the same value written in OSI 2C RAL line
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    The Rail Total Price and Rail Currency value in R¥CP0 is not the same value written in OSI 2C RAL line
+    Sleep    1
+
+Verify RailTicketDate in R¥CP0 is the same date in 2C TTL line
+    [Arguments]    ${file}    ${rail_ticket_date}
+    Sleep    1
+    ${logfiles}    OperatingSystem.Get File    ${file}
+    ${actual_OSI_2C_TTL_line} =    Get Lines Containing String    ${logfiles}    2C TTL
+    ${actual_rail_ticket_date_value} =    Run Keyword And Return Status    Should Contain    ${actual_OSI_2C_TTL_line}    ${rail_ticket_date}
+    Run Keyword If    "${actual_rail_ticket_date_value}" <> "False"    Log    The Rail Ticket value in R¥CP0 is the same value written in 2C TTL line
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    The Rail Ticket value in R¥CP0 is not the same value written in 2C TTL line
+    Sleep    1
+
+Verify Sabre Rail Tab is the selected page
+    Sleep    3
+    ${sabre_rail_tab} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\sabre_rail_tab.png    0.80    ${timeout}
+    ${sabre_rail_tab1} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\sabre_rail_tab1.png    0.80    ${timeout}
+    Take Screenshot
+    Run Keyword If    "${sabre_rail_tab}" == "True" or "${sabre_rail_tab1}" == "True"    Log    Sabre Rail is the current page in workspace
+    ...    ELSE    Switch To Sabre Rail Tab
+    Sleep    2
+
+Verify Sabre working area A is the selected page
+    Sleep    3
+    ${working_a_tab} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\sabre_workingarea_a_tab.png    0.80    ${timeout}
+    ${working_a_tab1} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\sabre_workingarea_a_tab1.png    0.80    ${timeout}
+    Take Screenshot
+    Run Keyword If    "${working_a_tab}" == "True" or "${working_a_tab1}" == "True"    Log    Switch to working are A is successfull
+    ...    ELSE    Switch To Sabre Previous Tab
+    Sleep    2
+
+Verify if simultaneous changes occurs in sabre rail
+    ${error_window}    Win Exists    Error    ${EMPTY}
+    ${get_rail_pnr_text}    Win Get Text    Error    ${EMPTY}
+    ${simultaneous_changes}    Run Keyword And Return Status    Should Contain    ${get_rail_pnr_text}    SIMULTANEOUS CHANGES
+    Run Keyword If    "${simultaneous_changes}" == "True"    Log    Simultaneous Changes occurs, please reopen the created pnr then verify if the rail was cancel
+    Take Screenshot
+    Win Activate    Error    ${EMPTY}
+    Sleep    1
+    Send    {ENTER}
+    Sleep    3
+    Click Ignore PNR Button after cancel
+    Sleep    2
+    Set Retrieve PNR field to Empty
+    Sleep    1
+    Switch To Sabre Previous Tab
+    Sleep    1
+    Force Ignore To GDS
+    Sleep    1
+    Emulate PCC    L9H7
+    Sleep    1
+    Retrieve PNR Details From Sabre Red
+    Sleep    1
+    Switch To Sabre Rail Tab
+    Sleep    1
+    Enter PNR In Retrieve PNR field In Sabre Rail    ${current_pnr}
+    Sleep    1
+    Click Display PNR
+    Sleep    1
+    Click Sync to Sabre Button after cancel
+
+Verify that Rail Not Compliant checkbox does not exist in Delivery Panel
+    Sleep    1
+    ${actual_rail_not_compliance_checkbox_visible}    Control Command    ${title_power_express}    ${EMPTY}    ${chk_rail_compliance}    IsVisible    ${EMPTY}
+    Take Screenshot
+    ${is_checked} =    Run Keyword If    ${actual_rail_not_compliance_checkbox_visible} == 0    Log    Rail Compliance checkbox is not visible.
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    Rail Compliance checkbox is visible.
+    Sleep    1
+
+Verify that Rail Not Compliant text
+    Sleep    1
+    ${rail_compliant_text}    Control Get Text    ${title_power_express}    ${EMPTY}    ${chk_rail_compliance}
+    Run Keyword If    "${str_locale}" == "fr-FR" and "${rail_compliant_text}" == "Rail non conforme"    Log    "Rail Not Compliant text" is translated French
+    ...    ELSE IF    ("${str_locale}" == "en-GB" or "${str_locale}" == "en-US") and "${rail_compliant_text}" == "Rail Not Compliant"    Log    "Rail Not Compliant text" is correct
+    ...    ELSE    Run Keyword And Continue on Failure    Fail    Rail Not Compliant text is not correct
+    Take Screenshot
+    Sleep    1
+
+Verify Rail Display RIR Remarks Are Written
+    [Arguments]    ${segment_number}
+    Verify Text Contains Expected Value    ${pnr_details}    ${rir_remarks_tariff${segment_number}}
+    Verify Text Contains Expected Value    ${pnr_details}    ${rir_remarks_totalprice${segment_number}}

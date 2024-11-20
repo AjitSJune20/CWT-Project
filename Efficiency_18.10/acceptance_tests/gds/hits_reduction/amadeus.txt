@@ -1,0 +1,87 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../gds_verification.txt
+
+*** Test Cases ***
+[NB] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657    de    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus DE 15 - Auto ¦ US2657    AutoFifteenTwo    OptimizeTrvlrEleven    MSPORD/AUA
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    "RT"
+
+[AB] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657    us2733    de    not_ready
+    Delete Current Specific Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}    10
+    Verify PNR Retrieve Functions is not Triggered    SyExPerfLog    RetrieveBFByPNR
+    Comment    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    RetrieveBFByPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    GetPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    BusinessFunctionMetric.RetrievePNRIDCallerBox
+    Click Amend Booking
+    Book Flight X Months From Now    ORDMSP/AUA    SS1Y1    FXB/S3    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR    Amend Booking Workflow
+    Re-Execute Amend Booking Workflow If Simultaneous Change Error Is Displayed
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    "RT"
+
+[SI] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657    us2733    de    not_ready
+    Delete Current Specific Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Comment    Retrieve PNR via Existing Bookings Tab    Amadeus DE 15 - Auto ¦ US2657    AutoFifteenTwo    OptimizeTrvlrEleven    ${current_pnr}
+    Verify PNR Retrieve Functions is not Triggered    SyExPerfLog    RetrieveBFByPNR
+    Comment    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    RetrieveBFByPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    GetPNR
+    Verify PNR Retrieve Functions is not Triggered    SyExPerfLog    BusinessFunctionMetric.RetrievePNRExistingPNRBox
+    Comment    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    BusinessFunctionMetric.RetrievePNRExistingPNRBox
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR    Send Itinerary Workflow
+    Re-Execute Send Itinerary Workflow If Simultaneous Change Error Is Displayed
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    "RT"
+
+[CB] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657    de    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR    Cancel Booking Workflow
+    Re-Execute Cancel Booking Workflow If Simultaneous Change Error Is Displayed
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    "RT"
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    ORDMSP/AUA    SS1Y1    FXB/S3    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR    Amend Booking Workflow
+
+Cancel Booking Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR    Cancel Booking Workflow
+
+Send Itinerary Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR    Send Itinerary Workflow
+
+Verify PNR Retrieve Functions is not Triggered
+    [Arguments]    ${file_name}    ${function_name}
+    ${logfile}    Get Log File    ${file_name}
+    Verify Text Contains Expected Value X Times Only    ${log_file}    ${function_name}    0

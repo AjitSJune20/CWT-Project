@@ -1,0 +1,897 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../third_party_verification.txt
+
+*** Test Cases ***
+[NB] Verify That 3xx Transaction Codes Are Not Changed To 4xx In Remarks
+    [Tags]    us1500    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus 211 - Auto ¦ US1500    AutoTwoOneOne    EmeaTrvlrThree
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Comment    Create New Booking With One Way Flight Using Default Values    Amadeus 211 - Auto ¦ US1500    AutoTwoOneOne    EmeaTrvlrThree    CDGLHR/AAF    ${EMPTY}
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+
+[AB] Verify That 3xx Transaction Codes Are Not Changed To 4xx In Remarks
+    [Tags]    us1500    fr    de6236
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 3xx Are Not Changed 4xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 3xx Are Not Changed 4xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 3KD Is Not Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB] Verify That 2xx Transaction Codes Are Changed To 4xx In Remarks
+    [Tags]    us1500    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus 211 - Auto ¦ US1500    AutoTwoOneOne    EmeaTrvlrThree    CDGLHR/AAF    ${EMPTY}
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+
+[AB] Verify That 2xx Transaction Codes Are Changed To 4xx In Remarks
+    [Tags]    us1500    de6236    fr
+    Modify Transaction Codes    3KD    2KD
+    Remove PNR Remark And End Transaction    0104
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 3KD Is Changed To 2KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Not Written In The PNR    *0104*
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 2xx Are Changed To 4xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 2xx Are Changed To 4xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 2KD Is Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+
+[AB] Verify That 0xx Transaction Codes Are Not Changed To 4xx In Remarks
+    [Tags]    us1500    de6236    fr
+    Modify Transaction Codes    4KD    0KD
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 4KD Is Changed To 0KD In Remarks For Air, Car, Hotel And Rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 0xx Are Not Changed To 4xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 0xx Are Not Changed To 4xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 0KD Is Not Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB] Verify That 1xx Transaction Codes Are Changed To 4xx In Remarks
+    [Tags]    us1500    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus 211 - Auto ¦ US1500    AutoTwoOneOne    EmeaTrvlrThree    CDGLHR/AAF    ${EMPTY}
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+
+[AB] Verify That 1xx Transaction Codes Are Changed To 4xx In Remarks
+    [Tags]    us1500    de6236    fr
+    Modify Transaction Codes    3KD    1KD
+    Remove PNR Remark And End Transaction    SYEXGVS
+    Remove PNR Remark And End Transaction    0104
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 3KD Is Changed To 1KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Not Written In The PNR    *0104*
+    Comment    Start Here
+    Comment    Set Test Variable    ${temp_pnr}    ${current_pnr}
+    Comment    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR
+    ...    FR AUTO AMADEUS
+    Comment    Select GDS    amadeus
+    Comment    Emulate PCC    PARWL210G
+    Comment    Set Test Variable    ${current_pnr}    ${temp_pnr}
+    Comment    End Here
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Comment    Click Update PNR
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Where Transaction Codes 1xx Are Changed To 4xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 1xx Are Changed To 4xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 1KD Is Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+
+[AB] Verify That 4xx Transaction Codes Are Not Changed To 1xx In Remarks
+    [Tags]    us1500    de6236    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 4xx Are Not Changed To 1xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 4xx Are Not Changed To 1xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 4KD Is Not Changed To 1KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB DE] Verify That Air Fare Panel Charged Fare Reflects Updated TST On KDS
+    [Tags]    us1641    de    tqt_needed    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With Round Trip Air Flight Using Default Values    Amadeus DE 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlThree    FRACDG/ALH    SS1Y1    FXB/S2
+    ...    CDGFRA/ALH    SS1Y1    FXB/S3    ${EMPTY}    AIR FARE
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Finish PNR
+    Click Clear All With Options    Clear All
+
+[AB DE] Verify That Air Fare Panel Charged Fare Reflects Updated TST On KDS
+    [Tags]    us1641    de    tqt_needed    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Change Tax Value For TST 1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Verify Amount In Fare Tab    Fare 1    T1
+    Populate Fare Tab With Default Values    Fare 2
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Click Finish PNR    Amend Workflow For Charged Fare Reflects Updated TST On KDS
+    Execute Simultaneous Change Handling    Amend Workflow For Charged Fare Reflects Updated TST On KDS
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 1
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That KDS Features Are Turned On When KDS Is Selected As Type Of Booking
+    [Tags]    us3793    legacy    de6199    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 16 - Auto ¦ US3793    AutoOneSixSeven    EmeaTrvlrOne
+    Select Type Of Booking    Kds
+    Click New Booking
+    Book One Way Flight X Months From Now    CDGLHR/AAF    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Air Fare Savings Code    SPE - TARIFS SPECIAUX    PDR - PAS DE REFUS    FD - First Tarif Abonne
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 3TD Is Changed To 3KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Written In The PNR    BF-EUR.*:HC-SPE LC-PDR CL-FD DEST-LON TK-ET INV-0    true
+    Verify Specific Line Is Written In The PNR    PCC-TEST123
+    Verify Specific Line Is Written In The PNR    RM *7305*SPE/S2
+    Verify Specific Line Is Written In The PNR    RM *7306*PDR/S2
+    Verify Specific Line Is Written In The PNR    RM *7110*FD/S2
+    Verify Specific Line Is Written In The PNR    RM *7105*LON/S2
+    Verify Specific Line Is Written In The PNR    RM *0102*0
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That KDS Features Are Turned Off When Classic Is Selected As Type Of Booking
+    [Tags]    us3793    de6199    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With Offline Module With One Way Air Flight Using Default Values    Amadeus FR 16 - Auto ¦ US3793    AutoOneSixSeven    EmeaTrvlrTwo    Classic    LHRCDG/AAF    ${EMPTY}
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify KDS Remarks Are Not Present
+
+[AB FR] Verify That Classic Is Selected By Default When RM0 CP0 Remark Is Not Written In The PNR
+    [Tags]    us3793    de6199    fr
+    Retrieve PNR    ${current_pnr}
+    Verify Type Of Booking Is Not Present
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For KDS Features Are Turned Off When Classic Is Selected As Type Of Booking
+    Execute Simultaneous Change Handling    Amend Booking Workflow For KDS Features Are Turned Off When Classic Is Selected As Type Of Booking
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify KDS Remarks Are Not Present
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][NB]Verify that PCC will be emulated When SO Existing Emulation is set to Same As New Booking
+    [Tags]    us5122    fr    for_manual    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Jump Out PCC
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ US5122 Emulation Online to Offline    AutoEmulate    Travelis
+    Clear Amadeus GDS Screen
+    Click New Booking
+    Verify Current PCC Is Emulated    PARWL210G
+    Verify PNR RP Line Is Not Updated    PARWL210G
+    Book One Way Flight X Months From Now    CDGFRA/ALH    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[1A EMEA][AB] Verify RP Change With SO Existing Emulation is set to Same As New booking
+    [Tags]    us5122    fr    for_manual    not_ready
+    Change PNR RP Line    LONWL2220
+    Jump Out PCC
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Current PCC Is Emulated    PARWL210G
+    Verify PNR RP Line Is Not Updated    PARWL210G
+    Click Clear All
+    Modify Transaction Codes    3KD    1KD
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 3KD Is Changed To 1KD In Remarks For Air, Car, Hotel And Rail
+    Emulate PCC    PARWL221B
+    Retrieve PNR    ${current_pnr}
+    Clear Amadeus GDS Screen
+    Click Amend Booking
+    Verify Current PCC Is Emulated    PARWL210G
+    Verify PNR RP Line Is Updated    PARWL210G
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB] Verify That KDS PNR With Request ID Is Read Back As KDS If PNR Only Has Hotel Segment
+    [Tags]    us6232    fr    18.9
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus 211 - Auto ¦ US1500    AutoTwoOneOne    EmeaTrvlrThree
+    Click New Booking
+    Book Hotel Segment In Amadeus Using Command    CDG
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Is Visible    [NAME:chkDoNotSendToOBT]
+    Click Panel    Recap
+    Verify Control Object Is Visible    [NAME:ctxtOfflineRequestNumber]
+    Verify Control Object Is Visible    [NAME:cchkOfflineRequestNumber]
+    Populate All Panels (Except Given Panels If Any)    Recap
+    Click Panel    Recap
+    Send Control Text Value    [NAME:ctxtOfflineRequestNumber]    098765
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    098765
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Verify Specific Line Is Written In The PNR    *1311*3KD
+    Verify Specific Line Is Written In The PNR    *6311*3KD
+    Verify Specific Line Is Written In The PNR    *7311*3KD
+    Click Clear All
+
+[AB] Verify That KDS PNR With Request ID Is Read Back As KDS If PNR Only Has Hotel Segment
+    [Tags]    us6232    fr    18.9
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Is Visible    [NAME:chkDoNotSendToOBT]
+    Click Panel    Recap
+    Verify Control Object Text Contains Expected Value    [NAME:ctxtOfflineRequestNumber]    098765
+    Populate All Panels (Except Given Panels If Any)    Recap
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    098765
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Verify Specific Line Is Written In The PNR    *1311*3KD
+    Verify Specific Line Is Written In The PNR    *6311*3KD
+    Verify Specific Line Is Written In The PNR    *7311*3KD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That KDS PNR Without Request ID Is Read Back As KDS Classic If PNR Has No Air Segments
+    [Tags]    us6232    18.9    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus 211 - Auto ¦ US1500    AutoTwoOneOne    EmeaTrvlrThree
+    Click New Booking
+    Book Hotel Segment In Amadeus Using Command    LHR
+    Book Active Car Segment    LHR    6    1    6    5    ZI
+    ...    1
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Is Visible    [NAME:chkDoNotSendToOBT]
+    Click Panel    Recap
+    Verify Control Object Is Visible    [NAME:ctxtOfflineRequestNumber]
+    Verify Control Object Is Visible    [NAME:cchkOfflineRequestNumber]
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Tick Do Not Send To OBT Checkbox
+    Click Panel    Recap
+    Verify Control Object Is Disabled    [NAME:ctxtOfflineRequestNumber]
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Not Written In The PNR    RMO KDSOFFLINE
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Verify Specific Line Is Written In The PNR    *1311*3KD
+    Verify Specific Line Is Written In The PNR    *6311*3KD
+    Verify Specific Line Is Written In The PNR    *7311*3KD
+    Click Clear All
+
+[AB] Verify That KDS PNR Without Request ID Is Read Back As KDS Classic If PNR Has No Air Segments
+    [Tags]    us6232    18.9    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Is Not Visible    [NAME:chkDoNotSendToOBT]
+    Click Panel    Recap
+    Verify Control Object Is Not Visible    [NAME:ctxtOfflineRequestNumber]
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Not Written In The PNR    RMO KDSOFFLINE
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Verify Specific Line Is Written In The PNR    *1311*3KD
+    Verify Specific Line Is Written In The PNR    *6311*3KD
+    Verify Specific Line Is Written In The PNR    *7311*3KD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That KDS PNR Without Request ID Is Read Back As KDS For PNR With Air And Hotel Segments
+    [Tags]    us6232    18.9    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    FR Amadeus - Mark ¦ OBT - KDS    Lasch    Steven
+    Select Client Account    717171 ¦ CWT AQUA TEST ACCOUNT ¦ OBT - KDS
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP/S2    6
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S3    6    5
+    Book Hotel Segment In Amadeus Using Command    LHR    6    1
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Is Visible    [NAME:chkDoNotSendToOBT]
+    Click Panel    Recap
+    Verify Control Object Is Visible    [NAME:ctxtOfflineRequestNumber]
+    Verify Control Object Is Visible    [NAME:cchkOfflineRequestNumber]
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Delivery
+    Tick Do Not Send To OBT Checkbox
+    Click Panel    Recap
+    Verify Control Object Is Disabled    [NAME:ctxtOfflineRequestNumber]
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RT
+    Verify Specific Line Is Written In The PNR    RMO CP0 COMMENT
+    Verify Specific Line Is Not Written In The PNR    RMO KDSOFFLINE
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Verify Specific Line Is Written In The PNR    *1311*3KD
+    Verify Specific Line Is Written In The PNR    *6311*3KD
+    Verify Specific Line Is Written In The PNR    *7311*3KD
+    Click Clear All
+
+[AB] Verify That KDS PNR Without Request ID Is Read Back As KDS For PNR With Air And Hotel Segments
+    [Tags]    us6232    18.9    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Is Visible    [NAME:chkDoNotSendToOBT]
+    Click Panel    Recap
+    Verify Control Object Is Disabled    [NAME:ctxtOfflineRequestNumber]
+    Enter Specific Command On Native GDS    XE3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RT
+    Verify Specific Line Is Written In The PNR    RMO CP0 COMMENT
+    Verify Specific Line Is Not Written In The PNR    RMO KDSOFFLINE
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Verify Specific Line Is Written In The PNR    *1311*3KD
+    Verify Specific Line Is Written In The PNR    *6311*3KD
+    Verify Specific Line Is Written In The PNR    *7311*3KD
+    [Teardown]
+
+[AB] Verify That KDS PNR Without Request ID Is Read Back As KDS For PNR With Only Air Segments
+    [Tags]    us6232    18.9    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Is Visible    [NAME:chkDoNotSendToOBT]
+    Click Panel    Recap
+    Verify Control Object Is Disabled    [NAME:ctxtOfflineRequestNumber]
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RT
+    Verify Specific Line Is Written In The PNR    RMO CP0 COMMENT
+    Verify Specific Line Is Not Written In The PNR    RMO KDSOFFLINE
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Verify Specific Line Is Written In The PNR    *1311*3KD
+    Verify Specific Line Is Written In The PNR    *6311*3KD
+    Verify Specific Line Is Written In The PNR    *7311*3KD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That KDS Classic PNR Is Read Back As KDS Classic If PNR Only Has Hotel Segment
+    [Tags]    us6232    18.9    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    FR Amadeus - Mark ¦ OBT - KDS    Montelimard    Geraldine
+    Select Client Account    1374219 ¦ AMADEUS FRANCE ¦ OBT - KDS
+    Select Type Of Booking    Classic
+    Click New Booking
+    Book Hotel Segment In Amadeus Using Command    CDG    6    2
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Is Not Visible    [NAME:chkDoNotSendToOBT]
+    Click Panel    Recap
+    Verify Control Object Is Not Visible    [NAME:ctxtOfflineRequestNumber]
+    Verify Control Object Is Not Visible    [NAME:cchkOfflineRequestNumber]
+    Populate All Panels (Except Given Panels If Any)    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Not Written In The PNR    RMO CP0 COMMENT
+    Verify Specific Line Is Not Written In The PNR    RMO KDSOFFLINE
+    Verify Specific Line Is Not Written In The PNR    *3311*3KD
+    Verify Specific Line Is Not Written In The PNR    *1311*3KD
+    Verify Specific Line Is Not Written In The PNR    *6311*3KD
+    Verify Specific Line Is Not Written In The PNR    *7311*3KD
+    Click Clear All
+
+[AB] Verify That KDS Classic PNR Is Read Back As KDS Classic If PNR Only Has Hotel Segment
+    [Tags]    us6232    18.9    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Is Not Visible    [NAME:chkDoNotSendToOBT]
+    Click Panel    Recap
+    Verify Control Object Is Not Visible    [NAME:ctxtOfflineRequestNumber]
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Not Written In The PNR    RMO CP0 COMMENT
+    Verify Specific Line Is Not Written In The PNR    RMO KDSOFFLINE
+    Verify Specific Line Is Not Written In The PNR    *3311*3KD
+    Verify Specific Line Is Not Written In The PNR    *1311*3KD
+    Verify Specific Line Is Not Written In The PNR    *6311*3KD
+    Verify Specific Line Is Not Written In The PNR    *7311*3KD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That 3xx Transaction Codes Are Not Changed To 4xx In Remarks When Update PNR Is Enabled At Amend
+    [Tags]    fr    19.1    us6744
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    FR Amadeus - Mark ¦ OBT - KDS    KDS    Jane
+    Select Client Account    717171 ¦ CWT AQUA TEST ACCOUNT ¦ OBT - KDS
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+
+[AB] Verify That 3xx Transaction Codes Are Not Changed To 4xx In Remarks When Update PNR Is Enabled At Amend
+    [Tags]    fr    19.1    us6744
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 3xx Are Not Changed 4xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 3xx Are Not Changed 4xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 3KD Is Not Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB] Verify That 2xx Transaction Codes Are Changed To 4xx In Remarks When Update PNR Is Enable At Amend
+    [Tags]    fr    19.1    us6744
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    FR Amadeus - Mark ¦ OBT - KDS    KDS    Jane
+    Select Client Account    717171 ¦ CWT AQUA TEST ACCOUNT ¦ OBT - KDS
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+
+[AB] Verify That 2xx Transaction Codes Are Changed To 4xx In Remarks When Update PNR Is Enabled At Amend
+    [Tags]    fr    19.1    us6744
+    Modify Transaction Codes    3KD    2KD
+    Remove PNR Remark And End Transaction    0104
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 3KD Is Changed To 2KD In Remarks For Air, Car, Hotel And Rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Update PNR Is Enabled
+    Select Touch Level    Offline
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify 2KD Is Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0108*
+    Verify Specific Line Is Not Written In The PNR    *0104*
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6    1
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Verify Actual Panel Does Not Contain Expected Panel    Client Fees
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 2xx Are Changed To 4xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 2xx Are Changed To 4xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify 2KD Is Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0108*
+    Verify Specific Line Is Written In The PNR    *0104*
+
+[AB] Verify That 0xx Transaction Codes Are Not Changed To 4xx In Remarks When Update PNR Is Enabled At Amend
+    [Tags]    fr    19.1    us6744
+    Modify Transaction Codes    4KD    0KD
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 4KD Is Changed To 0KD In Remarks For Air, Car, Hotel And Rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 0xx Are Not Changed To 4xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 0xx Are Not Changed To 4xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 0KD Is Not Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB] Verify That 1xx Transaction Codes Are Changed To 4xx In Remarks When Update PNR Is Enabled At Amend
+    [Tags]    fr    19.1    us6744
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    FR Amadeus - Mark ¦ OBT - KDS    KDS    Jane
+    Select Client Account    717171 ¦ CWT AQUA TEST ACCOUNT ¦ OBT - KDS
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    6    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+
+[AB] Verify That 1xx Transaction Codes Are Changed To 4xx In Remarks When Update PNR Is Enabled At Amend
+    [Tags]    fr    19.1    us6744
+    Modify Transaction Codes    3KD    1KD
+    Remove PNR Remark And End Transaction    0104
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 3KD Is Changed To 1KD In Remarks For Air, Car, Hotel And Rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Update PNR Is Enabled
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Not Written In The PNR    *0104*
+    Verify 1KD Is Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6    2
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Verify Actual Panel Does Not Contain Expected Panel    Client Fees
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Where Transaction Codes 1xx Are Changed To 4xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 1xx Are Changed To 4xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*
+    Verify 1KD Is Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+
+[AB] Verify That 4xx Transaction Codes Are Not Changed To 1xx In Remarks When Update PNR Is Enabled At Amend
+    [Tags]    fr    19.1    us6744
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 4xx Are Not Changed To 1xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 4xx Are Not Changed To 1xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 4KD Is Not Changed To 1KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB] Verify That 2xx Transaction Codes Are Changed To 1xx In Remarks When Update PNR Is Enabled At Amend
+    [Tags]    fr    19.1    us6744
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    FR Amadeus - Mark ¦ OBT - KDS    KDS    Jane
+    Select Client Account    717171 ¦ CWT AQUA TEST ACCOUNT ¦ OBT - KDS
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    6    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+
+[AB] Verify That 2xx Transaction Codes Are Changed To 1xx In Remarks When Update PNR Is Enabled At Amend
+    [Tags]    fr    19.1    us6744
+    Modify Transaction Codes    3KD    2KD
+    Remove PNR Remark And End Transaction    0104
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 3KD Is Changed To 2KD In Remarks For Air, Car, Hotel And Rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Update PNR Is Enabled
+    Select Touch Level    Online Unassisted
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify 2KD Is Changed To 1KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0108*
+    Verify Specific Line Is Not Written In The PNR    *0104*
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6    3
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Verify Actual Panel Does Not Contain Expected Panel    Client Fees
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Populate All Panels (Except Given Panels If Any)    Amend
+    Click Panel    Amend
+    Select Touch Level    Online Unassisted
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 2xx Are Changed To 4xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 2xx Are Changed To 4xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify 1KD Is Not Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Written In The PNR    *0108*
+
+[AB] Verify That 1xx Transaction Codes Are Changed To 2xx In Remarks When Update PNR Is Enabled At Amend
+    [Tags]    fr    19.1    us6744
+    Verify 1KD Is Not Changed To 2KD In Remarks For Air, Car, Hotel And Rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Update PNR Is Enabled
+    Select Touch Level    Online Assisted
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify 1KD Is Changed To 2KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0108*
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6    4
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Verify Actual Panel Does Not Contain Expected Panel    Client Fees
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Populate All Panels (Except Given Panels If Any)    Amend
+    Click Panel    Amend
+    Select Touch Level    Online Assisted
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 2xx Are Changed To 4xx
+    Execute Simultaneous Change Handling    Amend Booking Where Transaction Codes 2xx Are Changed To 4xx
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify 2KD Is Not Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Written In The PNR    *0108*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+*** Keywords ***
+Amend Booking Where Transaction Codes 0xx Are Not Changed To 4xx
+    Modify Transaction Codes    4KD    0KD
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 4KD Is Changed To 0KD In Remarks For Air, Car, Hotel And Rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 0xx Are Not Changed To 4xx
+
+Amend Booking Where Transaction Codes 1xx Are Changed To 4xx
+    Modify Transaction Codes    3KD    1KD
+    Remove PNR Remark And End Transaction    SYEXGVS
+    Remove PNR Remark And End Transaction    0104
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 3KD Is Changed To 1KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Not Written In The PNR    *0104*
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Comment    Click Update PNR
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Where Transaction Codes 1xx Are Changed To 4xx
+
+Amend Booking Where Transaction Codes 2xx Are Changed To 4xx
+    Modify Transaction Codes    3KD    2KD
+    Remove PNR Remark And End Transaction    \\*0104\\*
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify 3KD Is Changed To 2KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Not Written In The PNR    *0104*
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 2xx Are Changed To 4xx
+
+Amend Booking Where Transaction Codes 3xx Are Not Changed 4xx
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LYSLHR/AAF    SS1Y1    FXB    6
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 3xx Are Not Changed 4xx
+
+Amend Booking Where Transaction Codes 4xx Are Not Changed To 1xx
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Where Transaction Codes 4xx Are Not Changed To 1xx
+
+Amend Booking Workflow For KDS Features Are Turned Off When Classic Is Selected As Type Of Booking
+    Retrieve PNR    ${current_pnr}
+    Verify Type Of Booking Is Not Present
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For KDS Features Are Turned Off When Classic Is Selected As Type Of Booking
+
+Amend Workflow For Charged Fare Reflects Updated TST On KDS
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Change Tax Value For TST 1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Verify Amount In Fare Tab    Fare 1    T1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Click Finish PNR    Amend Workflow For Charged Fare Reflects Updated TST On KDS
+
+Create New Booking With Offline Module With One Way Air Flight Using Default Values
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${type_of_booking}    ${city_pair}    ${client_account}=${EMPTY}
+    ...    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Select Type Of Booking    ${type_of_booking}
+    Click New Booking
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    ${city_pair}    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Change PNR RP Line
+    [Arguments]    ${pcc}
+    Set Test Variable    ${pnr_rp_line}    RP/${pcc}/${pcc}
+    : FOR    ${INDEX}    IN RANGE    10
+    \    Enter GDS Command    IR    RP/${pcc}/ALL    RFCWTPTEST    ER    ER
+    \    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    \    ${is_rp_line_updated}    Run Keyword And Return Status    Should Contain    ${pnr_details}    ${pnr_rp_line}
+    \    Exit For Loop If    ${is_rp_line_updated} == True
+
+Book Hotel Segment In Amadeus Using Command
+    [Arguments]    ${city_of_stay}    ${months_from_now}=6    ${days_from_now}=0
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    ${departure_date} =    Set Departure Date X Months From Now In Gds Format    ${months_from_now}    ${days_from_now}
+    Set Test Variable    ${departure_date}
+    Enter Specific Command On Native GDS    HA ${city_of_stay} ${departure_date}-1
+    Sleep    3
+    Enter Specific Command On Native GDS    HA1
+    Sleep    3
+    Enter Specific Command On Native GDS    HP1
+    Sleep    3
+    Enter Specific Command On Native GDS    HS/G-CCVI4444333322221111EXP1220
+    Sleep    3
+    Take Screenshot

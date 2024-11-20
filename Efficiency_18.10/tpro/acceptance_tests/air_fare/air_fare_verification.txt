@@ -1,0 +1,2281 @@
+*** Settings ***
+Resource          ../../../acceptance_tests/delivery/delivery_verification.txt
+Resource          ../../../acceptance_tests/gds/gds_verification.txt
+Resource          ../client_info/client_info_verification.txt
+Resource          ../../../acceptance_tests/air_fare/exchange/exchange_verification.txt
+
+*** Keywords ***
+Calculate GST On Air
+    [Arguments]    ${fare_tab}    ${country}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${country}    Run Keyword If    "${country}" == "${EMPTY}"    Get Substring    ${TEST NAME}    4    6
+    ...    ELSE    Set Variable    ${country}
+    Run Keyword If    "${nett_fare_value_${fare_tab_index}}" == "${EMPTY}" or "${nett_fare_value_${fare_tab_index}}" == "0" or "${nett_fare_value_${fare_tab_index}}" == "0.00"    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${base_fare_${fare_tab_index}}
+    ...    ELSE    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${nett_fare_value_${fare_tab_index}}
+    ${airfare_value_service_dom}    Evaluate    (${base_or_nett_fare_${fare_tab_index}} + ${yq_tax_${fare_tab_index}}) * 0.05
+    ${airfare_value_service_intl}    Evaluate    (${base_or_nett_fare_${fare_tab_index}} + ${yq_tax_${fare_tab_index}}) * 0.10
+    Comment    ${airfare_value_service_dom}    Round Apac    ${airfare_value_service_dom}    IN
+    Comment    ${airfare_value_service_intl}    Round Apac    ${airfare_value_service_intl}    IN
+    ${GST_airfare_value_service_dom}    Evaluate    ${airfare_value_service_dom} * 0.18
+    ${GST_airfare_value_service_intl}    Evaluate    ${airfare_value_service_intl} * 0.18
+    Run Keyword If    "${route_code_${fare_tab_index}}" == "DOM"    Set Suite Variable    ${gst_airfare_value_service}    ${GST_airfare_value_service_dom}
+    ...    ELSE    Set Suite Variable    ${gst_airfare_value_service}    ${GST_airfare_value_service_intl}
+    ${gst_airfare_value_service}    Round Apac    ${gst_airfare_value_service}    ${country}
+    Set Suite Variable    ${gst_airfare_value_service_${fare_tab_index}}    ${gst_airfare_value_service}
+    [Return]    ${gst_airfare_value_service}
+
+Calculate GST On Merchant Fee
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${merchant_fee_value}    Evaluate    ${merchant_fee_value_${fare_tab_index}} * 0.18
+    ${merchant_fee_value}    Round APAC    ${merchant_fee_value}    IN
+    Set Suite Variable    ${gst_merchant_fee_value_${fare_tab_index}}    ${merchant_fee_value}
+    [Return]    ${merchant_fee_value}
+
+Calculate GST On Merchant Fee For Transaction Fee
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Calculate GST On Transaction Fee    ${fare_tab}    IN
+    ${merchant_fee_for_transaction_fee}    Evaluate    (${transaction_fee_value_${fare_tab_index}} + ${computed_gst_transaction_fee${fare_tab_index}}) * ${merchant_fee_percentage_value_${fare_tab_index}}/100
+    ${merchant_fee_for_transaction_fee}    Round APAC    ${merchant_fee_for_transaction_fee}    IN
+    ${gst_on_merchant_for_transaction}    Evaluate    ${merchant_fee_for_transaction_fee} * 0.18
+    ${gst_on_merchant_for_transaction}    Round APAC    ${gst_on_merchant_for_transaction}    IN
+    Set Suite Variable    ${merchant_fee_for_transaction_fee_${fare_tab_index}}    ${merchant_fee_for_transaction_fee}
+    Set Suite Variable    ${computed_gst_mf_for_tf_amount_${fare_tab_index}}    ${gst_on_merchant_for_transaction}
+    [Return]    ${gst_on_merchant_for_transaction}
+
+Calculate GST On Transaction Fee
+    [Arguments]    ${fare_tab}    ${country}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${transaction_fee_value}    Set Variable If    "${transaction_fee_value_${fare_tab_index}}" == "${EMPTY}"    0    ${transaction_fee_value_${fare_tab_index}}
+    ${computed_gst_transaction_fee}    Evaluate    ${transaction_fee_value} * 0.18
+    ${computed_gst_transaction_fee}    Round Apac    ${computed_gst_transaction_fee}    IN
+    Set Suite Variable    ${computed_gst_transaction_fee${fare_tab_index}}    ${computed_gst_transaction_fee}
+    [Return]    ${computed_gst_transaction_fee}
+
+Calculate GST Total Amount
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Calculate GST On Air    ${fare_tab}
+    Calculate GST On Transaction Fee    ${fare_tab}    IN
+    Calculate GST On Merchant Fee    ${fare_tab}
+    Calculate GST On Merchant Fee For Transaction Fee    ${fare_tab}
+    ${total_gst_amount}    Evaluate    ${gst_airfare_value_service_${fare_tab_index}} + ${computed_gst_transaction_fee${fare_tab_index}} + ${gst_merchant_fee_value_${fare_tab_index}} + ${computed_gst_mf_for_tf_amount_${fare_tab_index}}
+    Set Suite Variable    ${computed_total_gst_amount_${fare_tab_index}}    ${total_gst_amount}
+
+Click Using the Given Coordinates
+    [Arguments]    ${x}    ${y}
+    Win Activate    ${title_power_express}    ${EMPTY}
+    Auto It Set Option    MouseCoordMode    2
+    Mouse Click    LEFT    ${x}    ${y}
+    Auto It Set Option    MouseCoordMode    0
+    [Teardown]    Take Screenshot
+
+Commission Route Percentage In Database
+    [Arguments]    ${routing_code}    ${routing_city}    ${originating_country}=NONE
+    [Documentation]    ${originating_country} - add is a specific country origin - SG, HK, IN, ASIA or GLOBAL - if Origin/Airport code is not SIN, HKG or DEL/BOM
+    Set Suite Variable    ${commission_percentage}    0.00
+    Set Test Variable    ${commission_percentage_zero}    0.00
+    Set Test Variable    ${commission_category_one}    1.00
+    Set Test Variable    ${commission_category_one_five}    1.50
+    Set Test Variable    ${commission_category_two}    2.00
+    Set Test Variable    ${commission_category_two_five}    2.50
+    Set Test Variable    ${commission_category_three}    3.00
+    Run Keyword If    "${country}" == "SG" and "${routing_city}" == "SIN" and "${routing_code.upper()}" == "INTL"    Set Suite Variable    ${commission_percentage}    ${commission_category_one_five}
+    ...    ELSE IF    "${country}" == "SG" and "${routing_city}" != "SIN" and "${routing_code.upper()}" == "INTL" and "${originating_country.upper()}" == "SG"    Set Suite Variable    ${commission_percentage}    ${commission_category_one}
+    ...    ELSE IF    "${country}" == "SG" and "${routing_city}" != "SIN" and "${routing_code.upper()}" == "INTL" and "${originating_country.upper()}" == "ASIA"    Set Suite Variable    ${commission_percentage}    ${commission_category_two}
+    ...    ELSE IF    "${country}" == "SG" and "${routing_city}" != "SIN" and "${originating_country.upper()}" == "GLOBAL"    Set Suite Variable    ${commission_percentage}    ${commission_percentage_zero}
+    Run Keyword If    "${country}" == "HK" and "${routing_city}" == "HKG" and "${routing_code.upper()}" == "INTL"    Set Suite Variable    ${commission_percentage}    ${commission_category_three}
+    ...    ELSE IF    "${country}" == "HK" and "${routing_city}" != "HKG" and "${routing_code.upper()}" == "INTL" and "${originating_country.upper()}" == "HK"    Set Suite Variable    ${commission_percentage}    ${commission_category_two}
+    ...    ELSE IF    "${country}" == "HK" and "${routing_city}" != "HKG" and "${routing_code.upper()}" == "INTL" and "${originating_country.upper()}" == "ASIA"    Set Suite Variable    ${commission_percentage}    ${commission_category_one_five}
+    ...    ELSE IF    "${country}" == "HK" and "${routing_city}" != "HKG" and "${originating_country.upper()}" == "GLOBAL"    Set Suite Variable    ${commission_percentage}    ${commission_percentage_zero}
+    Run Keyword If    "${country}" == "IN" and "${routing_city}" == "BOM" and "${routing_code.upper()}" == "DOM"    Set Suite Variable    ${commission_percentage}    ${commission_category_two_five}
+    ...    ELSE IF    "${country}" == "IN" and "${routing_city}" == "DEL" and "${routing_code.upper()}" == "DOM"    Set Suite Variable    ${commission_percentage}    ${commission_category_two}
+    ...    ELSE IF    "${country}" == "IN" and ("${routing_city}" != "DEL" and "${routing_city}" != "BOM") and "${routing_code.upper()}" == "DOM" and "${originating_country.upper()}" == "IN"    Set Suite Variable    ${commission_percentage}    ${commission_category_one_five}
+    ...    ELSE IF    "${country}" == "IN" and "${routing_city}" == "DEL" and "${routing_code.upper()}" == "INTL"    Set Suite Variable    ${commission_percentage}    ${commission_category_three}
+    ...    ELSE IF    "${country}" == "IN" and "${routing_city}" != "DEL" and "${routing_code.upper()}" == "INTL" and "${originating_country.upper()}" == "IN"    Set Suite Variable    ${commission_percentage}    ${commission_category_two}
+    ...    ELSE IF    "${country}" == "IN" and "${routing_city}" != "DEL" and "${routing_code.upper()}" == "INTL" and "${originating_country.upper()}" == "ASIA"    Set Suite Variable    ${commission_percentage}    ${commission_category_one_five}
+    ...    ELSE IF    "${country}" == "IN" and "${routing_city}" != "DEL" and "${originating_country.upper()}" == "GLOBAL"    Set Suite Variable    ${commission_percentage}    ${commission_percentage_zero}
+    Set Suite Variable    ${country}
+    [Return]    ${commission_percentage}
+
+Compute Total Tax
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${tax}    Evaluate    ${grand_total_fare_${fare_tab_index}} - ${base_fare_${fare_tab_index}}
+    Set Suite Variable    ${total_tax_${fare_tab_index}}
+
+Get Alternate Base Fare, Total Taxes And Fare Basis
+    [Arguments]    ${fare_tab}    ${gds_command}=TQQ
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${country}    Get Substring    ${TEST NAME}    4    6
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT    RTOF    Enter GDS Command    ${gds_command}/O${fare_tab_index}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${equiv_base_fare}    Get String Matching Regexp    (EQUIV\\s+\\w+\\s+\\s+\\d+\.?\\d+)    ${data_clipboard}
+    ${base_fare}    Run Keyword If    "${equiv_base_fare}" == "0"    Get String Matching Regexp    (FARE\\s+.*?\\s+\\w+\\s+\\d+\\.?\\d+)    ${data_clipboard}
+    ...    ELSE    Set Variable    ${equiv_base_fare}
+    ${base_fare}    Remove All Non-Integer (retain period)    ${base_fare}
+    Set Suite Variable    ${base_fare_alt_${fare_tab_index}}    ${base_fare}
+    ###TOTAL TAX
+    ${total_fare_raw}    Get Lines Containing String    ${data_clipboard}    GRAND TOTAL
+    ${total_fare_raw_splitted}    Split String    ${total_fare_raw}    ${SPACE}
+    ${total_fare_raw_splitted}    Remove Duplicate From List    ${total_fare_raw_splitted}
+    Set Suite Variable    ${grand_total_fare_alt_${fare_tab_index}}    ${total_fare_raw_splitted[-1]}
+    Set Suite Variable    ${grand_total_fare_with_currency_alt_${fare_tab_index}}    ${total_fare_raw_splitted[-3]}${SPACE}${total_fare_raw_splitted[-1]}
+    ##TAX
+    ${tax}    Evaluate    ${grand_total_fare_alt_${fare_tab_index}} - ${base_fare_alt_${fare_tab_index}}
+    ${tax}    Round Apac    ${tax}    ${country}
+    Set Suite Variable    ${total_tax_alt_${fare_tab_index}}    ${tax}
+    ##Fare Basis
+    ${fare_basis_raw}    Get Lines Containing String    ${data_clipboard}    ${SPACE}OO${SPACE}
+    @{split_lines}    Split To Lines    ${fare_basis_raw}
+    @{fare_basis_list}    Create List
+    Set Test Variable    ${counter}    0
+    : FOR    ${line}    IN    @{split_lines}
+    \    ${fare_basis}    Get Substring    ${line}    33    41
+    \    ${counter}    Evaluate    ${counter}+1
+    \    Set Test Variable    ${fare_basis_${counter}}    ${fare_basis}
+    \    Append To List    ${fare_basis_list}    ${fare_basis}
+    @{fare_basis_list}    Remove Duplicate From List    ${fare_basis_list}
+    Set Test Variable    ${fare_basis_line}    ${fare_basis_1}
+    : FOR    ${item}    IN    @{fare_basis_list}
+    \    ${fare_basis_line}    Run Keyword If    "${fare_basis_1}" != "${item}"    Set Variable    ${fare_basis_line}+${item}
+    \    ...    ELSE    Set Variable    ${fare_basis_line}
+    \    Set Test Variable    ${fare_basis_line}
+    Set Suite Variable    ${fare_basis_alt_${fare_tab_index}}    ${fare_basis_line}
+
+Get Default Values On Air Fare Panel
+    [Arguments]    ${fare_tab_value}
+    ${tab_number}    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    Get Routing Value    ${fare_tab_value}
+    Set Suite Variable    ${routing_value_${tab_number}}    ${city_route_${fare_tab_index}}
+    Get Point Of Turnaround    ${fare_tab_value}
+    Set Suite Variable    ${turnaround_value_${tab_number}}    ${point_of_${fare_tab_index}}
+    Get High, Charged And Low Fare In Fare Tab    ${fare_tab_value}
+    Set Suite Variable    ${charged_fare_value_${tab_number}}    ${charged_value_${fare_tab_index}}
+    Set Suite Variable    ${high_fare_value_${fare_tab_index}}
+    Set Suite Variable    ${low_fare_value_${fare_tab_index}}
+    Get Savings Code    ${fare_tab_value}
+    Set Suite Variable    ${realised_saving_code_value_${tab_number}}    ${realised_text_value_${fare_tab_index}}
+    Set Suite Variable    ${missed_saving_code_value_${tab_number}}    ${missed_text_value_${fare_tab_index}}
+    Set Suite Variable    ${class_code_value_${tab_number}}    ${class_text_value_${fare_tab_index}}
+    Get LFCC Field Value    ${fare_tab_value}
+    Set Suite Variable    ${lfcc_value_${fare_tab_index}}
+    Get Route Code Value    ${fare_tab_value}
+    Set Suite Variable    ${route_code_value_${tab_number}}    ${route_code_${fare_tab_index}}
+    Get Transaction Fee Value    ${fare_tab_value}
+    Set Suite Variable    ${transaction_fee_value_${tab_number}}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    cmtxtRouting
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${routing_value_${tab_number}}    ${actual_field_value}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboPOT
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${turnaround_value_${tab_number}}    ${actual_field_value}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${high_fare_value_${tab_number}}    ${actual_field_value}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtChargedFare
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${charged_fare_value_${tab_number}}    ${actual_field_value}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtLowFare
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${low_fare_value_${tab_number}}    ${actual_field_value}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboRealised
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${realised_saving_code_value_${tab_number}}    ${actual_field_value}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboMissed
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${missed_saving_code_value_${tab_number}}    ${actual_field_value}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboClass
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${class_code_value_${tab_number}}    ${actual_field_value}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtLowestFareCC
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${lfcc_value_${tab_number}}    ${actual_field_value}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    cbRouteGeographyCode
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${route_code_value_${tab_number}}    ${actual_field_value}
+    Comment    ${object_name}    Determine Multiple Object Name Based On Active Tab    cbTransactionFee
+    Comment    ${actual_field_value}    Get Control Text Value    ${object_name}
+    Comment    Set Suite Variable    ${transaction_fee_value_${tab_number}}    ${actual_field_value}
+
+Get GST On Air
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Run Keyword If    "${nett_fare_value_${fare_tab_index}}" == "${EMPTY}" or "${nett_fare_value_${fare_tab_index}}" == "0" or "${nett_fare_value_${fare_tab_index}}" == "0.00"    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${base_fare_${fare_tab_index}}
+    ...    ELSE    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${nett_fare_value_${fare_tab_index}}
+    ${airfare_value_service_dom}    Evaluate    (${base_or_nett_fare_${fare_tab_index}} + ${yq_tax_${fare_tab_index}}) * 0.05
+    ${airfare_value_service_intl}    Evaluate    (${base_or_nett_fare_${fare_tab_index}} + ${yq_tax_${fare_tab_index}}) * 0.10
+    ${GST_airfare_value_service_dom}    Evaluate    ${airfare_value_service_dom} * 0.18
+    ${GST_airfare_value_service_intl}    Evaluate    ${airfare_value_service_intl} * 0.18
+    Run Keyword If    "${route_code_${fare_tab_index}}" == "DOM"    Set Suite Variable    ${gst_airfare_value_service}    ${GST_airfare_value_service_dom}
+    ...    ELSE    Set Suite Variable    ${gst_airfare_value_service}    ${GST_airfare_value_service_intl}
+    ${gst_airfare_value_service}    Run Keyword If    "${country}" == "SG"    Round Off    ${gst_airfare_value_service}    2
+    ...    ELSE    Round Off    ${gst_airfare_value_service}    0
+    ${gst_airfare_value_service}    Run Keyword If    "${country}" == "SG"    Convert To Float    ${gst_airfare_value_service}    2
+    ...    ELSE    Round Off    ${gst_airfare_value_service}    0
+    Comment    Run Keyword If    "${route_code_${fare_tab_index}}" == "DOM"    Set Suite Variable    ${gst_airfare_value_service_${fare_tab_index}}    ${GST_airfare_value_service_dom}
+    ...    ELSE    Set Suite Variable    ${gst_airfare_value_service_${fare_tab_index}}    ${GST_airfare_value_service_intl}
+    Set Suite Variable    ${gst_airfare_value_service_${fare_tab_index}}    ${gst_airfare_value_service}
+
+Get LFCC, Base Fare, and Main Fees
+    [Arguments]    ${fare_tab}    ${segment_number}    ${gds_command}=TQT
+    Get LFCC From FV Line In TST    ${fare_tab}    ${segment_number}
+    Get Base Fare From TST    ${fare_tab}    ${segment_number}
+    Get Main Fees On Fare Quote Tab    ${fare_tab}
+
+Get Offer From RTOF
+    [Arguments]    ${fare_tab}    ${gds_command}=TQQ
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT    RTOF
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ##Total
+    ${offer_details}    Split String    ${data_clipboard}    ${SPACE}OFFER${SPACE}
+    ${total_offer_raw}    Get Lines Containing String    ${offer_details[${fare_tab_index}]}    TOTAL
+    ${total_offer_raw_splitted}    Split String    ${total_offer_raw}    ${SPACE}
+    ${total_offer_raw_splitted}    Remove Duplicate From List    ${total_offer_raw_splitted}
+    Log    ${total_offer_raw_splitted[-1]}
+    Log    ${total_offer_raw_splitted[-2]}
+    Set Suite Variable    ${total_offer_alt_${fare_tab_index}}    ${total_offer_raw_splitted[-2]}
+    ##Details
+    ${offer_detail}    Get Lines Containing String    ${offer_details[${fare_tab_index}]}    OO1
+    @{split_lines}    Split To Lines    ${offer_detail}
+    @{route}    Create List
+    @{fare_airline}    Create List
+    Set Test Variable    ${counter}    0
+    : FOR    ${line}    IN    @{split_lines}
+    \    ${airline}    Get Substring    ${line}    7    9
+    \    ${offer_details}    Get Substring    ${line}    6
+    \    ${offer_details_split}    Split String    ${offer_details}    OO1
+    \    ${offer_details_first}    Get Substring    ${offer_details_split[0]}    0    15
+    \    ${offer_details_get_route}    Split String    ${offer_details_split[0]}    ${SPACE}
+    \    ${route_1}    Get Substring    ${offer_details_get_route[-2]}    0    3
+    \    ${route_2}    Get Substring    ${offer_details_get_route[-2]}    3    6
+    \    ${offer_details_last}    Set Variable    ${offer_details_split[1].strip()}
+    \    ${alt_details}    Catenate    ${offer_details_first}    ${route_1}    ${route_2}    ${offer_details_last}
+    \    ${counter}    Evaluate    ${counter}+1
+    \    Set Test Variable    ${route_value_${counter}}    ${route_1}-${route_2}
+    \    Set Test Variable    ${alt_details_${counter}}    ${alt_details.strip()}
+    \    Log    ${counter}:: ${alt_details_${counter}}
+    \    Set Test Variable    ${airline_value_${counter}}    ${airline}
+    \    Append To List    ${fare_airline}    ${airline}
+    @{fare_airline}    Remove Duplicate From List    ${fare_airline}
+    Set Test Variable    ${details_line}    ${alt_details_1}
+    : FOR    ${count}    IN    ${counter}
+    \    ${details_line}    Run Keyword If    "${count}" != "1"    Set Variable    ${details_line}\n${alt_details_${counter}}
+    \    ...    ELSE    Set Variable    ${details_line}
+    Set Suite Variable    ${details_line_alt_${fare_tab_index}}    ${details_line}
+    Set Test Variable    ${new_route_value}    ${route_value_1}
+    : FOR    ${count}    IN    ${counter}
+    \    ${route_line_last_value}    Fetch From Right    ${new_route_value}    -
+    \    ${route_line_append}    Split String    ${route_value_${counter}}    -
+    \    ${new_route_value}    Run Keyword If    "${count}" == "1"    Set Variable    ${route_value_${counter}}
+    \    ...    ELSE IF    "${route_line_last_value}" == "${route_line_append[0]}"    Set Variable    ${new_route_value}-${route_line_append[1]}
+    \    ...    ELSE    Set Variable    ${new_route_value}-${route_value_${counter}}
+    Set Suite Variable    ${fare_airline_alt_${fare_tab_index}}    ${new_route_value}
+    Set Test Variable    ${fare_airline_line}    ${airline_value_1}
+    : FOR    ${item}    IN    @{fare_airline}
+    \    ${fare_airline_line}    Run Keyword If    "${airline_value_1}" != "${item}"    Set Variable    ${fare_airline_line}/${item}
+    \    ...    ELSE    Set Variable    ${fare_airline_line}
+    \    Set Test Variable    ${fare_airline_line}
+    Set Suite Variable    ${fare_airline_alt_${fare_tab_index}}    ${fare_airline_line}
+
+Get Restriction Remarks Line
+    ${total_amount_line_remarks}    Get Lines Using Regexp    ${pnr_details}    RIR TRANSACTION FEE
+    ${total_count_remarks}    Get Line Count    ${total_amount_line_remarks}
+    @{split_lines}    Split To Lines    ${total_amount_line_remarks}
+    ${air_fare_count}    Set Variable    0
+    Convert To Integer    ${air_fare_count}
+    : FOR    ${lines}    IN    @{split_lines}
+    \    ${line_no}    Get Substring    ${lines}    0    3
+    \    ${line_no}    Remove String Using Regexp    ${line_no}    [^\\d]
+    \    ${air_fare_count}    Evaluate    ${air_fare_count} + 1
+    \    Log    ${air_fare_count}
+    \    Set Test Variable    ${air_fare_${air_fare_count}}    ${line_no}
+
+Get Segment Number For Travcom
+    [Arguments]    ${segment_number}
+    Set Test Variable    ${segment_number_for_travcom}    ${segment_number}
+    ${segment_status}    Run Keyword And Return Status    Should Contain    ${segment_number}    -
+    ${segment_number_for_travcom}    Run Keyword If    "${segment_status}" == "True"    Replace String    ${segment_number_for_travcom}    -    0
+    ...    ELSE    Set Variable    ${segment_number_for_travcom}
+    ${segment_number_for_travcom}    Remove All Non-Integer (retain period)    ${segment_number_for_travcom}
+    Set Suite Variable    ${segment_number_for_travcom}
+    [Return]    ${segment_number_for_travcom}
+
+Get Value on Specific Field
+    [Arguments]    ${field_name}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ${field_name}
+    ${actual_field_value}    Get Control Text Value    ${object_name}
+    [Return]    ${actual_field_value}
+
+Get YQ Tax From TST
+    [Arguments]    ${fare_tab}    ${segment_number}    ${gds_command}=TQT
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT    ${gds_command}/${segment_number}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${yq_tax}    Get Lines Containing String    ${data_clipboard}    YQ
+    ${yq_tax}    Get String Matching Regexp    [0-9]+\-YQ    ${yq_tax}
+    ${yq_tax}    Run Keyword If    "${yq_tax}" != "0"    Fetch From Left    ${yq_tax}    -
+    Run Keyword If    "${yq_tax}" == "${EMPTY}" or "${yq_tax}" == "None"    Set Test Variable    ${yq_tax}    0
+    ${yq_tax}    Remove All Non-Integer (retain period)    ${yq_tax}
+    Set Suite Variable    ${yq_tax_${fare_tab_index}}    ${yq_tax}
+    Enter GDS Command    RT
+
+Merchant Fee Percentage In Database
+    [Arguments]    ${str_card_type}
+    Set Test Variable    ${merchant_fee_value}    0.00
+    Set Test Variable    ${hk_merchant_fee_tp}    1.30
+    Set Test Variable    ${hk_merchant_fee_ax}    1.80
+    Set Test Variable    ${hk_merchant_fee_ca}    2.30
+    Set Test Variable    ${hk_merchant_fee_dc}    2.80
+    Set Test Variable    ${hk_merchant_fee_vi}    3.80
+    Set Test Variable    ${sg_merchant_fee_ax}    1.50
+    Set Test Variable    ${sg_merchant_fee_ca}    2.00
+    Set Test Variable    ${sg_merchant_fee_dc}    2.50
+    Set Test Variable    ${sg_merchant_fee_tp}    3.50
+    Set Test Variable    ${sg_merchant_fee_vi}    4.00
+    Set Test Variable    ${in_merchant_fee_ax}    3.00
+    Set Test Variable    ${in_merchant_fee_ca}    3.50
+    Set Test Variable    ${in_merchant_fee_dc}    4.00
+    Set Test Variable    ${in_merchant_fee_tp}    4.50
+    Set Test Variable    ${in_merchant_fee_vi}    5.00
+    Run Keyword If    "${country}" == "HK" and "${str_card_type}" == "AX"    Set Suite Variable    ${merchant_fee_value}    ${hk_merchant_fee_ax}
+    ...    ELSE IF    "${country}" == "HK" and "${str_card_type}" == "CA"    Set Suite Variable    ${merchant_fee_value}    ${hk_merchant_fee_ca}
+    ...    ELSE IF    "${country}" == "HK" and "${str_card_type}" == "DC"    Set Suite Variable    ${merchant_fee_value}    ${hk_merchant_fee_dc}
+    ...    ELSE IF    "${country}" == "HK" and "${str_card_type}" == "TP"    Set Suite Variable    ${merchant_fee_value}    ${hk_merchant_fee_tp}
+    ...    ELSE IF    "${country}" == "HK" and "${str_card_type}" == "VI"    Set Suite Variable    ${merchant_fee_value}    ${hk_merchant_fee_vi}
+    Run Keyword If    "${country}" == "SG" and "${str_card_type}" == "AX"    Set Suite Variable    ${merchant_fee_value}    ${sg_merchant_fee_ax}
+    ...    ELSE IF    "${country}" == "SG" and "${str_card_type}" == "CA"    Set Suite Variable    ${merchant_fee_value}    ${sg_merchant_fee_ca}
+    ...    ELSE IF    "${country}" == "SG" and "${str_card_type}" == "DC"    Set Suite Variable    ${merchant_fee_value}    ${sg_merchant_fee_dc}
+    ...    ELSE IF    "${country}" == "SG" and "${str_card_type}" == "TP"    Set Suite Variable    ${merchant_fee_value}    ${sg_merchant_fee_tp}
+    ...    ELSE IF    "${country}" == "SG" and "${str_card_type}" == "VI"    Set Suite Variable    ${merchant_fee_value}    ${sg_merchant_fee_vi}
+    Run Keyword If    "${country}" == "IN" and "${str_card_type}" == "AX"    Set Suite Variable    ${merchant_fee_value}    ${in_merchant_fee_ax}
+    ...    ELSE IF    "${country}" == "IN" and "${str_card_type}" == "CA"    Set Suite Variable    ${merchant_fee_value}    ${in_merchant_fee_ca}
+    ...    ELSE IF    "${country}" == "IN" and "${str_card_type}" == "DC"    Set Suite Variable    ${merchant_fee_value}    ${in_merchant_fee_dc}
+    ...    ELSE IF    "${country}" == "IN" and "${str_card_type}" == "TP"    Set Suite Variable    ${merchant_fee_value}    ${in_merchant_fee_tp}
+    ...    ELSE IF    "${country}" == "IN" and "${str_card_type}" == "VI"    Set Suite Variable    ${merchant_fee_value}    ${in_merchant_fee_vi}
+    Set Suite Variable    ${merchant_fee_value}
+    [Return]    ${merchant_fee_value}
+
+Populate All Mandatory Fields On Air Fare Panel
+    [Arguments]    ${fare_tab_value}    ${international_routing_value}    ${fare_value}    ${lowest_fareCC_value}    ${routing_geography_value}    ${trans_fee_value}
+    ${tab_number}    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    Run Keyword If    "${routing_value_${tab_number}}" != "${EMPTY}"    Set Field Value    cmtxtRouting    ${routing_value_${tab_number}}-___-___
+    ...    ELSE    Set Field Value    cmtxtRouting    ${international_routing_value}
+    Populate High, Charge and Low Fares on Air Fare Panel    ${tab_number}    ${fare_value}
+    Populate Air Fare Savings Code Using Default Values
+    Run Keyword If    "${lfcc_value_${tab_number}}" != "${EMPTY}"    Set Field Value    ctxtLowestFareCC    ${lfcc_value_${tab_number}}
+    ...    ELSE    Set Field Value    ctxtLowestFareCC    ${lowest_fareCC_value}
+    Run Keyword If    "${route_code_value_${tab_number}}" != "${EMPTY}"    Set Field Value    cbRouteGeographyCode    ${route_code_value_${tab_number}}
+    ...    ELSE    Set Field Value    cbRouteGeographyCode    ${routing_geography_value}
+    Run Keyword If    "${transaction_fee_value_${tab_number}}" != "${EMPTY}"    Set Field Value    cbTransactionFee    ${transaction_fee_value_${tab_number}}
+    ...    ELSE    Set Field Value    cbTransactionFee    ${trans_fee_value}
+    Populate Fare Restrictions To Default Value
+
+Populate High, Charge and Low Fares on Air Fare Panel
+    [Arguments]    ${tab_number}    ${fare_value}
+    Run Keyword If    "${high_fare_value_${tab_number}}" != "${EMPTY}"    Set Field Value    ctxtHighFare    ${high_fare_value_${tab_number}}
+    ...    ELSE IF    "${charged_fare_value_${tab_number}}" != "${EMPTY}"    Set Field Value    ctxtHighFare    ${charged_fare_value_${tab_number}}
+    ...    ELSE    Set Field Value    ${high_fare_value_${tab_number}}    ${fare_value}
+    ${evaluate_charge_vs_high}    Run Keyword And Return Status    Should be True    ${charged_fare_value_${tab_number}} >= ${high_fare_value_${tab_number}}
+    Run Keyword If    ${evaluate_charge_vs_high} == True    Set Field Value    ctxtChargedFare    ${high_fare_value_${tab_number}}
+    ...    ELSE IF    "${charged_fare_value_${tab_number}}" != "${EMPTY}"    Set Field Value    ctxtChargedFare    ${charged_fare_value_${tab_number}}
+    ...    ELSE IF    "${high_fare_value_${tab_number}}" != "${EMPTY}"    Set Field Value    ctxtChargedFare    ${high_fare_value_${tab_number}}
+    ...    ELSE    Set Field Value    ctxtChargedFare    ${fare_value}
+    ${evaluate_charge_vs_low}    Run Keyword And Return Status    Should be True    ${low_fare_value_${tab_number}} >= ${charged_fare_value_${tab_number}}
+    Run Keyword If    ${evaluate_charge_vs_low} == True and ${evaluate_charge_vs_high} == True    Set Field Value    ctxtLowFare    ${high_fare_value_${tab_number}}
+    ...    ELSE IF    "${low_fare_value_${tab_number}}" != "${EMPTY}"    Set Field Value    ctxtLowFare    ${low_fare_value_${tab_number}}
+    ...    ELSE IF    "${high_fare_value_${tab_number}}" != "${EMPTY}"    Set Field Value    ctxtLowFare    ${high_fare_value_${tab_number}}
+    ...    ELSE    Set Field Value    ctxtLowFare    ${fare_value}
+
+Set Mark Up Amount To Empty
+    ${mark_up_name}    Determine Multiple Object Name Based On Active Tab    ctxtMarkUpAmount
+    Set Field To Empty    ${mark_up_name}
+
+Set MarkUp Percentage
+    [Arguments]    ${fare_tab}    ${mark_up_percentage}
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtMarkUpPercent, ctxtMarkUpPercent_alt
+    Set Control Text Value    ${object_name}    ${EMPTY}
+    Click Control Button    ${object_name}
+    Send    ${mark_up_percentage}
+    Send    {TAB}
+    ${transaction_fee_amount}    Get Control Text Value    ${object_name}
+    Set Suite Variable    ${mark_up_percentage_value_${fare_tab_index}}    ${mark_up_percentage}
+    Take Screenshot
+
+Set Merchant Fee Amount To Empty
+    ${merchant_fee_name}    Determine Multiple Object Name Based On Active Tab    ctxtMerchantFeeAmount
+    Set Field To Empty    ${merchant_fee_name}
+
+Set Merchant Fee Percentage To Empty
+    ${merchant_fee_name}    Determine Multiple Object Name Based On Active Tab    ctxtMerchantFeePercent
+    Set Field To Empty    ${merchant_fee_name}
+
+Set Routing International On Air Fare Panel
+    [Arguments]    ${routing_value}
+    Set Field Value    cmtxtRouting    ${routing_value}
+    SEND    {TAB}
+
+Set Transaction Fee On Air Fare Panel
+    [Arguments]    ${transaction_value}
+    Set Field Value    cbTransactionFee    ${transaction_value}
+    SEND    {TAB}
+
+Set Transaction Fee Value Default Value If Empty
+    [Arguments]    ${fare_tab}    ${transaction_fee_value}=10
+    Get Transaction Fee Amount Value    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Run Keyword If    "${transaction_fee_value_${fare_tab_index}}" == "${EMPTY}"    Set Transaction Fee On Air Fare Panel    ${transaction_fee_value}
+
+Transaction Fee In Database For Offline Fee Amount
+    [Arguments]    ${start_substring}=4    ${end_substring}=6
+    ${country}    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    ${transaction_fee_amount_int}    Set Variable If    "${country}" == "SG"    120.00    "${country}" == "HK"    45    "${country}" == "IN"
+    ...    1.12
+    Run Keyword If    "${country}" == "IN"    Set Suite Variable    ${transaction_fee_amount_dom}    50.00
+    Run Keyword If    "${country}" == "IN"    Log    ${transaction_fee_amount_dom}
+    Comment    ${transaction_fee_amount_int}    Run Keyword If    "${country}" == "HK" or "${country}" == "IN"    Round Off    ${transaction_fee_amount_int}    0
+    Comment    ${transaction_fee_amount_int}    Run Keyword If    "${country}" == "HK" or "${country}" == "IN"    Convert To Float    ${transaction_fee_amount_int}    0
+    Comment    ${transaction_fee_amount_dom}    Run Keyword If    "${country}" == "IN"    Round Off    ${transaction_fee_amount_dom}    0
+    Comment    ${transaction_fee_amount_dom}    Run Keyword If    "${country}" == "IN"    Convert To Float    ${transaction_fee_amount_dom}    0
+    Set Suite Variable    ${transaction_fee_amount_int}
+    Log    ${transaction_fee_amount_int}
+
+Transaction Fee In Database For Offline Fee Percentage
+    [Arguments]    ${start_substring}=4    ${end_substring}=6
+    ${country}    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    Set Suite Variable    ${country}
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${transaction_fee_percentage_int}    .0112
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${transaction_fee_percentage_int}    .0550
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${transaction_fee_percentage_int}    .0145
+    Run Keyword If    "${country}" == "IN"    Set Suite Variable    ${transaction_fee_percentage_dom}    .1212
+
+Transaction Fee In Database For Offline Range Fee Amount
+    [Arguments]    ${start_substring}=4    ${end_substring}=6    ${country}=${EMPTY}
+    ${country}    Run Keyword If    "${country}" == "${EMPTY}"    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    ...    ELSE    Set Variable    ${country}
+    Set Suite Variable    ${country}
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${range_fee_one}    100.67
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${range_fee_one}    150
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${range_fee_one}    200
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${range_fee_two}    200.00
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${range_fee_two}    250
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${range_fee_two}    300
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${range_fee_three}    300.25
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${range_fee_three}    350
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${range_fee_three}    400
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${range_fee_four}    400.00
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${range_fee_four}    450
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${range_fee_four}    500
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${range_fee_five}    500.00
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${range_fee_five}    550
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${range_fee_five}    600
+    Comment    Run Keyword If    "${country}" == "IN"    Log    ${transaction_fee_amount_dom}
+    Log    ${range_fee_one}
+    Log    ${range_fee_two}
+    Log    ${range_fee_three}
+    Log    ${range_fee_four}
+    Log    ${range_fee_five}
+
+Transaction Fee In Database For Offline Range Fee Percentage
+    [Arguments]    ${start_substring}=4    ${end_substring}=6    ${country}=${EMPTY}
+    ${country}    Run Keyword If    "${country}" == "${EMPTY}"    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    ...    ELSE    Set Variable    ${country}
+    Set Suite Variable    ${country}
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${range_fee_one}    .015
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${range_fee_one}    .02
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${range_fee_one}    .03
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${range_fee_two}    .02
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${range_fee_two}    .03
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${range_fee_two}    .06
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${range_fee_three}    .025
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${range_fee_three}    .04
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${range_fee_three}    .09
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${range_fee_four}    .03
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${range_fee_four}    .05
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${range_fee_four}    .12
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${range_fee_five}    .035
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${range_fee_five}    .06
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${range_fee_five}    .14
+    Comment    Run Keyword If    "${country}" == "IN"    Log    ${transaction_fee_amount_dom}
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${cap}    50.00
+    ...    ELSE IF    "${country}" == "HK" or "${country}" == "IN"    Set Suite Variable    ${cap}    50
+    Log    ${range_fee_one}
+    Log    ${range_fee_two}
+    Log    ${range_fee_three}
+    Log    ${range_fee_four}
+    Log    ${range_fee_five}
+    Log    ${cap}
+
+Update Transaction Fee Value
+    [Arguments]    ${transaction_fee_amount}
+    Activate Power Express Window
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    cbTransactionFee
+    Click Control Button    ${object_name}
+    Send    ${transaction_fee_amount}
+    Send    {TAB}
+    ${transaction_fee_amount}    Get Control Text Value    ${object_name}
+    Set Suite Variable    ${transaction_fee_value_${fare_tab_index}}    ${transaction_fee_amount}
+    Take Screenshot
+
+Verify Accounting Remarks For Commission Rebate
+    [Arguments]    ${fare_tab}    ${segment_number}    ${airline_commission_or_client_rebate}=AIRLINE COMMISSION    ${start_substring}=4    ${end_substring}=6
+    ${country}    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    Set Suite Variable    ${segment_number}
+    Set Suite Variable    ${country}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Suite Variable    ${fare_tab_index}
+    Comment    Identify Form Of Payment Code For APAC    ${str_card_type}
+    Run Keyword If    "${country}" == "SG"    Set Suite Variable    ${vendor_code}    V021007
+    ...    ELSE IF    "${country}" == "HK"    Set Suite Variable    ${vendor_code}    V00001
+    ...    ELSE IF    "${country}" == "IN"    Set Suite Variable    ${vendor_code}    V00800003
+    ${segment_number_for_travcom}    Get Segment Number For Travcom    ${segment_number}
+    Run Keyword If    "${airline_commission_or_client_rebate.upper()}" == "AIRLINE COMMISSION"    Verify Airline Commission Remarks    ${fare_tab_index}    ${segment_number_for_travcom}
+    Run Keyword If    "${airline_commission_or_client_rebate.upper()}" == "CLIENT REBATE"    Verify Client Rebate Remarks    ${fare_tab_index}    ${segment_number_for_travcom}
+    Verify Specific Line Is Written In The PNR    FM PAX *M*${commission_rebate_percentage_value_${fare_tab_index}}/${segment_number}
+
+Verify Adult Fare And Taxes Itinerary Remarks Are Written
+    [Arguments]    ${fare_tab}    ${airline_commission_or_client_rebate}=Airline Commission    ${start_substring}=4    ${end_substring}=6    ${country}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${country}    Run Keyword If    "${country}" == "${EMPTY}"    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    ...    ELSE    Set Variable    ${country}
+    ${currency}    Get Currency    ${country}
+    ${base_fare}    Set Variable If    "${fare_tab_type}"=="Fare"    ${base_fare_${fare_tab_index}}    ${alt_base_fare_${fare_tab_index}}
+    ${nett_fare}    Set Variable If    "${fare_tab_type}"=="Fare"    ${nett_fare_${fare_tab_index}}    ${alt_nett_fare_${fare_tab_index}}
+    ${grand_total}    Set Variable If    "${fare_tab_type}"=="Fare"    ${grand_total_fare_${fare_tab_index}}    ${alt_grand_total_fare_${fare_tab_index}}
+    ${mark_up}    Set Variable If    "${fare_tab_type}"=="Fare"    ${mark_up_value_${fare_tab_index}}    ${alt_mark_up_value_${fare_tab_index}}
+    ${commission_rebate}    Set Variable If    "${fare_tab_type}"=="Fare" and "${country}"!="IN"    ${commission_rebate_value_${fare_tab_index}}    "${fare_tab_type}"=="Alternate" and "${country.upper()}"!="IN"    ${commission_rebate_value_alt_${fare_tab_index}}    0
+    ${is_nett_fare}    Evaluate    ${nett_fare} > ${0}
+    ${adult_fare}    Run Keyword If    ${is_nett_fare}    Evaluate    (${nett_fare}+${mark_up})
+    ...    ELSE    Evaluate    (${base_fare}+${mark_up})
+    ${adult_fare}    Run Keyword If    "${country}"!="IN"    Evaluate    ${adult_fare}-${commission_rebate}
+    ...    ELSE    Set Variable    ${adult_fare}
+    ${adult_fare}    Run Keyword If    "${country}"=="SG"    Convert To Float    ${adult_fare}
+    ...    ELSE    Convert To Integer    ${adult_fare}
+    ${tax}    Run Keyword If    not ${is_nett_fare}    Evaluate    ${grand_total}-${base_fare}
+    ...    ELSE    Evaluate    ${grand_total}-${nett_fare}
+    ${tax}    Run Keyword If    "${country}"=="SG"    Convert To Float    ${tax}
+    ...    ELSE    Convert To Integer    ${tax}
+    ${adult_fare_Remarks}    Set Variable If    "${fare_tab_type}" == "Fare"    RIR ADULT FARE: ${currency} ${adult_fare} PLUS ${currency} ${tax} TAXES    RIR *OFFER**ADULT FARE: ${currency} ${adult_fare} PLUS ${currency} ${tax} TAXES*
+    Verify Specific Remark Is Written In The PNR    ${adult_fare_Remarks}
+
+Verify Air Fare Fields Are Disabled
+    Verify Routing Field Is Disabled
+    Verify Turnaround Field Is Disabled
+    Verify High Fare Field Is Disabled
+    Verify Charged Fare Field Is Disabled
+    Verify Low Fare Field Is Disabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Class Code Field Is Disabled
+    Verify LFCC Field Is Disabled
+    Verify Route Code Field Is Disabled
+    Verify Form Of Payment Field Is Disabled
+    Verify Pencil Icon Is Disabled
+    Verify Mask Icon Is Disabled
+    Verify Commission Rebate Amount Field Is Disabled
+    Verify Commission Rebate Percentage Field Is Disabled
+    Comment    Verify Fare Including Airline Taxes Field Is Disabled    Fare Quote 1
+    Verify Nett Fare Field Is Disabled
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Verify Transaction Fee Field Is Disabled
+    Verify Total Field Is Disabled
+
+Verify Air Fare Fields Are Enabled
+    Verify Routing Field Is Enabled
+    Verify Turnaround Field Is Enabled
+    Verify High Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Enabled
+    Verify Missed Savings Code Field Is Enabled
+    Verify Class Code Field Is Enabled
+    Verify LFCC Field Is Enabled
+    Verify Route Code Field Is Enabled
+    Verify Form Of Payment Field Is Enabled
+    Verify Nett Fare Field Is Enabled
+    Verify Transaction Fee Field Is Enabled
+
+Verify Airline Commission Remarks
+    [Arguments]    ${fare_tab_index}    ${segment_number_for_travcom}
+    Verify Specific Line Is Not Written In The PNR    RM *MS/PC50/${vendor_code}/AC${lfcc_in_tst_${fare_tab_index}}/TKFF0${fare_tab_index}/PX1/${segment_number}    multi_line_search_flag=true
+    Verify Specific Line Is Not Written In The PNR    RM *MSX/S-${commission_rebate_value_${fare_tab_index}}/SF-${commission_rebate_value_${fare_tab_index}}/C-${commission_rebate_value_${fare_tab_index}}/SG0${segment_number_for_travcom}/${segment_number}    multi_line_search_flag=true
+    Comment    Verify Specific Line Is Not Written In The PNR    RM *MSX/FS/${segment_number}    multi_line_search_flag=true
+    Comment    Run Keyword If    "${country}" != "IN"    Verify Specific Line Is Not Written In The PNR    RM *MSX/FF AIR COMM RETURN/${segment_number}    multi_line_search_flag=true
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RM *MSX/FF REBATE/S${segment_number}    multi_line_search_flag=true
+    Verify Specific Line Is Not Written In The PNR    RM *MSX/FF AIR COMM RETURN/${segment_number}    multi_line_search_flag=true
+
+Verify All Mandatory Fields On Air Fare Panel
+    Verify Mandatory Field    cmtxtRouting    True
+    Send    {TAB}
+    Verify Mandatory Field    ccboPOT
+    Send    {TAB}
+    Verify Mandatory Field    ctxtHighFare    True
+    Verify Mandatory Field    ctxtChargedFare    True
+    Verify Mandatory Field    ctxtLowFare    True
+    Verify Mandatory Field    ccboMissed
+    Verify Mandatory Field    ccboClass
+    Verify Mandatory Field    ctxtLowestFareCC    True
+    Verify Mandatory Field For Dropdown List    cbRouteGeographyCode    True
+    Verify Mandatory Field    cbTransactionFee    True
+
+Verify Alternate Fare Itinerary Remarks Are Written
+    [Arguments]    ${alt_fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${alt_fare_tab}    ${SPACE}
+    ${country}    Get Substring    ${TEST NAME}    4    6
+    ${new_or_amend}    Get Substring    ${TEST NAME}    1    3
+    ${currency}    Run Keyword If    "${country}" == "SG"    Set Variable    SGD
+    ...    ELSE IF    "${country}" == "HK"    Set Variable    HKD
+    ...    ELSE IF    "${country}" == "IN"    Set Variable    INR
+    Get Remarks Leading And Succeeding Line Numbers    LOWER FARE OPTION ${fare_tab_index}
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Specific Line Is Written In The PNR    ${remarks_1} RIR *OFFER**<B>LOWER FARE OPTION ${fare_tab_index}</B>*
+    ...    ELSE    Verify Specific Line Is Written In The PNR    ${remarks_1} RIR *OFFER**<B>LOWER FARE OPTION ${fare_tab_index}</B>*
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Specific Line Is Written In The PNR    ${remarks_2} RIR *OFFER**ROUTING: ${city_names_with_slash_${fare_tab_index}}*    ${multi_line_search_flag}=true
+    ...    ELSE    Verify Specific Line Is Written In The PNR    ${remarks_2} RIR *OFFER**ROUTING: ${amend_city_names_with_slash_${fare_tab_index}}*    ${multi_line_search_flag}=true
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Specific Line Is Written In The PNR    ${remarks_3} RIR *OFFER**AIRLINE: ${airline_offer_alt_${fare_tab_index}}*
+    ...    ELSE    Verify Specific Line Is Written In The PNR    ${remarks_3} RIR *OFFER**AIRLINE: ${amend_airline_offer_alt_${fare_tab_index}}*
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Specific Line Is Written In The PNR    ${remarks_4} RIR *OFFER**FARE BASIS: ${fare_basis_${fare_tab_index}}*
+    ...    ELSE    Verify Specific Line Is Written In The PNR    ${remarks_4} RIR *OFFER**FARE BASIS: ${amend_fare_basis_${fare_tab_index}}*
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Specific Line Is Written In The PNR    ${remarks_5} RIR *OFFER**ADULT FARE: ${currency} ${grand_total_fare_alt_${fare_tab_index}} PLUS 0 TAXES*
+    ...    ELSE    Verify Specific Line Is Written In The PNR    ${remarks_5} RIR *OFFER**ADULT FARE: ${currency} ${grand_total_fare_alt_${fare_tab_index}} PLUS 0 TAXES*
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Specific Line Is Written In The PNR    ${remarks_6} RIR *OFFER**TOTAL LOWER FARE OPTION: ${grand_total_fare_alt_${fare_tab_index}}*
+    ...    ELSE    Verify Specific Line Is Written In The PNR    ${remarks_6} RIR *OFFER**TOTAL LOWER FARE OPTION: ${amend_grand_total_fare_alt_${fare_tab_index}}*
+    @{split_lines}    Run Keyword If    "${new_or_amend}" == "NB"    Split To Lines    ${airline_details_alt_${fare_tab_index}}
+    ...    ELSE    Split To Lines    ${amend_airline_details_alt_${fare_tab_index}}
+    Set Test Variable    ${new_remarks}    ${remarks_6}
+    : FOR    ${line}    IN    @{split_lines}
+    \    ${new_remarks}    Evaluate    ${new_remarks}+1
+    \    Verify Specific Line Is Written In The PNR    ${new_remarks} RIR *OFFER**DETAILS: ${line}*    ${multi_line_search_flag}=true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**THIS TICKET MAY BE SUBJECT TO PENALTIES OR FARE INCREASE.*    ${multi_line_search_flag}=true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**CHANGES/CANCELLATION MAY BE SUBJECT TO A PENALTY OR FARE INCREASE UP*    ${multi_line_search_flag}=true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**TO AND INCLUDING THE TOTAL COST OF THE TICKET.*    ${multi_line_search_flag}=true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**NO REFUND FOR UNUSED PORTION ON CERTAIN FARES.*    ${multi_line_search_flag}=true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**TO RETAIN VALUE OF YOUR TICKET, YOU MUST CANCEL THE RESERVATION ON*    ${multi_line_search_flag}=true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**OR BEFORE YOUR TICKETED DEPARTURE TIME.*    ${multi_line_search_flag}=true
+
+Verify BF Remarks Are Not Written
+    Verify Specific Remark Is Not Written In The PNR    RMF BF-
+
+Verify Charge Fare Field Is Pre-Populated
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtChargedFare
+    ${actual_charge_fare}    Get Control Text Value    ${object_name}
+    Run Keyword If    "${actual_charge_fare}" != "${EMPTY}"    Log    Charge Fare is: ${actual_charge_fare}
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    Charge Fare must be pre-populated.
+    [Teardown]    Take Screenshot
+
+Verify Charged Fare Value Is Retrieved From TST
+    [Arguments]    ${fare_tab}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Charged Fare From TST    ${fare_tab}    ${segment_number}
+    Verify Charged Fare Field Value    ${grand_total_fare_${fare_tab_index}}    ${fare_tab}
+    Set Suite Variable    ${grand_total_value_${fare_tab_index}}    ${grand_total_fare_${fare_tab_index}}
+    [Teardown]    Take Screenshot
+
+Verify Charged Fare Value Is Same From New Booking
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Charged Fare Field Value    ${charged_value_${fare_tab_index}}    ${fare_tab}
+
+Verify Class Code Dropdown Values Are Correct
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${expected_class_code}    Create List    FF - First Class Full Fare    FD - First Class Discounted Fare    FC - First Class Corporate Fare    FW - First Class CWT Negotiated Fare    CF - Business Class Full Fare
+    ...    CD - Business Class Discounted Fare    CC - Business Class Corporate Fare    CW - Business Class CWT Negotiated Fare    YF - Economy Class Full Fare    YD - Economy Class Discounted Fare    YC - Economy Class Corporate Fare
+    ...    YW - Economy Class CWT Negotiated Fare
+    Log List    ${expected_class_code}
+    Get Class Code Values    ${fare_tab}
+    Run Keyword And Continue On Failure    Lists Should Be Equal    ${class_code_values_${fare_tab_index}}    ${expected_class_code}
+    [Teardown]    Take Screenshot
+
+Verify Client Rebate Amount Where Commission Amount Is Not Zero
+    [Arguments]    ${fare_tab_index}    ${segment_number_for_travcom}
+    Get Remarks Leading And Succeeding Line Numbers    MS/PC50/${vendor_code}/AC${lfcc_in_tst_${fare_tab_index}}/TKFF0${fare_tab_index}/PX1/${segment_number}
+    Verify Specific Line Is Written In The PNR    ${remarks_1} RM *MS/PC50/${vendor_code}/AC${lfcc_in_tst_${fare_tab_index}}/TKFF0${fare_tab_index}/PX1/${segment_number}    multi_line_search_flag=true
+    Verify Specific Line Is Written In The PNR    ${remarks_2} RM *MSX/S-${commission_rebate_value_${fare_tab_index}}/SF-${commission_rebate_value_${fare_tab_index}}/C-${commission_rebate_value_${fare_tab_index}}/SG0${segment_number_for_travcom}/${segment_number}    multi_line_search_flag=true
+    Verify Specific Line Is Written In The PNR    ${remarks_3} RM *MSX/FS/${segment_number}    multi_line_search_flag=true
+    Verify Specific Line Is Written In The PNR    ${remarks_4} RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}    multi_line_search_flag=true
+    Comment    Run Keyword If    "${country}" != "IN"    Verify Specific Line Is Written In The PNR    ${remarks_5} RM *MSX/FF AIR COMM RETURN/${segment_number}    multi_line_search_flag=true
+    ...    ELSE    Verify Specific Line Is Written In The PNR    ${remarks_5} RM *MSX/FF REBATE/S${segment_number}    multi_line_search_flag=true
+    Verify Specific Line Is Written In The PNR    ${remarks_5} RM *MSX/FF AIR COMM RETURN/${segment_number}    multi_line_search_flag=true
+
+Verify Client Rebate Amount Where Commission Amount Is Zero
+    [Arguments]    ${fare_tab_index}    ${segment_number_for_travcom}
+    Verify Specific Line Is Not Written In The PNR    RM *MS/PC50/${vendor_code}/AC${lfcc_in_tst_${fare_tab_index}}/TKFF0${fare_tab_index}/PX1/${segment_number}    multi_line_search_flag=true
+    Verify Specific Line Is Not Written In The PNR    RM *MSX/S-${commission_rebate_value_${fare_tab_index}}/SF-${commission_rebate_value_${fare_tab_index}}/C-${commission_rebate_value_${fare_tab_index}}/SG0${segment_number_for_travcom}/${segment_number}    multi_line_search_flag=true
+    Comment    Verify Specific Line Is Not Written In The PNR    RM *MSX/FS/${segment_number}    multi_line_search_flag=true
+    Comment    Verify Specific Line Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}    multi_line_search_flag=true
+    Comment    Run Keyword If    "${country}" != "IN"    Verify Specific Line Is Written In The PNR    ${remarks_5} RM *MSX/FF AIR COMM RETURN/${segment_number}    multi_line_search_flag=true
+    ...    ELSE    Verify Specific Line Is Written In The PNR    ${remarks_5} RM *MSX/FF REBATE/S${segment_number}    multi_line_search_flag=true
+    Verify Specific Line Is Not Written In The PNR    RM *MSX/FF AIR COMM RETURN/${segment_number}    multi_line_search_flag=true
+
+Verify Client Rebate Remarks
+    [Arguments]    ${fare_tab_index}    ${segment_number_for_travcom}
+    Comment    Set Suite Variable    ${fare_tab_index}
+    Comment    Set Suite Variable    ${segment_number_for_travcom}
+    Run Keyword If    "${commission_rebate_value_${fare_tab_index}}" == "0" or "${commission_rebate_value_${fare_tab_index}}" == "0.00"    Verify Client Rebate Amount Where Commission Amount Is Zero    ${fare_tab_index}    ${segment_number_for_travcom}
+    ...    ELSE    Verify Client Rebate Amount Where Commission Amount Is Not Zero    ${fare_tab_index}    ${segment_number_for_travcom}
+
+Verify Commission Rebate Amount Field Is Disabled
+    ${commission_rebate_amount_field}    Determine Multiple Object Name Based On Active Tab    ctxtCommissionRebateAmount
+    Verify Control Object Is Disabled    ${commission_rebate_amount_field}
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Amount Field Is Mandatory
+    ${commission_rebate_amount_field}    Determine Multiple Object Name Based On Active Tab    ctxtCommissionRebateAmount
+    Set Field To Empty    ${commission_rebate_amount_field}
+    ${commission_rebate_percentage}    Get Control Text Value    ${commission_rebate_amount_field}
+    Verify Mandatory Field    ctxtCommissionRebateAmount
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Amount Is Correct Based On Computed Value
+    [Arguments]    ${fare_tab}    ${start_substring}=4    ${end_substring}=6    ${rounding_so}=${EMPTY}
+    ${country}    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    ${yq_tax}    Get Variable Value    ${yq_tax_${fare_tab_index}}    0
+    Comment    Get Nett Fare Value    ${fare_tab}
+    Run Keyword If    "${nett_fare_value_${fare_tab_index}}" == "0" or "${nett_fare_value_${fare_tab_index}}" == "0.00"    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${base_fare_${fare_tab_index}}
+    ...    ELSE    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${nett_fare_value_${fare_tab_index}}
+    ${city_route}    Fetch From Left    ${city_route_${fare_tab_index}}    -
+    Comment    Get Commission Rebate Percentage Value    ${fare_tab}
+    Comment    Get Commission Rebate Amount Value    ${fare_tab}
+    Log    ${base_or_nett_fare_${fare_tab_index}}
+    Log    ${yq_tax}
+    ${base_or_nett_fare}    Run Keyword If    "${country}" == "IN"    Evaluate    ${base_or_nett_fare_${fare_tab_index}} + ${yq_tax}
+    ...    ELSE    Evaluate    ${base_or_nett_fare_${fare_tab_index}} + 0
+    Set Test Variable    ${commission_percentage}    ${commission_rebate_percentage_value_${fare_tab_index}}
+    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${base_or_nett_fare}
+    Comment    ${commission_amount_eval}    Evaluate    (${base_or_nett_fare_${fare_tab_index}} + ${yq_tax}) * ${commission_percentage}/100
+    ${commission_amount_eval}    Evaluate    (${base_or_nett_fare_${fare_tab_index}}) * ${commission_percentage}/100
+    Comment    ${commission_amount_eval}    Run Keyword If    "${country}" == "SG"    Round Off    ${commission_amount_eval}    2
+    ...    ELSE    Round Off    ${commission_amount_eval}    0
+    Comment    ${commission_amount_eval}    Run Keyword If    "${country}" == "SG"    Convert To Float    ${commission_amount_eval}    2
+    ...    ELSE    Convert To Float    ${commission_amount_eval}    0
+    Comment    ${commission_amount_eval}    Round Apac    ${commission_amount_eval}    ${country}
+    ${commission_amount_eval}    Round To Nearest Dollar    ${commission_amount_eval}    ${country}    ${rounding_so}
+    Run Keyword If    "${commission_amount_eval}" == "${commission_rebate_value_${fare_tab_index}}"    Log    ${commission_rebate_value_${fare_tab_index}} is set on Commission Rebate ($) field.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Actual Commission Rebate ($): ${commission_rebate_value_${fare_tab_index}} is not equal to the computed: ${commission_amount_eval}.
+    Set Suite Variable    ${commission_rebate_value_${fare_tab_index}}
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Amount Value
+    [Arguments]    ${fare_tab}    ${expected_commission_rebate_amount_value}
+    Get Commission Rebate Amount Value    ${fare_tab}
+    Run Keyword If    "${commission_rebate_value_${fare_tab_index}}" == "${expected_commission_rebate_amount_value}"    Log    Commission Rebate Amount Value is: ${commission_rebate_value_${fare_tab_index}}
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Commission Rebate Amount Value is: ${commission_rebate_value_${fare_tab_index}} not equal to expected value of: ${expected_commission_rebate_amount_value}
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Percentage Field Is Disabled
+    ${commission_rebate_percentage_field}    Determine Multiple Object Name Based On Active Tab    ctxtCommissionPercent
+    Verify Control Object Is Disabled    ${commission_rebate_percentage_field}
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Percentage Field Is Enabled
+    ${commission_rebate_percentage_field}    Determine Multiple Object Name Based On Active Tab    ctxtCommissionPercent
+    Verify Control Object Is Enabled    ${commission_rebate_percentage_field}
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Percentage Field Is Mandatory
+    ${commission_rebate_percentage_field}    Determine Multiple Object Name Based On Active Tab    ctxtCommissionPercent
+    Set Field To Empty    ${commission_rebate_percentage_field}
+    ${commission_rebate_percentage}    Get Control Text Value    ${commission_rebate_percentage_field}
+    Verify Mandatory Field    ctxtCommissionPercent
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Percentage Value
+    [Arguments]    ${fare_tab}    ${expected_commission_rebate_percentage_value}
+    Get Commission Rebate Percentage Value    ${fare_tab}
+    Run Keyword If    "${commission_rebate_percentage_value_${fare_tab_index}}" == "${expected_commission_rebate_percentage_value}"    Log    Commission Rebate Percentage Value is: ${commission_rebate_percentage_value_${fare_tab_index}}
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Commission Rebate Percentage Value is: ${commission_rebate_percentage_value_${fare_tab_index}} not equal to expected value of: ${expected_commission_rebate_percentage_value}
+    [Teardown]    Take Screenshot
+
+Verify Default Commission Rebate Percentage and Amount Are Correct
+    [Arguments]    ${fare_tab}    ${originating_country_flight}=NONE    ${start_substring}=4    ${end_substring}=6
+    [Documentation]    ${originating_country_flight} - add is a specific country origin - SG, HK, IN, ASIA or GLOBAL - if Origin is not SIN, HKG or DEL/BOM
+    ${country}    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    Set Suite Variable    ${country}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${yq_tax}    Get Variable Value    ${yq_tax_${fare_tab_index}}    0
+    ${city_route}    Fetch From Left    ${city_route_${fare_tab_index}}    -
+    Comment    Get Commission Rebate Percentage Value    ${fare_tab}
+    Comment    Get Commission Rebate Amount Value    ${fare_tab}
+    Commission Route Percentage In Database    ${route_code_${fare_tab_index}}    ${city_route}    ${originating_country_flight}
+    Run Keyword If    "${commission_rebate_percentage_value_${fare_tab_index}}" == "${commission_percentage}"    Log    ${commission_percentage} is set on Commission Rebate (%) field.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Actual Commission Rebate (%): ${commission_rebate_percentage_value_${fare_tab_index}} is not equal to the value: ${commission_percentage} from the database.
+    ${commission_amount_eval}    Evaluate    (${base_fare_${fare_tab_index}}+${yq_tax}) * ${commission_percentage}/100
+    Comment    ${commission_amount_eval}    Run Keyword If    "${country}" == "SG"    Round Off    ${commission_amount_eval}    2
+    ...    ELSE    Round Off    ${commission_amount_eval}    0
+    Comment    ${commission_amount_eval}    Run Keyword If    "${country}" == "SG"    Convert To Float    ${commission_amount_eval}    2
+    ...    ELSE    Convert To Float    ${commission_amount_eval}    0
+    ${commission_amount_eval}    Round Apac    ${commission_amount_eval}    ${country}
+    Run Keyword If    "${commission_amount_eval}" == "${commission_rebate_value_${fare_tab_index}}"    Log    ${commission_rebate_value_${fare_tab_index}} is set on Commission Rebate ($) field.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Actual Commission Rebate ($): ${commission_rebate_value_${fare_tab_index}} is not equal to the computed: ${commission_amount_eval}.
+    Set Suite Variable    ${commission_rebate_value_${fare_tab_index}}
+    [Teardown]    Take Screenshot
+
+Verify Default Merchant Fee Percentage and Amount Are Correct
+    [Arguments]    ${fare_tab}    ${airline_commission_or_client_rebate}=Airline Commission    ${has_client_cwt_comm_agreement}=No    ${start_substring}=4    ${end_substring}=6
+    [Documentation]    ${has_client_cwt_comm_agreement}
+    ...    - Yes or No, setup for SO "Has Client & CWT Comm Agreement for Merchant Fee"
+    ...
+    ...    ${airline_commission_or_client_rebate}=Airline Commission
+    ...    - Airline Commission or Client Rebate values
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${country}    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    Set Suite Variable    ${country}
+    Set Test Variable    ${gst_airfare_value_service_${fare_tab_index}}    0
+    ${fop_merchant_fee_type}    Get Variable Value    ${fop_merchant_fee_type_${fare_tab_index}}    0
+    Comment    Get Main Fees On Fare Quote Tab    ${fare_tab}
+    Merchant Fee Percentage In Database    ${str_card_type_${fare_tab_index}}
+    Run Keyword If    "${country}" == "IN"    Calculate GST On Air    ${fare_tab}
+    ${computed_merchant_amount}    Run Keyword If    "${airline_commission_or_client_rebate.upper()}" == "CLIENT REBATE" and "${fop_merchant_fee_type}" == "CWT"    Evaluate    (${base_fare_${fare_tab_index}} + ${total_tax_${fare_tab_index}} + ${mark_up_value_${fare_tab_index}} + ${gst_airfare_value_service_${fare_tab_index}} - ${commission_rebate_value_${fare_tab_index}}) * ${merchant_fee_value}/100
+    ...    ELSE IF    "${airline_commission_or_client_rebate.upper()}" == "AIRLINE COMMISSION" and "${fop_merchant_fee_type}" == "CWT"    Evaluate    (${base_fare_${fare_tab_index}} + ${total_tax_${fare_tab_index}} + ${mark_up_value_${fare_tab_index}} + ${gst_airfare_value_service_${fare_tab_index}}) * ${merchant_fee_value}/100
+    ...    ELSE IF    "${country}" == "IN" and "${fop_merchant_fee_type.upper()}" == "AIRLINE" and "${has_client_cwt_comm_agreement.upper()}" == "YES"    Evaluate    ${gst_airfare_value_service_${fare_tab_index}} * ${merchant_fee_value}/100
+    ${computed_merchant_amount}    Round Apac    ${computed_merchant_amount}    ${country}
+    Run Keyword If    "${merchant_fee_percentage_value_${fare_tab_index}}" == "${merchant_fee_value}"    Log    Default merchant fee percentage: ${merchant_fee_percentage_value_${fare_tab_index}} is correctly displayed.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Default merchant fee percentage: ${merchant_fee_percentage_value_${fare_tab_index}} is not equal to the value from database.
+    Run Keyword If    "${merchant_fee_value_${fare_tab_index}}" == "${computed_merchant_amount}"    Log    Default merchant fee amount: ${merchant_fee_value_${fare_tab_index}} is correctly displayed.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Default merchant fee amount: ${merchant_fee_value_${fare_tab_index}} displayed is not equal to computed merchant amount fee: ${computed_merchant_amount}.
+    [Teardown]    Take Screenshot
+
+Verify Default UI Display In The Restrictions Tab
+    [Arguments]    @{fare_tabs}
+    : FOR    ${fare_tab}    IN    @{fare_tabs}
+    \    Click Fare Tab    ${fare_tab}
+    \    Click Restriction Tab
+    \    ${is_selected}    Get Radio Button Status    [NAME:cradDefault_]
+    \    Run Keyword And Continue On Failure    Should Be True    ${is_selected} == True    Default option was selected and displayed in the Restrictions tab.
+    \    ${default_air_fare_restriction}    Get Control Text Current Value    [NAME:ctxtAirRestrictionText]
+    \    Verify Text Contains Expected Value    ${default_air_fare_restriction}    THIS TICKET MAY BE SUBJECT TO PENALTIES OR FARE INCREASE.${\n}${\n}CHANGES/CANCELLATION MAY BE SUBJECT TO A PENALTY OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}NO REFUND FOR UNUSED PORTION ON CERTAIN FARES. ${\n}${\n}TO RETAIN VALUE OF YOUR TICKET, YOU MUST CANCEL THE RESERVATION ON OR BEFORE YOUR TICKETED DEPARTURE TIME.
+
+Verify Error In Status Strip Text Is Displayed
+    [Arguments]    ${status_strip_text}
+    Activate Power Express Window
+    Set Test Variable    ${status}    ${EMPTY}
+    ${status}    Get Status Strip Text
+    Run Keyword And Continue On Failure    Should Be True    "${status.upper()}" == "${status_strip_text.upper()}"    Strip Status must be the same as expected.
+
+Verify FF30, FF8 and EC Account Remarks Are Written
+    [Arguments]    ${fare_tab}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Remark Is Written In The PNR    RM *FF30/${realised_code_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *EC/${missed_code_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *FF8/${class_code_value_${fare_tab_index}}/${segment_number}
+
+Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written
+    [Arguments]    ${segment_number}    ${booking_action}=AB    ${booking_indicator}=AMA    ${booking_method}=G
+    Verify Specific Remark Is Written In The PNR    RM *FF34/${booking_action}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *FF35/${booking_indicator}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *FF36/${booking_method}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *FF38/E/${segment_number}
+
+Verify Fare Accounting Remarks Are Not Written
+    Verify Specific Remark Is Not Written In The PNR    RM *RF
+    Verify Specific Remark Is Not Written In The PNR    RM *SF
+    Verify Specific Remark Is Not Written In The PNR    RM *LF
+    Verify Specific Remark Is Not Written In The PNR    RM *FF81
+    Verify Specific Remark Is Not Written In The PNR    RM *FF7
+    Verify Specific Remark Is Not Written In The PNR    RM *FF8
+    Verify Specific Remark Is Not Written In The PNR    RM *FF30
+    Verify Specific Remark Is Not Written In The PNR    RM *FF34
+    Verify Specific Remark Is Not Written In The PNR    RM *FF35
+    Verify Specific Remark Is Not Written In The PNR    RM *FF36
+    Verify Specific Remark Is Not Written In The PNR    RM *FF38
+    Verify Specific Remark Is Not Written In The PNR    RM *EC
+    Verify Specific Remark Is Not Written In The PNR    RM *FOP
+    Verify Specific Remark Is Not Written In The PNR    RM *MS
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX
+    Verify Specific Remark Is Not Written In The PNR    RM *FF99
+
+Verify Fare Fields On Air Fare Panel behaves Correctly
+    Set Charged Fare Field    83xx
+    SEND    {TAB}
+    ${actual_tooltip_CF}    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Verify Actual Value Matches Expected Value    ${actual_tooltip_CF}    Invalid Amount
+    Verify Panel Status    RED    Air Fare
+    ###Set CF
+    Set Charged Fare Field    100
+    ###Set Invalid LF
+    Set Low Fare Field    335
+    ${actual_tooltip_RF}    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Verify Actual Value Matches Expected Value    ${actual_tooltip_RF}    Validate Low Fare
+    Verify Error In Status Strip Text Is Displayed    Low Fare cannot be greater than Charged Fare
+    Verify Panel Status    RED    Air Fare
+    ###Set Valid LF
+    Set Low Fare Field    35
+    ${is_tooltip_present}    Run Keyword And Return Status    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Should Be True    ${is_tooltip_present} == ${False}
+    ###Set Invalid HF
+    Set High Fare Field    83
+    ${actual_tooltip_LF}    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Verify Actual Value Matches Expected Value    ${actual_tooltip_LF}    Validate High Fare
+    Verify Error In Status Strip Text Is Displayed    High Fare cannot be lower than Charged Fare
+    ###Set Valid HF
+    Set High Fare Field    100
+    ${is_tooltip_present}    Run Keyword And Return Status    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Should Be True    ${is_tooltip_present} == ${False}
+    ###Set CF
+    Set Charged Fare Field    10
+    SEND    {TAB}
+    ${actual_tooltip_LF}    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Verify Actual Value Matches Expected Value    ${actual_tooltip_LF}    Validate Low Fare
+    Verify Error In Status Strip Text Is Displayed    Low Fare cannot be greater than Charged Fare
+    Verify Panel Status    RED    Air Fare
+    ###Set CF
+    Set Charged Fare Field    83
+    SEND    {TAB}
+    ${is_tooltip_present}    Run Keyword And Return Status    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Should Be True    ${is_tooltip_present} == ${False}
+    Verify Panel Status    GREEN    Air Fare
+    ###Set Valid LF
+    Set Low Fare Field    83
+    Verify Panel Status    GREEN    Air Fare
+    ###Set CF
+    Set Charged Fare Field    -83
+    SEND    {TAB}
+    ${actual_tooltip_RF}    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Verify Actual Value Matches Expected Value    ${actual_tooltip_RF}    Validate Low Fare
+    Verify Error In Status Strip Text Is Displayed    Low Fare cannot be greater than Charged Fare
+    Verify Panel Status    RED    Air Fare
+    ###Set CF
+    Set Charged Fare Field    84
+    SEND    {TAB}
+    ###Set LF
+    Set Low Fare Field    85
+    ${actual_tooltip_RF}    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Verify Actual Value Matches Expected Value    ${actual_tooltip_RF}    Validate Low Fare
+    Verify Error In Status Strip Text Is Displayed    Low Fare cannot be greater than Charged Fare
+    Verify Panel Status    RED    Air Fare
+    ###Set LF
+    Set Low Fare Field    -85
+    ${is_tooltip_present}    Run Keyword And Return Status    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Should Be True    ${is_tooltip_present} == ${False}
+    ###Set HF
+    Set High Fare Field    -83
+    ${actual_tooltip_RF}    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Verify Actual Value Matches Expected Value    ${actual_tooltip_RF}    Validate High Fare
+    Verify Error In Status Strip Text Is Displayed    High Fare cannot be lower than Charged Fare
+    Verify Panel Status    RED    Air Fare
+    ###Set HF to Blank
+    Set Charged Fare Field    -84
+    SEND    {TAB}
+    Verify Mandatory Field    ctxtHighFare    True
+    ###Set CF to Blank
+    Verify Mandatory Field    ctxtChargedFare    True
+    Verify Mandatory Field    ctxtHighFare
+    Verify Mandatory Field    ctxtLowFare    True
+    Verify Panel Status    RED    Air Fare
+    ###Set LF
+    Set Low Fare Field    500
+    Verify Mandatory Field    ctxtHighFare
+    Verify Mandatory Field    ctxtChargedFare
+    Verify Panel Status    RED    Air Fare
+    ###Set HF
+    Set High Fare Field    500
+    Verify Mandatory Field    ctxtChargedFare
+    Verify Panel Status    RED    Air Fare
+    ###Set CF
+    Set Charged Fare Field    0
+    SEND    {TAB}
+    ${actual_tooltip_RF}    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Verify Actual Value Matches Expected Value    ${actual_tooltip_RF}    Validate Low Fare
+    Verify Error In Status Strip Text Is Displayed    Low Fare cannot be greater than Charged Fare
+    Verify Panel Status    RED    Air Fare
+    ###Set CF
+    Set Charged Fare Field    500
+    SEND    {TAB}
+    Verify Panel Status    GREEN    Air Fare
+
+Verify Fare Including Airline Taxes Field Is Disabled
+    [Arguments]    ${fare_tab}
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtFareIncludingTaxes, ctxtFareIncludingTaxes_alt
+    Comment    ${fare_including_taxes}    Get Control Text Value    ${object_name}
+    Verify Control Object Is Disabled    ${object_name}
+    Comment    Verify Control Object Is Disabled    [NAME:ctxtFareIncludingTaxes_${fare_tab_index}]
+
+Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value
+    [Arguments]    ${fare_tab}    ${airline_commision_or_client_rebate}=Airline Commission    ${start_substring}=4    ${end_substring}=6    ${is_exchange}=false
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    ${country}    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    Verify Fare Including Airline Taxes Field Is Disabled    ${fare_tab}
+    ## Value on tax includes the OB FEE
+    ${tax_and_ob_fee}    Run Keyword If    "${is_exchange.lower()}" == "false"    Evaluate    ${grand_total_value_${fare_tab_index}} - ${base_fare_${fare_tab_index}}
+    ...    ELSE    Set Variable    ${total_tax_${fare_tab_index}}
+    Run Keyword If    "${nett_fare_value_${fare_tab_index}}" == "0" or "${nett_fare_value_${fare_tab_index}}" == "0.00"    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${base_fare_${fare_tab_index}}
+    ...    ELSE    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${nett_fare_value_${fare_tab_index}}
+    ${fare_including_taxes}    Run Keyword If    "${airline_commision_or_client_rebate}" == "Client Rebate"    Evaluate    (${base_or_nett_fare_${fare_tab_index}} + ${tax_and_ob_fee} + ${mark_up_value_${fare_tab_index}}) - ${commission_rebate_value_${fare_tab_index}}
+    ...    ELSE IF    "${airline_commision_or_client_rebate}" == "Airline Commission"    Evaluate    ${base_or_nett_fare_${fare_tab_index}} + ${tax_and_ob_fee} + ${mark_up_value_${fare_tab_index}}
+    ${fare_including_taxes}    Round Apac    ${fare_including_taxes}    ${country}
+    Set Suite Variable    ${computed_fare_including_taxes_${fare_tab_index}}    ${fare_including_taxes}
+    Run Keyword If    "${computed_fare_including_taxes_${fare_tab_index}}" == "${fare_including_taxes_${fare_tab_index}}"    Log    Fare Including Airline Taxes: ${fare_including_taxes_${fare_tab_index}} is correctly displayed.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Fare Including Airline Taxes: ${fare_including_taxes_${fare_tab_index}} displayed is not equal to the computed amount: ${computed_fare_including_taxes_${fare_tab_index}}
+
+Verify Fare Itinerary Remarks Are Not Written
+    Verify Specific Remark Is Not Written In The PNR    RIR ************* ITINERARY QUOTE PER PASSENGER
+    Verify Specific Remark Is Not Written In The PNR    RIR QUOTE NUMBER:
+    Verify Specific Remark Is Not Written In The PNR    RIR ROUTING:
+    Verify Specific Remark Is Not Written In The PNR    RIR ADULT FARE:
+    Verify Specific Remark Is Not Written In The PNR    RIR TRANSACTION FEE:
+    Verify Specific Remark Is Not Written In The PNR    RIR CC CONVENIENCE FEE:
+    Verify Specific Remark Is Not Written In The PNR    RIR SVC FEE FOR SURCHARGE:
+    Verify Specific Remark Is Not Written In The PNR    RIR THIS TICKET MAY BE SUBJECT TO PENALTIES OR FARE
+    Verify Specific Remark Is Not Written In The PNR    \ \ \ \ \ \ INCREASE.
+    Verify Specific Remark Is Not Written In The PNR    RIR CHANGES/CANCELLATION MAY BE SUBJECT TO A PENALTY OR FARE
+    Verify Specific Remark Is Not Written In The PNR    RIR INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE
+    Verify Specific Remark Is Not Written In The PNR    \ \ \ \ \ \ TICKET.
+    Verify Specific Remark Is Not Written In The PNR    RIR NO REFUND FOR UNUSED PORTION ON CERTAIN FARES. TO RETAIN
+    Verify Specific Remark Is Not Written In The PNR    RIR VALUE OF YOUR TICKET, YOU MUST CANCEL THE RESERVATION
+    Verify Specific Remark Is Not Written In The PNR    RIR ON OR BEFORE YOUR TICKETED DEPARTURE TIME.
+    Verify Specific Remark Is Not Written In The PNR    RIR ALL PRICES SUBJECT TO CHANGE AT ANYTIME WITHOUT NOTICE
+
+Verify Field Is Not Mandatory
+    [Arguments]    ${field_name}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ${field_name}
+    Verify Object Field Is Not Mandatory    ${object_name}
+
+Verify Fuel Surcharge Is Not Displayed
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Control Object Is Not Visible    [NAME:ctxtFuelSurcharge_${fare_tab_index}]
+    Verify Control Object Is Not Visible    [NAME:ctxtFuelSurcharge_${fare_tab_index}]
+
+Verify Fuel Surcharge Per TST Are Not Written
+    [Arguments]    ${fare_tab}    ${segments_in_tst}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Test Variable    ${is_tmp_card}    False
+    Identify Form Of Payment Code For APAC    ${str_card_type}
+    Set Test Variable    ${product_code}    PC41
+    Set Test Variable    ${vendor_code}    V00001
+    Set Test Variable    ${currency}    HKD
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC41/${vendor_code}/TKFF02/PX1/${segment_number}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${fuel_surcharge_value_${fare_tab_index}}/SF${fuel_surcharge_value_${fare_tab_index}}/C${fuel_surcharge_value_${fare_tab_index}}/SG${segments_in_tst}/${segment_number}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF SVC FEE FOR SURCHARGE/${segment_number}
+    Verify Specific Remark Is Not Written In The PNR    RIR SVC FEE FOR SURCHARGE: ${CURRENCY} ${fuel_surcharge_value_${fare_tab_index}}
+
+Verify Fuel Surcharge Per TST Are Written
+    [Arguments]    ${fare_tab}    ${segments_in_tst}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Test Variable    ${is_tmp_card}    False
+    Identify Form Of Payment Code For APAC    ${str_card_type}
+    Set Test Variable    ${product_code}    PC41
+    Set Test Variable    ${vendor_code}    V00001
+    Set Test Variable    ${currency}    HKD
+    Run Keyword If    ("${tmp_card}" == "364403" and "${str_card_type_${fare_tab_index}}" == "DC") or ("${ctcl_card}" == "44848860" and "${str_card_type_${fare_tab_index}}" == "VI")    Set Test Variable    ${is_tmp_card}    True
+    Verify Specific Remark Is Written In The PNR    RM *MS/PC41/${vendor_code}/TKFF02/PX1/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/S${fuel_surcharge_value_${fare_tab_index}}/SF${fuel_surcharge_value_${fare_tab_index}}/C${fuel_surcharge_value_${fare_tab_index}}/SG${segments_in_tst}/${segment_number}
+    Run Keyword If    "${str_card_type.upper()}" == "CASH" or "${str_card_type.upper()}" == "INVOICE" or "${is_tmp_card}" == "True"    Verify Specific Remark Is Written In The PNR    RM *MSX/FS/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type}${str_card_number}EXP${str_exp_date}/D${fuel_surcharge_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/FF SVC FEE FOR SURCHARGE/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RIR SVC FEE FOR SURCHARGE: ${CURRENCY} ${fuel_surcharge_value_${fare_tab_index}}
+
+Verify Fuel Surcharge Value In Air Fare
+    [Arguments]    ${fare_tab}    ${expected_fuel_surcharge}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${actual_surcharge}    Get Fuel Surcharge Value    ${fare_tab}
+    Run Keyword And Continue On Failure    Should Be Equal As Strings    ${actual_surcharge}    ${expected_fuel_surcharge}    msg=Expected fuel surcharge: ${expected_fuel_surcharge} should match actual value: ${actual_surcharge}    values=False
+    [Teardown]    Take Screenshot
+
+Verify GST On Air Accounting Remarks Is Written
+    [Arguments]    ${fare_tab}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Calculate GST On Air    ${fare_tab_index}
+    Identify Form Of Payment Code For APAC    ${str_card_type_${fare_tab_index}}
+    ${tmp_card}    Get Substring    ${str_card_number_${fare_tab_index}}    \    6
+    ${ctcl_card}    Get Substring    ${str_card_number_${fare_tab_index}}    \    8
+    Run Keyword If    ("${tmp_card}" == "364403" and "${str_card_type_${fare_tab_index}}" == "DC") or ("${ctcl_card}" == "44848860" and "${str_card_type_${fare_tab_index}}" == "VI")    Set Test Variable    ${is_tmp_card}    True
+    Run Keyword If    "${route_code_${fare_tab_index}}" == "DOM"    Verify Specific Remark Is Written In The PNR    RM *FF99-18P${gst_airfare_value_service_${fare_tab_index}}*0P0*0P0/S${segment_number}
+    Run Keyword If    "${lfcc_in_tst_${fare_tab_index}}" != "AI" and "${lfcc_in_tst_${fare_tab_index}}" != "9W"    Verify Specific Remark Is Not Written In The PNR    RM *FF96/YQ${yq_tax_${fare_tab_index}}*K3${k3_tax_${fare_tab_index}}/S${segment_number}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RM *FF96/YQ${yq_tax_${fare_tab_index}}*K3${k3_tax_${fare_tab_index}}/S${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *MS/PC87/V00800011/TKFF${fare_tab_index}/PX1/S${segment_number}
+    Run Keyword If    "${route_code_${fare_tab_index}}" == "DOM"    Verify Specific Remark Is Written In The PNR    RM *MSX/S${gst_airfare_value_service_${fare_tab_index}}/SF${gst_airfare_value_service_${fare_tab_index}}/C0/SG${segments_in_tst}/S${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/S${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}}.upper()}" == "CASH" or "${str_card_type_${fare_tab_index}}.upper()}" == "INVOICE" or "${is_tmp_card.upper()}" == "TRUE"    Verify Specific Remark Is Written In The PNR    RM *MSX/FS/S${segment_number}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${gst_airfare_value_service_${fare_tab_index}}/${segment_number}
+
+Verify GST On Merchant Fee Accounting Remarks
+    [Arguments]    ${fare_tab}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Calculate GST On Merchant Fee    ${fare_tab}
+    ${segments_in_tst}    Get Segment Number For Travcom    ${segment_number}
+    Identify Form Of Payment Code For APAC    ${str_card_type_${fare_tab_index}}
+    Set Suite Variable    ${product_code}    PC87
+    Set Suite Variable    ${vendor_code}    V00800011
+    Set Suite Variable    ${currency}    INR
+    Run Keyword If    ("${gst_merchant_fee_value_${fare_tab_index}}" != "0")    Verify GST On Merchant Fee Per TST Are Written    ${fare_tab}    ${segments_in_tst}    ${segment_number}
+    ...    ELSE    Verify GST On Merchant Fee Per TST Not Written    ${fare_tab}    ${segments_in_tst}    ${segment_number}
+
+Verify GST On Merchant Fee For Transaction Fee Accounting Remarks
+    [Arguments]    ${fare_tab}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${segments_in_tst}    Get Segment Number For Travcom    ${segment_number}
+    Identify Form Of Payment Code For APAC    ${str_card_type_${fare_tab_index}}
+    Set Suite Variable    ${product_code}    PC40
+    Set Suite Variable    ${vendor_code}    V00800004
+    Set Suite Variable    ${product_code_2}    PC87
+    Set Suite Variable    ${vendor_code_2}    V00800011
+    Run Keyword If    "${mf_for_tf_amount_${fare_tab_index}}" != "0"    Log    GST On MF fo TF remarks must be written. Merchant Fee % value is: ${merchant_fee_value_${fare_tab_index}}" and Transaction Fee amount is: ${transaction_fee_value_${fare_tab_index}}
+    ...    ELSE    Log    GST On MF fo TF remarks must not be written. Merchant Fee % value is: ${merchant_fee_value_${fare_tab_index}}" and Transaction Fee amount is: ${transaction_fee_value_${fare_tab_index}}
+    Run Keyword If    "${mf_for_tf_amount_${fare_tab_index}}" != "0"    Verify GST On Merchant Fee For Transaction Fee Per TST Are Written    ${fare_tab}    ${segments_in_tst}    ${segment_number}
+    ...    ELSE    Verify GST On Merchant Fee For Transaction Fee Per TST Not Written    ${fare_tab}    ${segments_in_tst}    ${segment_number}
+
+Verify GST On Merchant Fee For Transaction Fee Per TST Are Written
+    [Arguments]    ${fare_tab}    ${segments_in_tst}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Remarks Leading And Succeeding Line Numbers    MSX/FF99-18P${computed_gst_mf_for_tf_amount_${fare_tab_index}}*0P0*0P0/${segment_number}
+    Get Remarks Line And Descending Numbers    MSX/FF99-18P${computed_gst_mf_for_tf_amount_${fare_tab_index}}*0P0*0P0/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_1-5} RM *MS/${product_code}/${vendor_code}/AC${lfcc_in_tst_${fare_tab_index}}/TKFF0${fare_tab_index}/PX1/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_1-4} RM *MSX/S${mf_for_tf_amount_${fare_tab_index}}/SF${mf_for_tf_amount_${fare_tab_index}}/C${mf_for_tf_amount_${fare_tab_index}}/SG0${segments_in_tst}/${segment_number}
+    Verify Remarks Line Contains Masked Card    ${remarks_1-3} RM
+    Run Keyword If    "${status_masked}" == "False"    Verify Specific Remark Is Written In The PNR    ${remarks_1-3} RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${mf_for_tf_amount_${fare_tab_index}}/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    ${remarks_1-3} RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number2_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${mf_for_tf_amount_${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_1-2} RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_1} RM *MSX/FF99-18P${computed_gst_mf_for_tf_amount_${fare_tab_index}}*0P0*0P0/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_2} RM *MSX/FF MERCHANT FEE/${segment_number}
+    ###PC87
+    Get Remarks Leading And Succeeding Line Numbers    MSX/S${computed_gst_mf_for_tf_amount_${fare_tab_index}}/SF${computed_gst_mf_for_tf_amount_${fare_tab_index}}/C0/SG0${segments_in_tst}/${segment_number}
+    ${remarks_0}    Evaluate    ${remarks_1} - 1
+    Verify Specific Remark Is Written In The PNR    ${remarks_0} RM *MS/${product_code_2}/${vendor_code_2}/TKFF0${fare_tab_index}/PX1/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_1} RM *MSX/S${computed_gst_mf_for_tf_amount_${fare_tab_index}}/SF${computed_gst_mf_for_tf_amount_${fare_tab_index}}/C0/SG0${segments_in_tst}/${segment_number}
+    Verify Remarks Line Contains Masked Card    ${remarks_2} RM
+    Run Keyword If    "${status_masked}" == "False"    Verify Specific Remark Is Written In The PNR    ${remarks_2} RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${computed_gst_mf_for_tf_amount_${fare_tab_index}}/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    ${remarks_2} RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number2_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${computed_gst_mf_for_tf_amount_${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_3} RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_4} RM *MSX/FF VAT/${segment_number}
+
+Verify GST On Merchant Fee For Transaction Fee Per TST Not Written
+    [Arguments]    ${fare_tab}    ${segments_in_tst}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Comment    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${mf_for_tf_amount_${fare_tab_index}}/SF${mf_for_tf_amount_${fare_tab_index}}/C${mf_for_tf_amount_${fare_tab_index}}/SG0${segments_in_tst}/${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}.upper()}" != "CASH" and "${str_card_type_${fare_tab_index}.upper()}" != "INVOICE"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${mf_for_tf_amount_${fare_tab_index}}/${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}.upper()}" != "CASH" and "${str_card_type_${fare_tab_index}.upper()}" != "INVOICE"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number2_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${mf_for_tf_amount_${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF99-18P${computed_gst_mf_for_tf_amount_${fare_tab_index}}*0P0*0P0/${segment_number}
+    ###PC87
+    Comment    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${computed_gst_mf_for_tf_amount_${fare_tab_index}}/SF${computed_gst_mf_for_tf_amount_${fare_tab_index}}/C0/SG0${segments_in_tst}${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}.upper()}" != "CASH" and "${str_card_type_${fare_tab_index}.upper()}" != "INVOICE"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${computed_gst_mf_for_tf_amount_${fare_tab_index}}/${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}.upper()}" != "CASH" and "${str_card_type_${fare_tab_index}.upper()}" != "INVOICE"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number2_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${computed_gst_mf_for_tf_amount_${fare_tab_index}}/${segment_number}
+
+Verify GST On Merchant Fee Per TST Are Written
+    [Arguments]    ${fare_tab}    ${segments_in_tst}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Remarks Leading And Succeeding Line Numbers    MSX/S${gst_merchant_fee_value_${fare_tab_index}}/SF${gst_merchant_fee_value_${fare_tab_index}}/C0/SG0${segments_in_tst}/${segment_number}
+    ${remarks_0}    Evaluate    ${remarks_1} - 1
+    Verify Specific Remark Is Written In The PNR    ${remarks_0} RM *MS/${product_code}/${vendor_code}/TKFF0${fare_tab_index}/PX1/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_1} RM *MSX/S${gst_merchant_fee_value_${fare_tab_index}}/SF${gst_merchant_fee_value_${fare_tab_index}}/C0/SG0${segments_in_tst}/${segment_number}
+    Verify Remarks Line Contains Masked Card    ${remarks_2} RM
+    Run Keyword If    "${status_masked}" == "False"    Verify Specific Remark Is Written In The PNR    ${remarks_2} RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${gst_merchant_fee_value_${fare_tab_index}}/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    ${remarks_2} RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number2_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${gst_merchant_fee_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_3} RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_4} RM *MSX/FF VAT/${segment_number}
+
+Verify GST On Merchant Fee Per TST Not Written
+    [Arguments]    ${fare_tab}    ${segments_in_tst}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Comment    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${gst_merchant_fee_value_${fare_tab_index}}/SF${gst_merchant_fee_value_${fare_tab_index}}/C0/SG0${segments_in_tst}/${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}.upper()}" != "CASH" and "${str_card_type_${fare_tab_index}.upper()}" != "INVOICE"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${gst_merchant_fee_value_${fare_tab_index}}/${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}.upper()}" != "CASH" and "${str_card_type_${fare_tab_index}.upper()}" != "INVOICE"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number2_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${gst_merchant_fee_value_${fare_tab_index}}/${segment_number}
+
+Verify GST On Merchant Fee TF Field Is Disabled
+    ${merchant_tf_field}    Determine Multiple Object Name Based On Active Tab    ctxtMerchantFeeOnTransactionFee
+    Verify Control Object Is Disabled    ${merchant_tf_field}
+
+Verify GST On Merchant Fee TF Field Is Disabled And Empty
+    ${merchant_tf_field}    Determine Multiple Object Name Based On Active Tab    ctxtMerchantFeeOnTransactionFee
+    Verify Control Object Is Disabled    ${merchant_tf_field}
+    ${gst_merchant_fee_transaction_fee_fare_amount}    Get Control Text Value    ${merchant_tf_field}
+    Run Keyword If    "${gst_merchant_fee_transaction_fee_fare_amount}" == "${EMPTY}"    Log    GST Merchant Fee (TF) amount field is empty.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    GST Merchant Fee (TF) amount field is not empty.
+
+Verify GST Total Amount Is Correct Based On Computed Value
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Calculate GST Total Amount    ${fare_tab}
+    Get GST Total Value    ${fare_tab}
+    Run Keyword If    "${computed_total_gst_amount_${fare_tab_index}}" == "${gst_total_amount_${fare_tab_index}}"    Log    Displayed GST Total Amount: ${gst_total_amount_${fare_tab_index}} is the same as the computed GST total amount.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Displayed GST Total Amount: ${gst_total_amount_${fare_tab_index}} is not the same as the computed GST total amount: ${computed_total_gst_amount_${fare_tab_index}}.
+
+Verify GST Total Field Is Disabled
+    ${gst_field}    Determine Multiple Object Name Based On Active Tab    ctxtGSTAmount
+    Verify Control Object Is Disabled    ${gst_field}
+
+Verify High Fare Value Is Retrieved From TST
+    [Arguments]    ${fare_tab}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get High Fare From TST    ${fare_tab}    ${segment_number}
+    Verify High Fare Field Value    ${high_fare_${fare_tab_index}}    ${fare_tab}
+    [Teardown]    Take Screenshot
+
+Verify High Fare Value Is Same From New Booking
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify High Fare Field Value    ${high_fare_value_${fare_tab_index}}    ${fare_tab}
+
+Verify LFCC Accounting Remark Is Written
+    [Arguments]    ${fare_tab}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Remark Is Written In The PNR    RM *FF81/${lfcc_value_${fare_tab_index}}/${segment_number}
+
+Verify LFCC Field On Air Fare Panel behaves Correctly
+    Set LFCC Field    X.
+    ${actual_tooltip_CF}    Get Tooltip From Error Icon    detailsTableLayoutPanel
+    Verify Actual Value Matches Expected Value    ${actual_tooltip_CF}    Please enter a valid Lowest Fare Carrier Code (2 character codes).
+    Verify Panel Status    RED    Air Fare
+    #Set LFCC as Blank
+    Verify Mandatory Field    ctxtLowestFareCC    True
+    Verify Panel Status    RED    Air Fare
+    #Set Valid LFCC
+    Set LFCC Field    CD
+    Verify Panel Status    GREEN    Air Fare
+
+Verify LFCC Field Value
+    [Arguments]    ${expected_lfcc_value}    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get LFCC Field Value    ${fare_tab}
+    Verify Actual Value Matches Expected Value    ${lfcc_value_${fare_tab_index}}    ${expected_lfcc_value}
+
+Verify LFCC Value Is Retrieved From FV Line In TST
+    [Arguments]    ${fare_tab}    ${segment_number}=S2    ${gds_command}=TQT
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get LFCC From FV Line In TST    ${fare_tab}    ${segment_number}
+    Get LFCC Field Value    ${fare_tab}
+    Verify Actual Value Matches Expected Value    ${lfcc_in_tst_${fare_tab_index}}    ${lfcc_value_${fare_tab_index}}
+
+Verify LFCC Value Is Same From New Booking
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify LFCC Field Value    ${lfcc_value_${fare_tab_index}}    ${fare_tab}
+
+Verify Low Fare Value Is Retrieved From TST
+    [Arguments]    ${fare_tab}    ${segment_number}    ${currency}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Low Fare From TST    ${fare_tab}    ${segment_number}    ${currency}
+    Verify Low Fare Field Value    ${low_fare_${fare_tab_index}}    ${fare_tab}
+    [Teardown]    Take Screenshot
+
+Verify Low Fare Value Is Same From New Booking
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Low Fare Field Value    ${low_fare_value_${fare_tab_index}}    ${fare_tab}
+
+Verify Mandatory Field
+    [Arguments]    ${field_name}    ${set_field_to_empty}=false
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ${field_name}
+    Run Keyword If    "${set_field_to_empty}" == "True"    Set Field To Empty    ${object_name}
+    Verify Control Object Background Color    ${object_name}    FFD700
+    [Teardown]    Take Screenshot
+
+Verify Mandatory Field For Dropdown List
+    [Arguments]    ${field_name}    ${set_field_to_empty}=false
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ${field_name}
+    Control Focus    ${title_power_express}    ${EMPTY}    ${object_name}
+    Send    {DOWN}
+    Send    {DELETE}
+    Send    {TAB}
+    Verify Control Object Background Color    ${object_name}    FFD700
+    [Teardown]    Take Screenshot
+
+Verify Mark-Up Amount And Percentage Are Empty Or Blank
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Mark-Up Amount Is Empty    ${fare_tab_index}
+    Verify Mark-Up Percentage Is Empty    ${fare_tab_index}
+
+Verify Mark-Up Percentage Is Empty
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${markup_percent_field}    Determine Multiple Object Name Based On Active Tab    ctxtMarkUpPercent
+    ${markup_percent_field}    Get Control Text Value    ${markup_percent_field}
+    Run Keyword If    "${markup_percent_field}" == "${EMPTY}"    Log    Mark Up percentage is set to Empty.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Mark Up percentage is not Empty. Actual Value is ${markup_percent_field}.
+    ${markup_percent_field}    Set Variable If    "${markup_percent_field}" == "${EMPTY}"    0    ${markup_percent_field}
+    Set Suite Variable    ${markup_percent_field_${fare_tab_index}}    ${markup_percent_field}
+
+Verify Mark-up Amount Value Is Correct
+    [Arguments]    ${fare_tab}    ${country}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Mark-Up Amount Value    ${fare_tab}
+    Run Keyword If    "${nett_fare_value_${fare_tab_index}}" == "${EMPTY}" or "${nett_fare_value_${fare_tab_index}}" == "0"    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${base_fare_${fare_tab_index}}
+    ...    ELSE    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${nett_fare_value_${fare_tab_index}}
+    ${mark_up_amount}    Evaluate    ${base_or_nett_fare_${fare_tab_index}} * ${mark_up_percentage_value_${fare_tab_index}}
+    Run Keyword If    "${country}" == "SG"    Round Apac    ${mark_up_amount}    ${country}
+    ...    ELSE IF    "${country}" == "HK" or "${country}" == "IN"    Round Apac    ${mark_up_amount}    ${country}
+    Run Keyword If    "${country}" == "SG"    Convert To Float    ${mark_up_amount}    ${country}
+    ...    ELSE IF    "${country}" == "HK" or "${country}" == "IN"    Convert To Float    ${mark_up_amount}    ${country}
+    Set Suite Variable    ${expected_mark_up_amount_${fare_tab_index}}    ${mark_up_amount}
+    Verify Text Contains Expected Value    ${merchant_fee_value_${fare_tab_index}}    ${expected_mark_up_amount_${fare_tab_index}}
+
+Verify MarkUp Amount Value Is Correct
+    [Arguments]    ${fare_tab}    ${country}    ${rounding_so}=${EMPTY}
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    Get MarkUp Amount Value    ${fare_tab}
+    Run Keyword If    "${nett_fare_value_${fare_tab_index}}" == "${EMPTY}" or "${nett_fare_value_${fare_tab_index}}" == "0"    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${base_fare_${fare_tab_index}}
+    ...    ELSE    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${nett_fare_value_${fare_tab_index}}
+    ${mark_up_amount}    Evaluate    ${base_or_nett_fare_${fare_tab_index}} * ${mark_up_percentage_value_${fare_tab_index}} / 100
+    Comment    ${mark_up_amount}    Run Keyword If    "${country}" == "SG"    Round Apac    ${mark_up_amount}    ${country}
+    ...    ELSE IF    "${country}" == "HK" or "${country}" == "IN"    Round Apac    ${mark_up_amount}    ${country}
+    Comment    ${mark_up_amount}    Run Keyword If    "${country}" == "SG"    Convert To Float    ${mark_up_amount}    2
+    ...    ELSE IF    "${country}" == "HK" or "${country}" == "IN"    Convert To Float    ${mark_up_amount}    0
+    ${mark_up_amount}    Round To Nearest Dollar    ${mark_up_amount}    ${country}    ${rounding_so}
+    Set Suite Variable    ${expected_mark_up_amount_${fare_tab_index}}    ${mark_up_amount}
+    Verify Actual Value Matches Expected Value    ${mark_up_value_${fare_tab_index}}    ${expected_mark_up_amount_${fare_tab_index}}
+
+Verify Merchant Fee Amount And Percentage Are Empty Or Blank
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Merchant Fee Amount Is Empty    ${fare_tab_index}
+    Verify Merchant Fee Percentage Is Empty    ${fare_tab_index}
+
+Verify Merchant Fee Amount Is Correct Based On Computed Value
+    [Arguments]    ${fare_tab}    ${airline_commission_or_client_rebate}=Airline Commission    ${has_client_cwt_comm_agreement}=No    ${start_substring}=4    ${end_substring}=6    ${rounding_so}=${EMPTY}
+    ${country}    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    Set Suite Variable    ${country}
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    Set Test Variable    ${gst_airfare_value_service_${fare_tab_index}}    0
+    ${fop_merchant_fee_type}    Get Variable Value    ${fop_merchant_fee_type_${fare_tab_index}}    0
+    Run Keyword If    "${nett_fare_value_${fare_tab_index}}" == "0" or "${nett_fare_value_${fare_tab_index}}" == "0.00"    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${base_fare_${fare_tab_index}}
+    ...    ELSE    Set Suite Variable    ${base_or_nett_fare_${fare_tab_index}}    ${nett_fare_value_${fare_tab_index}}
+    Run Keyword If    "${country}" == "IN"    Calculate GST On Air    ${fare_tab}
+    Run Keyword If    "${airline_commission_or_client_rebate.upper()}" == "CLIENT REBATE" and "${fop_merchant_fee_type}" == "CWT"    Log    Client Rebate is applied and FOP is CWT
+    ...    ELSE IF    "${airline_commission_or_client_rebate.upper()}" == "AIRLINE COMMISSION" and "${fop_merchant_fee_type}" == "CWT"    Log    Airline Commission is applied and FOP is CWT
+    ...    ELSE IF    "${country}" == "IN" and "${fop_merchant_fee_type.upper()}" == "AIRLINE" and "${has_client_cwt_comm_agreement.upper()}" == "YES"    Log    Country is India, FOP is Airline and Has Client CWT Comm Agreement.
+    ...    ELSE    Log    No Setup was added.
+    ${computed_merchant_amount}    Run Keyword If    "${airline_commission_or_client_rebate.upper()}" == "CLIENT REBATE" and "${fop_merchant_fee_type}" == "CWT"    Evaluate    (${base_or_nett_fare_${fare_tab_index}} + ${total_tax_${fare_tab_index}} + ${mark_up_value_${fare_tab_index}} + ${gst_airfare_value_service_${fare_tab_index}} - ${commission_rebate_value_${fare_tab_index}}) * ${merchant_fee_percentage_value_${fare_tab_index}}/100
+    ...    ELSE IF    "${airline_commission_or_client_rebate.upper()}" == "AIRLINE COMMISSION" and "${fop_merchant_fee_type}" == "CWT"    Evaluate    (${base_or_nett_fare_${fare_tab_index}} + ${total_tax_${fare_tab_index}} + ${mark_up_value_${fare_tab_index}} + ${gst_airfare_value_service_${fare_tab_index}}) * ${merchant_fee_percentage_value_${fare_tab_index}}/100
+    ...    ELSE IF    "${country}" == "IN" and "${fop_merchant_fee_type.upper()}" == "AIRLINE" and "${has_client_cwt_comm_agreement.upper()}" == "YES"    Evaluate    ${gst_airfare_value_service_${fare_tab_index}} * ${merchant_fee_percentage_value_${fare_tab_index}}/100
+    Comment    ${computed_merchant_amount}    Round Apac    ${computed_merchant_amount}    ${country}
+    ${computed_merchant_amount}    Round To Nearest Dollar    ${computed_merchant_amount}    ${country}    ${rounding_so}
+    Run Keyword If    "${merchant_fee_value_${fare_tab_index}}" == "${computed_merchant_amount}"    Log    Actual merchant fee amount: ${merchant_fee_value_${fare_tab_index}} is correctly displayed.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Actual merchant fee amount: ${merchant_fee_value_${fare_tab_index}} displayed is not equal to computed merchant amount fee: ${computed_merchant_amount}.
+    Log    BaseFare: ${base_or_nett_fare_${fare_tab_index}} Tax: ${total_tax_${fare_tab_index}} Markup: ${mark_up_value_${fare_tab_index}} GST: ${gst_airfare_value_service_${fare_tab_index}} Merchant: ${merchant_fee_percentage_value_${fare_tab_index}}/100
+    [Teardown]    Take Screenshot
+
+Verify Merchant Fee Amount Is Empty
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${merchant_fee_amount_field}    Determine Multiple Object Name Based On Active Tab    ctxtMerchantFeeAmount
+    ${merchant_fee_amount}    Get Control Text Value    ${merchant_fee_amount_field}
+    Run Keyword If    "${merchant_fee_amount}" == "${EMPTY}"    Log    Merchant Fee amount is set to Empty.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Merchant Fee amount is not Empty. Actual Value is ${merchant_fee_amount}.
+    ${merchant_fee_amount}    Set Variable If    "${merchant_fee_amount}" == "${EMPTY}"    0    ${merchant_fee_amount}
+    Set Suite Variable    ${merchant_fee_value_${fare_tab_index}}    ${merchant_fee_amount}
+
+Verify Merchant Fee Fields Are Disabled
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Control Object Is Disabled    [NAME:ctxtMerchantFeeAmount_${fare_tab_index}]
+    Verify Control Object Is Disabled    [NAME:ctxtMerchantFeePercent_${fare_tab_index}]
+
+Verify Merchant Fee Fields Are Enabled
+    [Arguments]    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Control Object Is Enabled    [NAME:ctxtMerchantFeeAmount_${fare_tab_index}]
+    Verify Control Object Is Enabled    [NAME:ctxtMerchantFeePercent_${fare_tab_index}]
+
+Verify Merchant Fee For Transaction Fee Amount Is Correct Based On Computed Value
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Calculate GST On Transaction Fee    ${fare_tab}    IN
+    Calculate GST On Merchant Fee For Transaction Fee    ${fare_tab}
+    Get Merchant Fee For Transaction Fee Value    ${fare_tab}
+    Run Keyword If    "${merchant_fee_for_transaction_fee_${fare_tab_index}}" == "${mf_for_tf_amount_${fare_tab_index}}"    Log    Displayed Merchant Fee For Transaction Fee Amount: ${mf_for_tf_amount_${fare_tab_index}} is the same as the computed amount.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Displayed Merchant Fee For Transaction Fee Amount: ${mf_for_tf_amount_${fare_tab_index}} is not the same as the computed amount: ${merchant_fee_for_transaction_fee_${fare_tab_index}}.
+
+Verify Merchant Fee Per TST Are Written
+    [Arguments]    ${fare_tab}    ${country}    ${segments_in_tst}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Remarks Leading And Succeeding Line Numbers    MSX/S${merchant_fee_value_${fare_tab_index}}/SF${merchant_fee_value_${fare_tab_index}}/C${merchant_fee_value_${fare_tab_index}}/SG0${segments_in_tst}/${segment_number}
+    ${remarks_0}    Evaluate    ${remarks_1} - 1
+    Verify Specific Remark Is Written In The PNR    ${remarks_0} RM *MS/${product_code}/${vendor_code}/AC${lfcc_in_tst_${fare_tab_index}}/TKFF0${fare_tab_index}/PX1/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_1} RM *MSX/S${merchant_fee_value_${fare_tab_index}}/SF${merchant_fee_value_${fare_tab_index}}/C${merchant_fee_value_${fare_tab_index}}/SG0${segments_in_tst}/${segment_number}
+    Verify Remarks Line Contains Masked Card    ${remarks_2} RM
+    Run Keyword If    "${status_masked}" == "False"    Verify Specific Remark Is Written In The PNR    ${remarks_2} RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${merchant_fee_value_${fare_tab_index}}/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    ${remarks_2} RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number2_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${merchant_fee_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    ${remarks_3} RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Run Keyword If    "${country}" == "IN"    Verify Specific Remark Is Written In The PNR    ${remarks_4} RM *MSX/FF99-18P${gst_merchant_fee_value_${fare_tab_index}}*0P0*0P0/${segment_number}
+    Run Keyword If    "${country}" == "HK"    Verify Specific Remark Is Written In The PNR    ${remarks_4} RM *MSX/FF CC CONVENIENCE FEE/${segment_number}
+    ...    ELSE IF    "${country}" == "SG"    Verify Specific Remark Is Written In The PNR    ${remarks_4} RM *MSX/FF MERCHANT FEE/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    ${remarks_5} RM *MSX/FF MERCHANT FEE/${segment_number}
+    Run Keyword If    "${country}" == "HK"    Verify Specific Remark Is Written In The PNR    RIR CC CONVENIENCE FEE: ${CURRENCY} ${merchant_fee_value_${fare_tab_index}}
+    ...    ELSE IF    "${country}" == "SG"    Verify Specific Remark Is Written In The PNR    RIR MERCHANT FEE: ${CURRENCY} ${merchant_fee_value_${fare_tab_index}}
+
+Verify Merchant Fee Per TST Not Written
+    [Arguments]    ${fare_tab}    ${country}    ${segments_in_tst}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/${product_code}/${vendor_code}/AC${lfcc_in_tst_${fare_tab_index}}/TKFF0${fare_tab_index}/PX1/${segment_number}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${merchant_fee_value_${fare_tab_index}}/SF${merchant_fee_value_${fare_tab_index}}/C${merchant_fee_value_${fare_tab_index}}/SG${segments_in_tst}/${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}.upper()}" != "CASH" and "${str_card_type_${fare_tab_index}.upper()}" != "INVOICE"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${merchant_fee_value_${fare_tab_index}}/${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}.upper()}" != "CASH" and "${str_card_type_${fare_tab_index}.upper()}" != "INVOICE"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number2_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${merchant_fee_value_${fare_tab_index}}/${segment_number}
+    Comment    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Run Keyword If    "${country}" == "HK"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF CC CONVENIENCE FEE/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF MERCHANT FEE/${segment_number}
+    Run Keyword If    "${country}" == "HK"    Verify Specific Remark Is Not Written In The PNR    RIR CC CONVENIENCE FEE: ${CURRENCY} ${merchant_fee_value_${fare_tab_index}}
+    ...    ELSE    Verify Specific Remark Is Not Written In The PNR    RIR MERCHANT FEE: ${CURRENCY} ${merchant_fee_value_${fare_tab_index}}
+
+Verify Merchant Fee Per TST Remarks
+    [Arguments]    ${fare_tab}    ${segment_number}    ${has_client_cwt_comm_agreement}=No
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${country}    Get Substring    ${TEST NAME}    4    6
+    Calculate GST On Merchant Fee    ${fare_tab}
+    Run Keyword If    "${merchant_fee_value_${fare_tab_index}}" == "0.00"    Set Test Variable    ${merchant_fee_value_${fare_tab_index}}    0
+    ${fop_merchant_fee_type}    Get Variable Value    ${fop_merchant_fee_type_${fare_tab_index}}    0
+    ${segments_in_tst}    Get Segment Number For Travcom    ${segment_number}
+    Identify Form Of Payment Code For APAC    ${str_card_type_${fare_tab_index}}
+    ${product_code}    Run Keyword If    "${country}" == "SG"    Set Variable    PC41
+    ...    ELSE IF    "${country}" == "HK"    Set Variable    PC42
+    ...    ELSE IF    "${country}" == "IN"    Set Variable    PC40
+    ${vendor_code}    Run Keyword If    "${country}" == "SG"    Set Variable    V021007
+    ...    ELSE IF    "${country}" == "HK"    Set Variable    V00001
+    ...    ELSE IF    "${country}" == "IN"    Set Variable    V00800004
+    ${currency}    Run Keyword If    "${country}" == "SG"    Set Variable    SGD
+    ...    ELSE IF    "${country}" == "HK"    Set Variable    HKD
+    ...    ELSE IF    "${country}" == "IN"    Set Variable    INR
+    Set Suite Variable    ${product_code}
+    Set Suite Variable    ${vendor_code}
+    Set Suite Variable    ${currency}
+    Run Keyword If    ("${fop_merchant_fee_type}" == "CWT" and "${merchant_fee_value_${fare_tab_index}}" != "0") or ("${country}" == "IN" and "${fop_merchant_fee_type.upper()}" == "AIRLINE" and "${has_client_cwt_comm_agreement.upper()}" == "YES" and "${merchant_fee_value_${fare_tab_index}}" != "0")    Verify Merchant Fee Per TST Are Written    ${fare_tab}    ${country}    ${segments_in_tst}    ${segment_number}
+    ...    ELSE    Verify Merchant Fee Per TST Not Written    ${fare_tab}    ${country}    ${segments_in_tst}    ${segment_number}
+    Run Keyword If    "${country}" == "IN"    Verify Specific Remark Is Not Written In The PNR    RIR MERCHANT FEE: ${CURRENCY} ${merchant_fee_value_${fare_tab_index}}
+
+Verify Merchant Fee Percentage Is Empty
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${merchant_fee_percent_field}    Determine Multiple Object Name Based On Active Tab    ctxtMerchantFeePercent
+    ${merchant_fee_percent}    Get Control Text Value    ${merchant_fee_percent_field}
+    Run Keyword If    "${merchant_fee_percent}" == "${EMPTY}"    Log    Merchant Fee percentage is set to Empty.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Merchant Fee percentage is not Empty. Actual Value is ${merchant_fee_percent}.
+    ${merchant_fee_percent}    Set Variable If    "${merchant_fee_percent}" == "${EMPTY}"    0    ${merchant_fee_percent}
+    Set Suite Variable    ${merchant_fee_percentage_value_${fare_tab_index}}    ${merchant_fee_percent}
+
+Verify Missed Saving Code Dropdown Values Are Correct
+    [Arguments]    ${fare_tab}    ${country}=HK
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${expected_missed_saving_code}    Run Keyword If    "${country.lower()}" == "hk"    Create List    B - PASSENGER REQUESTED SPECIFIC AIRLINE    C - LOW COST CARRIER FARE DECLINED    E - EXCHANGE
+    ...    F - PASSENGER REQUESTED SPECIFIC CLASS    H - PASSENGER REQUESTED SPECIFIC SCHEDULE OR DATE    I - PASSENGER BOOKED TOO LATE    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    K - CLIENT NEGOTIATED FARE DECLINED    L - NO MISSED SAVING
+    ...    N - CLIENT SPECIFIC    O - TRAVELLING WITH ANOTHER PERSON    P - PASSENGER DECLINED RESTRICTED FARE    Q - CLIENT NEGOTIATED RATE ACCEPTED    X - POLICY WAIVED - EMERGENCY CONDITIONS
+    ...    ELSE IF    "${country.lower()}" == "sg"    Create List    B - PASSENGER REQUESTED SPECIFIC AIRLINE    C - LOW COST CARRIER FARE DECLINED    F - PASSENGER REQUESTED SPECIFIC CLASS
+    ...    I - PASSENGER BOOKED TOO LATE    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    K - CLIENT NEGOTIATED FARE DECLINED    L - NO MISSED SAVING    M - MISCELLANEOUS    N - CLIENT SPECIFIC
+    ...    O - TRAVELLING WITH ANOTHER PERSON    P - PASSENGER DECLINED RESTRICTED FARE    T - CONTRACTED AIRLINE NON CONVENIENT    Z - CWT ALTERNATIVE DECLINED
+    ...    ELSE IF    "${country.lower()}" == "in"    Create List    A - PARTIAL MISSED SAVING    B - PASSENGER REQUESTED SPECIFIC AIRLINE    C - LOW COST CARRIER FARE DECLINED
+    ...    E - EXCHANGE    F - PASSENGER REQUESTED SPECIFIC CLASS    H - PASSENGER REQUESTED SPECIFIC SCHEDULE OR DATE    I - PASSENGER BOOKED TOO LATE    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    K - CLIENT NEGOTIATED FARE DECLINED
+    ...    L - NO MISSED SAVING    M - MISCELLANEOUS    N - CLIENT SPECIFIC    O - TRAVELLING WITH ANOTHER PERSON    P - PASSENGER DECLINED RESTRICTED FARE    Q - CLIENT NEGOTIATED RATE ACCEPTED
+    ...    T - CONTRACTED AIRLINE NON CONVENIENT    X - POLICY WAIVED - EMERGENCY CONDITIONS    Z - CWT ALTERNATIVE DECLINED
+    Log List    ${expected_missed_saving_code}
+    Get Missed Saving Code Values    ${fare_tab}
+    Run Keyword And Continue On Failure    Lists Should Be Equal    ${missed_saving_code_values_${fare_tab_index}}    ${expected_missed_saving_code}
+
+Verify Missed Savings Code Is Mandatory And Has No Value
+    ${missed_saving_code_dropdown}    Determine Multiple Object Name Based On Active Tab    ccboMissed
+    Verify Field Is Empty    ${missed_saving_code_dropdown}
+    Verify Control Object Background Color    ${missed_saving_code_dropdown}    FFD700
+
+Verify Nett Fare Value
+    [Arguments]    ${fare_tab}    ${expected_nett_fare_value}
+    Get Nett Fare Value    ${fare_tab}
+    Run Keyword If    "${nett_fare_value_${fare_tab_index}}" == "${expected_nett_fare_value}"    Log    Nett Fare Value is: ${nett_fare_value_${fare_tab_index}}
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Nett Fare Value is: ${nett_fare_value_${fare_tab_index}} not equal to expected value of: ${expected_nett_fare_value}
+
+Verify Object Field Is Not Mandatory
+    [Arguments]    ${object_name}
+    ${actual_hex_color}    Get Pixel Color    control_id=${object_name}
+    Run Keyword And Continue On Failure    Should Be True    "${actual_hex_color}" != "FFD700"    msg=Control should be NOT MANDATORY. Color found is "${actual_hex_color}"
+    [Teardown]    Take Screenshot
+
+Verify Offer Details Are Displayed On Alternate Fare Tab
+    [Arguments]    ${fare_tab}    ${fare_tab_on_new_booking}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index_on_new_booking}    Run Keyword If    "${fare_tab_on_new_booking}" == "${EMPTY}    Set Variable    ${fare_tab_index}
+    ...    ELSE    Fetch From Right    ${fare_tab_on_new_booking}    ${SPACE}
+    ${new_or_amend}    Get Substring    ${TEST NAME}    1    3
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Text Contains Expected Value    ${routing_value_alt_${fare_tab_index}}    ${fare_airline_alt_${fare_tab_index}}
+    ...    ELSE    Verify Text Contains Expected Value    ${routing_value_alt_${fare_tab_index_on_new_booking}}    ${amend_routing_value_alt_${fare_tab_index}}
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Text Contains Expected Value    ${airline_offer_alt_${fare_tab_index}}    ${fare_airline_alt_${fare_tab_index}}
+    ...    ELSE    Verify Text Contains Expected Value    ${airline_offer_alt_${fare_tab_index_on_new_booking}}    ${amend_airline_offer_alt_${fare_tab_index}}
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Text Contains Expected Value    ${total_fare_alt_${fare_tab_index}}    ${grand_total_fare_alt_${fare_tab_index}}
+    ...    ELSE    Verify Text Contains Expected Value    ${total_fare_alt_${fare_tab_index_on_new_booking}}    ${amend_total_fare_alt_${fare_tab_index}}
+    ${details_line_alt}    Flatten String    ${details_line_alt_${fare_tab_index}}
+    ${amend_alternate_airline_details}    Flatten String    ${amend_alternate_airline_details_${fare_tab_index}}
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Text Contains Expected Value    ${alternate_airline_details_${fare_tab_index}}    ${details_line_alt}
+    ...    ELSE    Verify Text Contains Expected Value    ${alternate_airline_details_${fare_tab_index_on_new_booking}}    ${amend_alternate_airline_details}
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Default Fare Class
+    ...    ELSE    Verify Text Contains Expected Value    ${fare_class_offer_${fare_tab_index_on_new_booking}}    ${amend_fare_class_offer_${fare_tab_index_amend}}
+    Run Keyword If    "${new_or_amend}" == "NB"    Verify Text Contains Expected Value    ${fare_basis_${fare_tab_index}}    ${fare_basis_alt_${fare_tab_index}}
+    ...    ELSE    Verify Text Contains Expected Value    ${fare_basis_${fare_tab_index_on_new_booking}}    ${amend_fare_basis_${fare_tab_index}}
+
+Verify PC Accounting Remark For Route Code Domestic Is Not Written
+    Verify Specific Remark Is Not Written In The PNR    RM *PC/4/00000031/
+
+Verify PC Accounting Remark For Route Code Domestic Is Written
+    [Arguments]    ${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *PC/4/00000031/${segment_number}
+
+Verify Panel Status
+    [Arguments]    ${expected_panel_status}    @{panel}
+    Determine Current Panels
+    : FOR    ${each_panel}    IN    @{panel}
+    \    Dictionary Should Contain Key    ${panel_coordinates}    ${each_panel.upper()}    ${each_panel.upper()} panel should be visible
+    \    ${y}    Get From Dictionary    ${panel_coordinates}    ${each_panel.upper()}
+    \    ${panel_status}    Get Panel Status    13    ${y}
+    \    Run Keyword And Continue On Failure    Should Be True    "${panel_status}" == "${expected_panel_status}"    ${each_panel.upper()} panel should be ${expected_panel_status}
+    [Teardown]    Take Screenshot
+
+Verify Populated Fields on Amend Booking on Air Fare Panel
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Routing Field Value    ${routing_value_${fare_tab_index}}
+    Verify Field Is Not Mandatory    ctxtChargedFare
+    Verify Realised Savings Code Default Value    ${realised_saving_code_value_${fare_tab_index}}
+    ${high_fare_amend}    Run Keyword    Get Value on Specific Field    ctxtHighFare
+    ${low_fare_amend}    Run Keyword    Get Value on Specific Field    ctxtLowFare
+    ${turnaround_amend}    Run Keyword    Get Value on Specific Field    ccboPOT
+    ${missed_code_amend}    Run Keyword    Get Value on Specific Field    ccboMissed
+    ${class_code_amend}    Run Keyword    Get Value on Specific Field    ccboClass
+    ${transaction_fee_amend}    Run Keyword    Get Value on Specific Field    cbTransactionFee
+    Run Keyword If    "${high_fare_amend}" != "${EMPTY}"    Verify Field Is Not Mandatory    ctxtHighFare
+    ...    ELSE    Verify Mandatory Field    ctxtHighFare
+    Run Keyword If    "${low_fare_amend}" != "${EMPTY}"    Verify Field Is Not Mandatory    ctxtLowFare
+    ...    ELSE    Verify Mandatory Field    ctxtLowFare
+    Run Keyword If    "${turnaround_amend}" != "${EMPTY}"    Verify Field Is Not Mandatory    ccboPOT
+    ...    ELSE    Verify Mandatory Field    ccboPOT
+    Run Keyword If    "${missed_code_amend}" != "${EMPTY}"    Verify Field Is Not Mandatory    ccboMissed
+    ...    ELSE    Verify Mandatory Field    ccboMissed
+    Run Keyword If    "${class_code_amend}" != "${EMPTY}"    Verify Field Is Not Mandatory    ccboClass
+    ...    ELSE    Verify Mandatory Field    ccboClass
+    Run Keyword If    "${transaction_fee_amend}" != "${EMPTY}"    Verify Field Is Not Mandatory    cbTransactionFee
+    ...    ELSE    Verify Mandatory Field    cbTransactionFee
+
+Verify RF, LF And SF Accounting Remarks Per TST Are Written
+    [Arguments]    ${fare_tab}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${nett_or_base_fare}    Get Variable Value    ${nett_fare_value_${fare_tab_index}}    ${base_fare_${fare_tab_index}}
+    ${nett_or_base_fare}    Set Variable If    ${nett_or_base_fare} == 0    ${base_fare_${fare_tab_index}}    ${nett_fare_value_${fare_tab_index}}
+    Verify Specific Remark Is Written In The PNR    RM *RF/${high_fare_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *SF/${nett_or_base_fare}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *LF/${low_fare_value_${fare_tab_index}}/${segment_number}
+
+Verify Realised Saving Code Dropdown Values Are Correct
+    [Arguments]    ${fare_tab}    ${country}=HK
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${hk_realised_code}    Create List    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED    CR - INTELLIGENT TICKETING    EX - EXCHANGE    LC - LOW COST CARRIER FARE ACCEPTED    MC - MISCELLANEOUS
+    ...    RF - RESTRICTED FARE ACCEPTED    SC - SUBSCRIPTION    UC - VALUE ADDED OFFER    WF - CWT NEGOTIATED FARE SAVING ACCEPTED    XX - NO SAVING
+    ${sg_realised_code}    Create List    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED    CR - INTELLIGENT TICKETING    LC - LOW COST CARRIER FARE ACCEPTED    MC - MISCELLANEOUS    RF - RESTRICTED FARE ACCEPTED
+    ...    SD - SPECIAL SUPPLIER DISCOUNT    SF - MULTI TRAVELLERS FARE SAVING ACCEPTED    TP - TRAVEL POLICY APPLIANCE    UC - VALUE ADDED OFFER    WF - CWT NEGOTIATED FARE SAVING ACCEPTED    XI - ROUTE DEAL ACCEPTED
+    ...    XX - NO SAVING    EX - EXCHANGE
+    ${in_realised_code}    Create List    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED    CR - INTELLIGENT TICKETING    EX - EXCHANGE    LC - LOW COST CARRIER FARE ACCEPTED    MC - MISCELLANEOUS
+    ...    RF - RESTRICTED FARE ACCEPTED    SC - SUBSCRIPTION    SD - SPECIAL SUPPLIER DISCOUNT    SF - MULTI TRAVELLERS FARE SAVING ACCEPTED    TP - TRAVEL POLICY APPLIANCE    UC - VALUE ADDED OFFER
+    ...    WF - CWT NEGOTIATED FARE SAVING ACCEPTED    XI - ROUTE DEAL ACCEPTED    XX - NO SAVING
+    ${country}    Convert To Lowercase    ${country}
+    ${expected_realised_saving_code}    Set Variable If    "${country}" == "hk"    ${hk_realised_code}    "${country}" == "sg"    ${sg_realised_code}    "${country}" == "in"
+    ...    ${in_realised_code}
+    Log List    ${expected_realised_saving_code}
+    Get Realised Saving Code Values    ${fare_tab}
+    Run Keyword And Continue On Failure    Lists Should Be Equal    ${realised_saving_code_values_${fare_tab_index}}    ${expected_realised_saving_code}
+
+Verify Realised Savings Code Is Mandatory And Has No Value
+    ${realised_saving_code_dropdown}    Determine Multiple Object Name Based On Active Tab    ccboRealised
+    Verify Field Is Empty    ${realised_saving_code_dropdown}
+    Verify Control Object Background Color    ${realised_saving_code_dropdown}    FFD700
+
+Verify Restriction Field Is Disabled
+    [Arguments]    ${restriction}
+    Verify Control Object Is Disabled    ${restriction}
+
+Verify Default Restriction Remarks Are Written
+    [Arguments]    ${occurence}
+    Verify Specific Line Is Written In The PNR X Times    RIR THIS TICKET MAY BE SUBJECT TO PENALTIES OR FARE INCREASE.    ${occurence}    True
+    Verify Specific Line Is Written In The PNR X Times    RIR CHANGES/CANCELLATION MAY BE SUBJECT TO A PENALTY OR FARE    ${occurence}    True
+    Verify Specific Line Is Written In The PNR X Times    RIR INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.    ${occurence}    True
+    Verify Specific Line Is Written In The PNR X Times    RIR NO REFUND FOR UNUSED PORTION ON CERTAIN FARES. TO RETAIN    ${occurence}    True
+    Verify Specific Line Is Written In The PNR X Times    RIR VALUE OF YOUR TICKET, YOU MUST CANCEL THE RESERVATION    ${occurence}    True
+    Verify Specific Line Is Written In The PNR X Times    RIR ON OR BEFORE YOUR TICKETED DEPARTURE TIME.    ${occurence}    True
+    Verify Specific Line Is Written In The PNR    RIR ALL PRICES SUBJECT TO CHANGE AT ANYTIME WITHOUT NOTICE    multi_line_search_flag = true
+
+Verify Routing Accounting Remarks Are Written
+    [Arguments]    ${fare_tab}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Remark Is Written In The PNR    RM *FF7/${point_of_${fare_tab_index}}/${segment_number}
+
+Verify Routing Field On Air Fare Panel behaves Correctly
+    [Arguments]    ${routing_value1}    ${routing_value2}    ${routing_value3}
+    #Set Invalid i.e. SIN-MNL-323
+    Set Routing International On Air Fare Panel    ${routing_value1}
+    ${actual_tooltip}    Get Tooltip From Error Icon    flpRouting
+    Verify Actual Value Matches Expected Value    ${actual_tooltip}    Invalid Route
+    Verify Panel Status    RED    Air Fare
+    #Set Valid Value i.e. MNL-SIN
+    Set Routing International On Air Fare Panel    ${routing_value2}
+    ${is_tooltip_present}    Run Keyword And Return Status    Get Tooltip From Error Icon    flpRouting
+    Should Be True    ${is_tooltip_present} == ${False}
+    Verify Panel Status    GREEN    Air Fare
+    #Set Routing As Blank
+    Verify Mandatory Field    cmtxtRouting    True
+    Send    {TAB}
+    Verify Mandatory Field    ccboPOT
+    Verify Panel Status    RED    Air Fare
+    #Set Valid Value i.e. MNL-SIN-LAX-JFK
+    Set Routing International On Air Fare Panel    ${routing_value3}
+    ${is_tooltip_present}    Run Keyword And Return Status    Get Tooltip From Error Icon    flpRouting
+    Should Be True    ${is_tooltip_present} == ${False}
+    Verify Field Is Not Mandatory    cmtxtRouting
+    Send    {TAB}
+    Verify Mandatory Field    ccboPOT
+    Verify Panel Status    RED    Air Fare
+    Select Turnaround
+    Send    {TAB}
+    Verify Field Is Not Mandatory    ccboPOT
+    Verify Panel Status    GREEN    Air Fare
+    Set Routing International On Air Fare Panel    ${routing_value2}
+    Verify Panel Status    GREEN    Air Fare
+
+Verify Routing Itinerary Remarks Are Written
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${city_names_in_one_line}    Get Substring    ${city_names_with_slash_${fare_tab_index}}    0    46
+    Set Test Variable    ${city_names_with_slash_${fare_tab_index}}    ${city_names_in_one_line}
+    Verify Specific Line Is Written In The PNR    RIR ROUTING: ${city_names_with_slash_${fare_tab_index}}    reg_exp_flag=true    multi_line_search_flag=true    remove_spaces=false
+
+Verify ToolTip Is Not Displayed
+    [Arguments]    ${xpos}    ${ypos}
+    Mouse Move    0    0
+    Activate Power Express Window
+    Comment    Set Test Variable    ${actual_tooltip_text}    ${EMPTY}
+    ${actual_tooltip_text}    Run Keyword And Ignore Error    Get Tooltip Text    ${xpos}    ${ypos}
+    Comment    Run Keyword If    \    "${actual_tooltip_text}" == "${EMPTY}" or "${actual_tooltip_text}" == "Tooltip text is not found"    Log    No Error Message is displayed.
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    Error Icon is displayed with tooltip message: ${actual_tooltip_text}
+    Comment    Run Keyword And Continue On Failure    Should Contain    ${actual_tooltip_text}    Tooltip text is not found    Error Icon is displayed with tooltip message: ${actual_tooltip_text}
+    Comment    Run Keyword If    "${actual_tooltip_text}" == "None"    Log    No Error Message is displayed.
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    Error Icon is displayed with tooltip message: ${actual_tooltip_text}
+    Run Keyword And Continue On Failure    Should Contain    ${actual_tooltip_text}    Tooltip is not visible    Error Icon is displayed with tooltip message: ${actual_tooltip_text}
+    [Teardown]    Take Screenshot
+
+Verify Total Amount Field Is Disabled
+    [Arguments]    ${fare_tab}
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    Comment    Verify Control Object Is Disabled    [NAME:ctxtTotalAmount_${fare_tab_index}]
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtTotalAmount, ctxtTotalAmount_alt
+    ${fare_including_taxes}    Get Control Text Value    ${object_name}
+    Verify Control Object Is Disabled    ${object_name}
+
+Verify Total Amount Itinerary Remarks Is Written
+    [Arguments]    ${fare_tab}    ${start_substring}=4    ${end_substring}=6    ${country}=${EMPTY}
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    ${country}    Run Keyword If    "${country}" == "${EMPTY}"    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    ...    ELSE    Set Variable    ${country}
+    ${currency}    Run Keyword If    "${country}" == "SG"    Set Variable    SGD
+    ...    ELSE IF    "${country}" == "HK"    Set Variable    HKD
+    Verify Specific Remark Is Written In The PNR    RIR TOTAL AMOUNT: ${currency} ${total_amount_${fare_tab_index}}
+
+Verify Total Amount Value Is Correct Based On Computed Value
+    [Arguments]    ${fare_tab}    ${start_substring}=4    ${end_substring}=6
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    ${country}    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    Verify Total Amount Field Is Disabled    ${fare_tab}
+    ${fuel_surcharge_value}    Get Variable Value    ${fuel_surcharge_value_${fare_tab_index}}    0
+    Log    Values are: FIT: ${fare_including_taxes_${fare_tab_index}}, TF: ${transaction_fee_value_${fare_tab_index}}, MF: ${merchant_fee_value_${fare_tab_index}} and FS: ${fuel_surcharge_value}
+    ${total_amount}    Evaluate    ${fare_including_taxes_${fare_tab_index}} + ${transaction_fee_value_${fare_tab_index}} + ${merchant_fee_value_${fare_tab_index}} + ${fuel_surcharge_value}
+    ${total_amount}    Round Apac    ${total_amount}    ${country}
+    Set Suite Variable    ${computed_total_amount_${fare_tab_index}}    ${total_amount}
+    Run Keyword If    "${computed_total_amount_${fare_tab_index}}" == "${total_amount_${fare_tab_index}}"    Log    TOTAL amount: ${total_amount_${fare_tab_index}} is correctly displayed.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    TOTAL amount: ${total_amount_${fare_tab_index}} displayed is not equal to the computed amount: ${computed_total_amount_${fare_tab_index}}.
+
+Verify Transaction Fee Field On Air Fare Panel behaves Correctly
+    Set Transaction Fee On Air Fare Panel    xxxx
+    ${actual_tooltip}    Get Tooltip From Error Icon    tblMainFees_leftPart
+    Verify Actual Value Matches Expected Value    ${actual_tooltip}    Invalid Transaction Fee
+    Verify Panel Status    RED    Air Fare
+    Set Transaction Fee On Air Fare Panel    10
+    ${is_tooltip_present}    Run Keyword And Return Status    Get Tooltip From Error Icon    tblMainFees_leftPart
+    Should Be True    ${is_tooltip_present} == ${False}
+    Verify Panel Status    GREEN    Air Fare
+
+Verify Transaction Fee For VAT Per TST Are Written
+    [Arguments]    ${fare_tab}    ${country}    ${segments_in_tst}    ${segment_number}    ${is_tmp_card}=FALSE
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${vendor_code}    Set Variable If    "${country}" == "IN"    V00800001
+    Set Suite Variable    ${vendor_code}
+    ${currency}    Set Variable If    "${country}" == "IN"    INR
+    Set Suite Variable    ${currency}
+    Identify Form Of Payment Code For APAC    ${str_card_type_${fare_tab_index}}
+    Verify Specific Remark Is Written In The PNR    RM *MS/PC87/${vendor_code}/AC${lfcc_in_tst_${fare_tab_index}}/TKFF${segments_in_tst}/PX1/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/S${computed_gst_transaction_fee${fare_tab_index}}/SF${computed_gst_transaction_fee${fare_tab_index}}/C0/SG${segments_in_tst}/${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}}.upper()}" == "CASH" or "${str_card_type_${fare_tab_index}}.upper()}" == "INVOICE"    Verify Specific Remark Is Written In The PNR    RM *MSX/FS/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${computed_gst_transaction_fee${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/FF VAT/${segment_number}
+
+Verify Transaction Fee Per TST Are Written
+    [Arguments]    ${fare_tab}    ${country}    ${segments_in_tst}    ${ff_number}    ${segment_number}    ${is_tmp_card}=FALSE
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${vendor_code}    Set Variable If    "${country}" == "SG"    V021007    "${country}" == "HK"    V00001    "${country}" == "IN"
+    ...    V00800001
+    Set Suite Variable    ${vendor_code}
+    ${currency}    Set Variable If    "${country}" == "SG"    SGD    "${country}" == "HK"    HKD    "${country}" == "IN"
+    ...    INR
+    Set Suite Variable    ${currency}
+    Identify Form Of Payment Code For APAC    ${str_card_type_${fare_tab_index}}
+    ${tmp_card}    Get Substring    ${str_card_number_${fare_tab_index}}    \    6
+    ${ctcl_card}    Get Substring    ${str_card_number_${fare_tab_index}}    \    8
+    Run Keyword If    ("${tmp_card}" == "364403" and "${str_card_type_${fare_tab_index}}" == "DC") or ("${ctcl_card}" == "44848860" and "${str_card_type_${fare_tab_index}}" == "VI")    Set Test Variable    ${is_tmp_card}    True
+    Verify Specific Remark Is Written In The PNR    RM *MS/PC35/${vendor_code}/AC${lfcc_in_tst_${fare_tab_index}}/TKFF${ff_number}/PX1/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/S${transaction_fee_value_${fare_tab_index}}/SF${transaction_fee_value_${fare_tab_index}}/C${transaction_fee_value_${fare_tab_index}}/SG${segments_in_tst}/${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}}.upper()}" == "CASH" or "${str_card_type_${fare_tab_index}}.upper()}" == "INVOICE" or "${is_tmp_card.upper()}" == "TRUE"    Verify Specific Remark Is Written In The PNR    RM *MSX/FS/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RM *MSX/F${credit_card_code${fare_tab_index}}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${transaction_fee_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/FF TRANSACTION FEE/${segment_number}
+    Verify Specific Remark Is Written In The PNR    RIR TRANSACTION FEE: ${CURRENCY} ${transaction_fee_value_${fare_tab_index}}
+    Run Keyword If    "${country}" == "IN"    Verify Specific Remark Is Written In The PNR    RM*MSX/FF99-18P${computed_gst_transaction_fee}*0P0*0P0/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Not Written In The PNR    RM*MSX/FF99-18P${computed_gst_transaction_fee}*0P0*0P0/${segment_number}
+
+Verify Transaction Fee Per TST Not Written
+    [Arguments]    ${fare_tab}    ${country}    ${segments_in_tst}    ${segment_number}    ${is_tmp_card}=FALSE
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${vendor_code}    Run Keyword If    "${country}" == "SG"    Set Variable    V021007
+    ...    ELSE IF    "${country}" == "HK"    Set Variable    V00001
+    ...    ELSE IF    "${country}" == "IN"    Set Variable    V00800001
+    Set Suite Variable    ${vendor_code}
+    ${currency}    Run Keyword If    "${country}" == "SG"    Set Variable    SGD
+    ...    ELSE IF    "${country}" == "HK"    Set Variable    HKD
+    ...    ELSE IF    "${country}" == "IN"    Set Variable    INR
+    Set Suite Variable    ${currency}
+    Identify Form Of Payment Code For APAC    ${str_card_type_${fare_tab_index}}
+    ${tmp_card}    Get Substring    ${str_card_number_${fare_tab_index}}    \    6
+    ${ctcl_card}    Get Substring    ${str_card_number_${fare_tab_index}}    \    8
+    Run Keyword If    ("${tmp_card}" == "364403" and "${str_card_type_${fare_tab_index}}" == "DC") or ("${ctcl_card}" == "44848860" and "${str_card_type_${fare_tab_index}}" == "VI")    Set Test Variable    ${is_tmp_card}    True
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC35/${vendor_code}/AC${lfcc_in_tst_${fare_tab_index}}/TKFF${segments_in_tst}/PX1/${segment_number}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${transaction_fee_value_${fare_tab_index}}/SF${transaction_fee_value_${fare_tab_index}}/C${transaction_fee_value_${fare_tab_index}}/SG${segments_in_tst}/${segment_number}
+    Run Keyword If    "${str_card_type_${fare_tab_index}}.upper()}" == "CASH" or "${str_card_type_${fare_tab_index}}.upper()}" == "INVOICE" or "${is_tmp_card.upper()}" == "TRUE"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FS/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Not Written In The PNR    RM *MSX/F${credit_card_code}/CCN${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date_${fare_tab_index}}/D${transaction_fee_value_${fare_tab_index}}/${segment_number}
+    Comment    Verify Specific Remark Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF TRANSACTION FEE/${segment_number}
+    Verify Specific Remark Is Not Written In The PNR    RIR TRANSACTION FEE: ${CURRENCY} ${transaction_fee_value_${fare_tab_index}}
+
+Verify Transaction Fee Value Is Correct
+    [Arguments]    ${fare_tab}    ${country}    ${booking_origination}    ${transaction_fee_type}    ${fee_amount_percent_cap}=Amount    ${rounding_so}=${EMPTY}
+    [Documentation]    ${booking_origination} values: Offline, Online
+    ...    ${transaction_fee_type} values: \ Flat, Range, Destination Assited, Unassisted
+    ...    ${fee_amount_percent_cap} values: Amount, Percentage, Cap
+    ...    ${rounding_so} values: up, down, blank
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    ${base_fare}    Set Variable    ${base_fare_${fare_tab_index}}
+    ${nett_fare}    Set Variable    ${nett_fare_value_${fare_tab_index}}
+    ${base_or_nett_fare}    Set Variable If    ${nett_fare} > ${0}    ${nett_fare}    ${base_fare}
+    ${transaction_fee_range}    Run Keyword If    "${booking_origination}" == "Offline" and "${transaction_fee_type}" == "Range"    Get Transaction Fee Offline Range Value    ${country}    ${base_or_nett_fare}    ${fee_amount_percent_cap}
+    ...    ${rounding_so}
+    ${transaction_fee_flat}    Run Keyword If    "${booking_origination}" == "Offline" and "${transaction_fee_type}" == "Flat"    Get Transaction Fee Offline Flat Value    ${country}    ${base_or_nett_fare}    ${fee_amount_percent_cap}
+    ...    ${rounding_so}
+    ${transaction_fee_assist}    Run Keyword If    "${booking_origination}" == "Online" and "${transaction_fee_type}" == "Assisted"    Get Transaction Fee Online Assisted Value    ${country}    ${base_or_nett_fare}    ${fee_amount_percent_cap}
+    ...    ${rounding_so}
+    ${transaction_fee_unassisted}    Run Keyword If    "${booking_origination}" == "Online" and "${transaction_fee_type}" == "Unassisted"    Get Transaction Fee Online Unassisted Value    ${country}    ${base_or_nett_fare}    ${fee_amount_percent_cap}
+    ...    ${rounding_so}
+    ${expected_transaction_fee_value}    Set Variable If    "${transaction_fee_type}" == "Range"    ${transaction_fee_range}    "${transaction_fee_type}" == "Flat"    ${transaction_fee_flat}    "${transaction_fee_type}" == "Assist"
+    ...    ${transaction_fee_assist}    "${transaction_fee_type}" == "Unassisted"    ${transaction_fee_unassisted}
+    ${actual_transaction_fee_amount}    Get Transaction Fee Value    ${fare_tab}
+    Verify Actual Value Matches Expected Value    ${actual_transaction_fee_amount}    ${expected_transaction_fee_value}
+    [Teardown]    Take Screenshot
+
+Verify Mark-Up Amount Is Empty
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${markup_amount_field}    Determine Multiple Object Name Based On Active Tab    ctxtMarkUpAmount, txtMarkupAmount
+    ${markup_amount_field}    Get Control Text Value    ${markup_amount_field}
+    Run Keyword If    "${markup_amount_field}" == "${EMPTY}"    Log    Mark Up Amount is set to Empty.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Mark Up Amount is not Empty. Actual Value is ${markup_amount_field}.
+    ${markup_amount_field}    Set Variable If    "${markup_amount_field}" == "${EMPTY}"    0    ${markup_amount_field}
+    Set Suite Variable    ${mark_up_value_${fare_tab_index}}    ${markup_amount_field}
+
+Verify FOP Remark Per TST Is Written
+    [Arguments]    ${fare_tab}    ${segment_number}    ${fop}    ${country}    ${fop_merchant_type}=${EMPTY}    ${is_exchange}=False
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    #This keyword needs to be executed in test level    Get Service Option Item Value    Apply Commission Rebate on Calculation
+    ${service_option_name}    Get Variable Value    ${service_option_name}
+    ${service_option_value}    Get Variable Value    ${service_option_value}
+    ${is_so_configured}    Set Variable If    "${service_option_name}" == "Apply Commission Rebate on Calculation" and "${service_option_value}" == "Yes"    ${True}    ${False}
+    #
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    ${commission_rebate}    Set Variable    ${commission_rebate_value_${fare_tab_index}}
+    ${base_fare_nett_fare}    Compute Base Fare Or Net Fare    ${fare_tab}
+    ${is_commision_rebate}    Evaluate    ${commission_rebate} > ${0}
+    ${fop_amount}    Run Keyword If    "${is_commision_rebate}" == "True" and "${is_exchange}" == "False" and ${is_so_configured}    Evaluate    ${base_fare_nett_fare} - ${commission_rebate}
+    ...    ELSE    Set Variable    ${base_fare_nett_fare}
+    ${fop_amount}    Round APAC    ${fop_amount}    ${country}
+    ${is_tmp_card}    Run Keyword And Return Status    Should Contain Any    ${fop}    DC364403    VI44848860
+    ${is_credit_card}    Run Keyword And Return Status    Should Not Contain Any    ${fop}    Cash    Invoice
+    ${cc_vendor}    Run Keyword If    ${is_credit_card}    Get CC Vendor From Credit Card    ${fop}
+    ${masked_credit_card_number}    ${credit_card_expiry_date}    Run Keyword If    ${is_credit_card}    Get Masked Credit Card And Expiry Date    ${fop}
+    Run Keyword If    not ${is_credit_card}    Verify Specific Remark Is Written In The PNR    RM *FOP/CASH/${segment_number}
+    Run Keyword If    "${country}" != "SG" and ${is_credit_card} and "${fop_merchant_type}" == "CWT"    Verify Specific Remark Is Written In The PNR    RM \\*FOP/${cc_vendor}/*.*EXP${credit_card_expiry_date}/${fop_amount}/${segment_number}    true
+    ...    ELSE IF    "${country}" != "SG" and ${is_credit_card} and "${fop_merchant_type}" == "Airline"    Verify Specific Remark Is Written In The PNR    RM \\*FOP/CC/*.*EXP${credit_card_expiry_date}/${fop_amount}/${segment_number}    true
+    Run Keyword If    "${country}" == "SG" and not ${is_tmp_card} and ${is_credit_card} and "${fop_merchant_type}" == "CWT"    Verify Specific Remark Is Written In The PNR    RM \\*FOP/${cc_vendor}/*.*EXP${credit_card_expiry_date}/${fop_amount}/${segment_number}    true
+    ...    ELSE IF    "${country}" == "SG" and not ${is_tmp_card} and ${is_credit_card} and "${fop_merchant_type}" == "Airline"    Verify Specific Remark Is Written In The PNR    RM \\*FOP/CC/*.*EXP${credit_card_expiry_date}/${fop_amount}/${segment_number}    true
+
+Verify Transaction Fee Remark Per TST Are Correct
+    [Arguments]    ${fare_tab}    ${segment_number}    ${segments_in_tst}    ${fop}    ${country}    ${is_obt}=False
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    ${transaction_fee_value}    Set Variable If    "${transaction_fee_value_${fare_tab_index}}" == "${EMPTY}"    0    ${transaction_fee_value_${fare_tab_index}}
+    ${is_transaction_fee_applicable}    Evaluate    ${transaction_fee_value} > ${0}
+    ${transaction_fee_value}    Round APAC    ${transaction_fee_value}    ${country}
+    &{vendor_code_merchant_dict}    Create Dictionary    SG=V021007    HK=V00001    IN=V00800001
+    ${vendor_code}    Get From Dictionary    ${vendor_code_merchant_dict}    ${country}
+    ${currency}    Get Currency    ${country}
+    ${is_credit_card}    Run Keyword And Return Status    Should Not Contain Any    ${fop}    Cash    Invoice
+    ${is_cc_tmp_card_or_ctlc}    Run Keyword And Return Status    Should Contain Any    ${fop}    DC364403    VI44848860    CTLC
+    ${is_normal_cc}    Set Variable If    "${country}" != "SG" and ${is_credit_card}    ${True}    "${country}" == "SG" and ${is_credit_card} and not ${is_cc_tmp_card_or_ctlc}    ${True}    ${False}
+    ${cc_vendor}    Run Keyword If    ${is_credit_card}    Get CC Vendor From Credit Card    ${fop}
+    ${masked_credit_card_number}    ${credit_card_expiry_date}    Run Keyword If    ${is_credit_card}    Get Masked Credit Card And Expiry Date    ${fop}
+    Run Keyword If    ${is_transaction_fee_applicable}    Verify Specific Line Is Written In The PNR    RM *MS/PC35/${vendor_code}/TK/PX1/${segment_number}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RM *MS/PC35/${vendor_code}/TK/PX1/${segment_number}
+    Run Keyword If    ${is_transaction_fee_applicable}    Verify Specific Line Is Written In The PNR    RM *MSX/S${transaction_fee_value}/SF${transaction_fee_value}/C${transaction_fee_value}/SG${segments_in_tst}/${segment_number}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RM *MSX/S${transaction_fee_value}/SF${transaction_fee_value}/C${transaction_fee_value}/SG${segments_in_tst}/${segment_number}
+    Run Keyword If    ${is_transaction_fee_applicable} and ${is_obt} == False    Verify Specific Line Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    ...    ELSE IF    ${is_transaction_fee_applicable} and ${is_obt} == True    Verify Specific Line Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-S/FF47-CWT/${segment_number}
+    Run Keyword If    ${is_transaction_fee_applicable} and ${is_normal_cc}    Verify Specific Line Is Written In The PNR    RM \\*MSX/F${cc_vendor}/CCN.*EXP${credit_card_expiry_date}/D${transaction_fee_value}/${segment_number}    reg_exp_flag=true
+    ...    ELSE IF    ${is_transaction_fee_applicable} and not ${is_normal_cc}    Verify Specific Line Is Written In The PNR    RM *MSX/FS/${segment_number}
+    Run Keyword If    ${is_transaction_fee_applicable}    Verify Specific Line Is Written In The PNR    RM *MSX/FF TRANSACTION FEE/${segment_number}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RM *MSX/FF TRANSACTION FEE/${segment_number}
+    Run Keyword If    ${is_transaction_fee_applicable} and "${country}" != "IN"    Verify Specific Line Is Written In The PNR    RIR TRANSACTION FEE: ${currency} ${transaction_fee_value}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR TRANSACTION FEE: ${currency} ${transaction_fee_value}
+    Comment    Run Keyword If    "${country}" == "IN"    Verify Specific Remark Is Written In The PNR    RM*MSX/FF99-18P${computed_gst_transaction_fee}*0P0*0P0/${segment_number}    \    ${EMPTY}
+    ...    RM*MSX/FF99-18P${computed_gst_transaction_fee}*0P0*0P0/${segment_number}
+
+Verify Merchant Fee Remarks Per TST Are Correct
+    [Arguments]    ${fare_tab}    ${segment_number}    ${segments_in_tst}    ${fop}    ${country}    ${fop_merchant_type}=${EMPTY}
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    &{product_code_merchant_dict}    Create Dictionary    SG=PC41    HK=PC42    IN=PC40
+    &{vendor_code_merchant_dict}    Create Dictionary    SG=V021007    HK=V00001    IN=V00800004
+    ${product_code_merchant}    Get From Dictionary    ${product_code_merchant_dict}    ${country}
+    ${vendor_code_merchant}    Get From Dictionary    ${vendor_code_merchant_dict}    ${country}
+    ${ff_number}    Set Variable    0${fare_tab_index}
+    ${merchant_fee_value}    Set Variable    ${merchant_fee_value_${fare_tab_index}}
+    ${is_merchant_fee_value_not_empty}    Evaluate    ${merchant_fee_value} > ${0}
+    ${carrier}    Set Variable    ${lfcc_in_tst_${fare_tab_index}}
+    ${is_credit_card}    Run Keyword And Return Status    Should Not Contain Any    ${fop}    Cash    Invoice
+    ${is_cc_tmp_card_or_ctlc}    Run Keyword And Return Status    Should Contain Any    ${fop}    DC364403    VI44848860    CTLC
+    ${cc_vendor}    Run Keyword If    ${is_credit_card}    Get CC Vendor From Credit Card    ${fop}
+    ${masked_credit_card_number}    ${credit_card_expiry_date}    Run Keyword If    ${is_credit_card}    Get Masked Credit Card And Expiry Date    ${fop}
+    ${is_merchant_fee_applicable}    Set Variable If    "${country}" == "SG" and ${is_merchant_fee_value_not_empty} and ${is_credit_card} and not ${is_cc_tmp_card_or_ctlc}    ${True}    "${country}" != "SG" and ${is_merchant_fee_value_not_empty} and ${is_credit_card}    ${True}    ${False}
+    Run Keyword If    ${is_merchant_fee_applicable}    Verify Specific Line Is Written In The PNR    RM *MS/${product_code_merchant}/${vendor_code_merchant}/TK/PX1/${segment_number}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RM *MS/${product_code_merchant}/${vendor_code_merchant}/TK/PX1/${segment_number}
+    Run Keyword If    ${is_merchant_fee_applicable}    Verify Specific Line Is Written In The PNR    RM *MSX/S${merchant_fee_value}/SF${merchant_fee_value}/C${merchant_fee_value}/SG${segments_in_tst}/${segment_number}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RM *MSX/S${merchant_fee_value}/SF${merchant_fee_value}/C${merchant_fee_value}/SG${segments_in_tst}/${segment_number}
+    Run Keyword If    ${is_merchant_fee_applicable}    Verify Specific Line Is Written In The PNR    RM \\*MSX/F${cc_vendor}/CCN.*EXP${credit_card_expiry_date}/D${merchant_fee_value}/${segment_number}    true
+    Run Keyword If    ${is_merchant_fee_applicable}    Verify Specific Line Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Run Keyword If    ${is_merchant_fee_applicable} and "${country}" != "HK"    Verify Specific Line Is Written In The PNR    RM *MSX/FF MERCHANT FEE/${segment_number}
+    ...    ELSE IF    ${is_merchant_fee_applicable} and "${country}" == "HK"    Verify Specific Line Is Written In The PNR    RM *MSX/FF CC CONVENIENCE FEE/${segment_number}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RM *MSX/FF MERCHANT FEE/${segment_number}
+
+Verify Fuel Surcharge Remark Per TST Are Correct
+    [Arguments]    ${fare_tab}    ${segment_number}    ${segment_in_tst}    ${fop}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${ff_number}    Set Variable    0${fare_tab_index}
+    ${fuel_surcharge}    Set Variable    ${fuel_surcharge_value_${fare_tab_index}}
+    ${is_credit_card}    Run Keyword And Return Status    Should Not Contain Any    ${fop}    Cash    Invoice
+    Comment    ${is_cc_tmp_card_or_ctlc}    Run Keyword And Return Status    Should Contain Any    ${fop}    DC364403    VI44848860
+    ...    CTLC
+    ${cc_vendor}    Run Keyword If    ${is_credit_card}    Get CC Vendor From Credit Card    ${fop}
+    ${masked_credit_card_number}    ${credit_card_expiry_date}    Run Keyword If    ${is_credit_card}    Get Masked Credit Card And Expiry Date    ${fop}
+    Run Keyword If    ${fuel_surcharge} == 0    Verify Specific Line Is Not Written In The PNR    RM *MS/PC41/V00001/TKFF${segment_in_tst}/PX1/${segment_number}    Verify Specific Line Is Written In The PNR    RM *MS/PC41/V00001/TKFF${segment_in_tst}/PX1/${segment_number}
+    Run Keyword If    ${fuel_surcharge} == 0    Verify Specific Line Is Not Written In The PNR    RM *MSX/S${fuel_surcharge}/SF${fuel_surcharge}/C${fuel_surcharge}/SG${segment_in_tst}/${segment_number}    Verify Specific Line Is Written In The PNR    RM *MSX/S${fuel_surcharge}/SF${fuel_surcharge}/C${fuel_surcharge}/SG${segment_in_tst}/${segment_number}
+    Run Keyword If    ${fuel_surcharge} == 0    Verify Specific Line Is Not Written In The PNR    RM *MSX/F${cc_vendor}/CCN${masked_credit_card_number}EXP${credit_card_expiry_date}/D${fuel_surcharge}/${segment_number}
+    ...    ELSE IF    ${fuel_surcharge} > 0 and ${is_credit_card}    Verify Specific Line Is Written In The PNR    RM \\*MSX/F${cc_vendor}/CCN.*EXP${credit_card_expiry_date}/D${fuel_surcharge}/${segment_number}    true
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RM *MSX/FS/${segment_number}
+    Run Keyword If    ${fuel_surcharge} == 0    Verify Specific Line Is Not Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}    Verify Specific Line Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Run Keyword If    ${fuel_surcharge} == 0    Verify Specific Line Is Not Written In The PNR    RM *MSX/FF SVC FEE FOR SURCHARGE/${segment_number}    Verify Specific Line Is Written In The PNR    RM *MSX/FF SVC FEE FOR SURCHARGE/${segment_number}
+
+Verify Commission Rebate Remarks Per TST Are Correct
+    [Arguments]    ${fare_tab}    ${segment_number}    ${segments_in_tst}    ${fop}    ${country}    ${is_exchange}=False
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    ${commission_rebate_value}    Set Variable    ${commission_rebate_value_${fare_tab_index}}
+    ${is_commision_rebate}    Evaluate    ${commission_rebate_value} > ${0}
+    &{vendor_code_merchant_dict}    Create Dictionary    SG=V021007    HK=V00001    IN=V00800003
+    ${vendor_code}    Get From Dictionary    ${vendor_code_merchant_dict}    ${country}
+    ${is_credit_card}    Run Keyword And Return Status    Should Not Contain Any    ${fop}    Cash    Invoice
+    ${cc_vendor}    Run Keyword If    ${is_credit_card}    Get CC Vendor From Credit Card    ${fop}
+    ${masked_credit_card_number}    ${credit_card_expiry_date}    Run Keyword If    ${is_credit_card}    Get Masked Credit Card And Expiry Date    ${fop}
+    Run Keyword If    "${is_commision_rebate}" == "True" and "${is_exchange}" == "False"    Verify Specific Remark Is Written In The PNR    RM *MS/PC50/${vendor_code}/TK/PX1/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC50/${vendor_code}/TK/PX1/${segment_number}
+    Run Keyword If    "${is_commision_rebate}" == "True" and "${is_exchange}" == "False"    Verify Specific Remark Is Written In The PNR    RM *MSX/S-${commission_rebate_value}/SF-${commission_rebate_value}/C-${commission_rebate_value}/SG${segments_in_tst}/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S-${commission_rebate_value}/SF-${commission_rebate_value}/C-${commission_rebate_value}/SG${segments_in_tst}/${segment_number}
+    Run Keyword If    "${is_commision_rebate}" == "True" and "${is_exchange}" == "False"    Verify Specific Remark Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Run Keyword If    "${is_commision_rebate}" == "True" and "${is_exchange}" == "False" and "${country}" != "IN"    Verify Specific Remark Is Written In The PNR    RM *MSX/FF AIR COMM RETURN/${segment_number}
+    ...    ELSE IF    "${is_commision_rebate}" == "True" and "${is_exchange}" == "False" and "$country}" == "IN"    Verify Specific Remark Is Written In The PNR    RM *MSX/FF REBATE/${segment_number}
+    ...    ELSE    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF AIR COMM RETURN/${segment_number}
+    Verify Specific Line Is Written In The PNR    FM PAX *M*${airline_commission_percentage_${fare_tab_index}}/${segment_number}
+
+Verify GST Remarks Per TST Are Correct
+    [Arguments]    ${fare_tab}    ${segment_number}    ${segments_in_tst}    ${fop}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${ff_number}    Set Variable    0${fare_tab_index}
+    ${is_credit_card}    Run Keyword And Return Status    Should Not Contain Any    ${fop}    Cash    Invoice
+    ${cc_vendor}    Run Keyword If    ${is_credit_card}    Get CC Vendor From Credit Card    ${fop}
+    ${masked_credit_card_number}    ${credit_card_expiry_date}    Run Keyword If    ${is_credit_card}    Get Masked Credit Card And Expiry Date    ${fop}
+    ${gst_on_merchant_fee}    Calculate GST On Merchant Fee    ${fare_tab}
+    ${gst_on_transaction_fee}    Calculate GST On Transaction Fee    ${fare_tab}    IN
+    ${gst_on_air}    Calculate GST On Air    ${fare_tab}    IN
+    ${gst_on_merchant_for_transaction}    Calculate GST On Merchant Fee For Transaction Fee    ${fare_tab}
+    Verify Specific Line Is Written In The PNR    RM *MS/PC87/V00800011/TK/PX1/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *MSX/S${gst_on_air}/SF${gst_on_air}/C0/SG${segments_in_tst}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *MSX/S${gst_on_merchant_fee}/SF${gst_on_merchant_fee}/C0/SG${segments_in_tst}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *MSX/S${gst_on_transaction_fee}/SF${gst_on_transaction_fee}/C0/SG${segments_in_tst}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *MSX/S${gst_on_merchant_for_transaction}/SF${gst_on_merchant_for_transaction}/C0/SG${segments_in_tst}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM \\*MSX/F${cc_vendor}/CCN.*EXP${credit_card_expiry_date}/D${gst_on_air}/${segment_number}    true
+    Verify Specific Line Is Written In The PNR    RM \\*MSX/F${cc_vendor}/CCN.*EXP${credit_card_expiry_date}/D${gst_on_merchant_fee}/${segment_number}    true
+    Verify Specific Line Is Written In The PNR    RM \\*MSX/F${cc_vendor}/CCN.*EXP${credit_card_expiry_date}/D${gst_on_transaction_fee}/${segment_number}    true
+    Verify Specific Line Is Written In The PNR    RM \\*MSX/F${cc_vendor}/CCN.*EXP${credit_card_expiry_date}/D${gst_on_merchant_for_transaction}/${segment_number}    true
+    Verify Specific Line Is Written In The PNR    RM *MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *MSX/FF VAT/${segment_number}
+
+Verify PC Accounting Remark For Route Code International Is Written
+    [Arguments]    ${segment_number}    ${country}
+    Run Keyword If    "${country}" == "IN"    Verify Text Contains Expected Value X Times Only    ${pnr_details}    RM *PC/0/00000030/${segment_number}    1
+    Run Keyword If    "${country}" == "SG"    Verify Text Contains Expected Value X Times Only    ${pnr_details}    RM *PC/0/022000/${segment_number}    1
+    Run Keyword If    "${country}" == "HK"    Verify Text Contains Expected Value X Times Only    ${pnr_details}    RM *PC/0/000030/${segment_number}    1
+
+Verify PC Accounting Remark For Route Code International Is Not Written
+    [Arguments]    ${segment_number}    ${country}
+    Run Keyword If    "${country}" == "IN"    Verify Specific Remark Is Not Written In The PNR    ${pnr_details}    RM *PC/0/00000030/${segment_number}
+    Run Keyword If    "${country}" == "SG"    Verify Specific Remark Is Not Written In The PNR    ${pnr_details}    RM *PC/0/022000/${segment_number}
+    Run Keyword If    "${country}" == "HK"    Verify Specific Remark Is Not Written In The PNR    ${pnr_details}    RM *PC/0/000030/${segment_number}
+
+Verify Agent Sign Remark Is Written
+    [Arguments]    ${gds_id}
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    RM *BA/${gds_id}    1
+
+Verify Air Fare Restrictions Present In Itinerary Remarks Panel
+    [Arguments]    ${fare_tab}    @{restrictions}
+    ${tab_number}    Get Tab Number    ${fare_tab}
+    Wait Until Control Object Is Enabled    [NAME:AirRestrictionRemarks_${tab_number}]
+    ${actual_restrictions}    Get All Cell Values In Data Grid Pane    [NAME:AirRestrictionRemarks_${tab_number}]
+    Lists Should Be Equal    ${restrictions}    ${actual_restrictions}
+    [Teardown]    Run Keywords    Take Screenshot
+    ...    AND    Select Tab Control    Air Fare    FareDetailsAndFeesTab
+
+Verify Air Fare Restriction Remarks on Amadeus
+    [Arguments]    ${fare_tab}    @{restrictions}
+    ${alternate_fare}    Run Keyword And Return Status    Should Contain    ${fare_tab}    Alternate
+    Run Keyword If    ${alternate_fare} == True    Verify Alternate Fare Restriction Remarks In PNR    @{restrictions}
+    ...    ELSE    Verify Fare Restriction Remarks In PNR    @{restrictions}
+
+Verify Alternate Fare Restriction Remarks In PNR
+    [Arguments]    @{restrictions}
+    : FOR    ${restriction}    IN    @{restrictions}
+    \    ${restriction_upper}    Convert To Uppercase    ${restriction}
+    \    Verify Specific Line Is Written In The PNR    RIR *OFFER**RESTRICTION: ${restriction_upper}*
+
+Verify Fare Restriction Remarks In PNR
+    [Arguments]    @{restrictions}
+    : FOR    ${restriction}    IN    @{restrictions}
+    \    ${restriction_upper}    Convert To Uppercase    ${restriction}
+    \    Verify Specific Line Is Written In The PNR    RIR RESTRICTION: ${restriction_upper}    multi_line_search_flag=true
+
+Verify Air Fare Restrictions Dropdown Values
+    [Arguments]    ${fare_tab}    @{expected_restrictions}
+    ${tab_number}    Get Tab Number    ${fare_tab}
+    Wait Until Control Object Is Ready    [NAME:AirRestrictionItems_${tab_number}]
+    ${actual_restriction_dropdown_values}    Get Dropdown Values    [NAME:AirRestrictionItems_${tab_number}]
+    Lists Should Be Equal    ${actual_restriction_dropdown_values}    ${expected_restrictions}
+    [Teardown]    Take Screenshot
+
+Verfiy Default Restrictions Are Selected In Fare Tab
+    [Arguments]    ${fare_tab}
+    Click Fare Tab    ${fare_tab}
+    Click Restriction Tab
+    ${is_selected}    Get Radio Button State    Default
+    Run Keyword If    ${is_selected}==True    Log    "Default Air Fare Restrictions selected"
+    ...    ELSE    Log    "Default Air Fare Restrictions not selected"
+    [Teardown]    Take Screenshot
+
+Verify Default Alternate Restrictions Are Written In PNR
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**THIS TICKET MAY BE SUBJECT TO PENALTIES OR FARE*    multi_line_search_flag = true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**INCREASE. CHANGES/CANCELLATION MAY BE SUBJECT TO*    multi_line_search_flag = true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**A PENALTY OR FARE INCREASE UP TO AND INCLUDING THE*    multi_line_search_flag = true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**TOTAL COST OF THE TICKET. NO REFUND FOR UNUSED*    multi_line_search_flag = true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**PORTION ON CERTAIN FARES. TO RETAIN VALUE OF YOUR*    multi_line_search_flag = true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**TICKET,YOU MUST CANCEL THE RESERVATION ON OR*    multi_line_search_flag = true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**BEFORE YOUR TICKETED DEPARTURE TIME*    multi_line_search_flag = true
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**ALL PRICES SUBJECT TO CHANGE AT ANYTIME WITHOUT NOTICE*    multi_line_search_flag = true
+
+Compute Base Fare Or Net Fare
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${base_fare}    Set Variable    ${base_fare_${fare_tab_index}}
+    ${total_tax}    Set Variable    ${total_tax_${fare_tab_index}}
+    ${markup_amount}    Set Variable    ${mark_up_value_${fare_tab_index}}
+    ${nett_fare}    Set Variable    ${nett_fare_value_${fare_tab_index}}
+    ${is_nett_fare}    Evaluate    ${nett_fare} > ${0}
+    ${base_fare_nett_fare}    Run Keyword If    ${is_nett_fare}    Evaluate    ${nett_fare} + ${total_tax} + ${markup_amount}
+    ...    ELSE    Evaluate    ${base_fare} + ${total_tax} + ${markup_amount}
+    [Return]    ${base_fare_nett_fare}
+
+Verify Manually Created Credit Card Expiration Date
+    [Arguments]    ${fare_tab}
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    ${fare_tab}    VI    4012888888881881    1200
+    Verify Credit Card Is Expired ToolTip Is Displayed On Fare Quote Tab
+
+Verify Manually Created Credit Card Invalid Number
+    [Arguments]    ${fare_tab}
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    ${fare_tab}    AX    4012888888881881    1231
+    Verify Invalid Number ToolTip Is Displayed On Fare Quote Tab
+    Click Clear Form Of Payment Icon On Fare Quote Tab
+
+Verify Selected Credit Card Expiration Date
+    [Arguments]    ${fare_tab}    ${credit_card}
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    KMBSAMPLE/VI***********2111/D0808
+    Verify That Error Icon For Expired Card Is Displayed On Fare Quote Tab    True
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify FOP Credit Card Is UnMasked On Fare Quote Tab
+    Click Clear Form Of Payment Icon On Fare Quote Tab
+
+Verify Manually Created Credit Card Near Expiration Date
+    [Arguments]    ${fare_tab}
+    Set Credit Card Using Near Expiration Date    ${fare_tab}
+    Verify That Warning For Card Expiration Is Displayed On Fare Quote Tab    True
+
+Verify Credit Card Is Expired ToolTip Is Displayed On Fare Quote Tab
+    Comment    Verify Tooltip Text Is Correct Using Coords    583    591    Credit Card is expired
+    ${actual_tooltip}    Get Tooltip From Error Icon    tlbFormOfPayment
+    Should Be Equal As Strings    ${actual_tooltip}    Credit Card is expired
+    [Teardown]    Take Screenshot
+
+Verify Invalid Number ToolTip Is Displayed On Fare Quote Tab
+    Comment    Verify Tooltip Text Is Correct Using Coords    693    552    Invalid Number
+    ${actual_tooltip}    Get Tooltip From Error Icon    tlbFormOfPayment
+    Should Be Equal As Strings    Invalid Number    ${actual_tooltip}
+    [Teardown]    Take Screenshot
+
+Verify That Warning For Card Expiration Is Displayed On Fare Quote Tab
+    [Arguments]    ${portrait}=False
+    Run Keyword If    "${portrait}" == "False"    Verify Tooltip Text Is Correct Using Coords    582    591    Card near expiration
+    ...    ELSE    Verify Tooltip Text Is Correct Using Coords    720    461    Card near expiration
+
+Get Transaction Fee Offline Range Value
+    [Arguments]    ${country}    ${base_or_nett_fare}    ${fee_amount_percent_cap}    ${rounding_so}=${EMPTY}
+    &{range_amount_sg}    Create Dictionary    range_one=${100.67}    range_two=${200.00}    range_three=${300.00}    range_four=${400.00}    range_five=${500.00}
+    &{range_amount_hk}    Create Dictionary    range_one=${150}    range_two=${250}    range_three=${350}    range_four=${4505}    range_five=${550}
+    &{range_amount_in}    Create Dictionary    range_one=${200}    range_two=${300}    range_three=${400}    range_four=${500}    range_five=${600}
+    &{range_percentage_sg}    Create Dictionary    range_one=${0.015}    range_two=${0.020}    range_three=${0.025}    range_four=${0.03}    range_five=${0.35}
+    &{range_percentage_hk}    Create Dictionary    range_one=${0.02}    range_two=${0.03}    range_three=${0.04}    range_four=${0.05}    range_five=${0.06}
+    &{range_percentage_in}    Create Dictionary    range_one=${0.03}    range_two=${0.06}    range_three=${0.09}    range_four=${0.12}    range_five=${0.14}
+    ${country}    Convert To Lowercase    ${country}
+    Log    ${base_or_nett_fare}
+    ${transaction_range}    Set Variable If    int(${base_or_nett_fare}) in range(1, 500)    range_one    int(${base_or_nett_fare}) in range(501, 10000)    range_two    int(${base_or_nett_fare}) in range(10001, 20000)
+    ...    range_three    int(${base_or_nett_fare}) in range(20001, 30000)    range_four    int(${base_or_nett_fare}) in range(30001, 999999)    ${range_amount_${country}['range_five']}
+    ${transaction_range_amount}    Get From Dictionary    ${range_amount_${country}}    ${transaction_range}
+    ${transaction_range_percentage}    Get From Dictionary    ${range_percentage_${country}}    ${transaction_range}
+    ${cap}    Set Variable If    "${country}" == "SG"    ${50.00}    ${50}
+    ${computed_transansaction_fee}    Run Keyword If    "${fee_amount_percent_cap}" == "Percentage" or "${fee_amount_percent_cap}" == "Cap"    Evaluate    ${base_or_nett_fare} * ${transaction_range_percentage}
+    ${transaction_fee}    Set Variable If    "${fee_amount_percent_cap}" == "Amount"    ${transaction_range_amount}    "${fee_amount_percent_cap}" == "Cap"    ${cap}    ${computed_transansaction_fee}
+    ${transaction_fee}    Round To Nearest Dollar    ${transaction_fee}    ${country}    ${rounding_so}
+    [Return]    ${transaction_fee}
+
+Get Transaction Fee Offline Flat Value
+    [Arguments]    ${country}    ${base_or_nett_fare}    ${fee_amount_percent_cap}    ${rounding_so}=${EMPTY}
+    &{flat_amount}    Create Dictionary    sg=${120.00}    hk=${45}    in=${50.00}
+    &{flat_percentage}    Create Dictionary    sg=${0.0112}    hk=${0.0550}    in=${0.0145}
+    ${country}    Convert To Lowercase    ${country}
+    Log    ${base_or_nett_fare}
+    ${transaction_fee_amount}    Get From Dictionary    ${flat_amount}    ${country}
+    ${transaction_fee_percentage}    Get From Dictionary    ${flat_percentage}    ${country}
+    ${computed_transansaction_fee}    Run Keyword If    "${fee_amount_percent_cap}" == "Percentage"    Evaluate    ${base_or_nett_fare} * ${transaction_fee_percentage}
+    ...    ELSE    Set Variable    ${transaction_fee_amount}
+    ${transaction_fee}    Round To Nearest Dollar    ${computed_transansaction_fee}    ${country}    ${rounding_so}
+    [Return]    ${transaction_fee}
+
+Get Transaction Fee Online Assisted Value
+    [Arguments]    ${country}    ${base_or_nett_fare}    ${fee_amount_percent_cap}    ${rounding_so}=${EMPTY}
+    &{online_assist_amount}    Create Dictionary    sg=${25.00}    hk=${35.00}    in=${30.00}
+    &{online_assist_percentage}    Create Dictionary    sg=${0.10}    hk=${0.10}    in=${0.10}
+    ${country}    Convert To Lowercase    ${country}
+    Log    ${base_or_nett_fare}
+    ${transaction_fee_amount}    Get From Dictionary    ${online_assist_amount}    ${country}
+    ${transaction_fee_percentage}    Get From Dictionary    ${online_assist_percentage}    ${country}
+    ${computed_transansaction_fee}    Run Keyword If    "${fee_amount_percent_cap}" == "Percentage"    Evaluate    ${base_or_nett_fare} * ${transaction_fee_percentage}
+    ...    ELSE    Set Variable    ${transaction_fee_amount}
+    ${transaction_fee}    Round To Nearest Dollar    ${computed_transansaction_fee}    ${country}    ${rounding_so}
+    [Return]    ${transaction_fee}
+
+Get Transaction Fee Online Unassisted Value
+    [Arguments]    ${country}    ${base_or_nett_fare}    ${fee_amount_percent_cap}    ${rounding_so}    ${rounding_so}=${EMPTY}
+    &{online_unassisted_amount}    Create Dictionary    sg=${45.00}    hk=${30.00}    in=${45.00}
+    &{online_unassisted_percentage}    Create Dictionary    sg=${0.12}    hk=${0.15}    in=${0.25}
+    ${country}    Convert To Lowercase    ${country}
+    Log    ${base_or_nett_fare}
+    ${transaction_fee_amount}    Get From Dictionary    ${online_unassisted_amount}    ${country}
+    ${transaction_fee_percentage}    Get From Dictionary    ${online_unassisted_percentage}    ${country}
+    ${computed_transansaction_fee}    Run Keyword If    "${fee_amount_percent_cap}" == "Percentage"    Evaluate    ${base_or_nett_fare} * ${transaction_fee_percentage}
+    ...    ELSE    Set Variable    ${transaction_fee_amount}
+    ${transaction_fee}    Round To Nearest Dollar    ${computed_transansaction_fee}    ${country}    ${rounding_so}
+    [Return]    ${transaction_fee}
+
+Verify FOP, Transaction, Merchant And Commission Rebate Remarks
+    [Arguments]    ${fare_tab}    ${segment_number}    ${segments_in_tst}    ${fop}    ${country}    ${fop_merchant_type}=${EMPTY}
+    ...    ${is_exchange}=False    ${is_obt}=False
+    Verify FOP Remark Per TST Is Written    ${fare_tab}    ${segment_number}    ${fop}    ${country}    ${fop_merchant_type}    ${is_exchange}
+    Verify Merchant Fee Remarks Per TST Are Correct    ${fare_tab}    ${segment_number}    ${segments_in_tst}    ${fop}    ${country}    ${fop_merchant_type}
+    Verify Commission Rebate Remarks Per TST Are Correct    ${fare_tab}    ${segment_number}    ${segments_in_tst}    ${fop}    ${country}    ${is_exchange}
+    Verify Transaction Fee Remark Per TST Are Correct    ${fare_tab}    ${segment_number}    ${segments_in_tst}    ${fop}    ${country}    ${is_obt}
+
+Verify Mark-Up Amount Field Is Displayed And Enabled
+    [Arguments]    ${fare_tab}=Fare Quote 1
+    ${tab_number}    Get Tab Number    tab_name=${fare_tab}
+    ${fare_tab_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${mark_up_amount_obj}    Set Variable If    "${fare_tab_type}"=="Fare"    [NAME:ctxtMarkUpAmount_${tab_number}]    "${fare_tab_type}"=="Alternate"    [NAME:ctxtMarkUpAmount_alt_${tab_number}]
+    Verify Control Object Is Enabled    ${mark_up_amount_obj}
+    [Teardown]    Take Screenshot
+
+Verify Mark-Up Percentage Field Is Displayed And Enabled
+    [Arguments]    ${fare_tab}=Fare Quote 1
+    ${tab_number}    Get Tab Number    tab_name=${fare_tab}
+    ${fare_tab_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${mark_up_percentage_obj}    Set Variable If    "${fare_tab_type}"=="Fare"    [NAME:ctxtMarkUpPercent_${tab_number}]    "${fare_tab_type}"=="Alternate"    [NAME:ctxtMarkUpPercent_alt_${tab_number}]
+    Verify Control Object Is Enabled    ${mark_up_percentage_obj}
+    [Teardown]    Take Screenshot
+
+Verify Adult Fare And Taxes Itinerary Remarks Are Not Written
+    Verify Specific Remark Is Not Written In The PNR    RIR ADULT FARE:
+
+Verify Computed Value Of Mark-Up Amount Is Correct
+    [Arguments]    ${fare_tab}=Fare Quote 1    ${segment_number}=2    ${country}=SG    ${gds_command}=TQT    ${mark_up_percentage}=1    ${round_type}=${EMPTY}
+    Calculate Mark- Up Amount And Percentage    fare_tab=${fare_tab}    segment_number=${segment_number}    country=${country}    gds_command=${gds_command}    mark_up_percentage=${mark_up_percentage}    round_type=${round_type}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${tab_number}    Get Tab Number    tab_name=${fare_tab}
+    ${mark_up_amount_obj}    Set Variable If    "${fare_tab_type}"=="Fare"    [NAME:ctxtMarkUpAmount_${tab_number}]    "${fare_tab_type}"=="Alternate"    [NAME:ctxtMarkUpAmount_alt_${tab_number}]
+    ${mark_up_amount}    Set Variable If    "${fare_tab_type}"=="Fare"    ${mark_up_value_${fare_tab_index}}    "${fare_tab_type}"=="Alternate"    ${alt_mark_up_value_${fare_tab_index}}
+    Verify Control Object Text Value Is Correct    ${mark_up_amount_obj}    ${mark_up_amount}
+
+Verify BF/AF Remarks For Mark-Up Amount And Percentage Are Written
+    [Arguments]    ${fare_tab}=Fare Quote 1    ${country}=SG
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${currency}    Set Variable If    "${country.upper()}"=="SG"    SGD    "${country.upper()}"=="HK"    HKD    INR
+    Verify Specific Remark Is Written In The PNR    RMF BF-${currency}${base_fare_${fare_tab_index}}:MA: ${mark_up_value_${fare_tab_index}}/${tst_number_${fare_tab_index}}
+    Verify Specific Remark Is Written In The PNR    RMF BF-${currency}${base_fare_${fare_tab_index}}:MP: ${mark_up_percentage_${fare_tab_index}}/${tst_number_${fare_tab_index}}
+
+Verify AF Remarks Are Not Written
+    Verify Specific Remark Is Not Written In The PNR    RMF AF-
+
+Verify Adult Fare And Taxes Itinerary Remarks For Alternate Fare Are Not Written
+    Verify Specific Remark Is Not Written In The PNR    RIR *OFFER**ADULT FARE:
+
+Verify Mark-Up Amount Field Is Not Displayed
+    [Arguments]    ${fare_tab}=Fare Quote 1
+    ${tab_number}    Get Tab Number    tab_name=${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${mark_up_amount_obj}    Set Variable If    "${fare_tab_type}"=="Fare"    [NAME:ctxtMarkUpAmount_${tab_number}]    "${fare_tab_type}"=="Alternate"    [NAME:ctxtMarkUpAmount_alt_${tab_number}]
+    Verify Control Object Is Not Visible    ${mark_up_amount_obj}
+    Set Test Variable    ${mark_up_amount_${fare_tab_index}}    0
+    [Teardown]    Take Screenshot
+
+Verify Mark-Up Amount Percentage Field Is Not Displayed
+    [Arguments]    ${fare_tab}=Fare Quote 1
+    ${tab_number}    Get Tab Number    tab_name=${fare_tab}
+    ${fare_tab_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${mark_up_percentage_obj}    Set Variable If    "${fare_tab_type}"=="Fare"    [NAME:ctxtMarkUpPercent_${tab_number}]    "${fare_tab_type}"=="Alternate"    [NAME:ctxtMarkUpPercent_alt_${tab_number}]
+    Verify Control Object Is Not Visible    ${mark_up_percentage_obj}
+    Set Test Variable    ${mark_up_percentage_${fare_tab_index}}    0
+    [Teardown]    Take Screenshot
+
+Verify BF/ AF Remarks For Mark-Up Amount And Percentage Are Not Written
+    [Arguments]    ${fare_tab}=Fare Quote 1    ${country}=SG
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${currency}    Set Variable If    "${country.upper()}"=="SG"    SGD    "${country.upper()}"=="HK"    HKD    INR
+    Verify Specific Remark Is Not Written In The PNR    RMF BF-${currency}${base_fare_${fare_tab_index}}:MA
+    Verify Specific Remark Is Not Written In The PNR    RMF BF-${currency}${base_fare_${fare_tab_index}}:MP
+
+Verify Adult Fare And Taxes Itinerary Remarks Are Witten With Currency
+    [Arguments]    ${fare_tab}=Fare Quote 1    ${country}=SG    ${gds_command}=TQT
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    Get Grand Total Fare From Fare Quote    fare_tab=${fare_tab}    gds_command=${gds_command}
+    ${currency}    Set Variable If    "${country.upper()}"=="SG"    SGD    "${country.upper()}"=="HK"    HKD    INR
+    ${base_fare}    Set Variable If    "${fare_tab_type}"=="Fare"    ${base_fare_${fare_tab_index}}    ${alt_base_fare_${fare_tab_index}}
+    ${nett_fare}    Set Variable If    "${fare_tab_type}"=="Fare"    ${nett_fare_${fare_tab_index}}    ${alt_nett_fare_${fare_tab_index}}
+    ${grand_total}    Set Variable If    "${fare_tab_type}"=="Fare"    ${grand_total_fare_${fare_tab_index}}    ${alt_grand_total_fare_${fare_tab_index}}
+    ${mark_up}    Set Variable If    "${fare_tab_type}"=="Fare"    ${mark_up_amount_${fare_tab_index}}    ${alt_mark_up_amount_${fare_tab_index}}
+    ${commission_rebate}    Set Variable If    "${fare_tab_type}"=="Fare" and "${country.upper()}"!="IN"    ${commission_rebate_amount_${fare_tab_index}}    "${fare_tab_type}"=="Alternate" and "${country.upper()}"!="IN"    ${alt_commission_rebate_amount_${fare_tab_index}}    0
+    ${adult_fare}    Run Keyword If    "${nett_fare}"=="0" and "${country}"!="IN"    Evaluate    (${base_fare}+${mark_up})-${commission_rebate}
+    ...    ELSE IF    "${nett_fare}"!="0" and "${country}"!="IN"    Evaluate    (${nett_fare}+${mark_up})-${commission_rebate}
+    ...    ELSE IF    "${nett_fare}"=="0" and "${country}"=="IN"    Evaluate    ${base_fare}+${mark_up}
+    ...    ELSE IF    "${nett_fare}"!="0" and "${country}"=="IN"    Evaluate    ${nett_fare}+${mark_up}
+    ${adult_fare}    Run Keyword If    "${country.upper()}"=="SG"    Convert To Float    ${adult_fare}
+    ...    ELSE    Convert To Integer    ${adult_fare}
+    ${tax}    Run Keyword If    "${nett_fare}"=="0"    Evaluate    ${grand_total}-${base_fare}
+    ...    ELSE    ${grand_total}-${nett_fare}
+    ${tax}    Run Keyword If    "${country.upper()}"=="SG"    Convert To Float    ${tax}
+    ...    ELSE    Convert To Integer    ${tax}
+    Run Keyword If    "${fare_tab_type}"=="Fare"    Verify Specific Remark Is Written In The PNR    RIR ADULT FARE: ${currency} ${adult_fare} PLUS ${currency} ${tax} TAXES
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RIR *OFFER**ADULT FARE: ${currency} ${adult_fare} PLUS ${currency} ${tax} TAXES*
+
+Verify Commission Rebate Amount And Percentage Is Displayed And Has No Value
+    [Arguments]    ${fare_tab}=Fare Quote 1
+    ${tab_number}    Get Tab Number    ${fare_tab}
+    ${fare_tab_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${commission_percent_obj}    Set Variable If    "${fare_tab_type}"=="Fare"    [NAME:ctxtCommissionPercent_${tab_number}]    "${fare_tab_type}"=="Alternate"    [NAME:ctxtCommissionPercent_alt_${tab_number}]
+    ${commission_amount_obj}    Set Variable If    "${fare_tab_type}"=="Fare"    [NAME:ctxtCommissionRebateAmount_${tab_number}]    "${fare_tab_type}"=="Alternate"    [NAME:ctxtCommissionRebateAmount_alt_${tab_number}]
+    Verify Control Object Text Contains Expected Value    ${commission_percent_obj}    ${EMPTY}
+    Verify Control Object Text Contains Expected Value    ${commission_amount_obj}    ${EMPTY}
+
+Verify Accounting Remarks Are Not Written
+    Verify Specific Line Is Not Written In The PNR    RM *MSX
+    Verify Specific Line Is Not Written In The PNR    RM *MS
+
+Verify FM Remark Is Not Written
+    Verify Specific Line Is Not Written In The PNR    RM *FOP
+
+Verify CM Remark Is Not Written
+    Verify Specific Line Is Not Written In The PNR    RM *CM
+
+Verify CM Remark Is Written
+    [Arguments]    ${fare_tab}=Fare Quote 1    ${segment_number}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}"=="Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    Verify Specific Line Is Written In The PNR    RM *CM/${commission_rebate_value_${fare_tab_index}}/${segment_number}
+    Verify Alternate Fare Itinerary Remarks Are Not Written
+    Verify Specific Remark Is Not Written In The PNR    RIR *OFFER*
+
+Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal
+    [Arguments]    ${fare_tab}=Fare Quote 1
+    Get Airline Commisison Percentage Value    fare_tab=${fare_tab}
+    Get Commission Rebate Percentage Value    fare_tab=${fare_tab}
+    Verify Actual Value Matches Expected Value    ${airline_commission_percentage_${fare_tab_index}}    ${commission_rebate_percentage_value_${fare_tab_index}}
+
+Verify Wings Remark Is Not Written
+    Verify Specific Line Is Not Written In The PNR    RM *0653*MUSUUUUUUUUA

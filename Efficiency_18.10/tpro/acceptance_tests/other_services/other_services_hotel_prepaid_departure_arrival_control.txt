@@ -1,0 +1,112 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Book Active Hotel
+    [Arguments]    ${hotel_code}    ${city_code}    ${last_three_chars_property_code}    ${checkin_date_in_month}    ${checkout_date_in_days}    ${confirmation_number}
+    ...    ${room_type}    ${rate_code}
+    [Documentation]    Sample Usage:
+    ...    \ \ 11AHSJTLON423 04MAR-06MAR/CF-123456/RT-A1D/RQ-GBP425.00
+    ...
+    ...    Where:
+    ...
+    ...    JT \ = <hotel_code> of JUMEIRAH CARLTON TOWER
+    ...
+    ...    LON \ = <city_code> of London
+    ...
+    ...    423 \ = \ last 3 chars of property code
+    ...
+    ...    04MAR \ = checkin in date
+    ...
+    ...    06MAR \ = check out date
+    ...
+    ...    CF-123456 = CF-<confirmation_number>
+    ...
+    ...    RT-A1D \ \ = RT-<room_type>
+    ...
+    ...    RQ-GBP425.00 \ = RQ-<rate_quote>
+    ...
+    ...
+    ...    Implementation Reference: http://www.amadeus.com/web/binaries/blobs/762/623/Training_Manual_1A_PK.pdf
+    ${checkin_date_ddmmm}    Set Departure Date X Months From Now In Gds Format    ${checkin_date_in_month}
+    ${checkout_date_ddmmm}    Set Departure Date X Months From Now In Gds Format    ${checkin_date_in_month}    ${checkout_date_in_days}
+    Enter GDS Command    11AHS${hotel_code}${city_code} ${last_three_chars_property_code} ${checkin_date_ddmmm}-${checkout_date_ddmmm} /CF-${confirmation_number}/RT-${room_type}/RQ-${rate_code}
+
+Book Passive Hotel
+    [Arguments]    ${city_code}    ${checkin_date_in_month}    ${checkout_date_in_days}    ${free_text}
+    [Documentation]    HU1AHK1LON06MAR-06MAR/PLAZA HOTEL TWIN ROOM NO MEALS INCLUDED
+    ${checkin_date_ddmmm}    Set Departure Date X Months From Now In Gds Format    ${checkin_date_in_month}
+    ${checkout_date_ddmmm}    Set Departure Date X Months From Now In Gds Format    ${checkin_date_in_month}    ${checkout_date_in_days}
+    Enter GDS Command    HU1AHK1${city_code} ${checkin_date_ddmmm} -${checkout_date_ddmmm}/${free_text}
+
+Get Arrival Flight Segment
+    ${arrival_flight}    Get Control Text Value    [NAME:ArrivalFlightComboBox]
+    Set Suite Variable    ${arrival_flight}
+    [Return]    ${arrival_flight}
+
+Get Arrival Flight Value
+    [Arguments]    ${identifier}=${EMPTY}
+    ${ui_arrival_flight}    Get Control Text Value    [NAME:ArrivalFlightComboBox]    ${title_power_express}
+    Set Suite Variable    ${ui_arrival_flight}
+    Set Suite Variable    ${prev_arrival_flight_${identifier.lower()}}    ${ui_arrival_flight}
+
+Get Depart Flight Segment
+    ${depart_flight}    Get Control Text Value    [NAME:DepartFlightComboBox]
+    Set Suite Variable    ${depart_flight}
+    [Return]    ${depart_flight}
+
+Get Departure Flight Value
+    [Arguments]    ${identifier}=${EMPTY}
+    ${ui_depart_flight}    Get Control Text Value    [NAME:DepartFlightComboBox]    ${title_power_express}
+    Set Suite Variable    ${ui_depart_flight}
+    Set Suite Variable    ${prev_depart_flight_${identifier.lower()}}    ${ui_depart_flight}
+
+Get Passive HHL Hotel Segment From The PNR
+    ${segments}    Get Lines Using Regexp    ${pnr_details}    (\\\s+\\\d{1}\\\s+HHL\\\s+)
+    ${segments}    Split To Lines    ${segments}
+    ${hhl_segments_list}    Create List
+    : FOR    ${segment}    IN    @{segments}
+    \    ${detail_1}    Get String Matching Regexp    (\\\d{1}\\\s+HHL\\\s+)(\\\w{2}\\\s\\\w{3}\\\s\\\w{3})    ${segment}
+    \    ${detail_2}    Get String Matching Regexp    (IN\\\w{5}\\\sOUT\\\w{5})    ${segment}
+    \    ${detail_2}    Replace String    ${detail_2}    IN    ${EMPTY}
+    \    ${detail_2}    Replace String    ${detail_2}    OUT    ${EMPTY}
+    \    ${detail_2}    Replace String    ${detail_2}    ${SPACE}    -
+    \    Append To List    ${hhl_segments_list}    ${detail_1.replace("HHL ", "")} ${detail_2}
+    Set Test Variable    ${hhl_segments_list}
+
+Get Passive HTL Hotel Segment From The PNR
+    ${segments}    Get Lines Using Regexp    ${pnr_details}    (\\\s+\\\d{1}\\\s+HTL\\\s+)
+    ${segments}    Split To Lines    ${segments}
+    ${htl_segments_list}    Create List
+    : FOR    ${segment}    IN    @{segments}
+    \    ${detail_1}    Get String Matching Regexp    (\\\d{1}\\\s+HTL\\\s+)(\\\w{2}\\\s\\\w{3}\\\s\\\w{3})(\\\s\\\w{5}-\\\w{5})    ${segment}
+    \    Append To List    ${htl_segments_list}    ${detail_1.replace("HTL ", "")}
+    Set Test Variable    ${htl_segments_list}
+
+Get Select Hotel Segments
+    @{displayed_hotel_segment_list}    Get Segments From List Control
+    Set Suite Variable    ${displayed_hotel_segment_list}
+
+Select Arrival Flight
+    [Arguments]    ${segment_number}=${EMPTY}
+    ${object}    Determine Multiple Object Name Based On Active Tab    ArrivalFlightComboBox    False
+    ${segments_list}    Run Keyword If    "${segment_number}" != "${EMPTY}"    Evaluate    [flight.replace(" \ ", " ") for flight in ${segments_list}]
+    ${segment_to_be_selected}    Run Keyword If    "${segment_number}" != "${EMPTY}"    Get From List    ${segments_list}    ${segment_number}
+    Run Keyword If    "${segment_number}" != "${EMPTY}"    Select Value From Dropdown List    ${object}    ${segment_to_be_selected }
+    ...    ELSE    Select Value From Dropdown List    ${object}    2    by_index=True
+    Take Screenshot
+
+Select Departure Flight
+    [Arguments]    ${segment_number}=${EMPTY}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartFlightComboBox    False
+    ${segments_list}    Run Keyword If    "${segment_number}" != "${EMPTY}"    Evaluate    [flight.replace(" \ ", " ") for flight in ${segments_list}]
+    ${segment_to_be_selected}    Run Keyword If    "${segment_number}" != "${EMPTY}"    Get From List    ${segments_list}    ${segment_number}
+    Run Keyword If    "${segment_number}" != "${EMPTY}"    Select Value From Dropdown List    ${object}    ${segment_to_be_selected }
+    ...    ELSE    Select Value From Dropdown List    ${object}    2    by_index=True
+    Take Screenshot
+
+Select Hotel Segment
+    [Arguments]    @{air_segments}
+    : FOR    ${segment}    IN    @{air_segments}
+    \    Click List Item    ${segment}    True
+    Take Screenshot

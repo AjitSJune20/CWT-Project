@@ -1,0 +1,1395 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../air_fare_verification.txt
+Resource          ../../rail/rail_verification.txt
+Resource          ../../policy_check/policy_check_verification.txt
+
+*** Test Cases ***
+[NB FR] Verify That Charged Fare Does Not Contain Rail Amount
+    [Tags]    us3683    rail_display    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Jump To Different PCC    PARWL210G
+    Create Shell PNR Without Retention Line    FR Amadeus - Mark ¦ OBT - KDS    KDS    Jane
+    Create One Way Rail Booking Using Amadeus Rail Display Thru Web    PARWL210G    FRLYS    FRPAR    E-ticket    SNCF
+    Book Segmented One Way Flight X Months From Now    CDGFRA    \    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Rail
+    Click Panel    Rail
+    Populate E-Ticket Delivery Method Single Fare Quote
+    Click Panel    Air Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Verify Amount In Fare Tab    Fare 1    S3
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 1
+    Verify RMO CP0 Line Include Amadeus Rail Display Amount    S2
+    Verify KDS Amadeus Rail Display Remarks    S2
+
+[AB FR] Verify That Charged Fare Does Not Contain Rail Amount
+    [Tags]    us3683    rail_display    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Amadeus Offer Retain Flight    S3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Alternate Fare 1
+    Verify Offer Amount    Alternate Fare 1
+    Verify Amount In Fare Tab    Fare 1    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Finish PNR    Amend Booking Add Amadeus Offer
+    Re-Execute Amend Booking Add Amadeus Offer If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 1
+    Verify RMO CP0 Line Include Amadeus Rail Display Amount    S2
+    Verify KDS Amadeus Rail Display Remarks    S2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB SE] Verify That Charged Fare Does Not Contain Rail Amount
+    [Tags]    us3683    rail_display    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    u003kxr    en-GB    kronquillouk    EMEA QA Test Team
+    Select GDS    Amadeus
+    Jump To Different PCC    STORA27CT
+    Create Shell PNR Without Retention Line    Power Express EMEA test ¦ SE-AMADEUS RAIL TEST    Carlson    Lena
+    Create Round Trip Rail Booking Using Amadeus Rail Display Thru Web    STORA27CT    Stockholm C    Göteborg C    Ticketless Email
+    Book Segmented One Way Flight X Months From Now    AMSCDG    S2    2
+    Book Segmented One Way Flight X Months From Now    CDGFRA    S5    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Rail
+    Click Panel    Air Fare
+    Verify Amount In Fare Tab    Fare 1    S2
+    Verify Amount In Fare Tab    Fare 2    S5
+    Populate Fare Tab With Default Values    Fare 1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Click Panel    Rail
+    Verify Paper Ticket Delivery Method
+    Populate Paper Ticket Delivery Method Multiple Fare Quotes
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 1
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 2
+
+[AB SE] Verify That Charged Fare Does Not Contain Rail Amount
+    [Tags]    us3683    rail_display    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Rail
+    Click Panel    Air Fare
+    Verify Amount In Fare Tab    Fare 1    S4
+    Populate Fare Tab With Default Values    Fare 1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Click Panel    Rail
+    Verify Paper Ticket Delivery Method
+    Populate Paper Ticket Delivery Method Multiple Fare Quotes
+    Click Finish PNR    Amend Booking Delete Air
+    Re-Execute Amend Booking Delete Air If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Click Panel    Air Fare
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB DK] Verify That Air Fare Panel Charged Fare Reflects Updated TST On Classic
+    [Tags]    us1641    tqt_needed    dk    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    da-DK    AutomationDK    DK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With Three Segments Using Default Values    Amadeus DK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFive    HELOSL/ASK    SS1Y1    FXB/S2
+    ...    OSLHEL/AAY    SS1Y1    FXB/S3    HELARN/ASK    SS1Y1    FXB/S4
+    ...    ${EMPTY}    AIR FARE
+    Populate Fare Tab With Default Values    Fare 1
+    Select Changes Dropdown Value    Tidsaendring tilladt uden omkostning    Fare 1
+    Select Cancellation Dropdown Value    Fuld refundering    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Changes Dropdown Value    Tidsaendring tilladt uden omkostning    Fare 2
+    Select Cancellation Dropdown Value    Fuld refundering    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Select Changes Dropdown Value    Tidsaendring tilladt uden omkostning    Fare 3
+    Select Cancellation Dropdown Value    Fuld refundering    Fare 3
+    Click Finish PNR
+
+[AB DK] Verify That Air Fare Panel Charged Fare Reflects Updated TST On Classic
+    [Tags]    us1641    tqt_needed    dk    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Change Tax Value For TST 1
+    Change Tax Value For TST 2
+    Change Tax Value For TST 3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Changes Dropdown Value    Tidsaendring tilladt uden omkostning    Fare 1
+    Select Cancellation Dropdown Value    Fuld refundering    Fare 1
+    Verify Amount In Fare Tab    Fare 1    T1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Changes Dropdown Value    Tidsaendring tilladt uden omkostning    Fare 2
+    Select Cancellation Dropdown Value    Fuld refundering    Fare 2
+    Verify Amount In Fare Tab    Fare 2    T2
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Select Changes Dropdown Value    Tidsaendring tilladt uden omkostning    Fare 3
+    Select Cancellation Dropdown Value    Fuld refundering    Fare 3
+    Verify Amount In Fare Tab    Fare 3    T3
+    Get High, Charged And Low Fare In Fare Tab    Fare 3
+    Click Finish PNR    Amend Workflow For Charged Fare Reflects Updated TST On Classic
+    Execute Simultaneous Change Handling    Amend Workflow For Charged Fare Reflects Updated TST On Classic
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 1
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 2
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Air Fare Panel Charged Fare Reflects Updated TST On Traveldoo
+    [Tags]    us1641    tqt_needed    uk    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus UK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFour    LHRHEL/AAY    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+
+[AB UK] Verify That Air Fare Panel Charged Fare Reflects Updated TST On Traveldoo
+    [Tags]    us1641    tqt_needed    uk    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Add YQ Tax For TST 1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Verify Amount In Fare Tab    Fare 1    T1
+    Click Finish PNR
+    Re-Execute Amend Workflow For Charged Fare Reflects Updated TST On Traveldoo If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Click Panel    Air Fare
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That In Air Fare Panel User Can Add Or Delete Fare Condition Per Line In Semi Flex During New Booking
+    [Tags]    US5328    fr    emea    us5465
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    ${EMPTY}
+    Click New Booking
+    Book Flight X Months From Now    MSPORD/AUA    SS1Y1    FXP    6
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Add Changes Button    Fare 1
+    Set Low Fare Field (If blank) with Charged Fare
+    Set Changes Value    Non autorise    Fare 1
+    Set Changes Value    10 pour cent    Fare 1    2
+    Click Add Cancellation Button    Fare 1
+    Set Cancellation Value    moins 5% apres le depart    Fare 1
+    Set Cancellation Value    Sous reserve des conditions tarifaires    Fare 1    2
+    Populate Air Fare Savings Code    ABN - ABONNEMENT    CID - CLASSE IMPERATIVE DEMANDEE    YC - Tarif Client Classe Economique
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Remark Is Written In The PNR    NON AUTORISE
+    Verify Specific Remark Is Written In The PNR    10 POUR CENT
+    Verify Specific Remark Is Written In The PNR    MOINS 5% APRES LE DEPART
+    Verify Specific Remark Is Written In The PNR    SOUS RESERVE DES CONDITIONS TARIFAIRES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*NOMINIRULES*
+
+[AB FR] Verify That In Air Fare Panel User Can Add Or Delete Fare Condition Per Line In Semi Flex During New Booking
+    [Tags]    US5328    fr    emea    us5465
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Set Changes Value    10 pour cent    Fare 1
+    Set Changes Value    Autorise    Fare 1    2
+    Set Cancellation Value    moins 15% apres le depart    Fare 1
+    Set Cancellation Value    Non remboursable    Fare 1    2
+    Populate Air Fare Savings Code    ABN - ABONNEMENT    CID - CLASSE IMPERATIVE DEMANDEE    YC - Tarif Client Classe Economique
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Changes in Fare Conditions
+    Retrieve PNR Details From Amadeus
+    Verify Specific Remark Is Written In The PNR    10 POUR CENT
+    Verify Specific Remark Is Written In The PNR    AUTORISE
+    Verify Specific Remark Is Written In The PNR    MOINS 15% APRES LE DEPART
+    Verify Specific Remark Is Written In The PNR    NON REMBOURSABLE
+    Verify Specific Line Is Written In The PNR    RMZ CONF*NOMINIRULES*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AB] Verify That Default Classcode Is Not Added To BF Line Remark Of New Fare
+    [Tags]    US5077    DE7020    uk    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight And One Alternate Offer Using Default Values    Amadeus 16 - Auto ¦ Hidden Savings Code    Automason    Yuri    LHRCDG/AAF    SS1Y1    FXP
+    ...    ${EMPTY}    Air Fare
+    Click Panel    Air Fare
+    Verify Realised Saving Code Field Is Not Visible    Fare 1
+    Verify Missed Saving Code Field Is Not Visible    Fare 1
+    Verify Class Saving Code Field Is Not Visible    Fare 1
+    Select Fully Flexible
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HC- LC- CL
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    RTOF    XE1
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP/S3    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 2
+    Verify Realised Saving Code Field Is Not Visible    Fare 2
+    Verify Missed Saving Code Field Is Not Visible    Fare 2
+    Verify Class Saving Code Field Is Not Visible    Fare 2
+    Select Fully Flexible
+    Click Fare Tab    Fare 1
+    Select Fully Flexible
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Finish PNR    AB For Verify That Default Dlasscode Is Not Added to BF Line of New Fare and Back Office Remarks
+    Execute Simultaneous Change Handling    AB For Verify That Default Dlasscode Is Not Added to BF Line of New Fare and Back Office Remarks
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HC- LC- CL
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That The Correct DI Lines Total For Four Normal Fares W Amadeus Offer
+    [Tags]    de4368    uk    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrTwo
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    5
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S3    5    3
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP/S4    6    6
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S5    6    9
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2    Fare 3    Fare 4
+    Populate Fare Tab With Default Values    Fare 1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get Fees Fare Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Get Fees Fare Value    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Get High, Charged And Low Fare In Fare Tab    Fare 3
+    Get Fees Fare Value    Fare 3
+    Populate Fare Tab With Default Values    Fare 4
+    Get High, Charged And Low Fare In Fare Tab    Fare 4
+    Get Fees Fare Value    Fare 4
+    Get Overall Total Fares    Fare 1    Fare 2    Fare 3    Fare 4
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *9991*${charged_fare_total_fares}
+    Verify Specific Line Is Written In The PNR    *9992*${low_fare_total_fares}
+    Verify Specific Line Is Written In The PNR    *9994*${high_fare_total_fares}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Air Fare Details With Airline Fee Are Written In PNR Remarks
+    [Tags]    fr    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne
+    Click New Booking
+    Enter GDS Command    FPCCVI4444333322221111/1222
+    Book Flight X Months From Now    LHRMRS/ALH    SS1Y1    FXA    6
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Get Fare Details    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Air Savings Remarks Are Written    S2    Fare 1
+    Verify Air Trip Information Remarks Are Written    S2    Fare 1
+    Verify Fare Remarks Are Written    S2    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB UK] Verify That Air Fare Details With Airline Fee Are Written In PNR Remarks
+    [Tags]    uk    US6480    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrTwo
+    Click New Booking
+    Enter GDS Command    FPCCVI4444333322221111/1222
+    Book Flight X Months From Now    LHRMRS/ALH    SS1Y1    FXA    6
+    Update PNR for EN or GB
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Get Fare Details    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Air Savings Remarks Are Written    S2    Fare 1
+    Verify Air Trip Information Remarks Are Written    S2    Fare 1
+    Verify Fare Remarks Are Written    S2    Fare 1
+    Verify Itinerary Remarks Are Written For UK    Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB CA] Verify That Realised Saving Code Defaults To L If Charged Fare And Low Fare Are Equal
+    [Tags]    noram    ca    us3361    18.11
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrFour
+    Tick Traveler Checkbox
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DENLAX/AUA    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Realised Saving Code Defaults To Correct Value    [NAME:ccboRealised_1]
+    Verify Missed Savings Code Field Is Disabled
+    Click Control Button    [NAME:cradFullyFlex_1]
+    Select BSP Routing Code Value    Europe-incl. Morocco/Tunisia/Algeria/Greenland
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *FS/-L
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB CA] Verify That Correct Missed And Realised Saving Codes Are Defaulted For PNR With Multiple Fares And Only Missed Saving Code Is Written In The PNR
+    [Tags]    noram    ca    us3361    18.11    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    CDGORD/AAF    SS1Y1    FXP/S2    6
+    Book Flight X Months From Now    ORDMSP/AAA    SS1Y1    FXP/S3    6    5
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Missed Saving Code Defaults To Correct Value    [NAME:ccboMissed_1]
+    Verify Realised Saving Code Field Is Disabled
+    Click Control Button    [NAME:cradFullyFlex_1]
+    Select BSP Routing Code Value    Europe-incl. Morocco/Tunisia/Algeria/Greenland
+    Click Fare Tab    Fare 2
+    Verify Realised Saving Code Defaults To Correct Value    [NAME:ccboRealised_2]
+    Verify Missed Savings Code Field Is Disabled
+    Click Control Button    [NAME:cradFullyFlex_2]
+    Select BSP Routing Code Value    Europe-incl. Morocco/Tunisia/Algeria/Greenland
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *FS/-7
+    Verify Specific Remark Is Not Written In The PNR    RM *FS/-L
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB CA] Verify That Matrix Code And Ticketing Remarks Are Written In PNR For Single Fare
+    [Tags]    us785    us3362    noram    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Business
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YYZYUL/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Verify BSP Routing Code Dropdown Values
+    Populate Air Fare Restrictions Using Default Values
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Realised Saving Code Value    M - Miscellaneous
+    Get Fare Details For Noram    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify BSP Routing Code Remark Is Written    FS 91
+    Verify Ticketing Remark Is Written For CA    91    S2    Fare 1    True
+    Verify Split Remark Is Written    1
+    Verify Matrix Lines Are Written For CA
+
+[AB CA] Verify That Air Fare Details Are Correct And Fare and Ticketing Remarks Are Written
+    [Tags]    us6622    ca    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Details For NORAM    Fare 1    YMQ    DOM
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Verify BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Enter GDS Command    TTE/ALL    XE2
+    Book Flight X Months From Now    YTOORD/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Select BSP Routing Code Value    Africa
+    Select Route Code Value    INTL
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Click Finish PNR    Amend Booking For Verify Air Fare Details Are Correct And Fare and Ticketing Remarks Are Written
+    Execute Simultaneous Change Handling    Amend Booking For Verify Air Fare Details Are Correct And Fare and Ticketing Remarks Are Written
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtf
+    Verify BSP Routing Code Remark Is Written    FS 51
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Ticketing Remark Is Written For CA    51    S2    Fare 1    True
+    Verify Split Remark Is Written    1
+    Verify Matrix Lines Are Written For CA
+
+[AB CA] Verify That Air Fare Details Are Correct When Additional Segment Is Added
+    [Tags]    us6622    ca    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    YYZYUL/AAC    SS1Y1    FXP/S3    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Fare Details For NORAM    Fare 1    CHI    INTL
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Verify BSP Routing Code Value    Africa
+    Get Fare Details For Noram    Fare 1
+    Click Fare Tab    Fare 2
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Set Low Fare Field    500
+    Select Missed Saving Code Value    A - Accepted
+    Select BSP Routing Code Value    South America
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking For Verify Air Fare Details Are Correct When Additional Segment Is Added
+    Execute Simultaneous Change Handling    Amend Booking For Verify Air Fare Details Are Correct When Additional Segment Is Added
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtf
+    Verify BSP Routing Code Remark Is Written    FS 51
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Ticketing Remark Is Written For CA    51    S2    Fare 1    True
+    Verify Ticketing Remark Is Written For CA    31    S3    Fare 2    \    True
+    Verify Split Remark Is Written    2
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Fare Details For NORAM    Fare 1    CHI    INTL
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Verify BSP Routing Code Value    Africa
+    Click Fare Tab    Fare 2
+    Verify Fare Details For NORAM    Fare 2    YMQ    DOM
+    Verify Missed Savings Code Default Value    A - Accepted
+    Verify BSP Routing Code Value    South America
+    Verify Matrix Lines Are Written For CA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That Matrix Code And Ticketing Remarks Are Written In PNR For Multiple Segment With Single Fare
+    [Tags]    us785    us3362    noram    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Select Trip Type Value    Personal
+    Book Flight X Months From Now Without Pricing    YYZYUL/AAC    SS1Y1    6
+    Book Flight X Months From Now Without Pricing    YULYYZ/AAC    SS1Y1    6    10
+    Enter GDS Command    FXP/S2-3    FXT01/P1
+    Click Read Booking
+    Select Trip Type Value    Personal
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Verify BSP Routing Code Dropdown Values
+    Populate Air Fare Restrictions Using Default Values
+    Select BSP Routing Code Value    Mexico/Central America/Canal Zone/Costa Rica
+    Select Realised Saving Code Value    XX - No Saving
+    Get Fare Details For Noram    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify BSP Routing Code Remark Is Written    FS 12
+    Verify Ticketing Remark Is Written For CA    12    S2-3    Fare 1    True
+    Verify Split Remark Is Written    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That Matrix Code And Ticketing Remarks Are Written In PNR For Multiple Fares
+    [Tags]    us785    us3362    noram    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Meetings
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YULORD/AAC    SS1Y1    FXP/S2    5
+    Book Flight X Months From Now Without Pricing    ORDYYZ/AAC    SS1Y1    6
+    Book Flight X Months From Now Without Pricing    YYZYUL/AAC    SS1Y1    6    10
+    Enter GDS Command    FXP/S3-4    FXT01/P1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Verify BSP Routing Code Dropdown Values
+    Select BSP Routing Code Value    USA incl. all US Territories and Possessions
+    Select Realised Saving Code Value    SC - Subscription
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 1
+    Click Fare Tab    Fare 2
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Verify BSP Routing Code Dropdown Values
+    Select BSP Routing Code Value    Caribbean and Bermuda
+    Select Realised Saving Code Value    UC - Value Added Offer
+    Select Turnaround    YMQ
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify BSP Routing Code Remark Is Written    FS 01
+    Verify Ticketing Remark Is Written For CA    01    S2    Fare 1    True
+    Verify Ticketing Remark Is Written For CA    21    S3-4    Fare 2    True
+    Verify Split Remark Is Written    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That Matrix Code And Ticketing Remarks Are Written In PNR For Multiple Segments And Fares
+    [Tags]    us785    us3362    noram    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Select Trip Type Value    Business
+    Book Flight X Months From Now    YULORD/AAC    SS1Y1    FXP/S2    5
+    Book Flight X Months From Now    ORDYYZ/AAC    SS1Y1    FXP/S3    6
+    Book Flight X Months From Now    YYZYUL/AAC    SS1Y1    FXP/S4    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set Low Fare Field    1000
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Verify BSP Routing Code Dropdown Values
+    Select BSP Routing Code Value    Europe-incl. Morocco/Tunisia/Algeria/Greenland
+    Select Missed Saving Code Value    A - Accepted
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 1
+    Click Fare Tab    Fare 2
+    Set Low Fare Field    1500
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Verify BSP Routing Code Dropdown Values
+    Select BSP Routing Code Value    South America
+    Select Missed Saving Code Value    M - Miscellaneous
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 2
+    Click Fare Tab    Fare 3
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Verify BSP Routing Code Dropdown Values
+    Select BSP Routing Code Value    Asia incl. India
+    Select Realised Saving Code Value    L - Lowest fare available accepted
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtf
+    Verify BSP Routing Code Remark Is Written    FS 41
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Ticketing Remark Is Written For CA    41    S2    Fare 1    \    True
+    Verify Ticketing Remark Is Written For CA    31    S3    Fare 2    \    True
+    Verify Ticketing Remark Is Written For CA    71    S4    Fare 3    True
+    Verify Split Remark Is Written    3
+    Verify Matrix Lines Are Written For CA
+
+[AB CA] Verify That Air Fare Details Are Correct For Multiple Segments And Fares
+    [Tags]    us6622    ca    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Fare Details For NORAM    Fare 1    CHI    TRANS
+    Verify Missed Savings Code Default Value    A - Accepted
+    Verify BSP Routing Code Value    Europe-incl. Morocco/Tunisia/Algeria/Greenland
+    Populate Air Fare Restrictions Using Default Values
+    Select Missed Saving Code    M - Miscellaneous
+    Select BSP Routing Code Value    South America
+    Select Route Code Value    INTL
+    Get Fare Details For Noram    Fare 1
+    Click Fare Tab    Fare 2
+    Verify Fare Details For NORAM    Fare 2    YTO    TRANS
+    Verify Missed Savings Code Default Value    M - Miscellaneous
+    Verify BSP Routing Code Value    South America
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 2
+    Click Fare Tab    Fare 3
+    Verify Fare Details For NORAM    Fare 3    YMQ    DOM
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Verify BSP Routing Code Value    Asia incl. India
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking For Verify Air Fare Details Are Correct For Multiple Segments And Fares
+    Execute Simultaneous Change Handling    Amend Booking For Verify Air Fare Details Are Correct For Multiple Segments And Fares
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtf
+    Verify BSP Routing Code Remark Is Written    FS 31
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Ticketing Remark Is Written For CA    31    S2    Fare 1    \    True
+    Verify Ticketing Remark Is Written For CA    31    S3    Fare 2    \    True
+    Verify Ticketing Remark Is Written For CA    71    S4    Fare 3    True
+    Verify Split Remark Is Written    3
+    Verify Matrix Lines Are Written For CA
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Fare Details For NORAM    Fare 1    CHI    INTL
+    Verify Missed Savings Code Default Value    M - Miscellaneous
+    Verify BSP Routing Code Value    South America
+    Click Fare Tab    Fare 2
+    Verify Fare Details For NORAM    Fare 2    YTO    TRANS
+    Verify Missed Savings Code Default Value    M - Miscellaneous
+    Verify BSP Routing Code Value    South America
+    Click Fare Tab    Fare 3
+    Verify Fare Details For NORAM    Fare 3    YMQ    DOM
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Verify BSP Routing Code Value    Asia incl. India
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That Matrix Code And Ticketing Remarks Are Written In PNR For Multiple Segments With Combined Fares
+    [Tags]    us785    us3362    noram    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Personal
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YULORD/AAC    SS1Y1    FXP/S2    5
+    Book Flight X Months From Now Without Pricing    ORDYYZ/AAC    SS1Y1    5    10
+    Book Flight X Months From Now    YYZYUL/AAC    SS1Y1    FXP/S4    6
+    Book Flight X Months From Now Without Pricing    YULYYZ/AAC    SS1Y1    6    10
+    Enter GDS Command    FXP/S3,5    FXT01/P1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Verify BSP Routing Code Dropdown Values
+    Select BSP Routing Code Value    Africa
+    Select Realised Saving Code Value    CR - Intelligent Ticketing
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 1
+    Click Fare Tab    Fare 2
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Verify BSP Routing Code Dropdown Values
+    Select BSP Routing Code Value    Australia/New Zealand/Islands of the Pacific incl. Hawaii excl. Guam
+    Select Realised Saving Code Value    UC - Value Added Offer
+    Select Turnaround    YTO
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 2
+    Click Fare Tab    Fare 3
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Verify BSP Routing Code Dropdown Values
+    Select BSP Routing Code Value    South America
+    Select Realised Saving Code Value    SC - Subscription
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify BSP Routing Code Remark Is Written    FS 52
+    Verify Ticketing Remark Is Written For CA    52    S2    Fare 1    True
+    Verify Ticketing Remark Is Written For CA    82    S3,5    Fare 2    True    \    True
+    Verify Ticketing Remark Is Written For CA    32    S4    Fare 3    True
+    Verify Split Remark Is Written    3
+    Verify Matrix Lines Are Written For CA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That Route Code Is Populated Correctly And Remarks Written Correctly
+    [Tags]    ca    us3366    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Personal
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YYCYTO/AAC    SS1Y1    FXP    4
+    Book Flight X Months From Now    YTOORD/AAC    SS1Y2    FXP/S3    4    7
+    Book Flight X Months From Now    MANAMS/AKL    SS1Y1    FXP/S4    4    14
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Default Route Code Value Is Correct    DOM
+    Select Realised Saving Code Value    CF - Client Negotiated Fare Saving Accepted
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    Fare 2
+    Verify Default Route Code Value Is Correct    TRANS
+    Select Realised Saving Code Value    CF - Client Negotiated Fare Saving Accepted
+    Select BSP Routing Code Value    USA incl. all US Territories and Possessions
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    Fare 3
+    Verify Default Route Code Value Is Correct    INTL
+    Select Missed Saving Code Value    A - Accepted
+    Select BSP Routing Code Value    Europe-incl. Morocco/Tunisia/Algeria/Greenland
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-DOM
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT2-TRANS
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT3-INTL
+    Populate Policy Check Panel With Default Values
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[UK NB] Verify That Skip Remark Is Written In The PNR If The Amadeus Minirules SO Is Set To OFF
+    [Tags]    uk    emea    us5465
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ US5465 Amadeus Minirules SO enhancement    Auto    TravellerTwo
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Comment    Verify Air Fare Restriction Option Is Selected By Default    Default
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMZ CONF*NOMINIRULES*
+    [Teardown]
+
+[UK AB] Verify That Skip Remark Is Written In The PNR If The Amadeus Minirules SO Is Set To OFF
+    [Tags]    uk    US6480    us5465
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare And Segment    2
+    Delete Fare Quote and Flight Segment    RTOF    XE1
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Option Is Selected By Default    Default
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow For Amadeus Mini Rules Set To Off
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Amadeus Mini Rules Set To Off
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMZ CONF*NOMINIRULES*
+    Verify Specific Line Is Written In The PNR Only Once    RMZ CONF*NOMINIRULES*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB CA] Verify That Domestic Missed Savings Threshold Is Pulled Up At New Booking When Itin Is Domestic
+    [Tags]    ca    19.2    us6912    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub3    AutoOneEighteen    CanadaTrvlrFive
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YULYVR/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    DOM
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Verify Realised Saving Code Field Is Disabled
+    Select Missed Saving Code Value    A - Accepted
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Click Panel    Policy Check
+    Verify Out of Policy Is Shown    Missed Savings Threshold    The missed saving has exceeded the threshold allowed
+    Verify Policy Advice Is Displayed    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    Air Missed Savings Threshold - DOM/TRANS
+    Select Policy Status    The missed saving has exceeded the threshold allowed    AA - Awaiting Approval
+    Select Policy Status    Requires approval prior to ticketing    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *FS/-A
+    [Teardown]    Click Clear All
+
+[AB CA] Verify That International Missed Savings Threshold Is Not Pulled Up At Amend Booking When Itin Is Domestic But Route Code Changed To INTL
+    [Tags]    ca    19.2    us6912    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    DOM
+    Verify Missed Savings Code Default Value    A - Accepted
+    Click Panel    Policy Check
+    Verify Out of Policy Is Shown    Missed Savings Threshold    The missed saving has exceeded the threshold allowed
+    Verify Policy Advice Is Displayed    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    Air Missed Savings Threshold - DOM/TRANS
+    Verify Policy Status Is Defaulted To Correct Value    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Select Route Code Value    INTL
+    Verify Missed Savings Code Default Value    A - Accepted
+    Click Panel    Policy Check
+    Verify Out of Policy Is Shown    Missed Savings Threshold    The missed saving has exceeded the threshold allowed
+    Verify Policy Advice Is Displayed    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    Air Missed Savings Threshold - DOM/TRANS
+    Verify Policy Status Is Defaulted To Correct Value    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *FS/-A
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That Domestic Missed Savings Threshold Is Pulled Up At New Booking When Itin Is Transborder
+    [Tags]    ca    19.2    us6912    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub3    AutoOneEighteen    CanadaTrvlrFive
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YULSFO/AAC    SS1Y1    FXP    6    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    TRANS
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Verify Realised Saving Code Field Is Disabled
+    Select Missed Saving Code Value    R - Routing Declined - Stops/Connections
+    Select BSP Routing Code Value    USA incl. all US Territories and Possessions
+    Click Panel    Policy Check
+    Verify Out of Policy Is Shown    Missed Savings Threshold    The missed saving has exceeded the threshold allowed
+    Verify Policy Advice Is Displayed    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    Air Missed Savings Threshold - DOM/TRANS
+    Select Policy Status    The missed saving has exceeded the threshold allowed    AA - Awaiting Approval
+    Select Policy Status    Requires approval prior to ticketing    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *FS/-R
+    [Teardown]    Click Clear All
+
+[AB CA] Verify That International Missed Savings Threshold Is Not Pulled Up At Amend Booking When Itin Is Transborder But Route Code Changed To INTL
+    [Tags]    ca    19.2    us6912    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    TRANS
+    Verify Missed Savings Code Default Value    R - Routing Declined - Stops/Connections
+    Click Panel    Policy Check
+    Verify Out of Policy Is Shown    Missed Savings Threshold    The missed saving has exceeded the threshold allowed
+    Verify Policy Advice Is Displayed    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    Air Missed Savings Threshold - DOM/TRANS
+    Verify Policy Status Is Defaulted To Correct Value    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Select Route Code Value    INTL
+    Verify Missed Savings Code Default Value    R - Routing Declined - Stops/Connections
+    Click Panel    Policy Check
+    Verify Out of Policy Is Shown    Missed Savings Threshold    The missed saving has exceeded the threshold allowed
+    Verify Policy Advice Is Displayed    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    Air Missed Savings Threshold - DOM/TRANS
+    Verify Policy Status Is Defaulted To Correct Value    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *FS/-R
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That Domestic Missed Savings Threshold Is Pulled Up At New Booking When Itin Is Transborder (US-US)
+    [Tags]    ca    19.2    us6912    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub3    AutoOneEighteen    CanadaTrvlrFive
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SFOIAH/AUA    SS1Y1    FXP    6    2
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    TRANS
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Verify Realised Saving Code Field Is Disabled
+    Select Missed Saving Code Value    8 - Declined Pref Carrier for Lower Fare
+    Select BSP Routing Code Value    USA incl. all US Territories and Possessions
+    Click Panel    Policy Check
+    Verify Out of Policy Is Shown    Missed Savings Threshold    The missed saving has exceeded the threshold allowed
+    Verify Policy Advice Is Displayed    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    Air Missed Savings Threshold - DOM/TRANS
+    Select Policy Status    The missed saving has exceeded the threshold allowed    AA - Awaiting Approval
+    Select Policy Status    Requires approval prior to ticketing    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *FS/-8/S2
+    [Teardown]    Click Clear All
+
+[NB CA] Verify That INTL Missed Savings Threshold Is Pulled Up At Amend When Itin Is Changed To INTL (CA-APAC)
+    [Tags]    ca    19.2    us6912    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    TRANS
+    Verify Missed Savings Code Default Value    8 - Declined Pref Carrier for Lower Fare
+    Click Panel    Policy Check
+    Verify Out of Policy Is Shown    Missed Savings Threshold    The missed saving has exceeded the threshold allowed
+    Verify Policy Advice Is Displayed    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    Air Missed Savings Threshold - DOM/TRANS
+    Verify Policy Status Is Defaulted To Correct Value    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    AA - Awaiting Approval
+    Enter GDS Command    TTE/ALL
+    Enter GDS Command    XE2    RFCWTPTEST    ER    ER
+    Book Flight X Months From Now    YULICN/AAC    SS1Y1    FXP/S2-3    6    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    INTL
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Verify Realised Saving Code Field Is Disabled
+    Select Missed Saving Code Value    H - Declined Alternate Carrier (Personal Preference)
+    Select BSP Routing Code Value    Asia incl. India
+    Click Panel    Policy Check
+    Verify Out of Policy Is Shown    Missed Savings Threshold    The missed saving has exceeded the threshold allowed
+    Verify Policy Advice Is Displayed    Missed Savings Threshold    The missed saving has exceeded the threshold allowed    Air - Missed Savings Threshold - INTL
+    Select Policy Status    The missed saving has exceeded the threshold allowed    AA - Awaiting Approval
+    Select Policy Status    Requires approval prior to ticketing    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *FS/-H/S2-3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That When Carrier Is In The MiniRules Table And Servicing Options Is Set To ON With Show Fare Restriction Is Set To Yes, Air Fare Restriction Is Hidden And Existing MiniRules Remarks Are Written
+    [Documentation]    Airline *AC* \ is listed in MiniRules Table
+    [Tags]    ca    us7011    19.5    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus MiniRules Sub1    JuarezTest    RosalieCA
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus MiniRules Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YYZYUL/AAC    SS1Y1    FXP/S2    6    1
+    Book Flight X Months From Now    YULYYZ/AAC    SS1Y1    FXP/S3    6    2
+    Book Flight X Months From Now    YYZLHR/AAC    SS1Y1    FXP/S4    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restrictions Section Is Not Visible
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Click Fare Tab    Fare 2
+    Verify Air Fare Restrictions Section Is Not Visible
+    Select BSP Routing Code Value    USA incl. all US Territories and Possessions
+    Click Fare Tab    Fare 3
+    Verify Air Fare Restrictions Section Is Not Visible
+    Select BSP Routing Code Value    Europe-incl. Morocco/Tunisia/Algeria/Greenland
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RIR MAIN RESTRICTIONS:
+    Verify Specific Line Is Not Written In The PNR    RIR <B>CHARGED FARE:
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: TORONTO MONTREAL</B>
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: MONTREAL TORONTO</B>
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: TORONTO LONDON</B>
+    Verify Specific Line Is Written In The PNR X Times    RIR ****************************************************    3
+
+[1A CA][AB] Verify That When Carrier Is Not In The MiniRules Table And Servicing Options Is Set To ON With Show Fare Restriction Is Set To Yes, Air Fare Restriction Is Enable And Restriction Remarks Are Written
+    [Documentation]    Airline *UK and PR* \ is not listed in MiniRules Table
+    [Tags]    ca    us7011    19.5    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3-4    RFCWTPTEST    ER    ER    RT
+    Book Flight X Months From Now    BLRDEL/AUK    SS1Y1    FXP/S3    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restrictions Section Is Not Visible
+    Click Fare Tab    Fare 2
+    Verify Default Fare Restriction Field Is Not Visible
+    Verify Air Fare Restriction Option Is Selected By Default    Semi Flexible
+    Populate Air Fare Restrictions Using Default Values
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RIR <B>CHARGED FARE:
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: TORONTO MONTREAL</B>
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: BANGALORE DELHI</B>
+    Verify Specific Line Is Written In The PNR X Times    RIR ****************************************************    2
+    Verify Specific Line Is Written In The PNR    MAIN RESTRICTIONS:
+    Verify Specific Line Is Written In The PNR    CHANGES: SCHEDULE CHANGE PERMITTED FREE OF CHARGE    \    true
+    Verify Specific Line Is Written In The PNR    CANCELLATION: FULL REFUND
+    Verify Specific Line Is Written In The PNR    VALID ON : UK
+    Verify Specific Line Is Written In The PNR    REROUTE:PERMITTED
+    Verify Specific Line Is Written In The PNR    MINIMUM STAY : NO MINIMUM STAY
+    Verify Specific Line Is Written In The PNR    MAXIMUM STAY : ONE YEAR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That When Carrier Is In The MiniRules Table And Servicing Options Is Set To OFF With Show Fare Restriction Is Set To Yes, Air Fare Restriction Is Enable And Existing MiniRules Remarks Are Not Written
+    [Tags]    ca    us7011    19.5    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus MiniRules Sub2    De GuzmanCA    CyrilCA
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus MiniRules Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now Without Pricing    YYZYUL/AAC    SS1Y1    6    1
+    Book Flight X Months From Now Without Pricing    YULYYZ/AAC    SS1Y1    6    2
+    Enter GDS Command    FXP/S2-3    FXT01/P1    FXT01/P1
+    Book Flight X Months From Now    YYZLHR/AAC    SS1Y1    FXP/S4    6    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Default Fare Restriction Field Is Not Visible
+    Verify Air Fare Restriction Option Is Selected By Default    Semi Flexible
+    Populate Air Fare Restrictions Using Default Values
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Click Fare Tab    Fare 2
+    Verify Default Fare Restriction Field Is Not Visible
+    Verify Air Fare Restriction Option Is Selected By Default    Semi Flexible
+    Populate Air Fare Restrictions Using Default Values
+    Select BSP Routing Code Value    USA incl. all US Territories and Possessions
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR X Times    RIR MAIN RESTRICTIONS:    2
+    Verify Specific Line Is Written In The PNR X Times    RIR CHANGE OF RESERVATION - SCHEDULE CHANGE PERMITTED FREE    2
+    Verify Specific Line Is Written In The PNR X Times    RIR CANCELLATION: FULL REFUND    2
+    Verify Specific Line Is Written In The PNR X Times    RIR VALID ON : AC    2
+    Verify Specific Line Is Written In The PNR X Times    RIR REROUTE:PERMITTED    2
+    Verify Specific Line Is Written In The PNR X Times    RIR MINIMUM STAY : NO MINIMUM STAY    2
+    Verify Specific Line Is Written In The PNR X Times    RIR MAXIMUM STAY : ONE YEAR    2
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: TORONTO MONTREAL TORONTO</B>
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: TORONTO LONDON</B>
+    Verify Specific Line Is Not Written In The PNR    RIR <B>CHARGED FARE:
+
+[1A CA][AB] Verify That When Carrier Is Not In The MiniRules Table And Servicing Options Is Set To OFF With Show Fare Restriction Is Set To Yes, Air Fare Restriction Is Enable And Restriction Remarks Are Written
+    [Tags]    ca    us7011    19.5    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2-4    RFCWTPTEST    ER    ER    RT
+    Book Flight X Months From Now    BLRDEL/AUK    SS1Y1    FXP/S2    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Default Fare Restriction Field Is Not Visible
+    Verify Air Fare Restriction Option Is Selected By Default    Semi Flexible
+    Populate Air Fare Restrictions Using Default Values
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RIR <B>CHARGED FARE:
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: BANGALORE DELHI</B>
+    Verify Specific Line Is Written In The PNR    MAIN RESTRICTIONS:
+    Verify Specific Line Is Written In The PNR    CHANGES: SCHEDULE CHANGE PERMITTED FREE OF CHARGE    \    true
+    Verify Specific Line Is Written In The PNR    CANCELLATION: FULL REFUND
+    Verify Specific Line Is Written In The PNR    VALID ON : UK
+    Verify Specific Line Is Written In The PNR    REROUTE:PERMITTED
+    Verify Specific Line Is Written In The PNR    MINIMUM STAY : NO MINIMUM STAY
+    Verify Specific Line Is Written In The PNR    MAXIMUM STAY : ONE YEAR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That When Carrier Is In The MiniRules Table And Servicing Options Is Set To ON With Show Fare Restriction Is Set To No, Air Fare Restriction Is Hidden And Existing MiniRules Remarks Are Written
+    [Tags]    ca    us7011    19.5    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus MiniRules Sub3    Automation    SinghCA
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus MiniRules Sub3
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now Without Pricing    YYZYUL/AAC    SS1Y1    6    1
+    Book Flight X Months From Now Without Pricing    YULYYZ/AAC    SS1Y1    6    2
+    Enter GDS Command    FXP/S2-3    FXT01/P1    FXT01/P1
+    Book Flight X Months From Now Without Pricing    YYZLHR/AAC    SS1Y1    6    3
+    Book Flight X Months From Now Without Pricing    LHRYYZ/AAC    SS1Y1    6    4
+    Enter GDS Command    FXP/S4-5    FXT01/P1    FXT01/P1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restrictions Section Is Not Visible
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Click Fare Tab    Fare 2
+    Verify Air Fare Restrictions Section Is Not Visible
+    Select BSP Routing Code Value    USA incl. all US Territories and Possessions
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RIR MAIN RESTRICTIONS:
+    Verify Specific Line Is Not Written In The PNR    RIR <B>CHARGED FARE:
+    Verify Specific Line Is Written In The PNR X Times    RIR ****************************************************    2
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: TORONTO MONTREAL TORONTO</B>
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: TORONTO LONDON TORONTO</B>
+
+[1A CA][AB] Verify That When Carrier Is Not In The MiniRules Table And Servicing Options Is Set To ON With Show Fare Restriction Is Set To No, Air Fare Restriction Is Hidden And Mini Rule , Restriction Remarks Are Not Written
+    [Tags]    ca    us7011    19.5    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2-5    RFCWTPTEST    ER    ER    RT
+    Book Flight X Months From Now    BLRDEL/AUK    SS1Y1    FXP/S2    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Get Charged Fare Value    Fare 1
+    Verify Air Fare Restrictions Section Is Not Visible
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RIR MAIN RESTRICTIONS:
+    Verify Specific Line Is Not Written In The PNR    RIR <B>CHARGED FARE:
+    Verify Specific Remark Is Written In The PNR    RIR <B>ROUTING: BANGALORE DELHI</B>
+    Verify Specific Remark Is Written In The PNR    RIR ****************************************************
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Add Amadeus Offer
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Amadeus Offer Retain Flight    S3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Alternate Fare 1
+    Verify Offer Amount    Alternate Fare 1
+    Verify Amount In Fare Tab    Fare 1    S3
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Finish PNR    Amend Booking Add Amadeus Offer
+
+Amend Booking Delete Air
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Rail
+    Click Panel    Air Fare
+    Verify Amount In Fare Tab    Fare 1    S4
+    Populate Fare Tab With Default Values    Fare 1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Click Panel    Rail
+    Verify Paper Ticket Delivery Method
+    Populate Paper Ticket Delivery Method Multiple Fare Quotes
+    Click Finish PNR    Amend Booking Delete Air
+
+Amend Workflow For Charged Fare Reflects Updated TST On Classic
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Change Tax Value For TST 1
+    Change Tax Value For TST 2
+    Change Tax Value For TST 3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Changes Dropdown Value    Tidsaendring tilladt uden omkostning    Fare 1
+    Select Cancellation Dropdown Value    Fuld refundering    Fare 1
+    Verify Amount In Fare Tab    Fare 1    T1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Changes Dropdown Value    Tidsaendring tilladt uden omkostning    Fare 2
+    Select Cancellation Dropdown Value    Fuld refundering    Fare 2
+    Verify Amount In Fare Tab    Fare 2    T2
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Select Changes Dropdown Value    Tidsaendring tilladt uden omkostning    Fare 3
+    Select Cancellation Dropdown Value    Fuld refundering    Fare 3
+    Verify Amount In Fare Tab    Fare 3    T3
+    Get High, Charged And Low Fare In Fare Tab    Fare 3
+    Click Finish PNR    Amend Workflow For Charged Fare Reflects Updated TST On Classic
+
+Amend Workflow For Charged Fare Reflects Updated TST On Traveldoo
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Add YQ tax for TST 1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Get High, Charged And Low Fare In Fare Tab
+    Verify Amount In Fare Tab    Fare 1    T1
+    Click Finish PNR
+
+Amend Booking For Changes in Fare Conditions
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Set Changes Value    10 pour cent    Fare 1
+    Set Changes Value    Autorise    Fare 1    2
+    Set Cancellation Value    moins 15% apres le depart    Fare 1
+    Set Cancellation Value    Non remboursable    Fare 1    2
+    Populate Air Fare Savings Code    ABN - ABONNEMENT    CID - CLASSE IMPERATIVE DEMANDEE    YC - Tarif Client Classe Economique
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Verify Realised Saving Code Field Is Not Visible
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Control Object Is Not Visible    [NAME:ccboRealised_${fare_tab_index}]    ${title_power_express}
+    [Teardown]    Take Screenshot
+
+Verify Missed Saving Code Field Is Not Visible
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Control Object Is Not Visible    [NAME:ccboMissed_${fare_tab_index}]    ${title_power_express}
+    [Teardown]    Take Screenshot
+
+Verify Class Saving Code Field Is Not Visible
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Control Object Is Not Visible    [NAME:ccboClass_1${fare_tab_index}]    ${title_power_express}
+    [Teardown]    Take Screenshot
+
+AB For Verify That Default Dlasscode Is Not Added to BF Line of New Fare and Back Office Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    RTOF    XE1
+    Book Flight X Months From Now    CDGLHR/AAF    SS1C1    FXP/S3    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 2
+    Verify Realised Saving Code Field Is Not Visible    Fare 2
+    Verify Missed Saving Code Field Is Not Visible    Fare 2
+    Verify Class Saving Code Field Is Not Visible    Fare 2
+    Select Fully Flexible
+    Click Fare Tab    Fare 1
+    Select Fully Flexible
+    Populate All Panels (Except Given Panels If Any)    AirFare
+    Click Finish PNR    AB For Verify That Default Dlasscode Is Not Added to BF Line of New Fare and Back Office Remarks
+
+Verify Realised Saving Code Defaults To Correct Value
+    [Arguments]    ${realised_saving_code_obj}
+    Verify Control Object Is Visible    ${realised_saving_code_obj}
+    Verify Control Object Text Value Is Correct    ${realised_saving_code_obj}    L - Lowest fare available accepted
+
+Verify Missed Saving Code Defaults To Correct Value
+    [Arguments]    ${missed_saving_code_obj}
+    Verify Control Object Is Visible    ${missed_saving_code_obj}
+    Verify Control Object Text Value Is Correct    ${missed_saving_code_obj}    7 - Low fare within policy threshold
+
+Verify BSP Routing Code Remark Is Written
+    [Arguments]    ${bsp_routing_code}
+    Verify Specific Line Is Written In The PNR    ${bsp_routing_code}
+
+Verify BSP Routing Code Dropdown Values
+    ${expected_bsproutecode_dropdown_values}    Create List    Canada and St. Pierre et Miquelon    USA incl. all US Territories and Possessions    Europe-incl. Morocco/Tunisia/Algeria/Greenland    Mexico/Central America/Canal Zone/Costa Rica    Caribbean and Bermuda
+    ...    South America    Africa    Australia/New Zealand/Islands of the Pacific incl. Hawaii excl. Guam    Asia incl. India    Middle East/Western Asia
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboBSP
+    ${actual_bsproutecode_dropdown_values}    Get Dropdown Values    ${object_name}
+    Log    ${actual_bsproutecode_dropdown_values}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_bsproutecode_dropdown_values}    ${actual_bsproutecode_dropdown_values}
+
+Verify BSP Routing Code Field Is Blank And Mandatory
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboBSP
+    Verify Field Is Empty    ${object_name}
+    Verify Control Object Background Color    ${object_name}    FFD700
+    [Teardown]    Take Screenshot
+
+Verify Split Remark Is Written
+    [Arguments]    ${split_number}
+    Verify Specific Line Is Written In The PNR    RMT SPLIT${split_number}
+    Verify Specific Line Is Written In The PNR Only Once    RMT SPLIT${split_number}
+
+Replace Segment Separator
+    [Arguments]    ${segment_number}
+    ${segment_number_slash}    Replace String    ${segment_number}    ,    /
+    Set Test Variable    ${segment_number}    ${segment_number_slash}
+    [Return]    ${segment_number}
+
+Verify Default Route Code Value Is Correct
+    [Arguments]    ${expected_value}
+    ${control_id}    Determine Multiple Object Name Based On Active Tab    cbRouteGeographyCode
+    ${selected_value}=    Get Control Text Value    ${control_id}
+    Run Keyword If    '${selected_value}'=='${expected_value}'    LOG    EXPECTED VALUE "${expected_value}" IS EQUAL TO DEFAULT VALUE "${selected_value}"
+    ...    ELSE    FAIL    EXPECTED VALUE "${expected_value}" IS NOT EQUAL TO DEFAULT VALUE "${selected_value}"
+
+Verify Fare Details For NORAM
+    [Arguments]    ${fare_tab}    ${expected_turnaround}    ${expected_route_code_value}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify High Fare Field Value    ${high_fare_value_${fare_tab_index}}    ${fare_tab}
+    Verify Low Fare Field Value    ${low_fare_${fare_tab_index}}    ${fare_tab}
+    Verify Charged Fare Field Value    ${charged_fare_${fare_tab_index}}    ${fare_tab}
+    Verify Turnaround Value Is Correct    ${fare_tab}    ${expected_turnaround}
+    Verify Route Code Field Value    ${expected_route_code_value}
+
+Amend Booking For Verify Air Fare Details Are Correct And Fare and Ticketing Remarks Are Written
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Enter GDS Command    TTE/ALL    XE2
+    Book Flight X Months From Now    YTOORD/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Select BSP Routing Code Value    Africa
+    Select Route Code Value    INTL
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking For Verify Air Fare Details Are Correct And Fare and Ticketing Remarks Are Written
+
+Amend Booking For Verify Air Fare Details Are Correct When Additional Segment Is Added
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    YYZYUL/AAC    SS1Y1    FXP/S3    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Get Fare Details For Noram    Fare 1
+    Click Fare Tab    Fare 2
+    Verify BSP Routing Code Field Is Blank And Mandatory
+    Set Low Fare Field    500
+    Select Missed Saving Code Value    A - Accepted
+    Select BSP Routing Code Value    South America
+    Select Turnaround    YMQ
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking For Verify Air Fare Details Are Correct For Multiple Segments And Fares
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Air Fare Restrictions Using Default Values
+    Select Missed Saving Code    M - Miscellaneous
+    Select BSP Routing Code Value    South America
+    Select Route Code Value    INTL
+    Get Fare Details For Noram    Fare 1
+    Click Fare Tab    Fare 2
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 2
+    Click Fare Tab    Fare 3
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking For Verify Air Fare Details Are Correct For Multiple Segments And Fares
+
+Amend Booking Workflow For Amadeus Mini Rules Set To Off
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare And Segment    2
+    Delete Fare Quote and Flight Segment    RTOF    XE1
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Option Is Selected By Default    Default
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow For Amadeus Mini Rules Set To Off
+
+Verify Air Fare Restrictions Remarks Are Written In The RIR Lines
+    [Arguments]    @{fare_restrictions_remarks_list}
+    : FOR    ${fare_restrictions__remark}    IN    @{fare_restrictions_remarks_list}
+    \    Run Keyword And Continue On Failure    Verify Specific Remark Is Written In The PNR    RIR ${itin_remark.upper()}
+    Log    Exited
+
+Verify Air Fare Restrictions Section Is Visible
+    Verify Control Object Is Visible    [NAME:grpRestrictions]    ${title_power_express}
+
+Verify Air Fare Restrictions Section Is Not Visible
+    Verify Control Object Is Not Visible    [NAME:grpRestrictions]    ${title_power_express}

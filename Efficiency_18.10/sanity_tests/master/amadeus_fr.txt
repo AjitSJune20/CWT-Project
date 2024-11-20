@@ -1,0 +1,127 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    amadeus
+Force Tags        amadeus
+Resource          ../resource_sanity.txt
+Resource          ../../acceptance_tests/air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+New Booking
+    Open Power Express And Retrieve Profile    ${version}    MASTER    u002mcc    ${EMPTY}    ${EMPTY}    EMEA QA Test Team
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    FR Amadeus QA test Client ¦ FR Sub 1    Normandie    Michelle    CDGLHR/AAF    ${EMPTY}    Air Fare
+    ...    Cust Refs
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Get Fare Details    Fare 1    True    False
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Center    12345678
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    12345678
+    Verify Air Trip Information Remarks Are Written    S2    Fare 1
+    Verify Fare Remarks Are Written    S2    Fare 1    1    False
+    Verify Itinerary Remarks Are Written    Fare 1    False
+    Verify Duplicate Remarks    Amadeus
+    Verify Generic Remarks
+    Verify Air Savings Remarks Are Written    S2    Fare 1
+
+Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR    Simultaneous Change Handling For Quick Amend
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Quick Amend
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    12345678
+    Verify Air Trip Information Remarks Are Written    S2    Fare 1
+    Verify Fare Remarks Are Written    S2    Fare 1    1    False
+    Verify Itinerary Remarks Are Written    Fare 1    False
+    Verify Duplicate Remarks    Amadeus
+    Verify Generic Remarks
+    Verify Air Savings Remarks Are Written    S2    Fare 1
+
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S3    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 2    \    true
+    Get Fare Details    Fare 2    True    False
+    Click Finish PNR    Simultaneous Change Handling For Amend Booking
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Amend Booking
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    12345678
+    Verify Air Trip Information Remarks Are Written    S2    Fare 1
+    Verify Fare Remarks Are Written    S2    Fare 1    1    False
+    Verify Air Trip Information Remarks Are Written    S3    Fare 2
+    Verify Fare Remarks Are Written    S3    Fare 2    1    False
+    Verify Itinerary Remarks Are Written    Fare 1    False
+    Verify Itinerary Remarks Are Written    Fare 2    False
+    Verify Duplicate Remarks    Amadeus
+    Verify Generic Remarks
+    Verify Air Savings Remarks Are Written    S2    Fare 1
+    Verify Air Savings Remarks Are Written    S3    Fare 2
+
+Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR    Simultaneous Change Handling For Send Itinerary
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Send Itinerary
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    12345678
+    Verify Air Trip Information Remarks Are Written    S2    Fare 1
+    Verify Fare Remarks Are Written    S2    Fare 1    1    False
+    Verify Air Trip Information Remarks Are Written    S3    Fare 2
+    Verify Fare Remarks Are Written    S3    Fare 2    1    False
+    Verify Itinerary Remarks Are Written    Fare 1    False
+    Verify Itinerary Remarks Are Written    Fare 2    False
+    Verify Duplicate Remarks    Amadeus
+    Verify Generic Remarks
+    Verify Air Savings Remarks Are Written    S2    Fare 1
+    Verify Air Savings Remarks Are Written    S3    Fare 2
+
+Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR    Simultaneous Change Handling For Cancel Booking
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Cancel Booking
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks
+    Verify CDR Remarks Are Written    12345678
+    Verify Duplicate Remarks    Amadeus
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Simultaneous Change Handling For Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S3    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 2    \    true
+    Get Fare Details    Fare 2    True    False
+    Click Finish PNR    Simultaneous Change Handling For Amend Booking
+
+Simultaneous Change Handling For Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR    Simultaneous Change Handling For Cancel Booking
+
+Simultaneous Change Handling For Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR    Simultaneous Change Handling For Send Itinerary
+
+Simultaneous Change Handling For Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR    Simultaneous Change Handling For Quick Amend
+
+Verify Generic Remarks
+    Verify Text Contains Expected Value    ${pnr_details}    RM \\*0653\\*(MUSSUPUUUUUA|MUSSUUUUUUUA)    true
+    Verify SYEX GVS Line In Remarks    RMA SYEXGV
+    Verify Specific Line Is Written In The PNR    RM *0102*1
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Written In The PNR    RM *0112*MICHELLE NORMANDIE
+    Verify Specific Line Is Written In The PNR    RM *0650*14:1CD9D018

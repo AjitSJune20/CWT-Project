@@ -1,0 +1,227 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    sabre
+Force Tags        sabre    noram
+Resource          ../cust_refs_verification.txt
+
+*** Test Cases ***
+[NB RB] Verify All Mandatory And Optional Mandatory Table Controlled CDR Fields
+    [Tags]    us506    legacy    de7573
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US506    AutoLegacy    NoramTrvlrOneThree
+    Click New Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    V101
+    Set CDR Value    Rmks    This is a gen remark
+    Set CDR Value    SU-Department Name    QA
+    Set CDR Value    T-Booking Date    102418
+    Set CDR Value    TS-Business Unit Name    CWT
+    Set CDR Value    TS-Employee ID    123456
+    Set CDR Value    TS-Trip Reason    VAC
+    Set CDR Value    T-Supervisor    VAC
+    Click Panel    Client Info
+    Click Panel    Cust Refs
+    Verify Panel Is Green    Cust Refs
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    MSPORD¥AA    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    V101
+    Set CDR Value    Rmks    This is a gen remark
+    Set CDR Value    SU-Department Name    QA
+    Set CDR Value    T-Booking Date    102418
+    Set CDR Value    TS-Business Unit Name    CWT
+    Set CDR Value    TS-Employee ID    123456
+    Set CDR Value    TS-Trip Reason    VAC
+    Set CDR Value    T-Supervisor    VAC
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-DP/V101
+    Verify Specific Line Is Written In The PNR    U*21-THIS IS A GEN REMARK
+    Verify Specific Line Is Written In The PNR    U*70-QA
+    Verify Specific Line Is Written In The PNR    U*16-102418
+    Verify Specific Line Is Written In The PNR    U*18-CWT
+    Verify Specific Line Is Written In The PNR    U*19-123456
+    Verify Specific Line Is Written In The PNR    U*20-VAC
+    Verify Specific Line Is Written In The PNR    U*17-VAC
+
+[AB] Verify All Mandatory And Optional Mandatory Table Controlled CDR Fields
+    [Tags]    us506    legacy    de7573
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    zzzzzzzzzzzz
+    Set CDR Value    Rmks    zzzzzzzzzzzz
+    Set CDR Value    SU-Department Name    zzzzzzzzzzzz
+    Set CDR Value    T-Booking Date    zzzzzzzzzzzz
+    Set CDR Value    TS-Business Unit Name    zzzzzzzzzzzz
+    Set CDR Value    TS-Employee ID    zzzzzzzzzzzz
+    Set CDR Value    TS-Trip Reason    zzzzzzzzzzzz
+    Set CDR Value    T-Supervisor    zzzzzzzzzzzz
+    Verify Error Format Tooltip Is Correct    The field must follow the format specified in the mask
+    Verify Error Lookup Field Tooltip Is Correct    The field must follow the format specified in the mask
+    Set CDR Value    Matrix DP Code    V101
+    Set CDR Value    Rmks    This is a gen remark
+    Set CDR Value    SU-Department Name    QA
+    Set CDR Value    T-Booking Date    102418
+    Set CDR Value    TS-Business Unit Name    CWT
+    Set CDR Value    TS-Employee ID    123456
+    Set CDR Value    TS-Trip Reason    VAC
+    Set CDR Value    T-Supervisor    VAC
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Verify All Panels Are Green
+    Click Finish PNR    Amend Booking Worfklow For CDR Verification
+    Execute Simultaneous Change Handling    Amend Booking Worfklow For CDR Verification
+    Enter Specific Command On Native GDS    *R
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-DP/V101
+    Verify Specific Line Is Written In The PNR    U*21-THIS IS A GEN REMARK
+    Verify Specific Line Is Written In The PNR    U*70-QA
+    Verify Specific Line Is Written In The PNR    U*16-102418
+    Verify Specific Line Is Written In The PNR    U*18-CWT
+    Verify Specific Line Is Written In The PNR    U*19-123456
+    Verify Specific Line Is Written In The PNR    U*20-VAC
+    Verify Specific Line Is Written In The PNR    U*17-VAC
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Transactional CDR Is Hidden And Does Not Write Remarks Upon Update PNR
+    [Tags]    us3827    de7573
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US3827    AutoSeventeenTwo    NoramTravellerTwo
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify Specific CDR Is Not Shown Upon Load    Hotel Authorization
+    Verify Specific CDR Is Not Shown Upon Load    Reason No Hotel Booked
+    Set CDR Value    T-Matrix DP Code    S789
+    Click Panel    Client Info
+    Update PNR for EN or GB
+    Retrieve PNR Details From Sabre Red    \    *.
+    Verify Specific Line Is Not Written In The PNR    U*12
+    Verify Specific Line Is Not Written In The PNR    U*13
+    Book One Way Flight X Months From Now    DENLAX¥AA    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Value Is Correct    Hotel Authorization    AQUA
+    Verify CDR Value Is Correct    Reason No Hotel Booked    ${EMPTY}
+    Set CDR Value    Reason No Hotel Booked    BOOK LATER
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U*12-BOOK LATER
+    Verify Specific Line Is Written In The PNR    U*13-AQUA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Client Defined References Should Return Unticked After Read Booking And Add Valid CDRs data
+    [Tags]    us1433    de7573
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 15 - Auto ¦ US1433    AutoOneFiveEight    NoramTrvlrOne
+    Click New Booking
+    Click Panel    Cust Refs
+    Comment    Set CDR Value    Matrix DP Code    ${EMPTY}
+    Tick Not Known At Time Of Booking    Tick
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    MSPORD¥AA    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Cust Refs
+    Verify Cust Refs Not Known Checkbox Is Unticked
+    Verify Panel Is Red    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    G101
+    Set CDR Value    T-Booking Date    123456
+    Set CDR Value    TS-Employee ID    321654987
+    Set CDR Value    TS-Trip Reason    G101
+    Set CDR Value    TS-Business Unit Name    12345
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-DP/G101
+    Verify Specific Line Is Written In The PNR    U*16-123456
+    Verify Specific Line Is Written In The PNR    U*19-321654987
+    Verify Specific Line Is Written In The PNR    U*20-G101
+
+[AB] Verify That Client Defined References Should Return Unticked After Read Booking And Add Valid CDRs data
+    [Tags]    us1433    de7573
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Cust Refs
+    Verify Cust Refs Not Known Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    G101
+    Set CDR Value    T-Booking Date    789101
+    Set CDR Value    TS-Employee ID    456789101
+    Set CDR Value    TS-Trip Reason    G101
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow For CDRs Ticked And Unticked Process
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-DP/G101
+    Verify Specific Line Is Written In The PNR    U*16-789101
+    Verify Specific Line Is Written In The PNR    U*19-456789101
+    Verify Specific Line Is Written In The PNR    U*20-G101
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Worfklow For CDR Verification
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    zzzzzzzzzzzz
+    Set CDR Value    Rmks    zzzzzzzzzzzz
+    Set CDR Value    SU-Department Name    zzzzzzzzzzzz
+    Set CDR Value    T-Booking Date    zzzzzzzzzzzz
+    Set CDR Value    TS-Business Unit Name    zzzzzzzzzzzz
+    Set CDR Value    TS-Employee ID    zzzzzzzzzzzz
+    Set CDR Value    TS-Trip Reason    zzzzzzzzzzzz
+    Set CDR Value    T-Supervisor    zzzzzzzzzzzz
+    Verify Error Format Tooltip Is Correct    The field must follow the format specified in the mask
+    Comment    Verify Error Lookup Field Tooltip Is Correct    The value entered does not match a value defined in the look up values list. Please choose a value from the look up values list.
+    Verify Error Lookup Field Tooltip Is Correct    The field must follow the format specified in the mask
+    Set CDR Value    Matrix DP Code    V101
+    Set CDR Value    Rmks    This is a gen remark
+    Set CDR Value    SU-Department Name    QA
+    Set CDR Value    T-Booking Date    102418
+    Set CDR Value    TS-Business Unit Name    CWT
+    Set CDR Value    TS-Employee ID    123456
+    Set CDR Value    TS-Trip Reason    VAC
+    Set CDR Value    T-Supervisor    VAC
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Verify All Panels Are Green
+    Click Finish PNR
+
+Amend Booking Workflow For CDRs Ticked And Unticked Process
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Cust Refs
+    Verify Cust Refs Not Known Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    G101
+    Set CDR Value    T-Booking Date    789101
+    Set CDR Value    TS-Employee ID    456789101
+    Set CDR Value    TS-Trip Reason    G101
+    Click Finish PNR
+
+Verify Error Format Tooltip Is Correct
+    [Arguments]    ${tooltip_text}
+    Verify Tooltip Text Is Correct Using Coords    469    492    ${tooltip_text}
+
+Verify Error Lookup Field Tooltip Is Correct
+    [Arguments]    ${tooltip_text}
+    Verify Tooltip Text Is Correct Using Coords    469    582    ${tooltip_text}

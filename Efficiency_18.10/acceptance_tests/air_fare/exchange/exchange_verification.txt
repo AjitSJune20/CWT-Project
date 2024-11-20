@@ -1,0 +1,54 @@
+*** Settings ***
+Resource          exchange.txt
+
+*** Keywords ***
+Verify Exchange Itinerary Remark
+    [Arguments]    ${fare_tab}    ${x_times}=${EMPTY}    ${is_apac}=False
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${total}    Get Variable Value    ${total_amount_with_currency_${fare_tab_index}}    ${grand_total_fare_with_currency_${fare_tab_index}}
+    ${verbiage}    Set Variable If    "${locale}" == "fr-FR"    FRAIS DE MODIFICATION TARIFAIRE    "${locale}" == "de-DE"    GESAMTBETRAG DER AUFZAHLUNG    "${locale}" == "en-GB"
+    ...    TOTAL ADDITIONAL FARE PAYMENT    "${locale}" == "sv-SE"    PRISSKILLNAD    "${locale}" == "fi-FI"    LISAMAKSU, HINTOJEN VABINEN EROTUS    "${locale}" == "es-ES"
+    ...    DIFERENCIA DE TARIFA    "${locale}" == "da-DK"    PRISDIFFERENCE
+    ${verbiage}    Set Variable If    ${is_apac}    TOTAL ADDITIONAL FARE COLLECTION    ${verbiage}
+    Run Keyword If    "${x_times}" == "${EMPTY}"    Verify Specific Line Is Written In The PNR    RIR ${verbiage}: ${total}
+    ...    ELSE    Verify Specific Line Is Written In The PNR X Times    RIR ${verbiage}: ${total}    ${x_times}
+
+Verify TARIF APPLIQUE Remark Is Written
+    [Arguments]    ${segment_number}    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Activate Amadeus Selling Platform
+    Enter GDS Command    TQT/${segment_number}
+    Get Clipboard Data
+    Get Grand Total Fare From Amadeus    ${fare_tab}
+    ${grand_total_fare}    Replace String    ${grand_total_fare_with_currency_${fare_tab_index}}    ${SPACE}    ${EMPTY}
+    Verify Specific Line Is Written In The PNR    TARIF APPLIQUE: ${grand_total_fare}
+
+Verify TARIF APPLIQUE Remark Is Not Written
+    [Arguments]    ${segment_number}    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Activate Amadeus Selling Platform
+    Enter GDS Command    TQT/${segment_number}
+    Get Clipboard Data
+    Get Grand Total Fare From Amadeus    ${fare_tab}
+    ${grand_total_fare}    Replace String    ${grand_total_fare_with_currency_${fare_tab_index}}    ${SPACE}    ${EMPTY}
+    Verify Specific Line Is Not Written In The PNR    TARIF APPLIQUE: ${grand_total_fare}
+
+Verify FRAIS DE MODIFICATION COMPAGNIE Is Written
+    [Arguments]    ${segment_number}    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Activate Amadeus Selling Platform
+    Enter GDS Command    TQT/${segment_number}
+    Get Clipboard Data
+    Get Grand Total Fare From Amadeus    ${fare_tab}
+    ${grand_total_fare}    Replace String    ${grand_total_fare_with_currency_${fare_tab_index}}    ${SPACE}    ${EMPTY}
+    Verify Specific Line Is Written In The PNR    FRAIS DE MODIFICATION COMPAGNIE: ${grand_total_fare}
+
+Verify FRAIS DE MODIFICATION COMPAGNIE Is Not Written
+    [Arguments]    ${segment_number}    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Activate Amadeus Selling Platform
+    Enter GDS Command    TQT/${segment_number}
+    Get Clipboard Data
+    Get Grand Total Fare From Amadeus    ${fare_tab}
+    ${grand_total_fare}    Replace String    ${grand_total_fare_with_currency_${fare_tab_index}}    ${SPACE}    ${EMPTY}
+    Verify Specific Line Is Not Written In The PNR    FRAIS DE MODIFICATION COMPAGNIE: ${grand_total_fare}

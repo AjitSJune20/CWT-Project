@@ -1,0 +1,69 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../policy_check_verification.txt
+Resource          ../../business_rules/business_rules_verification.txt
+
+*** Test Cases ***
+[1A EMEA] [NB] Verify that City Policy Panel is displayed when the air segment has an origin/destination that is out of policy
+    [Tags]    fr    us5893
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    FR Amadeus - Mark ¦ OBT - KDS    KDS    Jane
+    Select Client Account    1374219 ¦ AMADEUS FRANCE ¦ OBT - KDS
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    MRSPAR/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    Marseille Prohibited
+    Verify Policy Status Values    City    Marseille Prohibited    AA - En attente de validation    HA - Est autorisé à voyager    NV - Ne se rend pas dans la zone affectée    TA - Voyageur/Booker avisé
+    Select Policy Status    Marseille Prohibited    HA - Est autorisé à voyager
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMJ PCHK:PTP1921-HA-CITY    \    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A][EMEA] Verify That Premium Economy Class Will Be In Policy Check Panel If Policy Prohibited Is Set To True
+    [Tags]    us5893    18.1    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 16 - Auto ¦ US1423    AutoSixteenTwo    NoramTrvlrFive
+    Click New Booking
+    Click Panel    Client Info
+    Book Flight X Months From Now    CDGLHR/AAF    SS1W1    FXP/S2    6
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S3    6    5
+    Book Flight X Months From Now    AMSBCN/AKL    SS1J1    FXP/S4    6    10
+    Book Flight X Months From Now    BCNAMS/AKL    SS1F1    FXP/S5    6    15
+    Book Flight X Months From Now    CDGJFK    SS1W1    FXP/S6    7
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Values    Air Cabin    Premium Economy hors politique voyage    AA - En attente de validation    HA - Est autorisé à voyager    NV - Ne se rend pas dans la zone affectée    TA - Voyageur/Booker avisé
+    Verify Policy Advice Is Displayed    Air Cabin    Premium Economy hors politique voyage    Prime Economy interdite pour Europe-Europe
+    Click Clear All
+    [Teardown]
+
+[1A][EMEA] Verify That Business Class Will Be In Policy Check Panel If Policy Prohibited Is Set To True
+    [Tags]    us5893    18.1    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR Legacy - Auto ¦ US681    AutoLegacy    EmeaTrvlrOneFive
+    Click New Booking
+    Click Panel    Client Info
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S2    6
+    Book Flight X Months From Now    CDGLHR/AAF    SS1W1    FXP/S3    6    5
+    Book Flight X Months From Now    AMSBCN/AKL    SS1J1    FXP/S4    6    10
+    Book Flight X Months From Now    BCNAMS/AKL    SS1F1    FXP/S5    6    15
+    Book Flight X Months From Now    ORDATL/AAA    SS1J1    FXP/S6    7
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Values    Air Cabin    Business Class hors politique voyage    AA - En attente de validation    HA - Est autorisé à voyager    NV - Ne se rend pas dans la zone affectée    TA - Voyageur/Booker avisé
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class hors politique voyage    Classe d'affaires interdite pour Europe-Europe
+    Click Clear All
+    [Teardown]
+
+*** Keywords ***

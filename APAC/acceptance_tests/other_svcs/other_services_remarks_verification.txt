@@ -1,0 +1,279 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.robot
+Resource          ../gds/gds_verification.robot
+
+*** Keywords ***
+Verify Non-Air Remarks Are Written In The PNR
+    [Arguments]    ${description}    ${product_code}    ${vendor_code}    ${identifier}    ${eo_identifier}    ${segment_no}
+    ...    ${fop_type}    ${expected_count}    ${type}    ${is_air_product}=False    ${is_amount_reqd}=False    ${passenger_no}=${EMPTY}
+    ...    ${passenger_type}=ADT
+    [Documentation]    ${fop_type} - S=Cash, CC=Full Passthrough, CX4=Non-Passthrough and Credit Card is VI or CA, CX2=Non-Passthrough and Credit Card is AX
+    ...
+    ...    Note: for Boolean Variables make sure to only use True and False as values.
+    ${eo_identifier}    Convert To Lowercase    ${eo_identifier}
+    ${description}    Convert To Lowercase    ${description}
+    ${fop_type}    Convert To Uppercase    ${fop_type}
+    ${is_air_product_bsp_domestic}    Evaluate    "${product}"=="air bsp" or "${product}"=="air domestic"
+    ${is_air_product_consodom_sales}    Evaluate    "${product}"=="air conso-dom" or "${product}"=="air sales-non bsp int"
+    ${is_air_subfee}    Evaluate    "${description}"=="vat" or "${description}"=="merchant fee" or "${description}"=="transaction fee-air only" or "${description}"=="merchant fee tf" or "${description}"=="rebate"
+    ${is_not_air_subfee}    Evaluate    "${description}"!="vat" or "${description}"!="merchant fee" or "${description}"!="transaction fee-air only" or "${description}"!="merchant fee tf" or "${description}"!="rebate"
+    #Build Passenger Relate
+    ${passenger}    Set Variable If    "${passenger_no}" != "${EMPTY}"    /${passenger_type}/P${passenger_no}    ${EMPTY}
+    #Line1
+    ${cwtrno1}    Get Variable Value    ${cwtrno1_${identifier}}
+    ${cwtrno3}    Get Variable Value    ${cwtrno3_${identifier}}
+    ${plating_carrier}    Get Variable Value    ${plating_carrier_${identifier}}
+    ${ac}    Set Variable If    (${is_air_product_bsp_domestic} or ${is_air_product_consodom_sales}) and ${is_air_subfee}    /    ${is_air_product_bsp_domestic} and ${is_not_air_subfee}    /AC${cwtrno1}/    /AC${plating_carrier}/
+    ${line1}    Set Variable If    ${is_air_product_bsp_domestic} and "${cwtrno3}"!="${EMPTY}"    RM \\*MS/${product_code}/${vendor_code}${ac}TK${cwtrno2_${identifier}}-${cwtrno3_${identifier}}/PX1    ${is_air_product_bsp_domestic} and "${cwtrno3}"=="${EMPTY}"    RM \\*MS/${product_code}/${vendor_code}${ac}TK${cwtrno2_${identifier}}/PX1    ${is_air_product_consodom_sales}
+    ...    RM \\*MS/${product_code}/${vendor_code}${ac}TK${eo_number_${product}}/PX1    RM \\*MS/${product_code}/${vendor_code}/TK${eo_number_${eo_identifier}}/PX1
+    #Line2
+    ${other_related_no}    Get Variable Value    ${other_related_no_${identifier}}
+    ${vendor_ref_no}    Get Variable Value    ${vendor_ref_no_${identifier}}
+    ${line2}    Run Keyword If    "${vendor_ref_no}"!="None"    Set Variable    RM \\*MSX/PO${other_related_no.upper()}/GSA${vendor_ref_no.upper()}
+    ...    ELSE    Set Variable    RM \\*MSX/PO${other_related_no.upper()}
+    #Line3
+    ${amount}    Determine Product Amount    ${type}    ${description}    ${identifier}    ${is_air_product}
+    ${line3}    Set Variable If    ${is_air_product} and "${description}"!="vat"    RM \\*MSX/S${amount}/SF${amount}/C${amount}/SG${segment_no}/F${fop_type}    "${is_air_product}"=="False" and "${description}" == "merchant fee" and "${type}" == "nonair_subfees"    RM \\*MSX/S${amount}/SF${amount}/C${amount}/F${fop_type}    "${is_air_product}"=="False" and "${description}" == "vat" and "${type}" == "nonair_subfees"
+    ...    RM \\*MSX/S${amount}/SF${amount}/C0/F${fop_type}    "${is_air_product}"=="True" and "${description}"=="vat" and "${is_amount_reqd}"=="True"    RM \\*MSX/S${amount}/SF${amount}/C0/SG${segment_no}/F${fop_type}    "${is_air_product}"=="True" and "${description}"=="vat" and "${is_amount_reqd}"=="False"    RM \\*MSX/S\\d+/SF\\d+/C0/SG${segment_no}/F${fop_type}    RM \\*MSX/S${amount}/SF${amount}/C${commission_${identifier}}/F${fop_type}
+    #Line4 - Only if FOP is Credit Card
+    ${line4}    Set Variable If    "${fop_type}" != "S" and "${is_air_product}"=="True" and "${is_amount_reqd}"=="False"    RM \\*MSX/CCN\\D+\\d+EXP\\d+/D\\d+    "${fop_type}" != "S" and "${is_air_product}"=="True" and "${is_amount_reqd}"=="True"    RM \\*MSX/CCN\\D+\\d+EXP\\d+/D${amount}    "${fop_type}" != "S" and "${is_air_product}"=="False"
+    ...    RM \\*MSX/CCN\\D+\\d+EXP\\d+/D${amount}    ${EMPTY}
+    #Line5
+    ${line5}    Set Variable If    "${is_air_product}"=="True" and ("${description}"=="merchant fee" or "${description}"=="transaction fee-air only")    RM \\*MSX/FF99-\\d*\\.{0,1}\\d{0,2}P\\d*\\.{0,1}\\d{0,2}\\*\\d*\\.{0,1}\\d{0,2}P\\d*\\.{0,1}\\d{0,2}\\*\\d*\\.{0,1}\\d{0,2}P\\d*\\.{0,1}\\d{0,2}    "${is_air_product}"=="False" and "${description}" !="vat" and ("${type}" == "nonair" or "${type}" == "nonair_subfees")    RM \\*MSX/FF99-\\d*\\.{0,1}\\d{0,2}P\\d*\\.{0,1}\\d{0,2}\\*\\d*\\.{0,1}\\d{0,2}P\\d*\\.{0,1}\\d{0,2}\\*\\d*\\.{0,1}\\d{0,2}P\\d*\\.{0,1}\\d{0,2}/FF34-AB/FF35-OTH    ${EMPTY}
+    #Line6
+    ${line6}    Set Variable If    "${is_air_product}"=="True"    RM \\*MSX/FF34-AB/FF35-AMA/FF36-M/FF47-CWT    "${is_air_product}"=="False" and "${description}" !="vat" and ("${type}" == "nonair" or "${type}" == "nonair_subfees")    RM \\*MSX/FF36-M/FF47-CWT    RM \\*MSX/FF34-AB/FF35-OTH/FF36-M/FF47-CWT
+    #Line7
+    ${line7}    Set Variable If    ${is_air_product_bsp_domestic}    RM \\*MSX/FF ${description.upper()}/XO-${eo_number_${eo_identifier}}    RM \\*MSX/FF ${description.upper()}
+    ${expected_remark_group}    Set Variable If    "${passenger_no}" != "${EMPTY}"    ${line1}${passenger} ${line2}${passenger} ${line3}${passenger} ${line4}${passenger} ${line5}${passenger} ${line6}${passenger} ${line7}${passenger}    ${line1} ${line2} ${line3} ${line4} ${line5} ${line6} ${line7}
+    ${expected_remark_group}    Replace String Using Regexp    ${expected_remark_group}    \\s{2,3}    ${SPACE}
+    Verify String Pattern Matches X Times    ${expected_remark_group}    ${expected_count}
+
+Verify Air Remarks Are Written In The PNR
+    [Arguments]    ${product}    ${vendor}    ${identifier}    ${product_code}    ${vendor_code}    ${segment_number}
+    ...    ${fop_type}    ${expected_count}    ${is_air_product}=False    ${passenger_no}=${EMPTY}    ${passenger_type}=ADT
+    [Documentation]    ${fop_type} - S=Cash, CC=Full Passthrough, CX4=Non-Passthrough and Credit Card is VI or CA, CX2=Non-Passthrough and Credit Card is AX
+    #Build Passenger Relate
+    ${passenger}    Set Variable If    "${passenger_no}" != "${EMPTY}"    /${passenger_type}/P${passenger_no}    ${EMPTY}
+    #Line1
+    ${product}    Convert To Lower Case    ${product}
+    ${cwtrno3}    Get Variable Value    ${cwtrno3_${identifier}}
+    ${line1}    Set Variable If    "${is_air_product}"=="True" and ("${product}"=="air bsp" or "${product}"=="air domestic") and "${cwtrno3}"!="${EMPTY}"    RM \\*MS/${product_code}/${vendor_code}/AC${cwtrno1_${identifier}}/TK${cwtrno2_${identifier}}-${cwtrno3_${identifier}}/PX1    "${is_air_product}"=="True" and ("${product}"=="air bsp" or "${product}"=="air domestic") and "${cwtrno3}"=="${EMPTY}"    RM \\*MS/${product_code}/${vendor_code}/AC${cwtrno1_${identifier}}/TK${cwtrno2_${identifier}}/PX1    RM \\*MS/${product_code}/${vendor_code}/AC${plating_carrier_${identifier}}/TK${eo_number_${product}}/PX1
+    #Line2
+    ${charges_other_related_no}    Get Variable Value    ${other_related_no_${identifier}}
+    ${charges_vendor_ref_no}    Get Variable Value    ${vendor_ref_no_${identifier}}
+    ${line2}    Set Variable If    "${charges_vendor_ref_no}"=="None"    RM \\*MSX/PO${charges_other_related_no.upper()}    RM \\*MSX/PO${charges_other_related_no.upper()}/GSA${charges_vendor_ref_no.upper()}
+    #Line3
+    ${line3}    Set Variable    RM \\*MSX/S${base_amount_${identifier}}/SF${base_amount_${identifier}}/C${total_iata_com_${identifier}}/SG${segment_number}/F${fop_type}
+    #Line4
+    ${yq_tax}    Set Variable If    "${yq_tax_${identifier}}"=="${EMPTY}"    0    ${yq_tax_${identifier}}
+    ${line4}    Set Variable    RM \\*MSX/TX${oth_tax1_${identifier}}${oth_tax_code1_${identifier}.upper()}${oth_tax2_${identifier}}${oth_tax_code2_${identifier}.upper()}${oth_tax3_${identifier}}${oth_tax_code3_${identifier}.upper()}${yq_tax}YQ
+    #Line5 - Only if FOP is CC
+    ${line5}    Set Variable If    "${fop_type}"!="S"    RM \\*MSX/CCN\\D+\\d+EXP\\d+/D${reference_fare_${identifier}}    ${EMPTY}
+    #Line6
+    ${line6}    Set Variable If    "${product.lower()}"=="air domestic" and "${vendor.lower()}"=="b.s.p.domestic sales"    RM \\*MSX/BSP/FF99-\\d*\\.{0,1}\\d{0,2}P\\d*\\.{0,1}\\d{0,3}\\*\\d*\\.{0,1}\\d{0,3}P\\d*\\.{0,1}\\d{0,2}\\*\\d*\\.{0,1}\\d{0,3}P\\d*\\.{0,1}\\d{0,2}    RM \\*MSX/FF99-\\d*\\.{0,1}\\d{0,2}P\\d*\\.{0,1}\\d{0,3}\\*\\d*\\.{0,1}\\d{0,3}P\\d*\\.{0,1}\\d{0,2}\\*\\d*\\.{0,1}\\d{0,3}P\\d*\\.{0,1}\\d{0,2}
+    #Line7
+    ${line7}    Set Variable    RM \\*MSX/FF34-AB/FF35-AMA/FF36-M/FF47-CWT/FF96-YQ${yq_tax}/R${reference_fare_${identifier}}
+    #Line8
+    ${line8}    Set Variable    RM \\*MSX/L${low_fare_${identifier}}/FF8-${class_service_${identifier}}/FF30-${realise_saving_code_${identifier}}/E${missed_saving_code_${identifier}}/FF81-${low_fare_carrier_${identifier}.upper()}
+    #Line9 - populate all
+    ${line9}    Set Variable    RM \\*MSX/FF90-${declined_airline_1_${identifier}.upper()}/FF91-${declined_fare_1_${identifier}}/FF92-${declined_airline_2_${identifier}.upper()}/FF93-${declined_fare_2_${identifier}}
+    #Line10 - Client MI
+    ${line10}    Set Variable    RM \\*MSX/${client_mi_remarks_${identifier}}
+    #Line11
+    ${issue_in_exchange_for}    Get Variable Value    ${issue_in_exchange_for_${identifier}}
+    ${line11}    Set Variable If    "${issue_in_exchange_for}"!="${EMPTY}" and "${issue_in_exchange_for}"!="None"    RM \\*MSX/EX${issue_in_exchange_for_${identifier}.upper()}    ${EMPTY}
+    #Line12
+    ${line12}    Set Variable If    "${is_air_product}"=="True" and ("${product}"=="air bsp" or "${product}"=="air domestic")    RM \\*MSX/FF ${product.upper()}/XO-${eo_number_${product}}    RM \\*MSX/FF ${product.upper()}
+    ${expected_remark_group}    Set Variable If    "${passenger_no}" != "${EMPTY}"    ${line1}${passenger} ${line2}${passenger} ${line3}${passenger} ${line4}${passenger} ${line5}${passenger} ${line6}${passenger} ${line7}${passenger} ${line8}${passenger} ${line9}${passenger} ${line10}${passenger} ${line11}${passenger} ${line12}${passenger}    ${line1} ${line2} ${line3} ${line4} ${line5} ${line6} ${line7} ${line8} ${line9} ${line10} ${line11} ${line12}
+    ${expected_remark_group}    Replace String Using Regexp    ${expected_remark_group}    \\s{2,3}    ${SPACE}
+    Verify String Pattern Matches X Times    ${expected_remark_group}    ${expected_count}
+
+Verify Other Services Passive Segment Is Written In The PNR
+    [Arguments]    ${product}    ${vendor_name}    ${vendor_code}    ${city}=${EMPTY}    ${identifier}=${EMPTY}    ${expected_count}=1
+    Comment    Retrieve PNR Details From Amadeus    ${current_pnr}    RTX
+    ${product}    Convert To Lowercase    ${product}
+    Run Keyword If    "${product}"=="train" or "${product}"=="train- dom" or "${product}"=="transaction charges"    Verify Passive Segment Is Written For Train Group    ${vendor_name}    ${vendor_code}    ${identifier}    ${expected_count}
+    Run Keyword If    "${product}"=="insurance"    Verify Passive Segment Is Written In The PNR When Product Is Insurance    ${vendor_name}    ${vendor_code}    ${identifier}    ${expected_count}
+    Run Keyword If    "${product}"=="meet & greet"    Verify Passive Segment Is Written For Meet & Greet Group    ${vendor_code}    ${vendor_name}    ${city}    ${identifier}
+    ...    ${expected_count}
+    Run Keyword If    "${product}"=="visa fee" or "${product}"=="visa dd" or "${product}"=="visa handling fee"    Verify Passive Segment Is Written For Visa Group    ${vendor_name}    ${vendor_code}    ${identifier}    ${expected_count}
+    Run Keyword If    "${product}"=="despatch" or "${product}"=="ets call charges" or "${product}"=="ferry" or "${product}"=="merchant fee" or "${product}"=="mice domestic" or "${product}"=="mice international" or "${product}"=="oths handling fee" or "${product}"=="rebate" or "${product}"=="transaction fee-air only" or "${product}"=="vat"    Verify Passive Segment Is Written For Despatch Group    ${vendor_name}    ${vendor_code}    ${identifier}    ${expected_count}
+
+Verify Passive Segment Is Written For Train Group
+    [Arguments]    ${vendor_name}    ${vendor_code}    ${identifier}    ${expected_count}
+    Verify Specific Line Is Written In The PNR X Times    MIS 1A HK1 BLR ${date_passive_segment}-TYP-TRN/SUC-${vendor_code}/SUN-${vendor_name.upper()}/STS-HK/TK-${eo_number_${identifier}}    ${expected_count}    false    true    true
+
+Verify Passive Segment Is Written In The PNR When Product Is Insurance
+    [Arguments]    ${vendor_name}    ${vendor_code}    ${identifier}    ${expected_count}=1
+    ${date_of_application}    Generate Date X Months From Now    0    180    %d/%b/%Y
+    #Convert Date Of Application To GDS Format
+    ${date_of_application_split}    Split String    ${date_of_application}    /
+    ${day}    Get From List    ${date_of_application_split}    0
+    ${month}    Get From List    ${date_of_application_split}    1
+    ${month}    Convert To Uppercase    ${month}
+    ${date_of_application}    Convert To String    ${day.strip()}${month.strip()}
+    Set Suite Variable    ${date}    ${date_of_application}
+    Verify Specific Line Is Written In The PNR X Times    MIS 1A HK1 BLR ${date}-TYP-INS/SUC-${vendor_code}/SUN-${vendor_name.upper()}/STS-HK/TK-${eo_number_${identifier}}    ${expected_count}    false    true    true
+
+Verify Passive Segment Is Written For Meet & Greet Group
+    [Arguments]    ${vendor_code}    ${vendor_name}    ${city_name}    ${identifier}    ${expected_count}
+    ${time_in}    Convert Time From IN To GDS Format    ${time_${identifier}}
+    @{date_code_source}    Split String    ${date_${identifier}}    /
+    ${date_code}    Catenate    SEPARATOR=${EMPTY}    @{date_code_source}[0]    @{date_code_source}[1]
+    Verify Specific Line Is Written In The PNR X Times    MIS 1A HK1 ${city_${identifier}} ${date_code.strip().upper()}-TYP-MAG/SUC-${vendor_code}/SUN-${vendor_name.upper()}/STS-HK/STP-${city_name.upper()}/SC-${city_${identifier}}/SD-${date_code.strip().upper()}/ST-${time_in}/TK-${eo_number_${identifier}}/SI-${locations_${identifier}}    ${expected_count}    false    true    true
+
+Verify Passive Segment Is Written For Visa Group
+    [Arguments]    ${vendor_name}    ${vendor_code}    ${identifier}    ${expected_count}=1
+    ${processing_type}    Run Keyword If    "${document_${identifier}}"=="Visa"    Set Variable If    "${processing_${identifier}}"=="Normal"    VIS    VIU
+    ...    ELSE IF    "${document_${identifier}}"=="Passport"    Set Variable    OTH
+    Run Keyword If    "${document_${identifier}}"=="Visa"    Verify Specific Line Is Written In The PNR X Times    MIS 1A HK1 BLR ${date_of_application_gds_format_${identifier}}-TYP-${processing_type.upper()}/SUC-${vendor_code}/SUN-${vendor_name}/STS-HK/SD-${date_of_application_gds_format_${identifier}}/TK-${eo_number_${identifier}}/SI-${country_${identifier}.upper()} ${doc_type_${identifier}.upper()} ${entries_${identifier}.upper()}-ENTRY VALID ${validity_${identifier}} ${validity_days_${identifier}.upper()}    ${expected_count}    false    true
+    ...    true
+    Run Keyword If    "${document_${identifier}}"=="Passport"    Verify Specific Line Is Written In The PNR X Times    MIS 1A HK1 BLR ${date_of_application_gds_format_${identifier}}-TYP-${processing_type.upper()}/SUC-${vendor_code}/SUN-${vendor_name.upper()}/STS-HK/SD-${date_of_application_gds_format_${identifier}}/TK-${eo_number_${identifier}}/SI-${doc_type_${identifier}.upper()} ${country_${identifier}.upper()} ${document_${identifier}.upper()}    ${expected_count}    false    true
+    ...    true
+
+Verify Passive Segment Is Written In The PNR When Product Is Non-Air Other Services
+    [Arguments]    ${vendor_code}
+    ${type_code}    Run Keyword If    "${product}"=="ferry"    Set Variable    SEA
+    ...    ELSE    Set Variable    OTH
+    Set Variable    ${vendor.upper()}
+    Set Suite Variable    ${vendor}    ${vendor.upper().strip()}
+    Verify Specific Line Is Written In The PNR    MIS 1A HK1 BLR ${date}-TYP-${type_code}/SUC-${vendor_code}/SUN-${vendor.strip()}/STS-HK/TK-${eo_number}    false    true    true
+
+Verify Passive Segment Is Written For Despatch Group
+    [Arguments]    ${vendor_name}    ${vendor_code}    ${identifier}    ${expected_count}=1
+    Verify Specific Line Is Written In The PNR X Times    MIS 1A HK1 BLR \\d{2}\\D{3}-TYP-OTH/SUC-${vendor_code}/SUN-${vendor_name}/STS-HK/TK-${eo_number_${identifier}}    ${expected_count}    true    true    true
+
+Verify Other Services Itinerary Remarks Are Written In The PNR
+    [Arguments]    ${identifier}    ${segment_number}    ${cancellation_policy}=${EMPTY}    ${expected_count}=1
+    Run Keyword If    "${product}"=="despatch" or "${product}"=="oths handling fee" or "${product}"=="rebate"    Verify Itinerary Remarks Are Written For Despatch Group    ${identifier}    ${segment_number}    ${expected_count}
+    Run Keyword If    "${product}"=="train" or "${product}"=="train- dom" or "${product}"=="transaction charges"    Verify Itinerary Remarks Are Written For Train Group    ${identifier}    ${segment_number}    ${expected_count}
+    Run Keyword If    "${product}"=="car dom" or "${product}"=="car intl" or "${product}"=="hotel pre paid- intl" or "${product}"=="hotel prepaid-dom"    Verify Itinerary Remarks Are Written For Car And Hotel Group    ${identifier}    ${cancellation_policy}    ${segment_number}    ${expected_count}
+
+Verify Itinerary Remarks Are Written For Despatch Group
+    [Arguments]    ${identifier}    ${segment_number}    ${expected_count}=1
+    Verify Specific Line Is Written In The PNR X Times    RIR ${detail_1_${identifier}.upper()}/S${segment_number}    ${expected_count}
+    Verify Specific Line Is Written In The PNR X Times    RIR ${detail_2_${identifier}.upper()}/S${segment_number}    ${expected_count}
+    Verify Specific Line Is Written In The PNR X Times    RIR ${detail_3_${identifier}.upper()}/S${segment_number}    ${expected_count}
+
+Determine Product Amount
+    [Arguments]    ${type}    ${product_name}    ${identifier}    ${is_air_product}
+    ${product_name}    Convert To Lowercase    ${product_name}
+    ${type}    Convert To Lowercase    ${type}
+    ${amount}    Run Keyword If    "${is_air_product}"=="False"    Determine Non-Air Product Amount    ${identifier}    ${product_name}    ${type}
+    ...    ELSE IF    "${is_air_product}"=="True"    Determine Air Product Amount    ${identifier}    ${type}
+    [Return]    ${amount}
+
+Verify Other Services General Remarks Are Written in PNR
+    [Arguments]    ${product}    ${identifier}    ${expected_count}=1
+    ${product}    Convert To Lowercase    ${product}
+    Get Agent Login ID from Amadeus
+    log    ${product}
+    Log    ${date_for_eo}
+    ${eo_date}    Convert Date To Gds Format    ${date_for_eo[:-6]}    %d/%m/%Y
+    Set Test Variable    ${eo_date}
+    Set Test Variable    ${eo_time}    ${date_for_eo[-5:-3]}${date_for_eo[-2:]}Z
+    Set Test Variable    ${a_sign}    ${agent_id[-2:]}
+    #Verification of Remarks Lines
+    Run Keyword If    "${product}"=="insurance"    Verify General Remarks Lines When Product is Insurance
+    Run Keyword If    "${product}"=="train- dom"    Verify General Remarks Lines When Product is Train Group    ${identifier}
+    Run Keyword If    "${product}"=="air conso-dom"    Verify General Remarks When Product Is Air Conso-Dom    ${identifier}
+    #Verification of notepad remarks
+    ${line1}    Set Variable    RM XO\\*XO NUMBER ${eo_number_${product.upper()}} ISSUED ${agent_id[4:].upper()} \\d{2}${eo_date[2:5]}\\s\\d{4}\\w
+    ${line2}    Set Variable    RM XO\\*FOR SERVICE TYPE: ${product.upper()} ${agent_id[4:].upper()} \\d{2}${eo_date[2:5]}\\s\\d{4}\\w
+    ${expected_remark_group}    Set Variable    ${line1} ${line2}
+    Verify String Pattern Matches X Times    ${expected_remark_group}    ${expected_count}
+
+Verify General Remarks Lines When Product is Train Group
+    [Arguments]    ${identifier}
+    Log List    ${custom_field_values${identifier}}
+    @{custom_field_values}    Set Variable    ${custom_field_values${identifier}}
+    Run Keyword And Continue On Failure    Run Keyword If    "${custom_field_values[0]}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*TICKET TYPE:${custom_field_values[0].upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${custom_field_values[1]}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*ID TYPE:${custom_field_values[1].upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${custom_field_values[2]}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*ID ISSUING AUTH:${custom_field_values[2].upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${custom_field_values[3]}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*ID NUMBER:${custom_field_values[3].upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${custom_field_values[4]}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*NO. OF PAX:${custom_field_values[4].upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${custom_field_values[5]}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*TVL WITHIN 24HRS:${custom_field_values[5].upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${custom_field_values[6]}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*AGE:${custom_field_values[6].upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${custom_field_values[7]}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*GENDER:${custom_field_values[7].upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${custom_field_values[8]}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*TRAVEL DESK EMAIL:${custom_field_values[8].upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+
+Verify General Remarks Lines When Product is Insurance
+    Run Keyword And Continue On Failure    Run Keyword If    "${employee_number}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT EMPLOYEE NO:${employee_number} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${employee_name}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT EMPLOYEE NAME:${employee_name.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${passport_number}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT PSPT NO:${passport_number} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${area}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT AREA:${area.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${assignee_name}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT ASSIGNEE NAME:${assignee_name.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${gender}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT GENDER:${gender.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${date_of_birth}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT DOB:${date_of_birth.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${address_of_house}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT HOUSE BUILDING NO:${address_of_house.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${street_name}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT STREET NAME:${street_name.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${sub_area}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT SUB AREA/CITY:${sub_area.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${pin_code}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT PIN CODE:${pin_code} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${state}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT STATE:${state.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${country_other_services}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT COUNTRY:${country_other_services.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${mobile_number}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT MOBILE NO:${mobile_number} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${marital_status}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT MARITAL STATUS:${marital_status.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${departure_date_insurance}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT DEPARTURE DATE:${departure_date_insurance.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword And Continue On Failure    Run Keyword If    "${arrival_date}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT ARRIVAL DATE:${arrival_date.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+
+Verify Itinerary Remarks Are Written For Train Group
+    [Arguments]    ${identifier}    ${segment_number}    ${expected_count}=1
+    Log List    ${train_request_tab_${identifier.lower()}}
+    @{train_request_tab}    Set Variable    ${train_request_tab_${identifier}}
+    ${date_value}    Set Variable    ${train_request_tab[0]}
+    ${time_value}    Set Variable    ${train_request_tab[1]}
+    ${origin}    Set Variable    ${train_request_tab[2]}
+    ${destination}    Set Variable    ${train_request_tab[3]}
+    ${train_number}    Set Variable    ${train_request_tab[4]}
+    ${name}    Set Variable    ${train_request_tab[5]}
+    ${class_cabin}    Set Variable    ${train_request_tab[6]}
+    ${time_in}    Split String    ${time_value}    :
+    ${time_value}    Set Variable    ${time_in[0]}${time_in[1]}
+    Comment    ${time_value}    Convert Time From IN To GDS Format    ${time_value}
+    ${date_value}    Convert Date To Gds Format    ${date_value}    %d/%m/%Y
+    Verify Specific Line Is Written In The PNR X Times    RIR ${date_value} ${time_value} ${origin.upper()}/${destination.upper()}/S${segment_number}    ${expected_count}    false    false    True
+    Verify Specific Line Is Written In The PNR X Times    RIR NO:${train_number} NAME:${name.upper()} CLASS:${class_cabin.upper()}/S${segment_number}    ${expected_count}    false    false    True
+
+Verify Itinerary Remarks Are Written For Car And Hotel Group
+    [Arguments]    ${identifier}    ${cancellation_policy}    ${segment_number}    ${expected_count}=1
+    [Documentation]    ${expected_count} = 1 if WRITTEN
+    ...    ${expected_count} = 0 if NOT WRITTEN
+    ${cancellation_policy}    Convert To Lowercase    ${cancellation_policy}
+    Run Keyword If    "${cancellation_policy}" == "cancel by"    Verify Specific Line Is Written In The PNR X Times    RIR CANCEL BY ${cancel_by_amount_${identifier}} ${cancel_by_type_${identifier}.upper()} PRIOR TO ARRIVAL OR PENALTY APPLIED/S${segment_number}    ${expected_count}
+    Run Keyword If    "${cancellation_policy}" == "special rate"    Run Keywords    Verify Specific Line Is Written In The PNR X Times    RIR NO CANCELLATION. ENTIRE AMOUNT WILL BE/S${segment_number}    ${expected_count}
+    ...    AND    Verify Specific Line Is Written In The PNR X Times    RIR FORFEITED IN CASE OF NO SHOW/S${segment_number}    ${expected_count}
+    Run Keyword If    "${cancellation_policy}" == "others"    Verify Specific Line Is Written In The PNR X Times    RIR CANCELLATION POLICY: ${others_${identifier}.upper()}/S${segment_number}    ${expected_count}
+
+Determine Non-Air Product Amount
+    [Arguments]    ${identifier}    ${product_name}    ${type}
+    ${amount}    Run Keyword If    "${type}" == "nonair" and ("${product_name}"=="train- dom" or "${product_name}"=="train" or "${product_name}"=="despatch" or "${product_name}"=="transaction charges" or "${product_name}"=="insurance" or "${product_name}"=="ets call charges" or "${product_name}"=="merchant fee" or "${product_name}"=="meet & greet" or "${product_name}"=="oths handling fee" or "${product_name}"=="rebate" or "${product_name}"=="transaction fee-air only" or "${product_name}"=="visa dd" or "${product_name}"=="visa fee" or "${product_name}"=="visa handling fee" or "${product_name}"=="car dom" or "${product_name}"=="car intl" or "${product_name}"=="hotel pre paid- intl" or "${product_name}"=="hotel prepaid-dom")    Set Variable    ${gross_sell_${identifier}}
+    ...    ELSE IF    "${type}"=="nonair_subfees" and "${product_name}"=="merchant fee"    Set Variable    ${merchant_fee_${identifier}}
+    ...    ELSE IF    "${type}"=="nonair_subfees" and "${product_name}"=="vat"    Set Variable    ${vat_gst_amount_${identifier}}
+    [Return]    ${amount}
+
+Determine Air Product Amount
+    [Arguments]    ${identifier}    ${type}
+    ${amount}    Run Keyword If    "${type}"=="merchant fee"    Set Variable    ${total_merchant_fee_${identifier}}
+    ...    ELSE IF    "${type}"=="merchant fee tf"    Set Variable    ${merchant_fee_tf_${identifier}}
+    ...    ELSE IF    "${type}"=="rebate"    Set Variable    -${total_discount_${identifier}}
+    ...    ELSE IF    "${type}"=="transaction fee-air only"    Set Variable    ${fee_${identifier}}
+    ...    ELSE IF    "${type}"=="vat"    Set Variable    ${total_vat_gst_${identifier}}
+    [Return]    ${amount}
+
+Verify General Remarks When Product Is Air Conso-Dom
+    [Arguments]    ${identifier}
+    Run Keyword If    "${pos_remark_1_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*POS REMARK 1:${pos_remark_1_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${pos_remark_2_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*POS REMARK 2:${pos_remark_2_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${pos_remark_3_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*POS REMARK 3:${pos_remark_3_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${centralized_desk_1_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*CENTRALIZED DESK1:${centralized_desk_1_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${centralized_desk_2_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*CENTRALIZED DESK2:${centralized_desk_2_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${transaction_type_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*RESERVATION:${transaction_type_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${airlines_pnr_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*AIRLINE PNR:${airlines_pnr_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${fare_break_up_1_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*FARE BREAK UP 1:${fare_break_up_1_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${fare_break_up_2_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*FARE BREAK UP 2:${fare_break_up_2_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${cancellation_penalty_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*CANCELLATION PENALTY:${cancellation_penalty_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${lcc_queue_back_remark_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM DT\\*LCC QUEUEBACK REMARK:${lcc_queue_back_remark_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${gstin_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM GSTIN${gstin_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${email_in_request_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM EMAIL ${email_in_request_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${entity_name_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM ENTITY NAME${entity_name_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true
+    Run Keyword If    "${phone_no_${identifier}}"!="${EMPTY}"    Verify Specific Line Is Written In The PNR    RM PHONE NO ${phone_no_${identifier}.upper()} ${a_sign} ${eo_date}\\s\\d{4}Z    true

@@ -1,0 +1,282 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    sabre
+Force Tags        sabre
+Resource          ../gds_verification.txt
+Resource          ../../../resources/common/gds_native.txt
+
+*** Test Cases ***
+[NB FR] Verify That FR Agent Backoffice Identifier And SSR Lines Are Written In The PNR
+    [Tags]    us4163    de5625    emea    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre FR 15 - Auto ¦ US2447    Optimize    AutoTrvlrOne
+    Click New Booking
+    Book Flight X Months From Now    MSPORD¥UA    01Y1    WPRQ‡S1    6    0
+    Book Flight X Months From Now    ORDLHR¥AA    01Y1    WPRQ‡S2    6    12
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    APIS / SFPD    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Turnaround    MSP
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    APIS/SFPD
+    Untick Checkbox    ${check_box_notknown}
+    Set APIS SFPD Expiration Date    01011980
+    Untick Checkbox    ${check_box_notknown4}
+    Populate APIS/SFPD Address    one hundred st    Chicago    Aruba    Alabama    1500
+    Tick SFPD Details Unknown
+    Populate All Panels (Except Given Panels If Any)    APIS / SFPD    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/
+    Verify Specific Line Is Written In The PNR    X/-CN/2020
+    [Teardown]
+
+[QA FR] Verify That FR Agent Backoffice Identifier And SSR Lines Are Written In The PNR
+    [Tags]    de5625    emea    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Read Booking
+    Populate Delivery Panel With Default Values
+    Click Finish PNR
+    Re-Execute Quick Amend If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *P3D
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    SSR DOCA UA HK1/R/AW/ONE HUNDRED ST/CHICAGO/AL    1
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *P4D
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    SSR DOCA AA HK1/R/AW/ONE HUNDRED ST/CHICAGO/AL    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB US] Verify That SSR Lines Will Not Duplicate For Non-AA
+    [Tags]    de5625    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US506    AutoLegacy    NoramTrvlrOneThree
+    Click New Booking
+    Book Flight X Months From Now    MSPORD¥UA    01Y1    WPRQ‡S1    6    0
+    Book Flight X Months From Now    ORDLHR¥AA    01Y1    WPRQ‡S2    6    12
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Client Info
+    Click Update PNR
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set Values To Existing CDR
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Cust Refs
+    Click Finish PNR
+
+[QA US] Verify That SSR Lines Will Not Duplicate For Non-AA
+    [Tags]    de5625    noram
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Quick Amend If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *P3D
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    SSR DOCA UA HK1/R/AW//UNKNOWN    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    SSR DOCS UA HK1/DB    1
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *P4D
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    SSR DOCA AA HK1/R/AW//UNKNOWN    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    SSR DOCS AA HK1/DB/    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB US] Verify That Default Fare Itinerary Remarks Are Written After The Last Routing Item When All Fare Tabs Have Default Fare Restriction Value
+    [Tags]    US3339    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US506    AutoLegacy    NoramTrvlrOneThree
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXDFW‡AA    01Y1    WPRQ‡S1    5    0
+    Book Flight X Months From Now    DFWORD‡UA    01Y1    WPRQ‡S2    5    6
+    Book Flight X Months From Now    ORDLAX‡UA    01Y1    WPRQ‡S3    5    12
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Populate Fare Tab With Default Values    Fare 2    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Populate Fare Tab With Default Values    Fare 3    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Written In The PNR    ‡ROUTING - LOS ANGELES DALLAS
+    Verify Specific Line Is Written In The PNR    ‡ROUTING - DALLAS CHICAGO
+    Verify Specific Line Is Written In The PNR    ‡ROUTING - CHICAGO LOS ANGELES
+    Verify Specific Line Is Written In The PNR Only Once    ‡ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE
+    Verify Specific Line Is Written In The PNR Only Once    ‡INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.
+    Verify Specific Line Is Written In The PNR Only Once    ‡FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKE
+    Verify Specific Line Is Written In The PNR Only Once    ‡THIS TICKET MAY BE SUBJECT TO PENALTIES OR FARE INCREASE
+
+[AB US] Verify That Default Fare Itinerary Remarks Are Written After The Last Routing Item When All Fare Tabs Have Default Fare Restriction Value
+    [Tags]    US3339    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Populate Fare Tab With Default Values    Fare 2    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Populate Fare Tab With Default Values    Fare 3    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Written In The PNR    ‡ROUTING - LOS ANGELES DALLAS
+    Verify Specific Line Is Written In The PNR    ‡ROUTING - DALLAS CHICAGO
+    Verify Specific Line Is Written In The PNR    ‡ROUTING - CHICAGO LOS ANGELES
+    Verify Specific Line Is Written In The PNR Only Once    ‡THIS TICKET MAY BE SUBJECT TO PENALTIES OR FARE INCREASE
+    Verify Specific Line Is Written In The PNR Only Once    ‡ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE
+    Verify Specific Line Is Written In The PNR Only Once    ‡INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.
+    Verify Specific Line Is Written In The PNR Only Once    ‡FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKE
+
+[AB US] Verify That Air Fare Restrictions Itinerary Remarks Are Written When Changing Segment And Mixed Air Fare Restrictions
+    [Tags]    US3339    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL    XI
+    Book Flight X Months From Now    PHXDEN¥UA    01Y1    WPRQ‡S1    5    0
+    Book Flight X Months From Now    FLLORD¥AA    01Y1    WPRQ‡S2    5    6
+    Book Flight X Months From Now    ORDJFK¥AA    01Y1    WPRQ‡S3    5    12
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Air Fare Restrictions    Fully Flexible    Schedule change permitted free of charge    Full refund    UA    Permitted    No Minimum Stay
+    ...    One Year
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2    \    true
+    Select Fare Restriction    Non Flexible
+    Populate Fare Tab With Default Values    Fare 3    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Written In The PNR    ROUTING - PHOENIX DENVER
+    Verify Specific Line Is Written In The PNR    CHANGE OF RESERVATION - SCHEDULE CHANGE PERMITTED FREE OF
+    Verify Specific Line Is Written In The PNR    CANCELLATION - FULL REFUND
+    Verify Specific Line Is Written In The PNR    ROUTING - FT LAUDERDALE CHICAGO
+    Verify Specific Line Is Written In The PNR    CHANGE OF RESERVATION - NOT PERMITTED
+    Verify Specific Line Is Written In The PNR    CANCELLATION - NOT PERMITTED
+    Verify Specific Line Is Written In The PNR    VALID ON - AA ONLY
+    Verify Specific Line Is Written In The PNR    ‡ROUTING - CHICAGO NEW YORK
+    Verify Specific Line Is Written In The PNR Only Once    ‡THIS TICKET MAY BE SUBJECT TO PENALTIES OR FARE INCREASE
+    Verify Specific Line Is Written In The PNR Only Once    ‡ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE
+    Verify Specific Line Is Written In The PNR Only Once    ‡INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.
+    Verify Specific Line Is Written In The PNR Only Once    ‡FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKE
+
+[CB US] Verify That Air Fare Restrictions Itinerary Remarks Are Not Written During Cancellation
+    [Tags]    US3339    noram
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Not Written In The PNR    ROUTING - PHOENIX DENVER
+    Verify Specific Line Is Not Written In The PNR    CHANGE OF RESERVATION - SCHEDULE CHANGE PERMITTED FREE OF
+    Verify Specific Line Is Not Written In The PNR    CANCELLATION - FULL REFUND
+    Verify Specific Line Is Not Written In The PNR    ROUTING - FT LAUDERDALE CHICAGO
+    Verify Specific Line Is Not Written In The PNR    CHANGE OF RESERVATION - NOT PERMITTED
+    Verify Specific Line Is Not Written In The PNR    CANCELLATION - NOT PERMITTED
+    Verify Specific Line Is Not Written In The PNR    VALID ON - AA ONLY
+    Verify Specific Line Is Not Written In The PNR    ‡ROUTING - CHICAGO NEW YORK
+    Verify Specific Line Is Not Written In The PNR    ‡FARES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE
+    Verify Specific Line Is Not Written In The PNR    ‡CHANGES MAY BE SUBJECT TO A PENALTY OR FARE
+    Verify Specific Line Is Not Written In The PNR    ‡INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.
+    Verify Specific Line Is Not Written In The PNR    ‡FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF TICKET
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Ticketing Remarks Are Written For A Mutltiple Price Quote When There Is A Fare FOP
+    [Tags]    us53    ge    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    375532696401818    1220
+    Book Flight X Months From Now    SINKUL‡MH    01Y1    WPNCB‡RQ‡KP0.00‡IGEC10‡S1    6    5
+    Enter GDS Command    0A
+    Book Flight X Months From Now    SINLAX‡NH    01Y1*    WPANH‡RQ‡FAGTINV‡IGEC10‡S3-4    6    10
+    Enter GDS Command    0A
+    Book Flight X Months From Now    LAXSIN‡NH    01Y1*    WPANH‡RQ‡FINVAGT‡KP15.55‡IGEC10‡S6-7    6    15
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get High Fare Value    Fare 1
+    Get Low Fare Value    Fare 1
+    Get Savings Code    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    650.55
+    Get Airline Commission Percentage Value    Fare 1
+    Get Nett Fare Value    Fare 1
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get High Fare Value    Fare 2
+    Get Low Fare Value    Fare 2
+    Get Savings Code    Fare 2
+    Click Pricing Extras Tab
+    Get Nett Fare Value    Fare 2
+    Get Airline Commission Percentage Value    Fare 2
+    Click Fare Tab    Fare 3
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get High Fare Value    Fare 3
+    Get Low Fare Value    Fare 3
+    Get Savings Code    Fare 3
+    Click Pricing Extras Tab
+    Get Nett Fare Value    Fare 3
+    Get Airline Commission Percentage Value    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Store Data From PQ    Fare 1
+    Store Data From PQ    Fare 2
+    Store Data From PQ    Fare 3
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T'    use_copy_content_from_sabre=False
+    Verify Ticketing Instructions Is Written In The PNR    Fare 1    1    Credit Card
+    Verify Ticketing Instructions Is Written In The PNR    Fare 2    3/4    Invoice
+    Verify Ticketing Instructions Is Written In The PNR    Fare 3    6/7    Invoice
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Store Data From PQ
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Base Fare And Tax From Sabre For Fare X Tab    ${fare_tab}    SGD    *PQ    use_copy_content_from_sabre=False
+    Get Base or Nett Fare Value    ${nett_fare_value_${fare_tab_index}}    ${fare_${fare_tab_index}_base_fare}
+    Get Fare Basis From PQ    ${fare_tab}
+    Get Validating Carrier From PQ    ${fare_tab}
+    ${selling_fare}    Evaluate    ${base_or_nett_fare_value} + ${tax_amount_${fare_tab_index}}
+    ${selling_fare}    Convert To Float    ${selling_fare}
+    Set Test Variable    ${selling_fare_${fare_tab_index}}    ${selling_fare}
+
+Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Set Values To Existing CDR
+    Set CDR Value    Matrix DP Code    V101
+    Set CDR Value    Rmks    This is a gen remark
+    Set CDR Value    T-Booking Date    102418
+    Set CDR Value    TS-Business Unit Name    CWT
+    Set CDR Value    TS-Employee ID    123456
+    Set CDR Value    TS-Trip Reason    VAC
+    Set CDR Value    T-Supervisor    VAC

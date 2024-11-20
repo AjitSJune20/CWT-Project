@@ -1,0 +1,68 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../recap_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Aqua Queueing Is Correctly Written In PNR Remarks
+    [Tags]    us508    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    sabre
+    Emulate PCC    3W7F
+    Create New Booking With One Way Flight Using Default Values And Populate Cust Refs    Sabre Legacy - Auto ¦ US508    AutoLegacy    NoramTrvlrTwoZero    MSPPHX¥AA    ${EMPTY}
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *QH
+    Verify Specific Line Is Written In The PNR    ON \ PL2F 0050/011
+
+[AB] Verify That Aqua Queueing Is Correctly Written In PNR Remarks
+    [Tags]    us508    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking For Aqua Queueing If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *QH
+    Verify Specific Line Is Written In The PNR    ON \ PL2F 0050/011
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Itinerary Is Not Sent To Queue When Itinerary Product SO Is Set To None
+    [Tags]    us3878    emea    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre FR 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrOne    HKGMNL‡PR
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *QH
+    Verify Specific Line Is Not Written In The PNR    X36C 0070
+
+[SI FR] Verify That Itinerary Is Sent To Queue When Itinerary Product SO Is Set To None
+    [Tags]    us3878    emea    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR
+    Re-Execute Send Itinerary If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *QH
+    Verify Specific Line Is Written In The PNR    X36C 0070
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Aqua Queueing
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR
+
+Create New Booking With One Way Flight Using Default Values And Populate Cust Refs
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Click New Booking
+    Populate Cust Refs Panel With Default Values
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    ${city_pair}    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}

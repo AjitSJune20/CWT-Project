@@ -1,0 +1,46 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../policy_check_verification.txt
+
+*** Test Cases ***
+[1V][NORAM] Verify That Economy Class Will Be In Policy Check Panel If Policy Prohibited Is Set To True
+    [Tags]    us5893    18.1
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US3204    AutoSixteenTwo    NoramTrvlrThirteen
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD+AA    01Y1    T:$BS1    2
+    Book Flight X Months From Now    ORDMSP+UA    01W1    T:$BS2    2    5
+    Book Flight X Months From Now    ORDATL+AA    01J1    T:$BS3    2    10
+    Book Flight X Months From Now    ATLORD+UA    01F1    T:$BS4    2    15
+    Book Flight X Months From Now    JFKCDG+AF    01Y1    T:$BS5    3
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Values    Air Cabin    Economy Class out of policy    AA - Awaiting Approval    TA - Traveller Booker Advised    HA - Has authority to travel    NV - Not going to affected area
+    Verify Policy Advice Is Displayed    Air Cabin    Economy Class out of policy    Economy class prohibited for NORAM-NORAM
+    [Teardown]    Click Clear All
+
+[1V][NORAM] Verify That First Class Will Be In Policy Check Panel If Policy Prohibited Is Set To True
+    [Tags]    us5893    18.1
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US2445    AutoSixteenTwo    OptimizeTrvlrEight
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD+AA    01Y1    T:$BS1    2
+    Book Flight X Months From Now    ORDMSP+UA    01W1    T:$BS2    2    5
+    Book Flight X Months From Now    JFKLAX+AA    01J1    T:$BS3    2    10
+    Book Flight X Months From Now    LAXJFK+AA    01F1    T:$BS4    2    15
+    Book Flight X Months From Now    BCNAMS+KL    01F1    T:$BS5    3
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Values    Air Cabin    First Class out of policy    AA - Awaiting Approval    TA - Traveller Booker Advised    HA - Has authority to travel    NV - Not going to affected area
+    Verify Policy Advice Is Displayed    Air Cabin    First Class out of policy    First class prohibited for NORAM-NORAM
+    [Teardown]    Click Clear All

@@ -1,0 +1,256 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          pspt_and_visa_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That Additional Visa Are Not Displayed
+    [Tags]    uk    uat    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Traveller    John
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    NonRef
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking    Tick
+    Click Update PNR
+    Book Flight X Months From Now    LHRAMS/BA    01Y1    \    6
+    Book Flight X Months From Now    AMSLHR/BA    01Y1    FQ:NR    6    3
+    Click Read Booking
+    Click Panel    Pspt And Visa
+    Verify No Additional Visa Fields Are Displayed
+    [Teardown]    Click Clear All
+
+[NB] Verify That Domestic Trip Checkbox Is Unchecked For Domestic Flight Different From Traveler's Nationality Timatic On
+    [Tags]    us5155    US5695    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Timestamp With Round Trip Air Flight Using Default Values    Galileo 16 - Auto ¦ US3277    AutoOneSixSeven    OptimizeTrvlrFour    YYZYVR/AC    01Y1    ${EMPTY}
+    ...    YVRYYZ/AC    01Y1    FQ:NR    ${EMPTY}    PSPT AND VISA
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    123456789    11/28/2022    Yes
+    Click Check Visa Requirements No ESTA
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    must have an Electronic Travel Authorization (eTA)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    P AND V : NATIONALITY GB
+    Verify Specific Line Is Written In The PNR    123456789
+    Verify Specific Line Is Written In The PNR    11/28/2022
+    Verify Specific Line Is Written In The PNR    PASSPORT AND VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY: UNITED KINGDOM
+    Verify Specific Line Is Written In The PNR    VALID PASSPORT HELD: UNABLE TO CONFIRM
+    Verify Specific Line Is Written In The PNR    VISA CHECK: CANADA REQUIRED
+    [Teardown]
+
+[AB] Verify That Domestic Trip Checkbox Is Unchecked For Domestic Flight Different From Traveler's Nationality Timatic On
+    [Tags]    us5155    US5695    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    NCLAMS    01Y1    FQ/S4    6    10
+    Book Flight X Months From Now    GMPUSN    01Y1    FQ/S5    6    20
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    PSPT AND VISA
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    123456789    11/28/2022    Yes
+    Verify Countries Visited    Canada    United Kingdom    Netherlands    Korea, Republic Of
+    Click Check Visa Requirements No ESTA
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    must have an Electronic Travel Authorization (eTA)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Domestic Trip Checkbox Unticked Timatic On
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    P AND V : NATIONALITY GB
+    Verify Specific Line Is Written In The PNR    123456789
+    Verify Specific Line Is Written In The PNR    11/28/2022
+    Verify Specific Line Is Written In The PNR    PASSPORT AND VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY: UNITED KINGDOM
+    Verify Specific Line Is Written In The PNR    VALID PASSPORT HELD: UNABLE TO CONFIRM
+    Verify Specific Line Is Written In The PNR    VISA CHECK: CANADA REQUIRED
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Domestic Trip Checkbox Is Checked For Domestic Flight Different From Traveler's Nationality Multiple Docs
+    [Tags]    us5155    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Timestamp With Round Trip Air Flight Using Default Values    Galileo 15 - Auto ¦ US2643    AutoFifteenTen    OptimizeTrvlrTwo    YYZYVR/AC    01Y1    ${EMPTY}
+    ...    YVRYYZ/AC    01Y1    FQ:NR    ${EMPTY}    PSPT AND VISA
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Ticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    P1234    7/6/2021    Yes
+    Untick Domestic Trip
+    Tick Use Document
+    Click Check Visa Requirements No ESTA
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    must have an Electronic Travel Authorization (eTA)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    P AND V : NATIONALITY GB
+    Verify Specific Line Is Written In The PNR    P1234
+    Verify Specific Line Is Written In The PNR    7/6/2021
+    [Teardown]
+
+[AB] Verify That Domestic Trip Checkbox Is Checked For Domestic Flight Different From Traveler's Nationality Multiple Docs
+    [Tags]    us5155    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    PSPT AND VISA
+    Click Panel    Pspt and Visa
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    P1234    6/7/2021    Yes
+    Untick Domestic Trip
+    Tick Use Document
+    Click Check Visa Requirements No ESTA
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    must have an Electronic Travel Authorization (eTA)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Domestic Trip Checkbox Unticked Multiple Docs
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    P AND V : NATIONALITY GB
+    Verify Specific Line Is Written In The PNR    P1234
+    Verify Specific Line Is Written In The PNR    6/7/2021
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1G NORAM][NB] Verify Countries Are Captured With Correct Visa Information In Domestic RT Flight With Diff Nationality Docs For Timatic On
+    [Tags]    US5337    US5696    US5695    US3844    DE6819    US5155
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo 16 - Auto ¦ US3277    AutoOneSixSeven    OptimizeTrvlrFour    YYZYVR/AC    01Y1    ${EMPTY}
+    ...    YVRYYZ/AC    01Y1    FQ:NR    ${EMPTY}    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    123456789    11/28/2022    Yes
+    Get Passport & Visa Info Panel Text
+    Verify Countries Visited    Canada
+    Verify That Countries Visited And Visa Status Is Correct    Canada    Not Required
+    Verify Pspt And Visa Info Panel Contains Text    must have an Electronic Travel Authorization (eTA)
+    Click Panel    Recap
+    Enter GDS Command    T.TAU/01MAY
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    P AND V : NATIONALITY GB    \    true
+    Verify Specific Line Is Written In The PNR    123456789    \    true
+    Verify Specific Line Is Written In The PNR    11/28/2022    \    true
+    Verify Specific Line Is Written In The PNR    PASSPORT AND VISA INFORMATION    \    true
+    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY: UNITED KINGDOM    \    true
+    Verify Specific Line Is Written In The PNR    VALID PASSPORT HELD: YES    \    true
+    Verify Specific Line Is Written In The PNR    VISA CHECK: CANADA NOT REQUIRED    \    true
+
+[1G NORAM][AB] Verify Countries Are Captured With Correct Visa Information In International RT Flight With Diff Nationality Docs For Timatic On
+    [Tags]    US5337    US5696    US5695    US3844    DE6819    US5155
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    FXALL    XI
+    Book Flight X Months From Now    CDGLHR/AF    01Y1    FQS1:NR    3    1
+    Book Flight X Months From Now    LHRCDG/AF    01Y1    FQS2:NR    3    5
+    Book Flight X Months From Now    FRAMUC/LH    01Y1    FQS3:NR    3    8
+    Book Flight X Months From Now    MUCFRA/LH    01Y1    FQS4:NR    3    13
+    Book Flight X Months From Now    MANAMS/KL    01Y1    FQS5:NR    3    20
+    Book Flight X Months From Now    JFKMUC/LH    01Y1    FQS6:NR    3    25
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    123456789    11/28/2022    Yes
+    Comment    Verify That Countries Visited And Visa Status Is Correct    United Kingdom    Not Required
+    Verify That Countries Visited And Visa Status Is Correct    France    Not Required
+    Verify That Countries Visited And Visa Status Is Correct    Germany    Not Required
+    Verify That Countries Visited And Visa Status Is Correct    United States    Required
+    Verify That Countries Visited And Visa Status Is Correct    Netherlands    Not Required
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1G NORAM][NB] Verify Countries Are Captured With Correct Visa Information In Domestic OW Flight With Expired Documents
+    [Tags]    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo 15 - Auto ¦ US2643    AutoFifteenTen    OptimizeTrvlrThirty    YYZYVR/AC    01Y1    ${EMPTY}
+    ...    YVRYYZ/AC    01Y1    FQ:NR    ${EMPTY}    PSPT AND VISA
+    Click Panel    Pspt and Visa
+    Verify Domestic Trip Checkbox Is Ticked
+    Verify Check Visa Requirements Button Is Disabled
+    Untick Domestic Trip
+    Tick Use Document    1
+    Click Check Visa Requirements
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    P123456    11/9/2018    Yes
+    Set Expiry Date For Passport    [NAME:cdtpExpiryDate0]    11    9    2018
+    Select Is Doc Valid    ${EMPTY}
+    Click Check Visa Requirements No ESTA
+    Get Passport & Visa Info Panel Text
+    Verify That Countries Visited And Visa Status Is Correct    Canada    Not Required
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Panel    Recap
+    Enter GDS Command    T.TAU/01MAY
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    P AND V : NATIONALITY GB
+    Verify Specific Line Is Written In The PNR    P123456
+    Verify Specific Line Is Written In The PNR    10/5/2015
+    Verify Specific Line Is Written In The PNR    PASSPORT AND VISA INFORMATION    \    true
+    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY: UNITED KINGDOM    \    true
+    Verify Specific Line Is Written In The PNR    VALID PASSPORT HELD: NO    \    true
+    Verify Specific Line Is Written In The PNR    VISA CHECK: CANADA UNABLE TO CONFIRM    \    true
+
+[1G NORAM][AB] Verify Countries Are Captured With Correct Visa Information In International OW Flight With Expired Documents
+    [Tags]    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    FXALL    XI
+    Book Flight X Months From Now    CDGLHR/AF    01Y1    FQS1:NR    3    1
+    Book Flight X Months From Now    LHRCDG/AF    01Y1    FQS2:NR    3    5
+    Book Flight X Months From Now    FRAMUC/LH    01Y1    FQS3:NR    3    8
+    Book Flight X Months From Now    MUCFRA/LH    01Y1    FQS4:NR    3    13
+    Book Flight X Months From Now    MANAMS/KL    01Y1    FQS5:NR    3    20
+    Book Flight X Months From Now    JFKMUC/LH    01Y1    FQS6:NR    3    25
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    P1234    5/10/2015    No
+    Click Check Visa Requirements No ESTA
+    Verify That Countries Visited And Visa Status Is Correct    United Kingdom    Not Required
+    Verify That Countries Visited And Visa Status Is Correct    France    Not Required
+    Verify That Countries Visited And Visa Status Is Correct    Germany    Not Required
+    Verify That Countries Visited And Visa Status Is Correct    United States    Required
+    Verify That Countries Visited And Visa Status Is Correct    Netherlands    Not Required
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify No Additional Visa Fields Are Displayed
+    Verify Visa Details Fields Are Displayed
+
+Amend Booking Workflow For Domestic Trip Checkbox Unticked Timatic On
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    NCLAMS    01Y1    FQ/S4    6    10
+    Book Flight X Months From Now    GMPUSN    01Y1    FQ/S5    6    20
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    PSPT AND VISA
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    123456789    11/28/2022
+    Verify Countries Visited    Canada    United Kingdom    Netherlands    Korea, Republic Of
+    Click Check Visa Requirements No ESTA
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    must have an Electronic Travel Authorization (eTA)
+    Click Finish PNR
+
+Amend Booking Workflow For Domestic Trip Checkbox Unticked Multiple Docs
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    PSPT AND VISA
+    Click Panel    Pspt and Visa
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    P1234    7/6/2021
+    Untick Domestic Trip
+    Tick Use Document
+    Click Check Visa Requirements No ESTA
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    The passenger must have an Electronic Travel Authorization (eTA).
+    Click Finish PNR

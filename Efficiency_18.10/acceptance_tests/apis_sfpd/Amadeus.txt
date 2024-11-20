@@ -1,0 +1,290 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          apis_sfpd_verification.txt
+
+*** Test Cases ***
+[1A EMEA][NB] Verify That SFPD Panel Is Displayed And Any Existing SSR DOCS Is Updated Or Retain In Finish PNR
+    [Tags]    US5404    not_ready    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler
+    Click New Booking
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    6    1
+    Enter Command In Native GDS    FXP    FQN1*PE
+    Enter Command In Native GDS    SR DOCS YY HK1-P-GBR-01234567-GBR-30JUN74-M-14APR09-MALLARI-RIZALIE/P1
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Retrieve PNR Details From Sabre Red    \    RT
+    Verify Specific Line Is Written In The PNR    SSR DOCS YY HK1 P/GBR/01234567/GBR/30JUN74/M/14APR09/MALLARI/RIZALIE
+    Verify Passport & Visa Info Panel Is Displayed
+    Click Panel    PSPT and Visa
+    Tick Use Document
+    Verify APIS And SFPD Panel Is Displayed
+    Click Panel    APIS/SFPD
+    Verify Apis Address Fields Are Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Enter Command In Native GDS    RTG
+    Verify Specific Line Is Written In The PNR    SSR DOCS YY HK1 P/GBR/01234567/GBR/30JUN74/M/14APR09/MALLARI/RIZALIE
+
+[1A EMEA][AB] Verify That SFPD Panel Is Displayed And Any Existing SSR DOCS Is Updated Or Retain In Finish PNR
+    [Tags]    US5404    not_ready    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Specific Line Is Written In The PNR    SSR DOCS YY HK1 P/GBR/01234567/GBR/30JUN74/M/14APR09/MALLARI/RIZALIE
+    Click Panel    Client Info
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Verify Passport & Visa Info Panel Is Displayed
+    Click Panel    PSPT and Visa
+    Tick Use Document
+    Verify APIS And SFPD Panel Is Displayed
+    Click Panel    APIS/SFPD
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Enter Command In Native GDS    RTG
+    Verify Specific Line Is Written In The PNR    SSR DOCS YY HK1 P/GBR/01234567/GBR/30JUN74/M/14APR09/MALLARI/RIZALIE
+
+[1A EMEA][NB] Verify That SFPD Panel Is Not Displayed And Any Existing SSR DOCS Is Updated Or Retain In Finish PNR
+    [Tags]    US5404    not_ready    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler
+    Click New Booking
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    6    1
+    Enter Command In Native GDS    FXP    FQN1*PE
+    Enter Command In Native GDS    SR DOCS YY HK1-P-GBR-01234567-GBR-30JUN74-M-14APR09-MALLARI-RIZALIE/P1
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Retrieve PNR Details From Sabre Red    \    RT
+    Verify Specific Line Is Written In The PNR    SSR DOCS YY HK1 P/GBR/01234567/GBR/30JUN74/M/14APR09/MALLARI/RIZALIE
+    Verify Passport & Visa Info Panel Is Displayed
+    Click Panel    PSPT and Visa
+    Tick Use Document
+    Verify APIS And SFPD Panel Is Not Displayed
+    Verify Apis Address Fields Are Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Enter Command In Native GDS    RTG
+    Verify Specific Line Is Written In The PNR    SSR DOCS YY HK1 P/GBR/01234567/GBR/30JUN74/M/14APR09/MALLARI/RIZALIE
+
+[1A EMEA][AB] Verify That SFPD Panel Is Not Displayed And Any Existing SSR DOCS Is Updated Or Retain In Finish PNR
+    [Tags]    US5404    not_ready    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Specific Line Is Written In The PNR    SSR DOCS YY HK1 P/GBR/01234567/GBR/30JUN74/M/14APR09/MALLARI/RIZALIE
+    Click Panel    Client Info
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Verify Passport & Visa Info Panel Is Displayed
+    Click Panel    PSPT and Visa
+    Tick Use Document
+    Verify APIS And SFPD Panel Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Enter Command In Native GDS    RTG
+    Verify Specific Line Is Written In The PNR    SSR DOCS YY HK1 P/GBR/01234567/GBR/30JUN74/M/14APR09/MALLARI/RIZALIE
+
+[1A EMEA][AB] Verify that Not Known checkbox in APIS panel is enabled when selected Delivery method during NB is Amadeus TKOK
+    [Tags]    de5897    fr    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Book Flight X Months From Now    BOSCDG/AAF    SS1Y2    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Amadeus edited TKOK
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Panel With Default Values
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Verify that APIS not known checkbox is enabled
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][AB] Verify that Not Known checkbox in APIS panel is enabled when selected Delivery method during NB is Amadeus TKXL
+    [Tags]    de5897    fr    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Book Flight X Months From Now    BOSCDG/AAF    SS1Y2    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Amadeus edited TKXL
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Panel With Default Values
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Verify that APIS not known checkbox is enabled
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify that SR DOCS line is written for each segment if Only SFPD section is displayed in APIS/SFPD Panel
+    [Tags]    ca    us7025    not_ready
+    Set Test Variable    ${GDS_switch}    amadeus
+    Set Test Variable    ${locale}    en-US
+    Set Test Variable    ${gds}    amadeus
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YYCYQR/AWS    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Panel    APIS/SFPD
+    Verify SFPD Section is Displayed
+    Verify SFPD Section    Secure Flight Passenger Data
+    Verify APIS Passenger And Travel Document Details Section Is Not Displayed
+    Verify APIS Other Information And Visa Details Section Is Not Displayed
+    Verify APIS Address Section Is Not Displayed
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG
+    Verify Specific Line Is Written In The PNR
+
+[1A CA][AB] Verify that SR DOCS line is written for each segment if Only SFPD section is displayed in APIS/SFPD Panel
+    [Tags]    ca    us7025    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Panel    APIS/SFPD
+    Verify SFPD Section is Displayed
+    Verify SFPD Section    Secure Flight Passenger Data
+    Verify APIS Passenger And Travel Document Details Section Is Not Displayed
+    Verify APIS Other Information And Visa Details Section Is Not Displayed
+    Verify APIS Address Section Is Not Displayed
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG
+    Verify Specific Line Is Written In The PNR    #SSR Docs Line
+    Get Base Fare From Amadeus
+
+[1A CA][NB] Verify that SR DOCS/DOCA/DOCO line is written for each segment if Only APIS section is displayed in APIS/SFPD Panel
+    [Tags]    ca    us7025    not_ready
+    Set Test Variable    ${GDS_switch}    amadeus
+    Set Test Variable    ${locale}    en-US
+    Set Test Variable    ${gds}    amadeus
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now Without Pricing    YEGAMS/AFI    SS1Y1    6
+    Enter GDS Command    FXP/S2-3    FXT01/P1    FXT01/P1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Panel    APIS/SFPD
+    Verify SFPD Section is Not Displayed
+    Verify APIS Passenger And Travel Document Details Section Is Displayed
+    Verify APIS Other Information And Visa Details Section Is Displayed
+    Populate APIS Other Information And Visa Details    Innsbruck    Austria    Graz    Indonesia    Vienna    ABC12345DEF
+    ...    04/04/2014
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG
+    Verify Specific Line Is Written In The PNR    SSR DOCS FI HK1 P/AT/123456789/AT/01OCT79/M/12DEC24/AUTOONEEIGHTEEN/CANADATRVLRTWO/S2    \    true    true
+    Verify Specific Line Is Written In The PNR    SSR DOCS FI HK1 P/AT/123456789/AT/01OCT79/M/12DEC24/AUTOONEEIGHTEEN/CANADATRVLRTWO/S3    \    true    true
+    Verify Specific Line Is Written In The PNR    SSR DOCO FI HK1 INNSBRUCK/V/ABC12345DEF/VIENNA/04APR14/ID/S2
+    Verify Specific Line Is Written In The PNR    SSR DOCO FI HK1 INNSBRUCK/V/ABC12345DEF/VIENNA/04APR14/ID/S3
+    Verify Specific Line Is Written In The PNR    SSR DOCA FI HK1 R/AT/GRAZ/S2
+    Verify Specific Line Is Written In The PNR    SSR DOCA FI HK1 R/AT/GRAZ/S3
+
+[1A CA][AB] Verify that SR DOCS/DOCA/DOCO line is written for each segment if Only APIS section is displayed in APIS/SFPD Panel
+    [Tags]    ca    us7025    not_ready
+    Set Test Variable    ${GDS_switch}    amadeus
+    Set Test Variable    ${locale}    en-US
+    Set Test Variable    ${gds}    amadeus
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Enter GDS Command    TTE/ALL    XE2-3    RFCWTPTEST    ER    ER    RT
+    Book Flight X Months From Now Without Pricing    ORDSYD/AAA    SS1Y2    7
+    Enter GDS Command    FXP/S2-3    FXT01/P1    FXT01/P1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Panel    APIS/SFPD
+    Verify SFPD Section is Displayed
+    Verify APIS Passenger And Travel Document Details Section Is Displayed
+    Verify APIS Other Information And Visa Details Section Is Displayed
+    Verify APIS Address Section Is Displayed
+    Populate APIS Other Information And Visa Details    Innsbruck    Austria    Graz    Indonesia    Vienna    ABC12345DEF
+    ...    04/04/2014
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG
+    Verify Specific Line Is Written In The PNR    SSR DOCS AA HK1 P/AT/123456789/AT/01OCT79/M/12DEC24/AUTOONEEIGHTEEN/CANADATRVLRTWO/S2    \    true
+    Verify Specific Line Is Written In The PNR    SSR DOCS AA HK1 P/AT/123456789/AT/01OCT79/M/12DEC24/AUTOONEEIGHTEEN/CANADATRVLRTWO/S3    \    true
+    Verify Specific Line Is Written In The PNR    SSR DOCO AA HK1 INNSBRUCK/V/ABC12345DEF/VIENNA/04APR14/ID/S2
+    Verify Specific Line Is Written In The PNR    SSR DOCO AA HK1 INNSBRUCK/V/ABC12345DEF/VIENNA/04APR14/ID/S3
+    Verify Specific Line Is Written In The PNR    SSR DOCA AA HK1 R/AT/GRAZ/S2
+    Verify Specific Line Is Written In The PNR    SSR DOCA AA HK1 R/AT/GRAZ/S3
+
+*** Keywords ***
+Verify APIS And SFPD Panel Is Displayed
+    Verify Control Object Is Visible    [NAME:APIS/SFPD]
+    [Teardown]    Take Screenshot
+
+Verify APIS And SFPD Panel Is Not Displayed
+    Verify Control Object Is Not Visible    [NAME:APIS/SFPD]
+    [Teardown]    Take Screenshot
+
+Verify that APIS not known checkbox is enabled
+    Verify Control Object Is Enabled    [NAME:chkSFPD]
+
+Verify SFPD Section is Displayed
+    Verify Control Object Is Visible    [NAME:grpSFPD]
+    [Teardown]    Take Screenshot
+
+Verify SFPD Section is Not Displayed
+    Verify Control Object Is Not Visible    [NAME:grpSFPD]
+    [Teardown]    Take Screenshot
+
+Verify APIS Passenger And Travel Document Details Section Is Not Displayed
+    Verify Control Object Is Not Visible    [NAME:grpAPISPassengerDetails]
+    [Teardown]    Take Screenshot
+
+Verify APIS Other Information And Visa Details Section Is Not Displayed
+    Verify Control Object Is Not Visible    [NAME:grpAPISOtherInfo]
+    [Teardown]    Take Screenshot
+
+Verify APIS Address Section Is Not Displayed
+    Verify Control Object Is Not Visible    [NAME:grpAPISAddress]
+    [Teardown]    Take Screenshot
+
+Verify APIS Passenger And Travel Document Details Section Is Displayed
+    Verify Control Object Is Visible    [NAME:grpAPISPassengerDetails]
+    [Teardown]    Take Screenshot
+
+Verify APIS Other Information And Visa Details Section Is Displayed
+    Verify Control Object Is Visible    [NAME:grpAPISOtherInfo]
+    [Teardown]    Take Screenshot
+
+Verify APIS Address Section Is Displayed
+    Verify Control Object Is Visible    [NAME:grpAPISAddress]
+    [Teardown]    Take Screenshot

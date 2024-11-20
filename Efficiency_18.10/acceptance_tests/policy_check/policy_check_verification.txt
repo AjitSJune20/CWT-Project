@@ -1,0 +1,97 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+
+*** Keywords ***
+Determine Policy Name And Index
+    Wait Until Control Object Is Visible    [NAME:grpPolicyCheck]
+    ${policy_name}    Create Dictionary
+    : FOR    ${policy_field_index}    IN RANGE    0    10
+    \    ${policy_name_text}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblPolicySegmentData${policy_field_index}]
+    \    ${policy_reason}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblPolicyReason${policy_field_index}]
+    \    ${policy_status}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:ccboPolicyStatus${policy_field_index}]
+    \    Set To Dictionary    ${policy_name}    ${policy_name_text}    ${policy_field_index}    ${policy_reason}    ${policy_field_index}
+    \    ...    ${policy_status}    ${policy_field_index}
+    \    Log    ${policy_name}
+    [Return]    ${policy_name}
+
+Get Policy Status Row Number
+    [Arguments]    ${policy_name}    ${policy_reason}    ${apply_search_pattern}=False
+    : FOR    ${policy_row}    IN RANGE    10
+    \    ${actual_policy_name}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblPolicySegmentData${policy_row}]
+    \    ${actual_policy_reason}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblPolicyReason${policy_row}]
+    \    ${is_policy_name_equal}    Run Keyword And Return Status    Should Be Equal As Strings    ${policy_name}    ${actual_policy_name}
+    \    ${is_policy_reason_equal}    Run Keyword If    "${apply_search_pattern}" == "True"    Run Keyword And Return Status    Should Match Regexp    ${actual_policy_reason}
+    \    ...    ${policy_reason}
+    \    ...    ELSE IF    "${apply_search_pattern}" == "False"    Run Keyword And Return Status    Should Be Equal As Strings    ${policy_reason}
+    \    ...    ${actual_policy_reason}
+    \    ${policy_status_row}    Run Keyword And Return If    ${is_policy_reason_equal} == True and ${is_policy_reason_equal} == True    Set Variable    ${policy_row}
+    \    Run Keyword If    ${is_policy_reason_equal} == True and ${is_policy_reason_equal} == True    Exit For Loop
+    \    ...    ELSE IF    ${is_policy_reason_equal} == False and ${is_policy_reason_equal} == False and ${policy_row} == 9    Fail    Cannot find combintaion of Policy Name: ${policy_name} and of Policy Reason: ${policy_reason}
+    [Return]    ${policy_status_row}
+
+Verify City Policy Entry Is Displayed X Times
+    [Arguments]    ${policy_name}    ${number_of_occurrence}
+    ${policy_city_count}    Set Variable    0
+    : FOR    ${policy_row}    IN RANGE    10
+    \    ${actual_policy_name}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblPolicySegmentData${policy_row}]
+    \    ${policy_city_count}    Run Keyword If    '${actual_policy_name}' == '${policy_name}'    Evaluate    ${policy_city_count} + 1
+    \    ...    ELSE    Set Variable    ${policy_city_count}
+    \    Exit For Loop If    ${policy_city_count} > ${number_of_occurrence} or '${actual_policy_name}' == '${EMPTY}'
+    Should Be Equal    ${policy_city_count}    ${1}
+
+Verify Out of Policy Is Shown
+    [Arguments]    ${policy_name}    ${policy_reason}    ${apply_search_pattern}=False
+    ${policy_status_row_number}    Get Policy Status Row Number    ${policy_name}    ${policy_reason}    ${apply_search_pattern}
+    Verify Control Object Is Visible    [NAME:ctxtPolicyAdvice${policy_status_row_number}]
+    [Teardown]    Take Screenshot
+
+Verify Policy Advice Is Displayed
+    [Arguments]    ${policy_name}    ${policy_reason}    ${expected_policy_advice}    ${apply_search_pattern}=False
+    ${policy_status_row_number}    Get Policy Status Row Number    ${policy_name}    ${policy_reason}    ${apply_search_pattern}
+    ${actual_policy_advice}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:ctxtPolicyAdvice${policy_status_row_number}]
+    Should Be Equal As Strings    ${expected_policy_advice}    ${actual_policy_advice}
+    [Teardown]    Take Screenshot
+
+Verify Policy Check Panel Is Not Displayed
+    Verify Control Object Is Not Visible    [NAME:grpPolicyCheck]
+    Verify Control Object Is Not Visible    [NAME:tlpPolicyCheck]
+    [Teardown]    Take Screenshot
+
+Verify Policy Name Is Displayed
+    [Arguments]    ${policy_name}    ${window_title}=${title_power_express}
+    Set Test Variable    ${policy_name_found}    ${EMPTY}
+    : FOR    ${index}    IN RANGE    0    50
+    \    Log    ${index}
+    \    ${name_exist} =    Control Get Text    ${window_title}    ${EMPTY}    [NAME:clblPolicySegmentData${index}]
+    \    Run Keyword If    "${name_exist}" == "${policy_name}"    Set Test Variable    ${policy_name_found}    ${name_exist}
+    \    Run Keyword If    "${name_exist}" == "${EMPTY}" and ${index} > 0    Exit For Loop
+    Should Be Equal As Strings    ${policy_name_found}    ${policy_name}    Policy Name "${policy_name}" is not displayed
+
+Verify Policy Name Is Not Displayed
+    [Arguments]    ${policy_name}    ${window_title}=${title_power_express}
+    Set Test Variable    ${policy_name_found}    ${EMPTY}
+    : FOR    ${index}    IN RANGE    0    50
+    \    Log    ${index}
+    \    ${name_exist} =    Control Get Text    ${window_title}    ${EMPTY}    [NAME:clblPolicySegmentData${index}]
+    \    Run Keyword If    "${name_exist}" == "${policy_name}"    Set Test Variable    ${policy_name_found}    ${name_exist}
+    \    Run Keyword If    "${name_exist}" == "${EMPTY}" and ${index} > 0    Exit For Loop
+    Should Not Be Equal As Strings    ${policy_name_found}    ${policy_name}    Policy Name "${policy_name}" is displayed
+
+Verify Policy Status Is Defaulted To Correct Value
+    [Arguments]    ${policy_name}    ${policy_reason}    ${expected_policy_status}=${EMPTY}
+    ${policy_status_row_number}    Get Policy Status Row Number    ${policy_name}    ${policy_reason}
+    Control Click    ${title_Express}    ${EMPTY}    [NAME:ccboPolicyStatus${policy_status_row_number}]
+    ${actual_policy_status}    Get Control Text Value    [NAME:ccboPolicyStatus${policy_status_row_number}]
+    Verify Text Contains Expected Value    ${actual_policy_status}    ${expected_policy_status}
+
+Verify Policy Status Values
+    [Arguments]    ${policy_name}    ${policy_reason}    @{expected_policy_status}
+    ${policy_status_row_number}    Get Policy Status Row Number    ${policy_name}    ${policy_reason}
+    Control Click    ${title_Express}    ${EMPTY}    [NAME:ccboPolicyStatus${policy_status_row_number}]
+    ${actual_policy_status}    Get Dropdown Values    [NAME:ccboPolicyStatus${policy_status_row_number}]
+    Collections.List Should Contain Sub List    ${actual_policy_status}    ${expected_policy_status}
+
+Verify That Security Remarks Are Written
+    [Arguments]    @{expected_remarks}
+    : FOR    ${remark}    IN    @{expected_remarks}
+    \    Verify Specific Remark Is Written In The PNR    ${remark}    true

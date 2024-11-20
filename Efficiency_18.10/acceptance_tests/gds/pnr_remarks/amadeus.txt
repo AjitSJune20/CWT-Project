@@ -1,0 +1,2158 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../gds_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[NB DE] Verify That Default Agent Backoffice Identifier Is Written In The PNR
+    [Tags]    us4163    de    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    FRAWL22KG
+    Create New Booking With One Way Flight Using Default Values    Amadeus DE 15 - Auto ¦ US2447    AutoOneFiveOneTwo    OptimizeTrvlrFive    LHRCDG/AAF    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    AG-9999
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Subscription Fare With CDR Values Entered
+    [Documentation]    Updated FOP Cash Selection to Not Known
+    [Tags]    uat    emea    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    CDGMRS/AAF    SS1S1    FXP/RRPFM    6
+    Click Read Booking
+    Click Panel    Pspt And Visa
+    Populate Pspt And Visa Panel With Default Values
+    Populate Fare Tab With Default Values    Fare 1    true    true
+    Populate Air Fare Savings Code    ABN - ABONNEMENT    PDR - PAS DE REFUS    YD - Tarif Reduit Classe Economique
+    Select Fare Restriction    FULLY FLEXIBLE
+    Get Fare Details    Fare 1
+    Click Panel    Cust Refs
+    Set CDR Value    GEID    1
+    Set CDR Value    COSTCENTER    12345
+    Set CDR Value    EMPLOYEEID    67890
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2    Fare 1
+    Verify Air Trip Information Remarks Are Written    S2    Fare 1
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify CDR Remarks Are Written    RM *0601*1    RM *0602*12345    RM *0603*67890
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Comment    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Not Written In The PNR    RIR NATIONALITE DU VOYAGEUR:
+    Verify Specific Line Is Not Written In The PNR    RIR VALIDITE DU PASSEPORT:
+    Verify Specific Line Is Not Written In The PNR    RIR CONTROLE DE VISA:
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S2    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 1
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Full Fare In Economy/Business Class With APIS/SFPD Unknown
+    [Documentation]    Updated FOP Cash Selection to Not Known
+    [Tags]    uat    emea    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    ${EMPTY}
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    BODCDG/AAF    SS1W1    \    5    0
+    Book Flight X Months From Now    CDGSVO/ASU    SS1J1    \    5    3
+    Book Flight X Months From Now    DMELED/AS7    SS1Y1    FXP/S4    5    6
+    Book Flight X Months From Now    SVOCDG/ASU    SS1J1    FXP/S3,5    5    9
+    Book Flight X Months From Now    CDGBOD/AAF    SS1W1    FXP/S2,6    5    12
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    CF - Plein Tarif Classe Affaire
+    Get Fare Details    Fare 2
+    Populate Fare Tab With Default Values    Fare 3    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 3
+    Comment    Click Panel    Pspt And Visa
+    Comment    Populate Pspt And Visa Panel With Default Values
+    Click Panel    Apis/Sfpd
+    Populate APIS/SFPD Panel With Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Apis/Sfpd
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2,6    Fare 1
+    Verify Air Savings Remarks Are Written    S3,5    Fare 2
+    Verify Air Savings Remarks Are Written    S4    Fare 3
+    Verify Air Trip Information Remarks Are Written    S2,6    Fare 1
+    Verify Air Trip Information Remarks Are Written    S3,5    Fare 2
+    Verify Air Trip Information Remarks Are Written    S4    Fare 3
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Comment    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR NATIONALITE DU VOYAGEUR: CG
+    Verify Specific Line Is Written In The PNR    RIR VALIDITE DU PASSEPORT: OUI
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: RUSSIE OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S2,6    Fare 1
+    Verify Fare Remarks Are Written    S3,5    Fare 2
+    Verify Fare Remarks Are Written    S4    Fare 3
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 3
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Full Fare And Subscription Fare With Awaiting CDR Selected
+    [Documentation]    Updated FOP Cash Selection to Not Known
+    [Tags]    uat    emea    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    ${EMPTY}
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    PARNCE/AAF    SS1S1    \    6    0
+    Book Flight X Months From Now    NCEBOD/AA5    SS1W1    FXP/S3    6    12
+    Book Flight X Months From Now    BODPAR/AAF    SS1S1    FXP/RRPFM/S2,4    6    18
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    ABN - ABONNEMENT    PDR - PAS DE REFUS    YD - Tarif Reduit Classe Economique
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 2
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Panel    Pspt And Visa
+    Populate Pspt And Visa Panel With Default Values
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Set Ticketing Date    6
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Cust Refs    Delivery
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2,4    Fare 1
+    Verify Air Savings Remarks Are Written    S3    Fare 2
+    Verify Air Trip Information Remarks Are Written    S2,4    Fare 1
+    Verify Air Trip Information Remarks Are Written    S3    Fare 2
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Comment    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Not Written In The PNR    RIR NATIONALITE DU VOYAGEUR:
+    Verify Specific Line Is Not Written In The PNR    RIR VALIDITE DU PASSEPORT:
+    Verify Specific Line Is Not Written In The PNR    RIR CONTROLE DE VISA:
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE CDRS
+    Verify Fare Remarks Are Written    S2,4    Fare 1
+    Verify Fare Remarks Are Written    S3    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+
+[QA FR] Verify That Classic Air PNR Remarks And OP Remark Are Written When Auto Ticket Delivery Method Is Selected
+    [Tags]    uat    emea    fr    DE6235_valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Delivery
+    Select Delivery Method    Auto Ticketeur
+    Set Ticketing Date    6
+    Click Finish PNR    Quick Amend Booking Workflow With Auto Ticket Delivery Method
+    Execute Simultaneous Change Handling    Quick Amend Booking Workflow With Auto Ticket Delivery Method
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2,4    Fare 1
+    Verify Air Savings Remarks Are Written    S3    Fare 2
+    Verify Air Trip Information Remarks Are Written    S2,4    Fare 1
+    Verify Air Trip Information Remarks Are Written    S3    Fare 2
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify Ticketing Line Is Written    Auto Ticket
+    Verify "Issue To Be Confirmed At The Latest" Line Is Not Written
+    Verify "Tickets Will Be Issued On" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Comment    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Not Written In The PNR    RIR NATIONALITE DU VOYAGEUR:
+    Verify Specific Line Is Not Written In The PNR    RIR VALIDITE DU PASSEPORT:
+    Verify Specific Line Is Not Written In The PNR    RIR CONTROLE DE VISA:
+    Verify Specific Line Is Not Written In The PNR    RIR ON HOLD
+    Verify Fare Remarks Are Written    S2,4    Fare 1
+    Verify Fare Remarks Are Written    S3    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Verify OP Remark Is Written    PARWL24CA    70    4    AQUA QUEUING
+    Verify Queue Remark Is Written    PARWL24CA    70    4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Full Fare With 2 Unbooked Proposals
+    [Documentation]    Updated FOP Cash Selection to Not Known
+    [Tags]    uat    emea    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    ${EMPTY}
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    AMSBCN/AKL    SS1Y1    \    6    0
+    Enter GDS Command    ACR5    SS1Y1    FXP    FXT01/P1
+    Comment    Book Flight X Months From Now    BCNAMS/AKL    SS1Y1    FXP    6    5
+    Enter GDS Command    FXD    OFS/A2    OFS/A3
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    CID - CLASSE IMPERATIVE DEMANDEE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Select Alternate Fare Class Code    YD - Tarif Reduit Classe Economique
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Select Alternate Fare Class Code    YD - Tarif Reduit Classe Economique
+    Get Alternate Fare Details    Alternate Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2-3    Fare 1
+    Verify Air Trip Information Remarks Are Written    S2-3    Fare 1
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR NATIONALITE DU VOYAGEUR: CG
+    Verify Specific Line Is Written In The PNR    RIR VALIDITE DU PASSEPORT: OUI
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: ESPAGNE OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S2-3    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 2
+    Verify Offer Remarks Are Written    Alternate Fare 1
+    Verify Offer Remarks Are Written    Alternate Fare 2
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**CES PRESTATIONS NE SONT PAS RESERVEES.*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**POUR PLUS D INFORMATION, NOUS CONSULTER*
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+
+[AB FR] Verify That Classic Air PNR Remarks Are Written When Using Full Fare And Subscription Fare With 2 Unbooked Proposals
+    [Documentation]    Updated FOP Invoice Selection to Not Known
+    [Tags]    uat    emea    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    AMSBCN/AKL    SS1Y1    FXP/RRPFM/S4    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Get Fare Details    Fare 1
+    Click Fare Tab    Fare 2
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    CID - CLASSE IMPERATIVE DEMANDEE    YD - Tarif Reduit Classe Economique
+    Select Fare Restriction    FULLY FLEXIBLE
+    Get Fare Details    Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Get Alternate Fare Details    Alternate Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow With 2 Unbooked Proposals
+    Execute Simultaneous Change Handling    Amend Booking Workflow With 2 Unbooked Proposals
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2-3    Fare 1
+    Verify Air Savings Remarks Are Written    S4    Fare 2
+    Verify Air Trip Information Remarks Are Written    S2-3    Fare 1
+    Verify Air Trip Information Remarks Are Written    S4    Fare 2
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP INV
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR NATIONALITE DU VOYAGEUR: CG
+    Verify Specific Line Is Written In The PNR    RIR VALIDITE DU PASSEPORT: OUI
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: ESPAGNE OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: ROYAUME-UNI OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S2-3    Fare 1
+    Verify Fare Remarks Are Written    S4    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 2
+    Verify Offer Remarks Are Written    Alternate Fare 1
+    Verify Offer Remarks Are Written    Alternate Fare 2
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**CES PRESTATIONS NE SONT PAS RESERVEES.*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**POUR PLUS D INFORMATION, NOUS CONSULTER*
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Full Fare With 3 Unbooked Proposals (1 Per Segment)
+    [Documentation]    Updated FOP Cash Selection to Not Known
+    [Tags]    uat    emea    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    ${EMPTY}
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    PARMRS/AAF    SS1W1    \    6
+    Book Flight X Months From Now    MRSBOD/AAF    SS1W1    \    6    2
+    Book Flight X Months From Now    BODPAR/AAF    SS1W1    FXP    6    4
+    Create Amadeus Offer Retain Flight    S2
+    Create Amadeus Offer Retain Flight    S3
+    Create Amadeus Offer Retain Flight    S4
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Select Alternate Fare Class Code    YD - Tarif Reduit Classe Economique
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Select Alternate Fare Class Code    YD - Tarif Reduit Classe Economique
+    Get Alternate Fare Details    Alternate Fare 2
+    Click Fare Tab    Alternate Fare 3
+    Select Alternate Fare Class Code    YD - Tarif Reduit Classe Economique
+    Get Alternate Fare Details    Alternate Fare 3
+    Click Panel    Pspt And Visa
+    Populate Pspt And Visa Panel With Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2-4    Fare 1
+    Verify Air Trip Information Remarks Are Written    S2-4    Fare 1
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Not Written In The PNR    RIR NATIONALITE DU VOYAGEUR:
+    Verify Specific Line Is Not Written In The PNR    RIR VALIDITE DU PASSEPORT:
+    Verify Specific Line Is Not Written In The PNR    RIR CONTROLE DE VISA:
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S2-4    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 2
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 3
+    Verify Offer Remarks Are Written    Alternate Fare 1
+    Verify Offer Remarks Are Written    Alternate Fare 2
+    Verify Offer Remarks Are Written    Alternate Fare 3
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**CES PRESTATIONS NE SONT PAS RESERVEES.*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**POUR PLUS D INFORMATION, NOUS CONSULTER*
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Youth Fare
+    [Documentation]    Updated FOP Cash Selection to Not Known
+    [Tags]    uat    emea    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOn
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    CDGNCE/AAF    SS1B1    \    6    0
+    Enter GDS Command    ACR5    SS1B1    FXP/R,*PTC    FXT01/P1
+    Comment    Book Flight X Months From Now    NCECDG/AAF    SS1B1    FXP/R,*PTC    6    3
+    Enter GDS Command    FDZZ
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    SPE - TARIFS SPECIAUX    PDR - PAS DE REFUS    YD - Tarif Reduit Classe Economique
+    Get Fare Details    Fare 1
+    Click Panel    Pspt And Visa
+    Populate Pspt And Visa Panel With Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2-3    Fare 1
+    Verify Air Trip Information Remarks Are Written    S2-3    Fare 1
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Not Written In The PNR    RIR NATIONALITE DU VOYAGEUR:
+    Verify Specific Line Is Not Written In The PNR    RIR VALIDITE DU PASSEPORT:
+    Verify Specific Line Is Not Written In The PNR    RIR CONTROLE DE VISA:
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Specific Line Is Written In The PNR    FD PAX ZZ
+    Verify Fare Remarks Are Written    S2-3    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 1
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Full Fare And 1069 In Economy Class With Awaiting SFPD Selected And Passport Unknown
+    [Documentation]    Updated FOP Cash Selection to Adding Dummy Credit Card
+    [Tags]    uat    emea    data_dependent    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOn
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Book Flight X Months From Now    MRSCDG/AAF    SS1W1    \    5    0
+    Book Flight X Months From Now    CDGJFK/AAA    SS1Y1    \    5    9
+    Book Flight X Months From Now    JFKCDG/AAA    SS1Y1    FXP/R,U001069/S3,4    5    15
+    Book Flight X Months From Now    CDGMRS/AAF    SS1W1    FXP/S2,5    5    21
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true
+    Populate Air Fare Savings Code    CWT - NEGOCIATION CWT    PDR - PAS DE REFUS    YD - Tarif Reduit Classe Economique
+    Get Fare Details    Fare 2
+    Click Panel    Pspt And Visa
+    Populate Pspt And Visa Panel With Default Values
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Address    Test    Test2    France    Wyoming    ${EMPTY}
+    Tick Not Known    Tick
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Set Ticketing Date    6
+    Populate All Panels (Except Given Panels If Any)    AIR FARE    PSPT AND VISA    DELIVERY    APIS/SFPD
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2,5    Fare 1
+    Verify Air Savings Remarks Are Written    S3-4    Fare 2
+    Verify Air Trip Information Remarks Are Written    S2,5    Fare 1
+    Verify Air Trip Information Remarks Are Written    S3-4    Fare 2
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Written In The PNR    FP CCVI
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Not Written In The PNR    RIR NATIONALITE DU VOYAGEUR:
+    Verify Specific Line Is Not Written In The PNR    RIR VALIDITE DU PASSEPORT:
+    Verify Specific Line Is Not Written In The PNR    RIR CONTROLE DE VISA:
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DONNEES SECURE FLIGHT
+    Verify Fare Remarks Are Written    S2,5    Fare 1
+    Verify Fare Remarks Are Written    S3-4    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Full Fare And 1069 In Business Class With Awaiting Approval And Awaiting SFPD Selected
+    [Documentation]    Updated FOP Cash Selection to Adding Dummy Credit Card
+    [Tags]    uat    emea    data_dependent    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOn
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Book Flight X Months From Now    BODCDG/AAF    SS1W1    \    4    0
+    Book Flight X Months From Now    CDGMIA/AAA    SS1J1    \    4    3
+    Book Flight X Months From Now    MIAEWR/AUA    SS1M1    FXP/S4    4    6
+    Book Flight X Months From Now    JFKCDG/AAA    SS1J1    FXP/R,U001069/S3,5    4    9
+    Book Flight X Months From Now    CDGBOD/AAF    SS1W1    FXP/S2,6    4    12
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true
+    Populate Air Fare Savings Code    CWT - NEGOCIATION CWT    PDR - PAS DE REFUS    CD - Tarif Reduit Classe Affaire
+    Get Fare Details    Fare 2
+    Populate Fare Tab With Default Values    Fare 3    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 3
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Address    Test    Test City    France    Wyoming    ${EMPTY}
+    Tick Not Known    Tick
+    Populate All Panels (Except Given Panels If Any)    AIR FARE    APIS/SFPD
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2,6    Fare 1
+    Verify Air Savings Remarks Are Written    S3,5    Fare 2
+    Verify Air Savings Remarks Are Written    S4    Fare 3
+    Verify Air Trip Information Remarks Are Written    S2,6    Fare 1
+    Verify Air Trip Information Remarks Are Written    S3,5    Fare 2
+    Verify Air Trip Information Remarks Are Written    S4    Fare 3
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Written In The PNR    FP CCVI
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR NATIONALITE DU VOYAGEUR: CG
+    Verify Specific Line Is Written In The PNR    RIR VALIDITE DU PASSEPORT: OUI
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: ETATS-UNIS OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DONNEES SECURE FLIGHT
+    Verify Fare Remarks Are Written    S2,6    Fare 1
+    Verify Fare Remarks Are Written    S3,5    Fare 2
+    Verify Fare Remarks Are Written    S4    Fare 3
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 3
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Full Fare And 1069 In Business Class Without Onhold Queue
+    [Documentation]    Updated FOP Cash Selection to Adding Dummy Credit Card
+    [Tags]    uat    emea    data_dependent    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOn
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Book Flight X Months From Now    PARBJS/ABR    SS1C1    \    4    0
+    Book Flight X Months From Now    BJSSHA/ACZ    SS1W3    FXP/S4    4    3
+    Book Flight X Months From Now    SHAPAR/ABR    SS1C1    FXP/R,U001069/S2,3,5,6    4    6
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    CWT - NEGOCIATION CWT    PDR - PAS DE REFUS    YD - Tarif Reduit Classe Economique
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 2
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Select Delivery Method    E-Ticket
+    Set Ticketing Date    6
+    Populate All Panels (Except Given Panels If Any)    AIR FARE    DELIVERY
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2-3,5-6    Fare 1
+    Verify Air Savings Remarks Are Written    S4    Fare 2
+    Verify Air Trip Information Remarks Are Written    S2-3,5-6    Fare 1
+    Verify Air Trip Information Remarks Are Written    S4    Fare 2
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Written In The PNR    FP CCVI
+    Verify Ticketing Line Is Written
+    Verify "Tickets Will Be Issued On" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR NATIONALITE DU VOYAGEUR: CG
+    Verify Specific Line Is Written In The PNR    RIR VALIDITE DU PASSEPORT: (NON|OUI)    true
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: TAIWAN OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: CHINE OBLIGATOIRE
+    Verify Specific Line Is Not Written In The PNR    RIR ON HOLD
+    Verify Fare Remarks Are Written    S2-3,5-6    Fare 1
+    Verify Fare Remarks Are Written    S4    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Full Fare And 1069 In Business Class With 2 Unbooked Proposals (1 Added Manually)
+    [Documentation]    Updated FOP Cash Selection to Not Known
+    [Tags]    uat    emea    data_dependent    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOn
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    PARBJS/ABR    SS1C1    \    4    0
+    Book Flight X Months From Now    BJSSHA/ACZ    SS1W3    FXP/S4    4    3
+    Book Flight X Months From Now    SHAPAR/ABR    SS1C1    FXP/R,U001069/S2,3,5,6    4    6
+    Enter GDS Command    FXD    OFS/A2
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    CWT - NEGOCIATION CWT    PDR - PAS DE REFUS    YD - Tarif Reduit Classe Economique
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Select Alternate Fare Class Code    YD - Tarif Reduit Classe Economique
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Set Alternate Fare Amount    100,00
+    Select Alternate Fare Class Code    YD - Tarif Reduit Classe Economique
+    Set Alternate Fare Fare Basis    ABCDE
+    Get Alternate Fare Details    Alternate Fare 2
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2-3,5-6    Fare 1
+    Verify Air Savings Remarks Are Written    S4    Fare 2
+    Verify Air Trip Information Remarks Are Written    S2-3,5-6    Fare 1
+    Verify Air Trip Information Remarks Are Written    S4    Fare 2
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR NATIONALITE DU VOYAGEUR: CG
+    Verify Specific Line Is Written In The PNR    RIR VALIDITE DU PASSEPORT: OUI
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: TAIWAN OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: CHINE OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S2-3,5-6    Fare 1
+    Verify Fare Remarks Are Written    S4    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 2
+    Verify Offer Remarks Are Written    Alternate Fare 1
+    Verify Offer Remarks Are Written    Alternate Fare 2
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**CES PRESTATIONS NE SONT PAS RESERVEES.*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**POUR PLUS D INFORMATION, NOUS CONSULTER*
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+
+[AB FR] Verify That Classic Air PNR Remarks Are Retained After Removing 1 Unbooked Proposal
+    [Documentation]    Added Client Info FOP Not Known At Time of Booking
+    [Tags]    uat    emea    data_dependent    fr
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    RTOF
+    Enter GDS Command    XE1
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Get Fare Details    Fare 1
+    Click Fare Tab    Fare 2
+    Get Fare Details    Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Get Alternate Fare Details    Alternate Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Click Remove Fare
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Click Finish PNR    Amend Booking Workflow With 1 Unbooked Proposal Removed
+    Execute Simultaneous Change Handling    Amend Booking Workflow With 1 Unbooked Proposal Removed
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2-3,5-6    Fare 1
+    Verify Air Savings Remarks Are Written    S4    Fare 2
+    Verify Air Trip Information Remarks Are Written    S2-3,5-6    Fare 1
+    Verify Air Trip Information Remarks Are Written    S4    Fare 2
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR NATIONALITE DU VOYAGEUR: CG
+    Verify Specific Line Is Written In The PNR    RIR VALIDITE DU PASSEPORT: OUI
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: TAIWAN OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: CHINE OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S2-3,5-6    Fare 1
+    Verify Fare Remarks Are Written    S4    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Verify Alternate Fare Remarks Are Not Written    Alternate Fare 1
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 2
+    Verify Offer Remarks Are Not Written    Alternate Fare 1    Proposition # 2
+    Verify Offer Remarks Are Written    Alternate Fare 2    Proposition # 1
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**CES PRESTATIONS NE SONT PAS RESERVEES.*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**POUR PLUS D INFORMATION, NOUS CONSULTER*
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Air PNR Remarks Are Written When Using Full Fare And 1069 In Economy Class With 3 Unbooked Proposals
+    [Documentation]    Updated FOP Cash Selection to Not Known
+    [Tags]    uat    emea    data_dependent    de6236    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    MRSCDG/AAF    SS1W1    \    6    3
+    Book Flight X Months From Now    CDGJFK/AAA    SS1Y1    \    6    6
+    Book Flight X Months From Now    JFKCDG/AAA    SS1Y1    FXP/R,U001069/S3,4    6    9
+    Book Flight X Months From Now    CDGMRS/AAF    SS1W1    FXP/S2,5    6    12
+    Create Multiple Offers And Retain Segment    3
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true
+    Populate Air Fare Savings Code    CWT - NEGOCIATION CWT    PDR - PAS DE REFUS    YD - Tarif Reduit Classe Economique
+    Get Fare Details    Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Select Alternate Fare Class Code    YD - Tarif Reduit Classe Economique
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Select Alternate Fare Class Code    YD - Tarif Reduit Classe Economique
+    Get Alternate Fare Details    Alternate Fare 2
+    Click Fare Tab    Alternate Fare 3
+    Select Alternate Fare Class Code    YD - Tarif Reduit Classe Economique
+    Get Alternate Fare Details    Alternate Fare 3
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    EmeaUatClassicOne    AutoFifteenClassic    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2,5    Fare 1
+    Verify Air Savings Remarks Are Written    S3-4    Fare 2
+    Verify Air Trip Information Remarks Are Written    S2,5    Fare 1
+    Verify Air Trip Information Remarks Are Written    S3-4    Fare 2
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Specific Line Is Not Written In The PNR    FP CASH
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Comment    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR NATIONALITE DU VOYAGEUR: CG
+    Verify Specific Line Is Written In The PNR    RIR VALIDITE DU PASSEPORT: OUI
+    Verify Specific Line Is Written In The PNR    RIR CONTROLE DE VISA: ETATS-UNIS OBLIGATOIRE
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S2,5    Fare 1
+    Verify Fare Remarks Are Written    S3-4    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 2
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 3
+    Verify Offer Remarks Are Written    Alternate Fare 1
+    Verify Offer Remarks Are Written    Alternate Fare 2
+    Verify Offer Remarks Are Written    Alternate Fare 3
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**CES PRESTATIONS NE SONT PAS RESERVEES.*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**POUR PLUS D INFORMATION, NOUS CONSULTER*
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=HF, Fare=PT01AD/FA00, Ticket Type=E)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRPNOGBSPX    R/SS1HF1!4G0"IN    2
+    Book Rail X Months From Now    GBSPXFRPNO    R/SS1HF1!4G0"IN    2    5    R/FXP$TKE$P01PT01AD$Q/FA00
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Pricing Remarks Are Written    TST 1
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=AF, Fare=FA00, Ticket Type=E)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRPMOFRBOJ    R/SS1AF1!4G0"IN    1    25
+    Book Rail X Months From Now    FRBOJFRPMO    R/SS1AF1!4G0"IN    1    30    R/FXP$TKE$Q/FA00$S1    R/FXP$TKE$Q/FA00$S2
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Terms of Delivery Remarks Are Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=BW, Fare=PT01AD/FA00, Ticket Type=E)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRPNOGBSPX    R/SS1BW1!4G0"IN    2
+    Book Rail X Months From Now    GBSPXFRPNO    R/SS1BW1!4G0"IN    2    5    R/FXP$TKE$P01PT01AD$Q/FA00
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=BF, Fare=FQ50, Ticket Type=D)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRPMOFRBOJ    R/SS1BF1!4G0"IN    2
+    Book Rail X Months From Now    FRBOJFRPMO    R/SS1BF1!4G0"IN    2    5
+    Book Rail X Months From Now    FRPLYFRLPE    R/SS1BF1!4G0"IN    2    10
+    Book Rail X Months From Now    FRLPEFRPLY    R/SS1BF1!4G0"IN    2    15    R/FXP$TKD$Q/FQ50
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=AF, Fare=PT, Ticket Type=E)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRPMOFRNTE    R/SS1AF1!4G0"IN    2    1    R/FXP$TKE
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Pricing Remarks Are Written    TST 1
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=AF, Fare=AW01AD, Ticket Type=L)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRLPEFRPLY    R/SS1AF1!4G0"IN    1    25
+    Book Rail X Months From Now    FRPLYFRLPE    R/SS1AF1!4G0"IN    1    27    R/FXP$TKL$P01AW01AD
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=AF, Fare=AW01AD, Ticket Type=E)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRLPEFRPLY    R/SS1AF1!4G0"IN    1    10
+    Book Rail X Months From Now    FRPLYFRLPE    R/SS1AF1!4G0"IN    1    15    R/FXP$TKE$P01AW01AD
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]
+
+[AB FR] Verify That Classic Rail PNR Remarks Are Written (Class=AF, Fare=PT, Ticket Type=D)
+    [Tags]    uat    valid_fail    de6239    fr    de6420    resa_rail
+    Get Resa Rail PNR    ${current_pnr}
+    Cancel Resa Rail Booking    ${resa_rail_pnr}
+    Enter GDS Command    IG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    R/RT${resa_rail_pnr}    R/RFAG
+    Book Rail X Months From Now    FRPMOFRBOJ    R/SS1AF1!4G0"IN    1    4
+    Book Rail X Months From Now    FRBOJFRPMO    R/SS1AF1!4G0"IN    1    8    R/FXP$TKD
+    Click Read Booking
+    Enter GDS Command    R/RT    R/RFAG    R/FXP$TKD    R/ER    R/ER    R/IR
+    Click Read Booking
+    Populate Rail Pricing Conditions    1    1: Modifiable    1: Remboursable
+    Get Terms Of Delivery Text
+    Click Panel    Delivery
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For Rail (Class=AF, Fare=PT, Ticket Type=D)
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Rail (Class=AF, Fare=PT, Ticket Type=D)
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Specific Line Is Written In The PNR    RIR BILLET ECHANGEABLE SANS RETENUE
+    Verify Specific Line Is Written In The PNR    RIR BILLET REMBOURSABLE SANS RETENUE
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRLILFRPNO    R/SS1BF1!4G0"IN    1    25
+    Book Rail X Months From Now    FRPNOGBSPX    R/SS1BF1!4G0"IN    1    27
+    Book Rail X Months From Now    GBSPXFRPNO    R/SS1BF1!4G0"IN    1    29
+    Book Rail X Months From Now    FRPNOFRLIL    R/SS1BF1!4G0"IN    1    31    R/FXP$TKE$P01PT01AD$Q/FA00
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Pricing Remarks Are Written    TST 1
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+
+[AB FR] Verify That Classic Rail PNR Remarks Are Written (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+    [Tags]    uat    emea    fr    resa_rail
+    Get Resa Rail PNR    ${current_pnr}
+    Cancel Resa Rail Booking    ${resa_rail_pnr}
+    Enter GDS Command    IG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    R/RT${resa_rail_pnr}    R/RFAG
+    Book Rail X Months From Now    FRPMOFRBOJ    R/SS1BF1!4G0"IN    1    25
+    Book Rail X Months From Now    FRBOJFRPMO    R/SS1BF1!4G0"IN    1    27
+    Book Rail X Months From Now    FRPLYFRLPE    R/SS1BF2!4G0"IN    1    29
+    Book Rail X Months From Now    FRLPEFRPLY    R/SS1BF1!4G0"IN    1    31    R/FXP$TKE$P01PT01AD$Q/FA00
+    Click Read Booking
+    Enter GDS Command    R/RT    R/RFAG    R/FXP$TKE$P01PT01AD$Q/FA00    R/ER    R/ER    R/IR
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For Rail (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Rail (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Pricing Remarks Are Written    TST 1
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    2
+
+[AB FR] Verify That Classic Air And Rail PNR Remarks Are Written (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+    [Tags]    uat    emea    fr    resa_rail
+    Get Resa Rail PNR    ${current_pnr}
+    Cancel Resa Rail Booking    ${resa_rail_pnr}
+    Enter GDS Command    IG
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Click Amend Booking
+    Enter GDS Command    R/RT${resa_rail_pnr}    R/RFAG
+    Book Rail X Months From Now    FRPNOGBSPX    R/SS1BF1!4G0"IN    2    5
+    Book Rail X Months From Now    GBSPXFRPNO    R/SS1BF1!4G0"IN    2    10    R/FXP$TKE$P01PT01AD$Q/FA00
+    Click Read Booking
+    Enter GDS Command    R/RT    R/RFAG    R/FXP$TKE$P01PT01AD$Q/FA00    R/ER    R/ER    R/IR
+    ...    IR
+    Click Read Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    MRSPAR/AAF    SS1W1    \    5    5
+    Book Flight X Months From Now    PARMRS/AAF    SS1W1    FXP    5    12
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 1
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow For Air And Rail (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Air And Rail (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170    TEST123
+    Verify Air Savings Remarks Are Written    S4-5    Fare 1
+    Verify Air Trip Information Remarks Are Written    S4-5    Fare 1
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S4-5    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Rail Pricing Remarks Are Written    TST 1
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=AF, Fare=PT00AD, Ticket Type=E)
+    [Tags]    uat    emea    fr    data_dependent    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRLPEFRPLY    R/SS1AF1!4G0"IN    2    11
+    Book Rail X Months From Now    FRPNOBEBMI    R/SS1AF1!4G0"IN    2    12
+    Book Rail X Months From Now    BEBMIFRPNO    R/SS1AF1!4G0"IN    2    13
+    Book Rail X Months From Now    FRPLYFRLPE    R/SS1AF1!4G0"IN    2    25    R/FXP$TKE$P01PT00AD$S2/3    R/FXP$TKE$P01AW01AD$S1/4
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Pricing Remarks Are Written    TST 1
+    Verify Rail Pricing Remarks Are Written    TST 2
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Air And Rail PNR Remarks Are Written (Class=BF, Fare=PT01AD, Ticket Type=E)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRPNOGBSPX    R/SS1BF1!4G0"IN    2    3    R/FXP$TKE$PPT01AD
+    Book Flight X Months From Now    CDGFRA/ALH    SS1Y1    FXP    7
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 1
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170    TEST123
+    Verify Air Savings Remarks Are Written    S3    Fare 1
+    Verify Air Trip Information Remarks Are Written    S3    Fare 1
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S3    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Rail Pricing Remarks Are Written    TST 1
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=AF, Fare=FQ50, Ticket Type=D, With Loyalty Card)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    De Fay    Agnes
+    Add Rail Traveller    De Fay    Agnes    Mrs    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRPMOFRBOJ    R/SS1AF1!4G0"IN    1    20
+    Book Rail X Months From Now    FRBOJFRPMO    R/SS1AF1!4G0"IN    1    25
+    Book Rail X Months From Now    FRPLYFRLPE    R/SS1AF1!4G0"IN    2    5
+    Book Rail X Months From Now    FRLPEFRPLY    R/SS1AF2!4G0"IN    2    10    R/FXP$TKD$Q/FQ50
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Agnes    De Fay    B:403DD8E4    \    \    29090109260674865
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Pricing Remarks Are Written    TST 1
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Air And Rail PNR Remarks Are Written (Class=BP, Fare=LOISIRS, Ticket Type=D)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRMRSFRPLY    R/SS1BP1!4G0"IN    2    3    R/FXP$TKD$LOISIRS
+    Book Flight X Months From Now    ORYMRS/AAF    SS1Y1    FXP    7
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1    true
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Get Fare Details    Fare 1
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170    TEST123
+    Verify Air Savings Remarks Are Written    S3    Fare 1
+    Verify Air Trip Information Remarks Are Written    S3    Fare 1
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Fare Remarks Are Written    S3    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Rail Pricing Remarks Are Written    TST 1
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Air And Rail PNR Remarks Are Written (Class=AF, Fare=PT, Ticket Type=E)
+    [Tags]    uat    emea    fr    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRPLYFRLPD    R/SS1AF1!4G0"IN    2    12    R/FXP$TKE
+    Book Flight X Months From Now    LYSCDG/AAF    SS1Y2    FXP/S2    1    25
+    Book Flight X Months From Now    CDGMIA/AAA    SS1D1    \    1    27
+    Book Flight X Months From Now    MIACDG/AAA    SS1D1    FXP/S3,4/R,U001069    1    29
+    Book Flight X Months From Now    CDGHKG/AAF    SS1Y1    \    1    31
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Routing Field Value    LYS-CDG
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Select Turnaround
+    Select Fare Restriction    FULLY FLEXIBLE
+    Get Fare Details    Fare 1
+    Click Fare Tab    Fare 2
+    Verify Routing Field Value    CDG-MIA-CDG
+    Populate Air Fare Savings Code    TAR - CONSTRUCTION TARIFAIRE    PDR - PAS DE REFUS    YD - Tarif Reduit Classe Economique
+    Select Turnaround
+    Select Fare Restriction    FULLY FLEXIBLE
+    Set Low Fare Field    100,00
+    Get Fare Details    Fare 2
+    Get Rail Details
+    Click Panel    Policy Check
+    Select Policy Status    Hong Kong Risk    AA - En attente de validation
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check    Delivery
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403D1D39    TEST123
+    Verify Air Savings Remarks Are Written    S2    Fare 1
+    Verify Air Savings Remarks Are Written    S3-4    Fare 2
+    Verify Air Trip Information Remarks Are Written    S2    Fare 1
+    Verify Air Trip Information Remarks Are Written    S3-4    Fare 2
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DONNEES SECURE FLIGHT
+    Verify Fare Remarks Are Written    S2    Fare 1
+    Verify Fare Remarks Are Written    S3-4    Fare 2
+    Verify Itinerary Remarks Are Written    Fare 1
+    Verify Itinerary Remarks Are Written    Fare 2
+    Verify Rail Terms of Delivery Remarks Are Written
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB FR] Verify That Classic Rail PNR Remarks Are Written (Class=BP, Fare=PN00, Ticket Type=D)
+    [Tags]    uat    emea    fr    de6425    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create Shell PNR Without Retention Line    Amadeus FR 15 - Auto ¦ UAT CLASSIC    Auto    Rail
+    Add Rail Traveller    Auto    Rail    Mr    18NOV1977    automation@carlson.com
+    Book Rail X Months From Now    FRPARFRLPD    R/SS1BP1!4G0"IN    1    25
+    Book Rail X Months From Now    FRLPDFRPAR    R/SS1BP1!4G0"IN    1    27    R/FXP$TKD$Q/PN00
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Generic Remarks Are Written    Rail    Auto    B:403DB170
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify Ticketing Line Is Written    Onhold
+    Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    Verify Specific Line Is Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RIR *CUST**COUNTRY.FR*
+    Verify Specific Line Is Written In The PNR    RIR PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Rail Pricing Remarks Are Written    TST 1
+    Verify Rail Terms of Delivery Remarks Are Written
+    Verify FOP Is Added In Resa Rail    .-EC
+    Comment    Verify Queue Remark Is Written    PARWL24CA    70    4    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB] Verify That UA Remarks Are Written In The PNR
+    [Tags]    ua    us6299    uat    pilot
+    Open Power Express And Retrieve Profile    ${version}    pilot    uixv045    en-GB    iverhoevenNL    UA Kiev FSC Team 1
+    Select GDS    Amadeus
+    Set Client And Traveler    Carlson Wagonlit Travel ¦ UA-AMA TEST 1    Natalchuk    Iuliia
+    Click New Booking
+    Book Flight X Months From Now    CDGMRS/AAF    SS1S1    FXP/RRPFM    6
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Update PNR for EN or GB
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Air Fare Savings Code Using Default Values
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get Savings Code    Fare 1
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *7105*
+    Verify Fare Details In The PNR    Fare 1
+
+[AB] Verify That UA Remarks Are Written In The PNR
+    [Tags]    ua    us6299    uat    pilot
+    Select GDS    Amadeus
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    2
+    Book Flight X Months From Now    LHRCDG/AAF    SS1S1    FXP/RRPFM    6
+    Click Read Booking
+    Populate Air Fare Savings Code Using Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get Savings Code    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *7105*
+    Verify Fare Details In The PNR    Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That NL Remarks Are Written In The PNR
+    [Tags]    nl    us6274    uat    pilot
+    Open Power Express And Retrieve Profile    ${version}    pilot    uixv045    en-GB    iverhoevenNL    NL FSC TEAM AMSTERDAM 2
+    Select GDS    Amadeus
+    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ NL-OPLEIDINGEN CLASSIC (H7N)    BAKKUS    BERT
+    Select PCC/CompanyProfile/TravellerProfile    1A/AMSWL2100/OPLEIDINGEN/Z5KTD879481201
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    CDGMRS/AAF    SS1S1    FXP/RRPFM    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Air Savings Code    MC - Miscellaneous    E - Exchange    YD - Economy Discounted Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get Savings Code    Fare 1
+    Click Finish PNR
+    Click Clear All
+    Click GDS Screen Tab
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *7105*
+    Verify Fare Details In The PNR    Fare 1
+
+[AB] Verify That NL Remarks Are Written In The PNR
+    [Tags]    nl    us6274    uat    pilot
+    Click Clear All
+    Retrieve PNR    ${current_pnr}    5    True
+    Click Amend Booking
+    Delete Air Segment    2
+    Book Flight X Months From Now    LHRCDG/AAF    SS1S1    FXP/RRPFM    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Air Savings Code    MC - Miscellaneous    E - Exchange    YD - Economy Discounted Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get Savings Code    Fare 1
+    Click Finish PNR
+    Click Clear All
+    Click GDS Screen Tab
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *7105*
+    Verify Fare Details In The PNR    Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That HU Remarks Are Written In The PNR
+    [Tags]    hu    us6299    uat    pilot
+    Open Power Express And Retrieve Profile    ${version}    pilot    uixv045    en-GB    iverhoevenNL    HU_BUD_FSC_TEST team
+    Select GDS    Amadeus
+    Set Client And Traveler    HUNGARY SME CLIENTS ¦ HU-AMA TEST 1    BARRA    ATILLA
+    Set Telephone    1-1-1
+    Set Mobile Number    2-2-2
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    CDGMRS/AAF    SS1S1    FXP/RRPFM    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Air Savings Code    MC - Miscellaneous    E - Exchange    YD - Economy Discounted Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get Savings Code    Fare 1
+    Click Finish PNR
+    Click Clear All
+    Click GDS Screen Tab
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *7105*
+    Verify Fare Details In The PNR    Fare 1    HU
+    [Teardown]
+
+[AB] Verify That HU Remarks Are Written In The PNR
+    [Tags]    hu    us6299    uat    pilot
+    Click Clear All
+    Retrieve PNR    ${current_pnr}    5    True
+    Click Amend Booking
+    Delete Air Segment    2
+    Book Flight X Months From Now    LHRCDG/AAF    SS1S1    FXP/RRPFM    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Air Savings Code    MC - Miscellaneous    E - Exchange    YD - Economy Discounted Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get Savings Code    Fare 1
+    Click Finish PNR
+    Click Clear All
+    Click GDS Screen Tab
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *7105*
+    Verify Fare Details In The PNR    Fare 1    HU
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That HU Remarks For Sanofi Are Written In The PNR
+    [Tags]    hu    us6377    uat    pilot
+    Open Power Express And Retrieve Profile    ${version}    pilot    uixv045    en-GB    iverhoevenNL    HU_BUD_FSC_Team 1
+    Select GDS    Amadeus
+    Set Client And Traveler    Sanofi ¦ Sanofi    Never HU    William
+    Click New Booking
+    Book Flight X Months From Now    CDGMRS/AAF    SS1S1    FXP/RRPFM    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *MODIFIED BY AGENT
+    Verify Specific Line Is Written In The PNR Only Once    *MODIFIED BY AGENT
+    [Teardown]    #Cancel PNR Thru GDS Native    ${current_pnr}    True    True    NO
+
+[NB] Verify That HU Remarks For Chinoin Are Written In The PNR
+    [Tags]    hu    us6377    uat    pilot
+    Open Power Express And Retrieve Profile    ${version}    pilot    uixv045    en-GB    iverhoevenNL    HU_BUD_FSC_Team 1
+    Select GDS    Amadeus
+    Set Client And Traveler    Sanofi ¦ Chinoin    Never    William
+    Tick Traveler Checkbox
+    Click New Booking
+    Book Flight X Months From Now    CDGMRS/AAF    SS1S1    FXP/RRPFM    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *MODIFIED BY AGENT
+    Verify Specific Line Is Written In The PNR Only Once    *MODIFIED BY AGENT
+    [Teardown]    #Cancel PNR Thru GDS Native    ${current_pnr}    True    True    NO
+
+[NB UK] Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger In The PNR When A Multi Pax Booking Is Created
+    [Tags]    uk    us6644
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus UK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFour
+    Click New Booking
+    Update PNR for EN or GB
+    Add Multiple Traveler    NM3POLO/LISA Mrs/Marco Mr/Riza Ms
+    Book Flight X Months From Now Without Pricing    LHRCDG/AAF    SS4Y3    6
+    Fare Quote For One Segment    S5    P1-2
+    Fare Quote For One Segment    S5    P3-4
+    Book Flight X Months From Now Without Pricing    CDGLHR/AAF    SS4Y3    6    4
+    Fare Quote For One Segment    S6    P1,3
+    Fare Quote For One Segment    S6    P2,4
+    Comment    Populate All Panels (Except Given Panels If Any)
+    Comment    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    A6 - Alternative Carrier Declined    Fully Flexible
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    A6 - Alternative Carrier Declined    Fully Flexible
+    Get Fare Details    Fare 2
+    Get Savings Code    Fare 2
+    Populate Fare Tab With Default Values    Fare 3    A6 - Alternative Carrier Declined    Fully Flexible
+    Get Fare Details    Fare 3
+    Get Savings Code    Fare 3
+    Populate Fare Tab With Default Values    Fare 4    A6 - Alternative Carrier Declined    Fully Flexible
+    Get Fare Details    Fare 4
+    Get Savings Code    Fare 4
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 1    S5    P1-2
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 2    S5    P3-4
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 3    S6    P1,3
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 4    S6    P2,4
+
+[AB UK] Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger In The PNR When A Multi Pax Booking Is Created
+    [Tags]    us6644    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    A6 - Alternative Carrier Declined    Fully Flexible
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    A6 - Alternative Carrier Declined    Fully Flexible
+    Get Fare Details    Fare 2
+    Get Savings Code    Fare 2
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 1    S5    P1,3
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 2    S5    P2,4
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 1    S6    P1-2
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 2    S6    P3-4
+
+[SI UK] Verify That Back Office RM Remarks Are Still Written Same In The PNR When A Multi Pax Booking Is Created
+    [Tags]    us6644    uk
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 1    S5    P1,3
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 2    S5    P2,4
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 1    S6    P1-2
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 2    S6    P3-4
+
+[CB UK] Verify That Back Office RM Remarks Are Not Written In The PNR When A Multi Pax Booking Is Created
+    [Tags]    us6644    uk
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 1    S5    P1,3
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 2    S5    P2,4
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 1    S5    P1-2
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 2    S5    P3-4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Back Office RM Remarks Are Written Associated With Segment Only When A Single Passanger Booking Is Created
+    [Tags]    us6644    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus UK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFour
+    Click New Booking
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    A6 - Alternative Carrier Declined    Fully Flexible
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify That Backoffice Remarks Are Written Associated With Segment Only    Fare 1    S2
+    [Teardown]
+
+[AB UK] Verify That Back Office RM Remarks Are Not Written In The PNR
+    [Tags]    US6644    UK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Backoffice Remarks Are Not Written In The PNR    Fare 1    S2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger In The PNR When A Multi Pax Booking(Adult, CHD, INF) Is Created
+    [Tags]    us6644    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus UK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFour
+    Click New Booking
+    Update PNR for EN or GB
+    Add Multiple Traveler    NM3POLO/LISA Mrs/Marco Mr (CHD)/Riza Ms (INF/ANN/10JAN18)
+    Book Flight X Months From Now Without Pricing    LHRCDG/AAF    SS4Y3    6
+    Fare Quote Per Passanger Type    S5    P1-2    P3    P4
+    Comment    Populate All Panels (Except Given Panels If Any)
+    Comment    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    A6 - Alternative Carrier Declined    Fully Flexible
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    A6 - Alternative Carrier Declined    Fully Flexible
+    Populate Air Fare Savings Code    S1 - Companion Fare Saving Accepted    NA - No Alternative Fare Available    YC - Coach Negotiated Fare
+    Get Fare Details    Fare 2
+    Get Savings Code    Fare 2
+    Populate Fare Tab With Default Values    Fare 3    A6 - Alternative Carrier Declined    Fully Flexible
+    Populate Air Fare Savings Code    R1 - Restricted Flight - Saving Accepted    PA - Outside Of Travel Policy - With Senior Executive    FA - First Public Fare
+    Get Fare Details    Fare 3
+    Get Savings Code    Fare 3
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 1    S5    P1-2
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 2    S5    P3
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 3    S5    P4
+
+[AB UK] Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger In The PNR When A Multi Pax Booking(Adult, CHD, INF) Is Created
+    [Tags]    us6644    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/T2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    true    Fully Flexible
+    Populate Air Fare Savings Code    ZZ - No Saving - See Missed Saving For Reason    R6 - Restricted Fare Saving Declined    FA - First Public Fare
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true    Fully Flexible
+    Populate Air Fare Savings Code    VA - Value Added Offer    XP - Outside Of Travel Policy - Authorised    FC - First Negotiated Fare
+    Get Fare Details    Fare 2
+    Get Savings Code    Fare 2
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 1    S5    P1-2
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 2    S5    P4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Backoffice Remarks Are Correct For KDS Booking With Mulitple Passenger
+    [Tags]    us6644    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ US2837 KDS    AutoOneFiveTwo    EmeaTrvlrOne
+    Click New Booking
+    Enter GDS Command    NM1AutoOne/MultiPax
+    Enter GDS Command    NM1AutoOne/MultiPaxChild(CHD)
+    Enter GDS Command    NM1AutoTwo/Infant(INF)
+    Book Flight X Months From Now Without Pricing    CDGLHR/AAF    SS4Y1    5
+    Enter GDS command    FXP/S5/P1,3    FXT1/P1,3
+    Enter GDS command    FXP/S5/P2    FXT1/P2
+    Enter GDS command    FXP/S5/INF/P4    FXT1/P4
+    Book Flight X Months From Now Without Pricing    LHRCDG/AAF    SS4Y1    6
+    Enter GDS command    FXP/S6/P1,3    FXT1/P1,3
+    Enter GDS command    FXP/S6/P2    FXT1/P2
+    Enter GDS command    FXP/S6/INF/P4    FXT1/P4
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Get Fare Details    Fare 2
+    Get Savings Code    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Get Fare Details    Fare 3
+    Get Savings Code    Fare 3
+    Populate Fare Tab With Default Values    Fare 4
+    Get Fare Details    Fare 4
+    Get Savings Code    Fare 4
+    Populate Fare Tab With Default Values (Fully Flex)    Fare 5
+    Get Fare Details    Fare 5
+    Get Savings Code    Fare 5
+    Populate Fare Tab With Default Values (Fully Flex)    Fare 6
+    Get Fare Details    Fare 6
+    Get Savings Code    Fare 6
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 1    S5    P1,3
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 2    S5    P2
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 3    S5    P4
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 4    S6    P1,3
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 5    S6    P2
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 6    S6    P4
+
+[AB FR] Verify That Back Office Remarks Are Not Written When Segment Is Removed
+    [Tags]    us6644    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Get Fare Details    Fare 2
+    Get Savings Code    Fare 2
+    Get Fare Details    Fare 3
+    Get Savings Code    Fare 3
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow-Back Office Remarks Are Not Written When Segment Is Removed
+    Execute Simultaneous Change Handling    Amend Booking Workflow-Back Office Remarks Are Not Written When Segment Is Removed
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 1    S5    P1,3
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 2    S5    P2
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 3    S5    P4
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 4    S6    P1,3
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 5    S6    P2
+    Verify That Back Office RM Remarks Are Not Written Related To Removed Segment    Fare 6    S6    P4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SI FR] Verify That A2SI Itnerary Sent Remark Is Retained In The PNR
+    [Tags]    us6785    not_ready    fr    pilot
+    Open Power Express And Retrieve Profile    ${version}    Pilot    u002mcc    fr-FR    ${EMPTY}    EMEA QA Test Team
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    FR Amadeus QA test Client ¦ FR Sub 1    Normandie    Michelle    CDGLHR/AAF    ${EMPTY}
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Enter GDS Command    RMZ/A2SI ITINERARY SENT    RFCWTPTEST    ER    IG
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtrz
+    Verify Specific Line Is Written In The PNR    A2SI ITINERARY SENT
+    Verify Specific Line Is Written In The PNR Only Once    A2SI ITINERARY SENT
+
+[AB FR] Verify That A2SI Itinerary Sent Remark Is Deleted In The PNR
+    [Tags]    us6785    not_ready    fr    pilot
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Tick Do Not Send Itinerary
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtrz
+    Verify Specific Line Is Written In The PNR    A2SI ITINERARY SENT
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtrz
+    Verify Specific Line Is Not Written In The PNR    A2SI ITINERARY SENT
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SE] Verify That Lounge Access Remarks Are Written For Client With CDG Connecting Flights With Airline AF
+    [Tags]    19.1    sellco    se    us6779    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    SE MARIE TEAM
+    Select GDS    Amadeus
+    Set Client And Traveler    DDB Admin Training ¦ SE Test with Test DDB    Viking    Elsa
+    Select Client Account Value    44 ¦ DINERS TESTKUND ¦ SE MarieF SubUnit
+    Click New Booking
+    Book Flight X Months From Now    LHRSIN/AAF    SS1Y1    FXP/S2-3    6
+    Book Flight X Months From Now    SINLHR/AAF    SS1Y1    FXP/S4-5    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa    Recap
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select Turnaround    PAR
+    Select Class Code Value    YF - Economy Full Fare
+    Click Fare Tab    Fare 2
+    Select Turnaround    PAR
+    Select Class Code Value    YF - Economy Full Fare
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Click Panel    Recap
+    Select Booking Method    Email
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG    False
+    Verify Specific Line Is Written In The PNR    OSI YY OIN SIEMENS
+    Verify Specific Line Is Written In The PNR    SK LGSI AF HK1/S3
+    Verify Specific Line Is Written In The PNR    SK LGSI AF HK1/S5
+    [Teardown]    Click Clear All
+
+[AB SE] Verify That Lounge Access Remarks Are Updated For Client With Mix Of CDG Connecting Flight With AF And Longhaul Direct Flight With Other Airline
+    [Tags]    19.1    sellco    se    us6779    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter Specific Command On Native GDS    TTE/ALL    RT    XE2-5
+    Book Flight X Months From Now    LHRSIN/AAF    SS1Y1    FXP/S2-3    6
+    Book Flight X Months From Now    SINLHR/ASQ    SS1Y1    FXP/S4    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa    Recap
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select Turnaround    PAR
+    Select Class Code Value    YF - Economy Full Fare
+    Click Fare Tab    Fare 2
+    Select Turnaround    SIN
+    Select Class Code Value    YF - Economy Full Fare
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Click Panel    Recap
+    Select Booking Method    Email
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG    False
+    Verify Specific Line Is Written In The PNR    OSI YY OIN SIEMENS
+    Verify Specific Line Is Written In The PNR    SK LGSI AF HK1/S3
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S5
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SE] Verify That Lounge Acces Remarks Are Not Written For Non AF Longhaul Flights
+    [Tags]    19.1    sellco    se    us6779    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    SE MARIE TEAM
+    Select GDS    Amadeus
+    Set Client And Traveler    DDB Admin Training ¦ SE Test with Test DDB    Viking    Elsa
+    Select Client Account Value    44 ¦ DINERS TESTKUND ¦ SE MarieF SubUnit
+    Click New Booking
+    Book Flight X Months From Now    HELSIN/AKL    SS1Y1    FXP/S2-3    6
+    Book Flight X Months From Now    SINHEL/AKL    SS1Y1    FXP/S4-5    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa    Recap
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select Turnaround    AMS
+    Select Class Code Value    YF - Economy Full Fare
+    Click Fare Tab    Fare 2
+    Select Turnaround    AMS
+    Select Class Code Value    YF - Economy Full Fare
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Click Panel    Recap
+    Select Booking Method    Email
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG    False
+    Verify Specific Line Is Not Written In The PNR    OSI YY OIN SIEMENS
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S4
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S6
+    [Teardown]    Click Clear All
+
+[AB SE] Verify That Lounge Acces Remarks Are Not Written For Non AF Longhaul Flights
+    [Tags]    19.1    sellco    se    us6779    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter Specific Command On Native GDS    TTE/ALL    RT    XE2-5
+    Book Flight X Months From Now    AALCDG/ASK    SS1Y1    FXP/S2-3    6
+    Book Flight X Months From Now    CDGBKK/AAF    SS1Y1    FXP/S4    6    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa    Recap
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select Turnaround    PAR
+    Select Class Code Value    YF - Economy Full Fare
+    Click Fare Tab    Fare 2
+    Select Turnaround    PAR
+    Select Class Code Value    YF - Economy Full Fare
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Click Panel    Recap
+    Select Booking Method    Email
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG    False
+    Verify Specific Line Is Written In The PNR    OSI YY OIN SIEMENS
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S2
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S3
+    Verify Specific Line Is Written In The PNR    SK LGSI AF HK1/S4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SE] Verify That Lounge Access Remarks Are Not Written For AF Longhaul Flights Not Originating From SE/DK/NO/DE/UK
+    [Tags]    19.1    sellco    se    us6779    uk    valid_fail
+    ...    de7662
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    SE MARIE TEAM
+    Select GDS    Amadeus
+    Set Client And Traveler    DDB Admin Training ¦ SE Test with Test DDB    Viking    Elsa
+    Select Client Account Value    44 ¦ DINERS TESTKUND ¦ SE MarieF SubUnit
+    Click New Booking
+    Book Flight X Months From Now    MADSIN/AAF    SS1Y1    FXP/S2-3    6
+    Book Flight X Months From Now    SINMAD/AAF    SS1Y1    FXP/S4-5    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa    Recap
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select Turnaround    PAR
+    Select Class Code Value    YF - Economy Full Fare
+    Click Fare Tab    Fare 2
+    Select Turnaround    PAR
+    Select Class Code Value    YF - Economy Full Fare
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Click Panel    Recap
+    Select Booking Method    Email
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG    False
+    Verify Specific Line Is Not Written In The PNR    OSI YY OIN SIEMENS
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S2
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S3
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S5
+    [Teardown]    Click Clear All
+
+[AB SE] Verify That Lounge Acces Remarks Are Not Written For AF Longhaul Flights Not Originating From SE/DK/NO/DE/UK
+    [Tags]    19.1    se    sellco    us6779    uk    valid_fail
+    ...    de7662
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter Specific Command On Native GDS    TTE/ALL    RT    XE2-5
+    Book Flight X Months From Now    SINMXP/AAF    SS1Y1    FXP/S2-3    6
+    Book Flight X Months From Now    MXPSIN/AAF    SS1Y1    FXP/S4-5    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa    Recap
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select Turnaround    PAR
+    Select Class Code Value    YF - Economy Full Fare
+    Click Fare Tab    Fare 2
+    Select Turnaround    PAR
+    Select Class Code Value    YF - Economy Full Fare
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Click Panel    Recap
+    Select Booking Method    Email
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG    False
+    Verify Specific Line Is Not Written In The PNR    OSI YY OIN SIEMENS
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S3
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S5
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Lounge Access Remarks Are Not Written For AF Longhaul Flights For Non-Siemens Client
+    [Tags]    19.1    uk    sellco    us6779
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    Cocking    Mette
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRSIN/AAF    SS1Y1    FXP/S2-3    6
+    Book Flight X Months From Now    SINLHR/AAF    SS1Y1    FXP/S4-5    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select Turnaround    PAR
+    Select Realised Saving Code Value    C1 - Client Special Fare Accepted
+    Select Class Code Value    YF - Economy Full Fare
+    Click Fare Tab    Fare 2
+    Select Turnaround    PAR
+    Select Realised Saving Code Value    C1 - Client Special Fare Accepted
+    Select Class Code Value    YF - Economy Full Fare
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG    False
+    Verify Specific Line Is Not Written In The PNR    OSI YY OIN SIEMENS
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S3
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S7
+    [Teardown]    Click Clear All
+
+[AB UK] Verify That Lounge Acces Remarks Are Not Written For AF Longhaul Flights For Non-Siemens Client
+    [Tags]    19.1    uk    sellco    us6779
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter Specific Command On Native GDS    TTE/ALL    RT    XE2-5    RT
+    Book Flight X Months From Now    SINMXP/AAF    SS1Y1    FXP/S2-3    6
+    Book Flight X Months From Now    MXPSIN/AAF    SS1Y1    FXP/S4-5    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select Turnaround    PAR
+    Select Realised Saving Code Value    C1 - Client Special Fare Accepted
+    Select Class Code Value    YF - Economy Full Fare
+    Click Fare Tab    Fare 2
+    Select Turnaround    PAR
+    Select Realised Saving Code Value    C1 - Client Special Fare Accepted
+    Select Class Code Value    YF - Economy Full Fare
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTG    False
+    Verify Specific Line Is Not Written In The PNR    OSI YY OIN SIEMENS
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S3
+    Verify Specific Line Is Not Written In The PNR    SK LGSI AF HK1/S7
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow For Air And Rail (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+    Get Resa Rail PNR    ${current_pnr}
+    Cancel Resa Rail Booking    ${resa_rail_pnr}
+    Enter GDS Command    IG
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Click Amend Booking
+    Enter GDS Command    R/RT${resa_rail_pnr}    R/RFAG
+    Book Rail X Months From Now    FRPNOGBSPX    R/SS1BF1!4G0"IN    2    5
+    Book Rail X Months From Now    GBSPXFRPNO    R/SS1BF1!4G0"IN    2    10    R/FXP$TKE$P01PT01AD$Q/FA00
+    Click Read Booking
+    Enter GDS Command    R/RT    R/RFAG    R/FXP$TKE$P01PT01AD$Q/FA00    R/ER    R/ER    R/IR
+    ...    IR
+    Click Read Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Flight X Months From Now    MRSPAR/AAF    SS1W1    \    5    5
+    Book Flight X Months From Now    PARMRS/AAF    SS1W1    FXP    5    12
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    VSC - VOYAGE SANS CONTRAINTE DEMANDE    YF - Plein Tarif Classe Economique
+    Select Fare Restriction    FULLY FLEXIBLE
+    Get Fare Details    Fare 1
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow For Air And Rail (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+
+Amend Booking Workflow For Rail (Class=AF, Fare=PT, Ticket Type=D)
+    Get Resa Rail PNR    ${current_pnr}
+    Cancel Resa Rail Booking    ${resa_rail_pnr}
+    Enter GDS Command    IG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    R/RT${resa_rail_pnr}    R/RFAG
+    Book Rail X Months From Now    FRPMOFRBOJ    R/SS1AF1!4G0"IN    1    4
+    Book Rail X Months From Now    FRBOJFRPMO    R/SS1AF1!4G0"IN    1    8    R/FXP$TKD
+    Click Read Booking
+    Enter GDS Command    R/RT    R/RFAG    R/FXP$TKD    R/ER    R/ER    R/IR
+    Click Read Booking
+    Populate Rail Pricing Conditions    1    1: Modifiable    1: Remboursable
+    Get Terms Of Delivery Text
+    Click Panel    Delivery
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For Rail (Class=AF, Fare=PT, Ticket Type=D)
+
+Amend Booking Workflow For Rail (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+    Get Resa Rail PNR    ${current_pnr}
+    Cancel Resa Rail Booking    ${resa_rail_pnr}
+    Enter GDS Command    IG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    R/RT    R/RFAG
+    Book Rail X Months From Now    FRPMOFRBOJ    R/SS1BF1!4G0"IN    2
+    Book Rail X Months From Now    FRBOJFRPMO    R/SS1BF1!4G0"IN    2    5
+    Book Rail X Months From Now    FRPLYFRLPE    R/SS1BF1!4G0"IN    2    10
+    Book Rail X Months From Now    FRLPEFRPLY    R/SS1BF1!4G0"IN    2    15    R/FXP$TKE$P01PT01AD$Q/FA00
+    Click Read Booking
+    Enter GDS Command    R/RT    R/RFAG    R/FXP$TKE$P01PT01AD$Q/FA00    R/ER    R/ER    R/IR
+    Click Read Booking
+    Get Rail Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For Rail (Class=BF, Fare=PT01AD/FA00, TicketType=E)
+
+Amend Booking Workflow With 1 Unbooked Proposal Removed
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    RTOF
+    Enter GDS Command    XE1
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Get Fare Details    Fare 1
+    Click Fare Tab    Fare 2
+    Get Fare Details    Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Get Alternate Fare Details    Alternate Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Click Remove Fare
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Click Finish PNR    Amend Booking Workflow With 1 Unbooked Proposal Removed
+
+Amend Booking Workflow With 2 Unbooked Proposals
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP/RRPFM/S4    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Get Fare Details    Fare 1
+    Click Fare Tab    Fare 2
+    Populate Air Fare Savings Code    TNU - TARIF NORMAL UTILISE    CID - CLASSE IMPERATIVE DEMANDEE    YD - Tarif Reduit Classe Economique
+    Select Fare Restriction    FULLY FLEXIBLE
+    Get Fare Details    Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Get Alternate Fare Details    Alternate Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow With 2 Unbooked Proposals
+
+Quick Amend Booking Workflow With Auto Ticket Delivery Method
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Delivery
+    Select Delivery Method    Auto Ticketeur
+    Set Ticketing Date    6
+    Click Finish PNR    Quick Amend Booking Workflow With Auto Ticket Delivery Method
+
+Populate Rail Pricing Conditions
+    [Arguments]    ${rail_tab_value}    ${rail_changes}    ${rail_cancellation}
+    Click Panel    Rail
+    Click Pricing Conditions Tab
+    Select Tst Fare    ${rail_tab_value}
+    Select Rail Changes And Cancellation    ${rail_changes}    ${rail_cancellation}
+
+Verify Fare Details In The PNR
+    [Arguments]    ${fare_tab}    ${country_code}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    *7110*${class_code_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    *7303*${low_fare_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    *7302*${high_fare_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    *7305*${realised_code_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    *7306*${missed_code_value_${fare_tab_index}}
+    Run Keyword If    "${country_code.upper()}" == "HU"    Verify Specific Line Is Written In The PNR    *9991*${charged_value_${fare_tab_index}}
+    Run Keyword If    "${country_code.upper()}" == "HU"    Verify Specific Line Is Written In The PNR    *9992*${low_fare_value_${fare_tab_index}}
+    Run Keyword If    "${country_code.upper()}" == "HU"    Verify Specific Line Is Written In The PNR    *9993*${missed_code_value_${fare_tab_index}}
+    Run Keyword If    "${country_code.upper()}" == "HU"    Verify Specific Line Is Written In The PNR    *9994*${high_fare_value_${fare_tab_index}}
+    Run Keyword If    "${country_code.upper()}" == "HU"    Verify Specific Line Is Written In The PNR    *9995*${realised_code_value_${fare_tab_index}}
+    Comment    Run Keyword If    "${country_code.upper()}" == "HU"    Verify Specific Line Is Written In The PNR    *7211*${charged_value_${fare_tab_index}}    #NotReady as \ this group den't ues *7211 remark yet
+
+Populate Fare Tab With Default Values (Fully Flex)
+    [Arguments]    ${fare_tab}    ${savings_default}=false    ${turnaround}=${EMPTY}
+    Click Panel    Air Fare
+    Click Fare Tab    ${fare_tab}
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Run Keyword If    '${savings_default}' != 'true'    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround    ${turnaround}
+    [Teardown]    Take Screenshot
+
+Amend Booking Workflow-Back Office Remarks Are Not Written When Segment Is Removed
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Get Fare Details    Fare 2
+    Get Savings Code    Fare 2
+    Get Fare Details    Fare 3
+    Get Savings Code    Fare 3
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow-Back Office Remarks Are Not Written When Segment Is Removed

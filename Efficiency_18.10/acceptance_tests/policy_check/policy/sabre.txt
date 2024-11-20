@@ -1,0 +1,220 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    sabre
+Force Tags        sabre
+Resource          ../policy_check_verification.txt
+Resource          ../../business_rules/business_rules_verification.txt
+
+*** Test Cases ***
+[1S NORAM] [NB] Verify that City Policy Panel is NOT displayed when the air segment is out of policy based in the City policy but was tagged as Neutral
+    Open Power Express And Retrieve Profile    ${version}    Test    U002TXC    en-US    tchua    NORAM QA
+    Select GDS    sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Drummers    Bunda    James
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/143217468/
+    Select Client Account    U1S2E ¦ Sabre 2 - SyEx ¦ Drummers
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Tick Not Known At Time Of Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Set CDR Value    Matrix DP Code    D101
+    Click Update PNR
+    Book Flight X Months From Now    BOSORD¥UA    01Y1    WPRQ¥S1    6
+    Book Flight X Months From Now    ORDBOS¥UA    01Y1    WPRQ¥S2    6    8
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Name Is Not Displayed    City
+    Populate Panels with Red Mark Except The Given Panel(s)
+    Set Ticketing Date    4
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+
+[1S NORAM] [AB] Verify that City Policy Panel is displayed once when the 2 or more air segment is out of policy but have the same city
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI    PQD-ALL
+    Book Flight X Months From Now    MNLSIN‡PR    01Y1    WPRQ‡S3    7
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ‡S4    7    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Set Ticketing Date    4
+    Click Panel    Policy Check
+    Verify City Policy Entry Is Displayed X Times    City    1
+    Verify Policy Status Values    City    Manila Risk    AA - Awaiting Approval    TA - Traveller Booker Advised    HA - Has authority to travel    NV - Not going to affected area
+    Click Panel    Policy Check
+    Select Policy Status    Manila Risk    NV - Not going to affected area
+    Click Finish PNR
+    Execute Simultaneous Change Handling    AmendPolicyCity
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    J‡PCHK-PTP643-NV-CITY
+    [Teardown]
+
+[1S NORAM] [AB] Verify that City and Country Policy Panel is displayed when the air segment is out of policy for different segments
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI    PQD-ALL
+    Book Flight X Months From Now    MNLDVO‡PR    01Y1    WPRQ‡S5    8
+    Book Flight X Months From Now    DVOMNL‡PR    01Y1    WPRQ‡S6    8    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Set Ticketing Date    4
+    Click Panel    Policy Check
+    Verify Policy Name Is Displayed    City
+    Verify City Policy Entry Is Displayed X Times    City    1
+    Verify City Policy Entry Is Displayed X Times    Country    1
+    Select Policy Status    Manila Risk    AA - Awaiting Approval
+    Select Policy Status    Philippines Risk    AA - Awaiting Approval
+    Click Finish PNR
+    Execute Simultaneous Change Handling    AmendPolicyCityAndCountry
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    PCHK-PTP643-AA-CITY
+    Verify Specific Line Is Written In The PNR    PCHK-PCP1334-AA-COUNTRY
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Security Remark Is Written For TAS Level1 Awaiting Approval For A Prohibited Country
+    [Tags]    us26    apac    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Book Flight X Months From Now    SINBKK‡SQ    01Y1    ${EMPTY}    6
+    Book Flight X Months From Now    BKKBOM‡SQ    01Y1*    WPRQ    6    2
+    Book Flight X Months From Now    DELKBL‡AI    01Y1    WPRQ¥S4    6    5
+    Book Flight X Months From Now    KBLMHD‡FZ    01Y1*    WPRQ¥S5-6    6    10
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    SQ
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    AI
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Published Fare
+    Set LFCC Field    FZ
+    Click Panel    Policy Check
+    Verify Policy Status Values    Country    Thailand Prohibited    AA - Awaiting Approval    HA - Has authority to travel
+    Verify Policy Status Values    Country    India Prohibited    AA - Awaiting Approval    HA - Has authority to travel
+    Verify Policy Status Values    Country    Iran Prohibited    AA - Awaiting Approval    HA - Has authority to travel
+    Verify Policy Status Values    City    Kabul Prohibited    AA - Awaiting Approval    HA - Has authority to travel
+    Select Policy Status    Thailand Prohibited    AA - Awaiting Approval
+    Select Policy Status    India Prohibited    AA - Awaiting Approval
+    Select Policy Status    Iran Prohibited    AA - Awaiting Approval
+    Select Policy Status    Kabul Prohibited    AA - Awaiting Approval
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *N'    use_copy_content_from_sabre=False
+    Verify That Security Remarks Are Written    N‡SECURITY-Y-THAILAND    N‡SECURITY-Y-INDIA    N‡SECURITY-Y-IRAN    N‡SECURITY-Y-IRAN
+
+[AB] Verify That Security Remark Is Written For TAS Level1 Awaiting Approval For A Prohibited Country
+    [Tags]    us26    apac    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Country    Thailand Prohibited    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    Country    India Prohibited    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    Country    Iran Prohibited    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    City    Kabul Prohibited    AA - Awaiting Approval
+    Enter GDS Command    PQD-ALL    XI
+    Book Flight X Months From Now    SYDBKK‡TG    01Y1    WPRQ    6
+    Book Flight X Months From Now    BKKMNL‡TG    01Y1    WPRQ¥S2    6    2
+    Book Flight X Months From Now    BKKTDX‡PG    01Y1    WPRQ¥S3    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    TG
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    TG
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Published Fare
+    Set LFCC Field    PG
+    Click Panel    Policy Check
+    Verify Policy Status Values    City    Sydney Prohibited    AA - Awaiting Approval    HA - Has authority to travel
+    Verify Policy Status Values    City    Manila Prohibited    AA - Awaiting Approval    HA - Has authority to travel
+    Verify Policy Status Values    Country    Thailand Prohibited    AA - Awaiting Approval    HA - Has authority to travel
+    Select Policy Status    Sydney Prohibited    HA - Has authority to travel
+    Select Policy Status    Manila Prohibited    HA - Has authority to travel
+    Select Policy Status    Thailand Prohibited    HA - Has authority to travel
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That Security Remark Is Written For TAS Level1 Awaiting Approval For A Prohibited Country If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *N'    use_copy_content_from_sabre=False
+    Verify That Security Remarks Are Written    N‡SECURITY-A-THAILAND ${uid}/${current_date}    N‡SECURITY-A-MANILA ${uid}/${current_date}    N‡SECURITY-A-SYDNEY ${uid}/${current_date}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow For Verify That Security Remark Is Written For TAS Level1 Awaiting Approval For A Prohibited Country
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Country    Thailand Prohibited    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    Country    India Prohibited    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    Country    Iran Prohibited    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    City    Kabul Prohibited    AA - Awaiting Approval
+    Book Flight X Months From Now    SYDBKK‡TG    01Y1    WPRQ    6
+    Book Flight X Months From Now    BKKMNL‡TG    01Y1    WPRQ¥S2    6    2
+    Book Flight X Months From Now    BKKTDX‡PG    01Y1    WPRQ¥S3    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    TG
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    TG
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Published Fare
+    Set LFCC Field    PG
+    Click Panel    Policy Check
+    Verify Policy Status Values    City    Sydney Prohibited    AA - Awaiting Approval    HA - Has authority to travel
+    Verify Policy Status Values    City    Manila Prohibited    AA - Awaiting Approval    HA - Has authority to travel
+    Verify Policy Status Values    Country    Thailand Prohibited    AA - Awaiting Approval    HA - Has authority to travel
+    Select Policy Status    Sydney Prohibited    HA - Has authority to travel
+    Select Policy Status    Manila Prohibited    HA - Has authority to travel
+    Select Policy Status    Thailand Prohibited    HA - Has authority to travel
+    Click Finish PNR
+
+AmendPolicyCity
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    MNLSIN‡PR    01Y1    WPRQ‡S3    7
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ‡S4    7    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Set Ticketing Date    4
+    Click Panel    Policy Check
+    Verify City Policy Entry Is Displayed X Times    City    1
+    Verify Policy Status Values    City    Manila Risk    AA - Awaiting Approval    TA - Traveller Booker Advised    HA - Has authority to travel    NV - Not going to affected area
+    Click Panel    Policy Check
+    Select Policy Status    Manila Risk    NV - Not going to affected area
+    Click Finish PNR
+
+AmendPolicyCityAndCountry
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    MNLDVO‡PR    01Y1    WPRQ‡S5    8
+    Book Flight X Months From Now    DVOMNL‡PR    01Y1    WPRQ‡S6    8    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Set Ticketing Date    4
+    Click Panel    Policy Check
+    Verify Policy Name Is Displayed    City
+    Verify City Policy Entry Is Displayed X Times    City    1
+    Verify City Policy Entry Is Displayed X Times    Country    1
+    Select Policy Status    Manila Risk    AA - Awaiting Approval
+    Select Policy Status    Philippines Risk    AA - Awaiting Approval
+    Click Finish PNR

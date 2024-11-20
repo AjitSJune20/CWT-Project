@@ -1,0 +1,629 @@
+*** Settings ***
+Resource          ../common/utilities.txt
+Resource          ../common/core.txt
+Variables         ../variables/rail_control_objects.py
+
+*** Keywords ***
+Click Book Button
+    Click Object    ${sikuli_image_path}/book_button.png    ${similarity}    ${timeout}
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    8
+    Take Screenshot
+
+Click Cancel Button
+    Click Object    ${sikuli_image_path}/cancel_button.png    ${similarity}    ${timeout}
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    1
+    Click Yes Button in Cancel Itinerary Window
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    ${error_window}    Win Exists    Error    ${EMPTY}
+    Run Keyword If    "${error_window}" == "1"    Verify if simultaneous changes occurs in sabre rail
+    Sleep    5
+
+Click Check SNCF PCC Button
+    Click Object    ${sikuli_image_path}/check_sncf_pcc_button.png    ${similarity}    ${timeout}
+    Sleep    5
+    Take Screenshot
+
+Click Class of Service In Availability Page
+    ${sabre_rail_value} =    Locate Sabre Rail Controls    ${explorer_server}    class_of_service
+    ${pos_y} =    Evaluate    ${sabre_rail_value[2]} + 43
+    Take Screenshot
+    ${object_is_visible}    Set Variable If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8"    True    False
+    Run Keyword If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8"    Mouse Click    LEFT    ${sabre_rail_value[1]}    ${pos_y}
+    ...    ELSE    Sabre Rail object is not Visible    ${object_is_visible}    Class of Service text field    new_pnr
+
+Click Delivery Tab
+    Activate Power Express Window
+    ${delivery_tab} =    Set Variable If    '${locale}' == 'fr-FR'    Livraison    '${locale}' == 'en-GB' or '${locale}' == 'en-US'    Delivery
+    Select Tab Control    ${delivery_tab}
+
+Click Departure Date In Availability Page
+    ${sabre_rail_value} =    Locate Sabre Rail Controls    ${explorer_server}    departure_date
+    ${pos_y} =    Evaluate    ${sabre_rail_value[2]} + 43
+    Take Screenshot
+    ${object_is_visible}    Set Variable If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8" or "${sabre_rail_value[0]}" == "330000"    True    False
+    Run Keyword If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8" or "${sabre_rail_value[0]}" == "330000"    Mouse Click    LEFT    ${sabre_rail_value[1]}    ${pos_y}
+    ...    ELSE    Sabre Rail object is not Visible    ${object_is_visible}    Departure Date text field    new_pnr
+
+Click Display PNR
+    Click Object    ${sikuli_image_path}/display_pnr_button.png    ${similarity}    ${timeout}
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    1
+
+Click Fare Code in Availability Page
+    ${sabre_rail_value} =    Locate Sabre Rail Controls    ${explorer_server}    fare_code
+    ${pos_y} =    Evaluate    ${sabre_rail_value[2]} + 43
+    Take Screenshot
+    ${object_is_visible}    Set Variable If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8"    True    False
+    Run Keyword If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8"    Mouse Click    LEFT    ${sabre_rail_value[1]}    ${pos_y}
+    ...    ELSE    Sabre Rail object is not Visible    ${object_is_visible}    Fare Code text field    new_pnr
+
+Click Ignore PNR Button
+    Click Object    ${sikuli_image_path}/ignore_pnr_button.png    ${similarity}    ${timeout}
+    Sleep    5
+    Take Screenshot
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    1
+    Click Yes Button in Ignore PNR Window
+    Sleep    3
+
+Click Ignore PNR Button after cancel
+    Click Object    ${sikuli_image_path}/ignore_pnr_button.png    ${similarity}    ${timeout}
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    5
+    Click Yes Button in Ignore PNR Window
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    5
+
+Click Itinerary From in Availability Page
+    ${sabre_rail_value} =    Locate Sabre Rail Controls    ${explorer_server}    itinerary_from
+    ${pos_y} =    Evaluate    ${sabre_rail_value[2]} + 43
+    Take Screenshot
+    ${object_is_visible}    Set Variable If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8"    True    False
+    Run Keyword If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8"    Mouse Click    LEFT    ${sabre_rail_value[1]}    ${pos_y}
+    ...    ELSE    Sabre Rail object is not Visible    ${object_is_visible}    Itinerary From text field    new_pnr
+
+Click Itinerary To in Availability Page
+    ${sabre_rail_value} =    Locate Sabre Rail Controls    ${explorer_server}    itinerary_to
+    ${pos_y} =    Evaluate    ${sabre_rail_value[2]} + 43
+    Take Screenshot
+    ${object_is_visible}    Set Variable If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8"    True    False
+    Run Keyword If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8"    Mouse Click    LEFT    ${sabre_rail_value[1]}    ${pos_y}
+    ...    ELSE    Sabre Rail object is not Visible    ${object_is_visible}    Itinerary To text field    new_pnr
+
+Click Main Tab
+    Select Tab Control    Main
+
+Click New PNR With Profile Button
+    Click Object    ${sikuli_image_path}/new_pnr_with_profile_button.png    ${similarity}    ${timeout}
+    Sleep    5
+    Take Screenshot
+
+Click Next Button (Sabre Rail)
+    Click Object    ${sikuli_image_path}/next_button.png    ${similarity}    ${timeout}
+    Sleep    5
+    Take Screenshot
+
+Click Next Button under Contact Info section
+    Sleep    2
+    ${new_title_SabreRed} =    Decode Bytes To String    ${title_SabreRed}    UTF-8
+    ${contact_info_nxt_button} =    Control Command    ${new_title_SabreRed}    ${EMPTY}    ${btn_sr_contact_info_next}    IsVisible    ${EMPTY}
+    Run Keyword If    "${contact_info_nxt_button}" == "1"    Control Click    ${new_title_SabreRed}    ${EMPTY}    ${btn_sr_contact_info_next}
+    ...    ELSE    Next button is not visible under Contact Info section    WARN
+    Sleep    2
+
+Click Next Button under Seats section
+    ${new_title_SabreRed} =    Decode Bytes To String    ${title_SabreRed}    UTF-8
+    ${seats_nxt_button} =    Control Command    ${new_title_SabreRed}    ${EMPTY}    ${btn_sr_seats_next}    IsVisible    ${EMPTY}
+    Run Keyword If    "${seats_nxt_button}" == "1"    Control Click    ${new_title_SabreRed}    ${EMPTY}    ${btn_sr_seats_next}
+    ...    ELSE    Next button is not visible under Seats section    WARN
+
+Click Outbound Offers Pre Selection 1 in Availability Page
+    ${sabre_rail_value} =    Locate Sabre Rail Controls    ${explorer_server}    pre_selection_1
+    ${pos_y} =    Evaluate    ${sabre_rail_value[2]} + 43
+    Take Screenshot
+    ${object_is_visible}    Set Variable If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8"    True    False
+    Run Keyword If    "${sabre_rail_value[0]}" == "FFFFFF" or "${sabre_rail_value[0]}" == "FFC8C8"    Mouse Click    LEFT    ${sabre_rail_value[1]}    ${pos_y}
+    ...    ELSE    Sabre Rail object is not Visible    ${object_is_visible}    Outbound Offers text field    new_pnr
+
+Click Passengers Date of Birth
+    Mouse Click    LEFT    385    342
+    Take Screenshot
+
+Click Passengers Email
+    Mouse Click    LEFT    525    342
+    Take Screenshot
+
+Click Pricing Conditions Tab
+    Activate Power Express Window
+    ${pricing_condition_tab} =    Set Variable If    '${locale}' == 'fr-FR'    Conditions tarifaires    '${locale}' == 'en-GB' or '${locale}' == 'en-US'    Fare Conditions
+    Select Tab Control    ${pricing_condition_tab}
+
+Click Principal Tab
+    Activate Power Express Window
+    ${principal_tab} =    Set Variable If    '${locale}' == 'fr-FR'    Principal    '${locale}' == 'en-GB' or '${locale}' == 'en-US'    Main
+    Select Tab Control    ${principal_tab}
+
+Click Quit Button
+    ${sabre_rail_value} =    Locate Sabre Rail Controls    ${explorer_server}    quit_button
+    ${pos_y} =    Evaluate    ${sabre_rail_value[2]} + 43
+    Take Screenshot
+    ${object_is_visible}    Set Variable If    "${sabre_rail_value[0]}" == "E1C3A4" or "${sabre_rail_value[0]}" == "ACACAC" or "${sabre_rail_value[0]}" == "959595" or "${sabre_rail_value[0]}" == "B2B2B2"    True    False
+    Run Keyword If    "${sabre_rail_value[0]}" == "E1C3A4" or "${sabre_rail_value[0]}" == "ACACAC" or "${sabre_rail_value[0]}" == "959595" or "${sabre_rail_value[0]}" == "B2B2B2"    Mouse Click    LEFT    ${sabre_rail_value[1]}    ${pos_y}
+    ...    ELSE    Sabre Rail object is not Visible    ${object_is_visible}    Quit button
+    ${quit_window}    Win Exists    Quit    ${EMPTY}
+    Run Keyword If    "${quit_window}" == "1"    Control Click    Quit    ${EMPTY}    ${btn_sync_to_sabre_yes}
+    Sleep    5
+
+Click Retrieve PNR field
+    Click Object    ${sikuli_image_path}/retrieve_pnr_field.png    ${similarity}    ${timeout}
+    Sleep    5
+    Take Screenshot
+
+Click SNCF Button
+    Click Object    ${sikuli_image_path}/sncf_button.png    ${similarity}    ${timeout}
+    Sleep    5
+    Take Screenshot
+
+Click Search Button (Sabre Rail)
+    Click Object    ${sikuli_image_path}/search_button.png    ${similarity}    ${timeout}
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    9
+    Station Search Result
+    Sleep    10
+    Station Search Result
+    Sleep    10
+    Take Screenshot
+
+Click Search button in main screen
+    ${sabre_rail_value} =    Locate Sabre Rail Controls    ${explorer_server}    search_button_main_screen
+    ${pos_y} =    Evaluate    ${sabre_rail_value[2]} + 43
+    Take Screenshot
+    ${object_is_visible}    Set Variable If    "${sabre_rail_value[0]}" == "EBEBEB"    True    False
+    Run Keyword If    "${sabre_rail_value[0]}" == "EBEBEB"    Mouse Click    LEFT    ${sabre_rail_value[1]}    ${pos_y}
+    ...    ELSE    Sabre Rail object is not Visible    ${object_is_visible}    Search button
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    1
+
+Click Select Button (Sabre Rail)
+    Click Object    ${sikuli_image_path}/select_button.png    ${similarity}    ${timeout}
+    Sleep    5
+    Take Screenshot
+
+Click Sync to Sabre Button after cancel
+    Click Object    ${sikuli_image_path}/sync_to_sabre_button.png    ${similarity}    ${timeout}
+    Sleep    3
+    ${sync_to_sabre_message_box}    Win Exists    Sync to Sabre    ${EMPTY}
+    Run Keyword If    "${sync_to_sabre_message_box}" == "1"    Control Click    Sync to Sabre    ${EMPTY}    ${btn_sync_to_sabre_yes}
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    3
+
+Click Terms Of Delivery Tab
+    Activate Power Express Window
+    ${terms_of_delivery_tab} =    Set Variable If    '${locale}' == 'fr-FR'    Conditions de livraison    '${locale}' == 'en-GB' or '${locale}' == 'en-US'    Delivery Conditions
+    Select Tab Control    ${terms_of_delivery_tab}
+
+Click Yes Button in Cancel Itinerary Window
+    Sleep    1
+    ${window_station_search_result}    Win Exists    Cancel itinerary    ${EMPTY}
+    Run Keyword If    "${window_station_search_result}" == "1"    Take Screenshot
+    Run Keyword If    "${window_station_search_result}" == "1"    Control Click    Cancel itinerary    ${EMPTY}    ${btn_sr_cancel_itinerary_yes}
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    1
+
+Click Yes Button in Ignore PNR Window
+    Sleep    1
+    ${window_station_search_result}    Win Exists    Ignore PNR    ${EMPTY}
+    Run Keyword If    "${window_station_search_result}" == "1"    Take Screenshot
+    Run Keyword If    "${window_station_search_result}" == "1"    Control Click    Ignore PNR    ${EMPTY}    ${btn_sr_ignore_pnr_yes}
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    1
+
+Enter PNR In Retrieve PNR field In Sabre Rail
+    [Arguments]    ${pnr}
+    Click SNCF Button
+    Sleep    1
+    Click Retrieve PNR field
+    Send    ^a
+    Send    ${pnr}
+    Sleep    2
+
+Get Rail Details
+    Verify Panel Is Green    Rail
+    Click Panel    Rail
+    Get Rail Pricing Conditions
+    Get Terms Of Delivery Text
+
+Get Rail Pricing Conditions
+    Click Pricing Conditions Tab
+    @{tst_list} =    Get Tst List
+    : FOR    ${tst_index}    IN    @{tst_list}
+    \    Select Tst Fare    ${tst_index}
+    \    ${pricing_conditions_text}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:ctxtCT]
+    \    Set Test Variable    ${pricing_conditions_text_${tst_index}}    ${pricing_conditions_text}
+    [Teardown]    Take Screenshot
+
+Get Rail Ticket Date
+    Sleep    1
+    ${new_title_SabreRed} =    Decode Bytes To String    ${title_SabreRed}    UTF-8
+    ${get_rail_pnr_text}    Win Get Text    ${new_title_SabreRed}    ${EMPTY}
+    ${set_list_num}    Set Variable    0
+    #@{list}    Split To Lines    ${get_rail_pnr_text}
+    @{list}    Remove Blank Lines And Output To List    ${get_rail_pnr_text}
+    ${index}    Get Line Count    ${get_rail_pnr_text}
+    : FOR    ${element}    IN RANGE    0    ${index}
+    \    Log    ${list[${element}]}
+    \    Run Keyword If    "${list[${element}]}" == "TKD"    Exit For Loop
+    ${num} =    Evaluate    ${element} + 1
+    Log    ${list[${num}]}
+    ### get month
+    ${actual_month} =    GetSubstring    ${list[${num}]}    2    5
+    ${actual_month} =    Remove All Non-Integer (retain period)    ${actual_month}
+    ${actual_month} =    Remove All Spaces    ${actual_month}
+    ${newMonth} =    Run Keyword If    "${actual_month}" <> ""    Set Variable    ${LIST_month}
+    ...    ELSE IF    Log    Failed date
+    ${monthShort} =    Get From Dictionary    ${newMonth}    ${actual_month}
+    ### get date
+    ${actual_day}    GetSubstring    ${list[${num}]}    0    2
+    ${actual_day} =    Remove All Non-Integer (retain period)    ${actual_day}
+    ${actual_day} =    Remove All Spaces    ${actual_day}
+    ${rail_ticket_date}    Set Variable    ${actual_day}${monthShort}
+    Take Screenshot
+    [Return]    ${rail_ticket_date}
+
+Get Sabre Rail PNR
+    ${new_title_SabreRed} =    Decode Bytes To String    ${title_SabreRed}    UTF-8
+    ${get_rail_pnr_text}    Win Get Text    ${new_title_SabreRed}    ${EMPTY}
+    #@{list}    Split To Lines    ${get_rail_pnr_text}
+    @{list}    Remove Blank Lines And Output To List    ${get_rail_pnr_text}
+    ${index}    Get Line Count    ${get_rail_pnr_text}
+    : FOR    ${element}    IN RANGE    0    ${index}
+    \    Log    ${list[${element}]}
+    \    Run Keyword If    "${list[${element}]}" == "SNCF PNR locator: "    Exit For Loop
+    ${num} =    Evaluate    ${element} + 1
+    Log    ${list[${num}]}
+    Log    ${list[${element}]}
+    ${sabre_rail_pnr}    Set Variable    ${list[${element}]}${list[${num}]}
+    ${get_lenght_rail_pnr} =    Get Length    ${list[${num}]}
+    ${object_is_visible}    Set Variable If    "${sabre_rail_pnr}" == "SNCF PNR locator: ${list[${num}]}" and "${get_lenght_rail_pnr}" == "6"    True    False
+    Run Keyword If    "${sabre_rail_pnr}" == "SNCF PNR locator: ${list[${num}]}" and "${get_lenght_rail_pnr}" == "6"    Set Suite Variable    ${rail_pnr}    ${list[${num}]}
+    ...    ELSE    Sabre Rail object is not Visible    ${object_is_visible}    Rail PNR does not exists.    sncf_pnr_loc
+    Run Keyword If    "${sabre_rail_pnr}" == "SNCF PNR locator: ${list[${num}]}" and "${get_lenght_rail_pnr}" == "6"    Log    Rail Successfully created
+    Run Keyword If    "${sabre_rail_pnr}" == "SNCF PNR locator: ${list[${num}]}" and "${get_lenght_rail_pnr}" == "6"    Append To File New Line    ${CURDIR}/../pnr_created.txt    Sabre Rail PNR: ${sabre_rail_pnr}
+
+Get Sabre Rail Total Price
+    ${new_title_SabreRed} =    Decode Bytes To String    ${title_SabreRed}    UTF-8
+    ${get_rail_pnr_text}    Win Get Text    ${new_title_SabreRed}    ${EMPTY}
+    ${set_list_num}    Set Variable    0
+    #@{list}    Split To Lines    ${get_rail_pnr_text}
+    @{list}    Remove Blank Lines And Output To List    ${get_rail_pnr_text}
+    ${index}    Get Line Count    ${get_rail_pnr_text}
+    : FOR    ${element}    IN RANGE    0    ${index}
+    \    Log    ${list[${element}]}
+    \    Run Keyword If    "${list[${element}]}" == "Total price: "    Exit For Loop
+    ${num} =    Evaluate    ${element} + 1
+    ${actual_total_price_value}    Replace String    ${list[${num}]}    ${SPACE}    /
+    Set Suite Variable    ${rail_total_price}    ${actual_total_price_value}
+    [Return]    ${actual_total_price_value}
+
+Get Terms Of Delivery Text
+    Click Terms Of Delivery Tab
+    ${delivery_panel_text}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:ctxtRIR]
+    Set Test Variable    ${delivery_panel_text}
+
+Locate Sabre Rail Controls
+    [Arguments]    ${obj_sabre_rail}    ${rail_control}
+    ${pos_x_loc_button}    Run Keyword If    "${rail_control}" == "sncf_button"    Set Variable    - 1100
+    ...    ELSE IF    "${rail_control}" == "check_sncf_pcc_button"    Set Variable    - 126
+    ...    ELSE IF    "${rail_control}" == "new_pnr_with_profile"    Set Variable    - 952
+    ...    ELSE IF    "${rail_control}" == "passengers_dob"    Set Variable    - 790
+    ...    ELSE IF    "${rail_control}" == "passengers_email"    Set Variable    - 592
+    ...    ELSE IF    "${rail_control}" == "next_button"    Set Variable    - 235
+    ...    ELSE IF    "${rail_control}" == "itinerary_from" or "${rail_control}" == "itinerary_to"    Set Variable    - 1048
+    ...    ELSE IF    "${rail_control}" == "departure_date"    Set Variable    - 814
+    ...    ELSE IF    "${rail_control}" == "class_of_service"    Set Variable    - 718
+    ...    ELSE IF    "${rail_control}" == "fare_code"    Set Variable    - 619
+    ...    ELSE IF    "${rail_control}" == "search_button"    Set Variable    - 333
+    ...    ELSE IF    "${rail_control}" == "pre_selection_1"    Set Variable    - 609
+    ...    ELSE IF    "${rail_control}" == "select_button"    Set Variable    - 408
+    ...    ELSE IF    "${rail_control}" == "itinerary_select_button"    Set Variable    - 381
+    ...    ELSE IF    "${rail_control}" == "seats_select_button" or "${rail_control}" == "contact_info_next_button"    Set Variable    - 263
+    ...    ELSE IF    "${rail_control}" == "book_button"    Set Variable    - 395
+    ...    ELSE IF    "${rail_control}" == "cancel_button"    Set Variable    - 121
+    ...    ELSE IF    "${rail_control}" == "ignore_pnr_button"    Set Variable    - 129
+    ...    ELSE IF    "${rail_control}" == "retrieve_pnr_field"    Set Variable    - 266
+    ...    ELSE IF    "${rail_control}" == "search_button_main_screen"    Set Variable    - 178
+    ...    ELSE IF    "${rail_control}" == "display_pnr_button"    Set Variable    - 183
+    ...    ELSE IF    "${rail_control}" == "ignore_pnr_button_after_cancel"    Set Variable    - 108
+    ...    ELSE IF    "${rail_control}" == "sync_to_sabre_button_after_cancel"    Set Variable    - 57
+    ...    ELSE IF    "${rail_control}" == "quit_button"    Set Variable    - 60
+    ...    ELSE    Log    rail_control argument is empty    WARN
+    ${pos_y_loc_button}    Run Keyword If    "${rail_control}" == "sncf_button"    Set Variable    + 110
+    ...    ELSE IF    "${rail_control}" == "check_sncf_pcc_button"    Set Variable    + 179
+    ...    ELSE IF    "${rail_control}" == "new_pnr_with_profile"    Set Variable    + 283
+    ...    ELSE IF    "${rail_control}" == "passengers_dob"    Set Variable    + 105
+    ...    ELSE IF    "${rail_control}" == "passengers_email"    Set Variable    + 105
+    ...    ELSE IF    "${rail_control}" == "next_button" or "${rail_control}" == "search_button"    Set Variable    + 461
+    ...    ELSE IF    "${rail_control}" == "itinerary_from"    Set Variable    + 147
+    ...    ELSE IF    "${rail_control}" == "itinerary_to"    Set Variable    + 208
+    ...    ELSE IF    "${rail_control}" == "departure_date"    Set Variable    + 153
+    ...    ELSE IF    "${rail_control}" == "class_of_service"    Set Variable    +342
+    ...    ELSE IF    "${rail_control}" == "fare_code"    Set Variable    + 338
+    ...    ELSE IF    "${rail_control}" == "search_button"    Set Variable    + 457
+    ...    ELSE IF    "${rail_control}" == "pre_selection_1"    Set Variable    + 192
+    ...    ELSE IF    "${rail_control}" == "select_button"    Set Variable    + 458
+    ...    ELSE IF    "${rail_control}" == "itinerary_select_button"    Set Variable    + 461
+    ...    ELSE IF    "${rail_control}" == "seats_select_button"or "${rail_control}" == "contact_info_next_button"    Set Variable    + 460
+    ...    ELSE IF    "${rail_control}" == "book_button"    Set Variable    + 457
+    ...    ELSE IF    "${rail_control}" == "cancel_button"    Set Variable    + 114
+    ...    ELSE IF    "${rail_control}" == "ignore_pnr_button"    Set Variable    + 202
+    ...    ELSE IF    "${rail_control}" == "retrieve_pnr_field"    Set Variable    + 250
+    ...    ELSE IF    "${rail_control}" == "search_button_main_screen"    Set Variable    + 258
+    ...    ELSE IF    "${rail_control}" == "display_pnr_button"    Set Variable    + 283
+    ...    ELSE IF    "${rail_control}" == "ignore_pnr_button_after_cancel"    Set Variable    + 26
+    ...    ELSE IF    "${rail_control}" == "sync_to_sabre_button_after_cancel"    Set Variable    + 69
+    ...    ELSE IF    "${rail_control}" == "quit_button"    Set Variable    + 452
+    ...    ELSE    Log    rail_control argument is empty    WARN
+    ${pos_x} =    Control Get Pos X    ${title_active_window}    ${EMPTY}    ${obj_sabre_rail}
+    ${pos_y} =    Control Get Pos Y    ${title_active_window}    ${EMPTY}    ${obj_sabre_rail}
+    ${pos_hght} =    Control Get Pos Height    ${title_active_window}    ${EMPTY}    ${obj_sabre_rail}
+    ${pos_width} =    Control Get Pos Width    ${title_active_window}    ${EMPTY}    ${obj_sabre_rail}
+    ${pos_width_right} =    Evaluate    ${pos_width} - 6
+    ${hght_remainder} =    Evaluate    ${pos_hght} % 2
+    ${wdth_remainder} =    Evaluate    ${pos_width} % 2
+    ${pos_hght} =    Evaluate    ${pos_hght} / 9
+    ${pos_width} =    Evaluate    ${pos_width} / 1
+    ${pos_hght} =    Run Keyword If    ${hght_remainder} > 0    Evaluate    ${pos_hght} + 1
+    ...    ELSE    Evaluate    ${pos_hght} + 0
+    ${pos_width} =    Run Keyword If    ${wdth_remainder} > 0    Evaluate    ${pos_width} + 1
+    ...    ELSE    Evaluate    ${pos_width} + 0
+    ${pos_x_left} =    Evaluate    ${pos_x} + 8
+    ${pos_x_right} =    Evaluate    ${pos_x} + ${pos_width_right}
+    ${pos_x} =    Evaluate    ${pos_x} + ${pos_width} ${pos_x_loc_button}
+    #${pos_y_left} =    Evaluate    ${pos_y} + ${pos_hght} - 1
+    ${pos_y} =    Evaluate    ${pos_y} + ${pos_hght} ${pos_y_loc_button}
+    Mouse Hover Using The Given Coordinates    ${pos_x}    ${pos_y}
+    Auto It Set Option    PixelCoordMode    2
+    ${is_loc_correct}    Pixel Get Color    ${pos_x}    ${pos_y}
+    ${is_loc_correct}    Convert To Hex    ${is_loc_correct}
+    Auto It Set Option    PixelCoordMode    1
+    [Return]    ${is_loc_correct}    ${pos_x}    ${pos_y}
+
+Mouse Hover Using The Given Coordinates
+    [Arguments]    ${x}    ${y}
+    Win Activate    ${title_power_express}    ${EMPTY}
+    Auto It Set Option    MouseCoordMode    2
+    Mouse Move    ${x}    ${y}
+    Auto It Set Option    MouseCoordMode    0
+    [Teardown]    Take Screenshot
+
+Populate Class Of Service (Sabre Rail)
+    [Arguments]    ${class_of_service}
+    Mouse Wheel    DOWN    20
+    Click Object    ${sikuli_image_path}/fares_criteria_for_section.png    ${similarity}    ${timeout}
+    Sleep    1
+    Mouse Wheel    DOWN    20
+    Click Object    ${sikuli_image_path}/class_of_service_field.png    ${similarity}    ${timeout}
+    Send    ^a
+    Sleep    1
+    Send    ${class_of_service}
+    Take Screenshot
+
+Populate Date Of Birth (Sabre Rail)
+    [Arguments]    ${month}    ${date}    ${year}
+    Click Passengers Date of Birth
+    Sleep    1
+    Send    ${month}.${date}.${year}
+    Sleep    1
+    Take Screenshot
+
+Populate Dematerialized Delivery Method
+    [Arguments]    ${recipient1}=automation@carlsonwagonlit.com
+    ${email_address}    Get Control Text Value    [NAME:cbemaildemat]
+    Run Keyword If    '${email_address}' == '${EMPTY}'    Control Click    ${title_power_express}    ${EMPTY}    [NAME:cbemaildemat]
+    Send    ${recipient1}
+    Send    {TAB}
+
+Populate Dematerialized Delivery Method Single Fare Quote
+    Click Principal Tab
+    Select Principal FCE
+    Click Pricing Conditions Tab
+    Select Tst Fare    1
+    Select Rail Changes And Cancellation    1: Modifiable    2: Partiellement Remboursable
+    Click Delivery Tab
+    Populate Dematerialized Delivery Method
+    Get Terms Of Delivery Text
+
+Populate Departure Date (Sabre Rail)
+    [Arguments]    ${num_months}    ${num_days}
+    ${departure_date} =    Set Departure Date X Months From Now In Syex Format    ${num_months}    ${num_days}
+    ${departure_date}    Split String    ${departure_date}    /
+    Sleep    1
+    Send    {TAB}^a
+    Sleep    1
+    Send    ${departure_date[1]}-${departure_date[0]}-${departure_date[2]}
+    Take Screenshot
+
+Populate E-Ticket Delivery Method Multiple Fare Quotes
+    Click Principal Tab
+    Click Pricing Conditions Tab
+    Select Tst Fare    1
+    Select Rail Changes And Cancellation    1: Modifiable    2: Partiellement Remboursable
+    Select Tst Fare    2
+    Select Rail Changes And Cancellation    1: Modifiable    1: Modifiable
+    Get Terms Of Delivery Text
+
+Populate E-Ticket Delivery Method Single Fare Quote
+    Click Principal Tab
+    Select Principal FCE
+    Click Pricing Conditions Tab
+    Select Tst Fare    1
+    Select Rail Changes And Cancellation    1: Modifiable    2: Partiellement Remboursable
+    Get Terms Of Delivery Text
+    [Teardown]    Take Screenshot
+
+Populate Email Address (Sabre Rail)
+    [Arguments]    ${email_address}
+    Click Passengers Email
+    Sleep    1
+    Send    ${email_address}
+    Sleep    1
+    Take Screenshot
+
+Populate Fare Code (Sabre Rail)
+    [Arguments]    ${fare_code}
+    Click Object    ${sikuli_image_path}/fare_code_field.png    ${similarity}    ${timeout}
+    Sleep    2
+    Send    ^a
+    Send    ${fare_code}
+    Take Screenshot
+
+Populate Itinerary (Sabre Rail)
+    [Arguments]    ${location_from}    ${location_to}
+    Send    {TAB}{TAB}${location_from}
+    Sleep    1
+    Send    {TAB}${location_to}
+    Sleep    1
+    Take Screenshot
+
+Populate Outbound Offers
+    [Arguments]    ${outbound_offer}
+    Sleep    2
+    Send    ^a
+    Sleep    1
+    Send    ${outbound_offer}
+    Take Screenshot
+
+Populate Paper Ticket Delivery Method
+    ${address}    Get Control Text Value    [NAME:TBMainDelStreet]
+    Run Keyword If    '${address}' == '${EMPTY}'    Set Control Text Value    [NAME:TBMainDelStreet]    123 RUE TEST ADDRESS
+    ${code_postal}    Get Control Text Value    [NAME:TBMainDelZIP]
+    Run Keyword If    '${code_postal}' == '${EMPTY}'    Set Control Text Value    [NAME:TBMainDelZIP]    75015
+    ${city}    Get Control Text Value    [NAME:TBMainDelCity]
+    Run Keyword If    '${city}' == '${EMPTY}'    Set Control Text Value    [NAME:TBMainDelCity]    PARIS
+    ${country_code}    Get Control Text Value    [NAME:TBMainDelCC]
+    Run Keyword If    '${country_code}' == '${EMPTY}'    Set Control Text Value    [NAME:TBMainDelCC]    FR
+    ${delivery_mode}    Get Control Text Value    [NAME:CBMainDelMode]
+    Run Keyword If    '${delivery_mode}' == '${EMPTY}'    Select Value From Dropdown List    [NAME:CBMainDelMode]    COURRIER
+
+Populate Paper Ticket Delivery Method Multiple Fare Quotes
+    Click Principal Tab
+    Click Pricing Conditions Tab
+    Select Tst Fare    1
+    Select Rail Changes And Cancellation    1: Modifiable    2: Partiellement Remboursable
+    Select Tst Fare    2
+    Select Rail Changes And Cancellation    1: Modifiable    1: Modifiable
+    Click Delivery Tab
+    Populate Paper Ticket Delivery Method
+    Get Terms Of Delivery Text
+
+Populate Paper Ticket Delivery Method Single Fare Quote
+    Click Principal Tab
+    Select Principal FCE
+    Click Pricing Conditions Tab
+    Select Tst Fare    1
+    Select Rail Changes And Cancellation    1: Modifiable    2: Partiellement Remboursable
+    Click Delivery Tab
+    Populate Paper Ticket Delivery Method
+
+Sabre Rail object is not Visible
+    [Arguments]    ${object_is_visible}    ${add_remarks}    ${tran_page}=${EMPTY}
+    Sleep    3
+    Run Keyword If    "${tran_page}" == "new_pnr"    Click Quit Button
+    Run Keyword If    "${tran_page}" == "sncf_pnr_loc"    Click Ignore PNR Button
+    Run Keyword If    "${tran_page}" == "display_pnr"    Click Ignore PNR Button after cancel
+    Set Retrieve PNR field to Empty
+    Switch To Sabre Previous Tab
+    Run Keyword If    "${object_is_visible}" == "False"    Fail    ${add_remarks} is not visible
+    Sleep    1
+
+Select FCE Value
+    [Arguments]    ${fce_value}
+    Click Control Button    [NAME:CwtCBFCE]    ${title_power_express}
+    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:CwtCBFCE]
+    Send    ${fce_value}
+
+Select Principal FCE
+    ${fce_value}    Get Control Text Value    [NAME:CwtCBFCE]    ${title_power_express}
+    Run Keyword If    '${fce_value}' == '${EMPTY}'    Run Keywords    Send    {DOWN}    0
+    ...    AND    Send    {ENTER}
+
+Select Rail Changes And Cancellation
+    [Arguments]    ${rail_changes}    ${rail_cancellation}
+    ${is_changes_dropdown_visible} =    Control Command    ${title_power_express}    ${EMPTY}    [NAME:cboChanges]    IsVisible    ${EMPTY}
+    ${is_changes_dropdown_visible} =    Control Command    ${title_power_express}    ${EMPTY}    [NAME:cboCanx]    IsVisible    ${EMPTY}
+    Run Keyword If    ${is_changes_dropdown_visible} == 1    Select Value From Dropdown List    [NAME:cboChanges]    ${rail_changes}
+    Run Keyword If    ${is_changes_dropdown_visible} == 1    Select Value From Dropdown List    [NAME:cboCanx]    ${rail_cancellation}
+
+Select Rail Tab
+    [Arguments]    ${rail_tab_value}
+    Select Tab Control    ${rail_tab_value}
+
+Set Retrieve PNR field to Empty
+    Sleep    1
+    Click Retrieve PNR field
+    Send    ^a
+    Send    {DELETE}
+
+Station Search Result
+    Sleep    3
+    ${window_station_search_result}    Win Exists    Station search result for:    ${EMPTY}
+    Run Keyword If    "${window_station_search_result}" == "1"    Take Screenshot
+    Run Keyword If    "${window_station_search_result}" == "1"    Control Click    Station search result for:    ${EMPTY}    ${btn_sr_station_search_result_select}
+    Wait Until Keyword Succeeds    2 min    1 sec    Verify Progress Information Bar is Exists
+    Sleep    1
+
+Switch To Sabre Previous Tab
+    Send    ^+{TAB}
+    Take Screenshot
+    Sleep    3
+    ${working_a_tab} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\sabre_workingarea_a_tab.png    0.80    ${timeout}
+    ${working_a_tab1} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\sabre_workingarea_a_tab1.png    0.80    ${timeout}
+    Run Keyword If    "${working_a_tab}" == "True" or "${working_a_tab1}" == "True"    Log    Switch to working area A is successfull
+    ...    ELSE    Fail    Switch to working area A is not successfull
+    Sleep    1
+
+Switch To Sabre Rail Tab
+    Send    ^{TAB}
+    Take Screenshot
+    Sleep    3
+    ${sabre_rail_tab} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\sabre_rail_tab.png    0.80    ${timeout}
+    ${sabre_rail_tab1} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\sabre_rail_tab1.png    0.80    ${timeout}
+    Run Keyword If    "${sabre_rail_tab}" == "True" or "${sabre_rail_tab1}" == "True"    Log    Switch to sabre rail tab is successfull
+    ...    ELSE    Fail    Switch to sabre rail tab is not successfull
+    Sleep    2
+    ${session_changed_window}    Win Exists    Session changed    ${EMPTY}
+    Run Keyword If    "${session_changed_window}" == "1"    Control Click    Session changed    ${EMPTY}    ${btn_sync_to_sabre_yes}
+
+Tick Rail Not Compliant Checkbox
+    Sleep    1
+    ${actual_rail_not_compliance_checkbox_image}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\rail_not_complaint_fr.png    0.90    ${timeout}
+    ${actual_rail_not_compliance_checkbox_image1} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\rail_not_complaint.png    0.80    ${timeout}
+    ${actual_rail_not_compliance_checkbox_visible}    Control Command    ${title_power_express}    ${EMPTY}    ${chk_rail_compliance}    IsVisible    ${EMPTY}
+    Take Screenshot
+    ${is_checked}    Run Keyword If    ("${actual_rail_not_compliance_checkbox_image}" == "True" or "${actual_rail_not_compliance_checkbox_image1}" == "True") and ${actual_rail_not_compliance_checkbox_visible} == 1    Get checkbox status    ${chk_rail_compliance}
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    Rail Compliance checkbox is not visible.
+    Run Keyword If    "${is_checked}" == "False"    Control Click    ${title_power_express}    ${EMPTY}    ${chk_rail_compliance}
+    ${is_checked}    Get checkbox status    ${chk_rail_compliance}
+    Run Keyword If    "${is_checked}" == "True"    Log    Rail not Compliant tickbox is present and ticked successfully
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    Rail not Compliant tickbox is present and NOT ticked successfully
+    Take Screenshot
+    Sleep    1
+
+Untick Rail Not Compliant Checkbox
+    ${actual_rail_not_compliance_checkbox_image}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\rail_not_complaint_fr.png    0.90    ${timeout}
+    ${actual_rail_not_compliance_checkbox_visible}    Control Command    ${title_power_express}    ${EMPTY}    ${chk_rail_compliance}    IsVisible    ${EMPTY}
+    Take Screenshot
+    ${is_checked}    Run Keyword If    "${actual_rail_not_compliance_checkbox_image}" == "True" and ${actual_rail_not_compliance_checkbox_visible} == 1    Get checkbox status    ${chk_rail_compliance}
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    Rail Compliance checkbox is not visible.
+    Run Keyword If    "${is_checked}" == "True"    Control Click    ${title_power_express}    ${EMPTY}    ${chk_rail_compliance}
+    ${is_checked}    Get checkbox status    ${chk_rail_compliance}
+    Run Keyword If    "${is_checked}" == "False"    Log    Rail not Compliant tickbox is present and unticked successfully
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    Rail not Compliant tickbox is present and NOT unticked successfully
+    Take Screenshot
+    Sleep    1
+
+Verify Progress Information Bar is Exists
+    ${progress_information_bar}    Win Get State    Progress Information    ${EMPTY}
+    Run Keyword If    "${progress_information_bar}" == "15"    Fail    Wait Until Progress Information Bar is not visible.

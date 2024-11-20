@@ -1,0 +1,190 @@
+*** Settings ***
+Suite Setup       Initialize Variables
+Resource          ../../resources/common/global_resources.txt
+Resource          performance_test_resource.txt
+
+*** Test Cases ***
+Performance Test - Emulation And Clear All
+    [Setup]
+    @{matches_list}    Create List
+    ${counter}    Evaluate    0
+    : FOR    ${INDEX}    IN RANGE    20
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Rename Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Update PNR for EN or GB
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    sellco    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    \    Set Test Variable    ${number_of_execution}    ${counter}
+    [Teardown]    Save Perf Logs To Excel    ${number_of_execution}    ${matches_list}
+
+Performance Test - Emulation And Clear All 2
+    [Setup]
+    @{matches_list}    Create List
+    ${counter}    Evaluate    0
+    : FOR    ${INDEX}    IN RANGE    20
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Rename Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Update PNR for EN or GB
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    sellco    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    \    Set Test Variable    ${number_of_execution}    ${counter}
+    [Teardown]    Save Perf Logs To Excel    ${number_of_execution}    ${matches_list}
+
+Performance Test - Emulation And Clear All 3
+    [Setup]
+    @{matches_list}    Create List
+    ${counter}    Evaluate    0
+    : FOR    ${INDEX}    IN RANGE    20
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Rename Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Update PNR for EN or GB
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    sellco    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    \    Set Test Variable    ${number_of_execution}    ${counter}
+    [Teardown]    Save Perf Logs To Excel    ${number_of_execution}    ${matches_list}
+
+Performance Test - Emulation And Clear All 4
+    [Setup]
+    @{matches_list}    Create List
+    ${counter}    Evaluate    0
+    : FOR    ${INDEX}    IN RANGE    20
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Rename Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Update PNR for EN or GB
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    sellco    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    \    Set Test Variable    ${number_of_execution}    ${counter}
+    [Teardown]    Save Perf Logs To Excel    ${number_of_execution}    ${matches_list}
+
+Performance Test - Emulation And Clear All 5
+    [Setup]
+    @{matches_list}    Create List
+    ${counter}    Evaluate    0
+    : FOR    ${INDEX}    IN RANGE    20
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Rename Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Update PNR for EN or GB
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    sellco    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    \    Set Test Variable    ${number_of_execution}    ${counter}
+    [Teardown]    Save Perf Logs To Excel    ${number_of_execution}    ${matches_list}
+
+Performance Test - Emulation And Clear All 6
+    [Setup]
+    @{matches_list}    Create List
+    ${counter}    Evaluate    0
+    : FOR    ${INDEX}    IN RANGE    20
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Rename Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Update PNR for EN or GB
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    sellco    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    \    Set Test Variable    ${number_of_execution}    ${counter}
+    [Teardown]    Save Perf Logs To Excel    ${number_of_execution}    ${matches_list}
+
+Performance Test - Emulation And Clear All 7
+    [Setup]
+    @{matches_list}    Create List
+    ${counter}    Evaluate    0
+    : FOR    ${INDEX}    IN RANGE    20
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Rename Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Update PNR for EN or GB
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    sellco    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    \    Set Test Variable    ${number_of_execution}    ${counter}
+    [Teardown]    Save Perf Logs To Excel    ${number_of_execution}    ${matches_list}
+
+Performance Test - Emulation And Clear All 8
+    [Setup]
+    @{matches_list}    Create List
+    ${counter}    Evaluate    0
+    : FOR    ${INDEX}    IN RANGE    20
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Rename Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Update PNR for EN or GB
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    sellco    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    \    Set Test Variable    ${number_of_execution}    ${counter}
+    [Teardown]    Save Perf Logs To Excel    ${number_of_execution}    ${matches_list}
+
+Performance Test - Emulation And Clear All 9
+    [Setup]
+    @{matches_list}    Create List
+    ${counter}    Evaluate    0
+    : FOR    ${INDEX}    IN RANGE    20
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Rename Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Update PNR for EN or GB
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    sellco    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    \    Set Test Variable    ${number_of_execution}    ${counter}
+    [Teardown]    Save Perf Logs To Excel    ${number_of_execution}    ${matches_list}
+
+Performance Test - Emulation And Clear All 10
+    [Setup]
+    @{matches_list}    Create List
+    ${counter}    Evaluate    0
+    : FOR    ${INDEX}    IN RANGE    20
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Rename Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Update PNR for EN or GB
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    sellco    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    \    Set Test Variable    ${number_of_execution}    ${counter}
+    [Teardown]    Save Perf Logs To Excel    ${number_of_execution}    ${matches_list}
+
+*** Keywords ***
+Initialize Variables
+    Set Suite Variable    ${gds_switch}    amadeus
+    Set Suite Variable    ${locale}    en-GB

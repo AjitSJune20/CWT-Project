@@ -1,0 +1,36 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          unused_documents_verification.txt
+
+*** Test Cases ***
+[NORAM][NB]Verify that selected unused document using PNR button and double click are written after new booking
+    [Tags]    us730
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ DE4339    AutoSixteenSeven    NoramTrvlrOne
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    2
+    Verify Unused Document Has Been Sent To PNR    2
+    Click New Booking
+    Click Tab In Top Left    Unused Documents
+    Verify Unused Document Has Been Sent To PNR    2
+    Retrieve PNR Details From Travelport    ${EMPTY}    *PRT
+    Verify Specific Line Is Written In The PNR    T/EXCH-UA 0164444555566 14JUN17 50 AUTOSIXTEENSEVEN/NORAMTRVLRONE
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Tab In Top Left    GDS Screen
+    Book Flight X Months From Now    MSPORD+AA    01Y1    T:$BS1    6    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    3
+    Verify Unused Document Has Been Sent To PNR    2    3
+    Retrieve PNR Details From Travelport    ${EMPTY}    *PRT
+    Verify Specific Line Is Written In The PNR    T/EXCH-UA 0164444555566 14JUN17 50 AUTOSIXTEENSEVEN/NORAMTRVLRONE
+    Verify Specific Line Is Written In The PNR    T/EXCH-PR 0798787878787 07JUN17 43 AUTOSIXTEENSEVEN/NORAMTRVLRONE
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${EMPTY}    *PRT
+    Verify Specific Line Is Written In The PNR    T/EXCH-UA 0164444555566 14JUN17 50 AUTOSIXTEENSEVEN/NORAMTRVLRONE
+    Verify Specific Line Is Written In The PNR    T/EXCH-PR 0798787878787 07JUN17 43 AUTOSIXTEENSEVEN/NORAMTRVLRONE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

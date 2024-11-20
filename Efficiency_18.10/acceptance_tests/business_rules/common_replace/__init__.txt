@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        common_replace    us4693

@@ -1,0 +1,288 @@
+*** Settings ***
+Force Tags        sabre    noram    UK
+Resource          ../../resources/common/global_resources.txt
+Resource          duo_verification.txt
+Resource          ../policy_check/policy_check_verification.txt
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../resources/common/utilities.txt
+Resource          ../delivery/delivery_verification.txt
+
+*** Test Cases ***
+[AB] Verify That When Team Is 24HSC, Correct Delivery Method Is Defaulted And Ticketing Line Is Retain In The PNR
+    [Tags]    US6435
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Guitarists    ARRIESGADO    Ula
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/ARRIESGADO/U21483644
+    Click New Booking
+    Click Panel    Client Info
+    Click Edit Form Of Payment
+    Set Form Of Payment Type    VI
+    Set Card Number    4111111111111111
+    Set Expiry Date    12    20
+    Click Add Form Of Payment
+    Click Panel    Cust Refs
+    Set CDR Value    TS-Trip Reason    BUS
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MSPORD‡AA    01Y1    WPRQ‡S1    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Select Missed Saving Code    B - Passenger Requested Specific Supplier
+    Click Finish PNR
+    Verify Queue Minder Remark Is Present In PNR    \    90    \    3W7F
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    UK 24HSC UAT Team
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Edit Form Of Payment
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Air Fare
+    Select Missed Saving Code    B - Passenger Requested Specific Supplier
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Sabre 24HSC Team Level
+    Click Finish PNR
+    Execute Simultaneous Change Handling    24HSC Retrieve PNR for Delivery
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING CUSTOMER REFERENCES
+    Verify Queue Minder Remark Is Present In PNR    \    92    \    3W7F
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T
+    Verify Text Contains Expected Value    ${pnr_details}    TAWBP85QC\/E TICKET (.....) HOLD AWAITING\.CUSTOMER\.REFERENCES    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That When Team Is 24HSC And The Selected Delivery Method Is 24HSC, Upon Finish PNR The Ticketing Line Is Retain And Follow Up Queues Are Correct
+    [Tags]    US6435
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Guitarists    ARRIESGADO    Ula
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/ARRIESGADO/U21483644
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MSPORD‡AA    01Y1    WPRQ‡S1    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    UK 24HSC UAT Team
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Panel    Air Fare
+    Tick Fare Not Finalised
+    Click Panel    Policy Check
+    Comment    Select Policy Status    United Airlines Inc Risk    AA - Awaiting Approval
+    Select Policy Status    United States Restricted    AA - Awaiting Approval
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Sabre 24HSC Team Level
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Disabled    Awaiting Approval
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T
+    Verify E-Ticket On Hold Customer References Is Present In The PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    ONHOLD-AWAITING FORM OF PAYMENT
+    Verify Queue Minder Remark Is Present In PNR    \    09    \    BP85
+    Verify Queue Minder Remark Is Present In PNR    \    92    \    3W7F
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That All Panels Are Displayed For PNR With GUID
+    [Tags]    us6494
+    Create A PNR With Policy Check
+    Click Change Team
+    Clear Team Selection
+    Select Team    UK 24HSC UAT Team
+    Delete Log File    SyExContactTrackingJSLog
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Team ID In Contact Tracking Logs    14134
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Verify Actual Panel Contains Expected Panel    Pspt and Visa
+    Verify Actual Panel Contains Expected Panel    APIS/SFPD
+    [Teardown]    Click Clear All
+
+[AB] Verify That All Panels Are Displayed For PNR Without GUID
+    [Tags]    US6500
+    Remove GUID Line From PNR
+    Remove GUID Line From PNR
+    Remove SYEXGVS Line From PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Control Object Is Disabled    [NAME:ccboAccountNumber]
+    Verify Control Object Text Contains Expected Value    [NAME:ccboAccountNumber]    ${EMPTY}
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Verify Actual Panel Contains Expected Panel    Pspt and Visa
+    Verify Actual Panel Contains Expected Panel    APIS/SFPD
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Control Object Is Disabled    [NAME:ccboAccountNumber]
+    Verify Control Object Text Contains Expected Value    [NAME:ccboAccountNumber]    ${EMPTY}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Search Button Is Disabled And Error Icon Displayed For Invalid Search Client Criteria
+    [Tags]    us6245
+    Open Power Express and Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK 24HSC UAT Team
+    Verify That Client Search Textbox Is Displayed Instead of Client Droplist
+    Select GDS    Sabre
+    Click Control Button    [NAME:txtSearchAll]
+    Send    {ENTER}
+    Verify Control Object Is Disabled    [NAME:btnSearchAll]
+    Set Control Text Value    [NAME:txtSearchAll]    a
+    Verify Control Object Is Disabled    [NAME:btnSearchAll]
+    Send    {BACKSPACE}
+    Click Control Button    [NAME:txtSearchAll]
+    Set Control Text Value    [NAME:txtSearchAll]    abc123
+    Click Control Button    [NAME:btnSearchAll]
+    Verify That Error Icon And Message Is Displayed For No Matches Records For Search Client
+    [Teardown]    Click Clear All
+
+[NB] Verify That Valid Search Criteria Displays All Matching CWT Clients
+    [Tags]    us4625
+    Open Power Express and Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUS    UK 24HSC UAT Team
+    Create New Booking By Searching For Client    Sabre    US1426    AutoOneFifteenEight    NoramTrvlrFour    DENLAX
+    Click Clear All
+    Wait Until Control Object Is Visible    [NAME:txtSearchAll]
+    Verify Control Object Text Contains Expected Value    [NAME:txtSearchAll]    Sabre 15 - Auto ¦ US1426
+    Click Control Button    [NAME:txtSearchAll]
+    Set Control Text Value    [NAME:txtSearchAll]    ${EMPTY}
+    Verify Control Object Is Disabled    [NAME:btnSearchAll]
+    Click Control Button    [NAME:txtSearchAll]
+    Create New Booking By Searching For Client    Sabre    Sabre 15 - Auto    AutoOneFifteenEight    NoramTrvlrFour    LAXDEN    ${EMPTY}
+    ...    US1426
+    Click Clear All
+    Wait Until Control Object Is Visible    [NAME:txtSearchAll]
+    Verify Control Object Text Contains Expected Value    [NAME:txtSearchAll]    Sabre 15 - Auto ¦ US1426
+    [Teardown]    Click Clear All
+
+[NB] Verify That Create Portrait Profile Defaults To No And Client Account Is Disabled When Subunit SO Is Set To Yes
+    [Tags]    US6449
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK 24HSC UAT Team
+    Select GDS    Sabre
+    Search For Client    24HSC UK ¦ US6449 3GDS    UK 24HSC UAT Team
+    Set Last Name    PPP
+    Click Search Portrait Profile
+    Click Create Traveller Profile
+    Verify Radio Button Is Selected
+    Select Create Portrait Profile    No
+    Verify Reason For Skipping Profile Creation Is Hidden
+    Populate Add New Traveller    General    Doc    Strange    automation@carlsonwagonlit.com    63    919
+    ...    1234566    No
+    Verify Control Object Is Disabled    [NAME:ccboAccountNumber]
+    Click New Booking
+    Click Clear All
+    Create New Booking By Searching For Client    Sabre    Sabre 211 - Auto ¦ US1918    AutoTwoOneOne    OptimizeTrvlrTwo    MSPORD‡AA    ${EMPTY}
+    ...    US AUTO SABRE
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    [Teardown]    #Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Fare Details And Remarks Of PNR Are Correct For PNR That Has No GUID
+    [Tags]    us6434    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Guitarists    Arriesgado    Ula
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/ARRIESGADO/U21483644
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DENLAX¥AA    01Y1    WPRQ‡S1    5
+    Book Flight X Months From Now    LAXDEN¥AA    01Y1    WPRQ‡S2    5    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR Details    ${current_pnr}
+    Remove PNR Remark    GUID
+    Remove PNR Remark    SYEXGVS
+    End And Retrieve PNR
+    Retrieve PNR Details    ${current_pnr}
+    Remove PNR Remark    GUID
+    End And Retrieve PNR
+    Enter GDS Command    564-66¤
+    End And Retrieve PNR
+    Change Locale, Profile, Team    en-GB    AutomationUK    UK 24HSC Team
+    Select GDS    Sabre
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify High Fare, Low Fare, And Charge Fare Are Equal    Fare 1
+    Verify Realised Savings Code Default Value    C1 - Client Special Fare Accepted
+    Verify Missed Savings Code Default Value    A6 - Alternative Carrier Declined
+    Verify Air Fare Restriction Option Is Selected By Default    SEMI FLEXIBLE
+    Verify Cancellations Is Mandatory And Has No Default Value
+    Verify Changes Is Mandatory And Has No Default Value
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Create A PNR With Policy Check
+    Open Power Express And Retrieve Profile    ${version}    Test    U002TXC    en-US    tchua    NORAM QA
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Drummers    Bunda    James
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/143217468/
+    Select Client Account    U1SOE ¦ SOE CFA ¦ Drummers
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Tick Not Known At Time Of Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Set CDR Value    Matrix DP Code    D101
+    Click Update PNR
+    Book Flight X Months From Now    BOSORD¥UA    01Y1    WPRQ¥S1    6
+    Book Flight X Months From Now    ORDBOS¥UA    01Y1    WPRQ¥S2    6    8
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Name Is Not Displayed    City
+    Populate Panels with Red Mark Except The Given Panel(s)
+    Set Ticketing Date    4
+    Click Panel    Recap
+    Click Finish PNR
+    Click Clear All
+
+Verify On Hold Reasons Remarks Are Written In the PNR
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING FARE DETAILS
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING APPROVAL
+
+24HSC Retrieve PNR for Delivery
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Edit Form Of Payment
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Air Fare
+    Select Missed Saving Code    B - Passenger Requested Specific Supplier
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Sabre 24HSC Team Level
+    Click Finish PNR
+
+Select Create Portrait Profile
+    [Arguments]    ${answer}
+    Run Keyword If    "${answer.lower()}" == "no"    Click Control Button    [NAME:radCreateNo]    Add New Traveller
+    Run Keyword If    "${answer.lower()}" == "yes"    Click Control Button    [NAME:radCreateYes]    Add New Traveller
+
+Verify Cancellations Is Mandatory And Has No Default Value
+    [Arguments]    ${fare_tab}=Fare 1    ${field_instance}=${EMPTY}    ${default_control_counter}=True
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboCancellationsOBT,ccboCancellations0,ccboCancellationsOBT_alt,ccboCancellations_alt,ccboCancellations_${fare_tab_index},ccboCancellations_alt_${fare_tab_index}    ${default_control_counter}    ${field_instance}
+    Verify Control Object Field Is Mandatory    ${object_name}
+
+Verify Changes Is Mandatory And Has No Default Value
+    [Arguments]    ${fare_tab}=Fare 1    ${field_instance}=${EMPTY}    ${default_control_counter}=True
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboChangesOBT,ccboChanges0,ccboChangesOBT_alt,ccboChanges_alt,ccboChanges_${fare_tab_index},ccboChanges_alt_${fare_tab_index}    ${default_control_counter}    ${field_instance}
+    Verify Control Object Field Is Mandatory    ${object_name}
+
+Verify E-Ticket On Hold Customer References Is Present In The PNR
+    Verify Text Contains Expected Value    ${pnr_details}    TAWBP85QC\/E TICKET (.....) HOLD AWAITING\.CUSTOMER\.REFERENCES    true

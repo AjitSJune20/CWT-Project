@@ -1,0 +1,60 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That External System ID NSI Will Be Updated On Click Update PNR With Various Itinerary Segments
+    [Tags]    us5589
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4618    lasttestnsi    firsttest
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    YVRYYZ‡AC    01Q1    ${EMPTY}    7
+    Enter GDS Command    0A
+    Book Flight X Months From Now    YYCYVR‡AC    01Q1    WPRQ    8
+    Enter GDS Command    0OTHZZGK1/XXXX 08MAR
+    Enter GDS Command    0HHTRDGK1MSPIN26MAR-OUT27MAR/RD RADISSON HTL MINNEAPOLIS STP N/CORP/100.00USD/SP-13822/G/SI-2540 NORTH CLEVELAND AVENUEROSEVILLE MN 55113FONE 1-651-6364567FAX 1-651-3673910/CF-TEST HEATHER
+    Enter GDS Command    0BA583S22APRMXPLHRHK1
+    Enter GDS Command    0BA583S23APRMXPLHRGK1
+    Enter GDS Command    0AKOPENY24APRMIADFWDS1
+    Enter GDS Command    CFDEN/25APR-26APR/1000-1000/CCAR    0C1
+    Enter GDS Command    0CARZEGK1LAX01may-02may/ECAR/CF-123456
+    Enter GDS Command    0CARZIBK1LAX04may-06may/ECAR/CF-123456
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value Is Correct    T-Matrix DP Code    COMPLETE
+    Set CDR Value    T-Matrix DP Code    ${EMPTY}
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U*97-NSISTORY
+
+[AB] Verify That Multiple NSI With UDID Will Be Updated On Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Department Code    AMEND
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Multiple NSI With UDID Will Be Updated On Finish PNR If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    ${EMPTY}
+    Verify Specific Line Is Written In The PNR    U*96-NSIAMEND
+    Verify Specific Line Is Written In The PNR    1LASTTESTNSI/FIRSTTEST*EXTERNALNSI*AMEND
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That Multiple NSI With UDID Will Be Updated On Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Department Code    AMEND
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR

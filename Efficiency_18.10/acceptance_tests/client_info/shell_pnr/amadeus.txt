@@ -1,0 +1,28 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../client_info_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Shell PNR Can Be Created Successfully Via Keyboard Shortcut
+    [Tags]    us455    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    Amadeus UK 16 - Auto ¦ US1641    AutoSixteenSeven    EmeaTrvlrFour
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    PROJCODE    TEST
+    Create Shell PNR Via Keyboard Shortcut
+    Verify Create Shell Error Message
+    Click Panel    Cust Refs
+    Set CDR Value    PROJCODE    ${EMPTY}
+    Set CDR Value    TRVLCOST    TEST
+    Click Panel    Client Info
+    Verify All Panels Are Green
+    Click Create Shell
+    Verify Shell PNR Successfully Created
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RH
+    Verify Contact Information In RCVD From Field Exists    EMEATRVLRFOUR AUTOSIXTEENSEVEN 44-123456789
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Retention Line Exists    MIS 1A HK1 XXX
+    Verify Ticketing Line In Remarks
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

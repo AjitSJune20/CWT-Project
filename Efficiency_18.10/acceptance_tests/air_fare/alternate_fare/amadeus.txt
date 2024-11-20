@@ -1,0 +1,1164 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../air_fare_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That Alternate Fare Tab Details Are Displaying Correctly
+    [Tags]    us437    uk
+    Open Power Express And Retrieve Profile    ${version}    TEST    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus UK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFour    CDGLHR/AAF    ${EMPTY}    Air Fare
+    Get Single Flight Details    CDGLHR
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Verify Alternate Fare Details Field    Alternate Fare 1
+    Verify Alternate Fare Routing and Airline Text Box    CDG-LHR    AF
+    Verify Alternate Flight Details Is Correct    Alternate Fare 1    CDGLHR
+    Set Alternate Fare Details With New Line Details    THIS TEST
+    Set Alternate Fare Amount    200
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1
+    Verify Offer Remarks Are Written    Alternate Fare 1
+    [Teardown]
+
+[AB UK] Verify That Alternate Fare Tab Details Are Displaying Correctly
+    [Tags]    us437    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Set Alternate Fare Airline    AF
+    Verify Total Alternate Fare    200.00
+    Verify Alternate Flight Details Is Correct    Alternate Fare 1    CDGLHR
+    Set Alternate Fare Details With New Line Details    THISTEST2
+    Set Alternate Fare Amount    200
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Finish PNR    Amend Booking For Verify That Alternate Fare Tab Details Are Displaying Correctly
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Alternate Fare Tab Details Are Displaying Correctly
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1
+    Verify Offer Remarks Are Written    Alternate Fare 1
+
+[AB UK] Verify That Alternate Updated Fare Tab Details Are Displaying Correctly
+    [Tags]    us437    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Alternate Fare 1
+    Set Alternate Fare Airline    AF
+    Verify Total Alternate Fare    200.00
+    Verify Alternate Flight Details Is Correct    Alternate Fare 1    CDGLHR
+    Set Alternate Fare Details With New Line Details    THISTEST3
+    Set Alternate Fare Amount    200.00
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Finish PNR    Amend Booking For Verify That Alternate Updated Fare Tab Details Are Displaying Correctly
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Alternate Updated Fare Tab Details Are Displaying Correctly
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    THISTEST3
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1
+    Verify Offer Remarks Are Written    Alternate Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Amadeus Offer Remarks Are Written In The PNR
+    [Tags]    us681    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight And One Alternate Offer Using Default Values    Amadeus FR Legacy - Auto ¦ US681    AutoLegacy    EmeaTrvlrOneFive    LAXCDG/AAF    SS1Y1    FXB
+    ...    ${EMPTY}    AIR FARE
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Verify Fare Class Is Mandatory And Has No Value
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1    traveldoo
+    Verify Offer Remarks Are Written    Alternate Fare 1
+
+[AB FR] Verify That Amadeus Offer Remarks Are Changed In The PNR
+    [Tags]    us681    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Remove Amadeus Offer Remarks On PNR    ${current_pnr}
+    Enter GDS Command    TTE/ALL    XE2    RTOF    XE1    RT
+    Create Amadeus Offer    CDGLHR/AAF    SS1Y1    FXB
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Get Fare Details    Fare 1
+    Delete Alternate Fare Tab    Alternate Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow For Amadeus Offer Remarks Are Changed In The PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Amadeus Offer Remarks Are Changed In The PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1    traveldoo
+    Verify Offer Remarks Are Written    Alternate Fare 1
+    Verify Fare Remarks Are Written    S2    Fare 1
+
+[AB FR] Verify That Amadeus Offer Remarks Are Removed In The PNR
+    [Tags]    us681    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Remove Amadeus Offer Remarks On PNR    ${current_pnr}
+    Enter GDS Command    RTOF    XE1
+    Click Read Booking
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 1
+    Verify Fare Tab Is Not Visible    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow For Amadeus Offer Remarks Are Removed In The PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Amadeus Offer Remarks Are Removed In The PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Alternate Fare Remarks Are Not Written    Alternate Fare 1    traveldoo
+    Verify Offer Remarks Are Not Written    Alternate Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Multiple Amadeus Offer Remarks Are Written In The PNR
+    [Tags]    us681    us1730    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With Round Trip Flight And Two Alternate Offers Using Default Values    Amadeus FR Legacy - Auto ¦ US681    AutoLegacy    EmeaTrvlrOneFive    CDGLYS/AAF    SS1Y1    FXB/S2
+    ...    FXD/S2    LYSCDG/AAF    SS1Y1    FXB/S3    FXD/S3    ${EMPTY}
+    ...    AIR FARE
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Verify Values In Alternate Fare Tab    Alternate Fare 1    CDG-LYS    2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Verify Values In Alternate Fare Tab    Alternate Fare 2    LYS-CDG    3
+    Populate Alternate Fare With Default Values    Alternate Fare 2
+    Get Alternate Fare Details    Alternate Fare 2
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1    traveldoo
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 2    traveldoo
+    Verify Offer Remarks Are Written    Alternate Fare 1    PROPOSITION NO 1
+    Verify Offer Remarks Are Written    Alternate Fare 2    PROPOSITION NO 2
+
+[SI FR] Verify That Multiple Amadeus Offer Remarks Are Written In The PNR
+    [Tags]    us1730    fr
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Send Itinerary Workflow For Multiple Amadeus Remarks
+    Execute Simultaneous Change Handling    Send Itinerary Workflow For Multiple Amadeus Remarks
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Offer Remarks Are Written    Alternate Fare 1    PROPOSITION NO 1
+    Verify Offer Remarks Are Written    Alternate Fare 2    PROPOSITION NO 2
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1    traveldoo
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 2    traveldoo
+
+[AB FR] Verify That Multiple Amadeus Offer Remarks Are Not Changed In The PNR
+    [Tags]    us681    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    Amend Departure Date In Amadeus    CDGLYS
+    Amend Departure Date In Amadeus    LYSCDG    ${flight_date}
+    Enter GDS Command    FXB/S2    FXB/S3    FXD/S2    OFS/A1    FXD/S3    OFS/A1
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Verify Fare Tab Is Visible    Alternate Fare 1    Alternate Fare 2
+    Verify Values In Alternate Fare Tab    Alternate Fare 3    CDG-LYS    2
+    Populate Alternate Fare With Default Values    Alternate Fare 3
+    Get Alternate Fare Details    Alternate Fare 3
+    Verify Values In Alternate Fare Tab    Alternate Fare 4    LYS-CDG    3
+    Populate Alternate Fare With Default Values    Alternate Fare 4
+    Get Alternate Fare Details    Alternate Fare 4
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Workflow For Multiple Amadeus Offer Remarks Are Changed In The PNR
+    Execute Simultaneous Change Handling    Amend Workflow For Multiple Amadeus Offer Remarks Are Changed In The PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Offer Remarks Are Written    Alternate Fare 3    PROPOSITION NO 3
+    Verify Offer Remarks Are Written    Alternate Fare 4    PROPOSITION NO 4
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 3    traveldoo
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 4    traveldoo
+
+[AB FR] Verify That One Of Multiple Amadeus Offer Remarks Are Removed In The PNR
+    [Tags]    us681    us1730    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 5
+    Delete Alternate Fare Tab    Alternate Fare 4
+    Remove Amadeus Offer Remarks On PNR    ${current_pnr}    4
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Alternate Fare 1    Alternate Fare 2    Alternate Fare 3
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 3
+    Get Alternate Fare Details    Alternate Fare 3
+    Verify Fare Tab Is Not Visible    Alternate Fare 4
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Workflow For One Of Multiple Amadeus Offer Remarks Are Removed In The PNR
+    Execute Simultaneous Change Handling    Amend Workflow For One Of Multiple Amadeus Offer Remarks Are Removed In The PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Offer Remarks Are Written    Alternate Fare 3    PROPOSITION NO 3
+    Verify Specific Line Is Not Written In The PNR    RIR *OFFER**<B>PROPOSITION NO 4</B>*
+
+[AB FR] Verify That One Of Multiple Amadeus Offer Remarks Are Changed In The PNR
+    [Tags]    us681    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Remove Amadeus Offer Remarks On PNR    ${current_pnr}
+    Enter GDS Command    TTE/ALL    XE2-3    RTOF    XE1-4    RT
+    Create Amadeus Offer    CDGLAX/AAF    SS1Y1    FXB
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Delete Alternate Fare Tab    Alternate Fare 3
+    Delete Alternate Fare Tab    Alternate Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Workflow For One Of Multiple Amadeus Offer Remarks Are Changed In The PNR
+    Execute Simultaneous Change Handling    Amend Workflow For One Of Multiple Amadeus Offer Remarks Are Changed In The PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1    traveldoo
+    Verify Offer Remarks Are Written    Alternate Fare 1    PROPOSITION NO 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That KDS Fare Conditions for Normal Fare And Alternate Fare Are Written Correctly In The PNR Remarks
+    [Tags]    us2954    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With Round Trip Flight And Two Alternate Offers Using Default Values    Amadeus FR 15 - Auto ¦ US2837 KDS    AutoOneFiveTwo    EmeaTrvlrOne    CDGLYS/AAF    SS1Y1    FXP/S2
+    ...    FXD/S2    LYSCDG/AAF    SS1Y1    FXP/S3    FXD/S3    ${EMPTY}
+    ...    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Option Is Selected By Default    SEMI FLEXIBLE
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Fare 2
+    Verify Air Fare Restriction Option Is Selected By Default    SEMI FLEXIBLE
+    Populate Fare Tab With Default Values    Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Verify Air Fare Restriction Option Is Selected By Default    SEMI FLEXIBLE
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Verify Air Fare Restriction Option Is Selected By Default    SEMI FLEXIBLE
+    Populate Alternate Fare With Default Values    Alternate Fare 2
+    Verify Possible Values For Changes And Cancellation For Each Air Fare Restriction    Fare 1
+    Verify Possible Values For Changes And Cancellation For Each Air Fare Restriction    Fare 2
+    Select Fare Restriction    FULLY FLEXIBLE
+    Verify Possible Values For Changes And Cancellation For Each Air Fare Restriction    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Select Fare Restriction    FULLY FLEXIBLE
+    Verify Possible Values For Changes And Cancellation For Each Air Fare Restriction    Alternate Fare 2
+    Get Alternate Fare Details    Alternate Fare 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    CP0 COMMENT/.*/.*/3/3    true
+    Verify Specific Line Is Written In The PNR    CP1 COMMENT/.*/.*/1/1    true
+    Verify Specific Line Is Written In The PNR    CP2 COMMENT/.*/.*/3/3    true
+    Verify Offer Remarks Are Written    Alternate Fare 1    PROPOSITION NO 1
+    Verify Offer Remarks Are Written    Alternate Fare 2    PROPOSITION NO 2
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1    kds
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 2    kds
+
+[AB] Verify That KDS Fare Conditions for Normal Fare And Alternate Fare Are Written Correctly In The PNR Remarks
+    [Tags]    us2954    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Changes And Cancellation Values Are Retained In Amend Booking For Fare Tab    Fare 1    SEMI FLEXIBLE    1: Modifiable    1: Remboursable
+    Verify Changes And Cancellation Values Are Retained In Amend Booking For Fare Tab    Fare 2    SEMI FLEXIBLE    1: Modifiable    1: Remboursable
+    Verify Changes And Cancellation Values Are Retained In Amend Booking For Fare Tab    Alternate Fare 1    FULLY FLEXIBLE    1: Modifiable    1: Remboursable
+    Verify Changes And Cancellation Values Are Retained In Amend Booking For Fare Tab    Alternate Fare 2    NON FLEXIBLE    3: Non Modifiable    3: Non Remboursable
+    Remove Amadeus Offer Remarks On PNR    ${current_pnr}    1
+    Enter GDS Command    RTOF    XE1    RT    TTE/ALL    FXB
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 2
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Option Is Selected By Default    SEMI FLEXIBLE
+    Populate Fare Tab With Default Values    Fare 1
+    Verify Possible Values For Changes And Cancellation For Each Air Fare Restriction    Fare 1
+    Select Fare Restriction    SEMI FLEXIBLE
+    Select Changes Dropdown Value    3: Non Modifiable
+    Select Cancellation Dropdown Value    2: Partiellement Remboursable
+    Verify Possible Values For Changes And Cancellation For Each Air Fare Restriction    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Finish PNR    Amend Workflow For KDS Fare Conditions for Normal Fare And Alternate Fare
+    Execute Simultaneous Change Handling    Amend Workflow For KDS Fare Conditions for Normal Fare And Alternate Fare
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    CP0 COMMENT/.*/.*/3/2    true
+    Verify Specific Line Is Written In The PNR    CP1 COMMENT/.*/.*/3/3    true
+    Verify Offer Remarks Are Written    Alternate Fare 1    PROPOSITION NO 1
+    Verify Alternate Fare Remarks Are Written    Alternate Fare 1    kds
+
+[AB] Verify That KDS Fare Conditions for Normal Fare And Alternate Fare Are Retained In The UI
+    [Tags]    us2954    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Changes And Cancellation Values Are Retained In Amend Booking For Fare Tab    Fare 1    SEMI FLEXIBLE    3: Non Modifiable    2: Partiellement Remboursable
+    Verify Changes And Cancellation Values Are Retained In Amend Booking For Fare Tab    Alternate Fare 1    NON FLEXIBLE    3: Non Modifiable    3: Non Remboursable
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Fare Restrictions Are Applied For Amadeus Mini Rules When SO Is Booked Only, BF Is Auto-Priced, AF Is Offer
+    [Tags]    us4569    us4707    us4662    uk    us5465
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ Power Hotel Integration    Edwards    Cory
+    Click New Booking
+    Update PNR for EN or GB
+    Create Amadeus Offer    LHRCDG/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Alternate Fare 1
+    Verify Air Fare Restriction Objects Are Visible    Alternate Fare 1
+    Verify Offer Amount    Alternate Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Objects Are Hidden    Fare 1
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    CHGS-SCHEDULE CHANGE PERMITTED FREE OF CHARGE
+    Verify Specific Line Is Not Written In The PNR    CANX-FULL REFUND
+    Verify Specific Line Is Not Written In The PNR    APP-AF:RERTE-PERMITTED
+    Verify Specific Line Is Not Written In The PNR    MIN-NO MINIMUM STAY:MAX-ONE YEAR
+    Verify Specific Line Is Written In The PNR    MERCHANT FEES-
+    Verify Specific Line Is Written In The PNR    PCC-TEST123
+    Verify Specific Line Is Written In The PNR    ROUTING: LHR-CDG
+    Verify Specific Line Is Written In The PNR    CHANGES: SCHEDULE CHANGE PERMITTED FREE
+    Verify Specific Line Is Written In The PNR    CANCELLATION: FULL REFUND
+    Verify Specific Line Is Written In The PNR    VALID ON: AF
+    Verify Specific Line Is Written In The PNR    MIN:NO MINIMUM STAY/MAX:ONE YEAR
+    Verify Specific Line Is Written In The PNR    RERTE: PERMITTED
+    Verify Specific Line Is Written In The PNR    BOOKING CLASS:
+    Verify Specific Line Is Written In The PNR    ROUTE: LONDON PARIS
+    Verify Specific Line Is Written In The PNR    AIRLINE: AF FARE BASIS
+    Comment    Verify Specific Line Is Written In The PNR    PASSPORT AND VISA INFORMATION
+    Comment    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY: UNITED KINGDOM
+    Comment    Verify Specific Line Is Written In The PNR    VALID PASSPORT HELD: UNABLE TO CONFIRM
+    Comment    Verify Specific Line Is Written In The PNR    VISA CHECK: FRANCE NOT REQUIRED
+    Verify Specific Line Is Written In The PNR    ROUTING : LONDON PARIS
+    Verify Specific Line Is Written In The PNR    *TLXL*TICKETING DATE NOT SET CONFIRM BY
+    Verify Specific Line Is Written In The PNR    FARES ARE NOT GUARANTEED UNTIL YOUR TICKET
+    Verify Specific Line Is Not Written In The PNR    CHANGE OF RESERVATION : SCHEDULE CHANGE PERMITTED FREE OF CHARGE
+    Verify Specific Line Is Not Written In The PNR    CANCELLATION : FULL REFUND
+    Verify Specific Line Is Not Written In The PNR    REROUTING : PERMITTED
+    Verify Specific Line Is Not Written In The PNR    VALID ON : AF
+    Verify Specific Line Is Not Written In The PNR    MINIMUM STAY : NO MINIMUM STAY
+    Verify Specific Line Is Not Written In The PNR    MAXIMUM STAY : ONE YEAR
+    Verify Specific Line Is Written In The PNR    *OFFER**ROUTING: LONDON PARIS*
+    Verify Specific Line Is Written In The PNR    *OFFER**AIRLINE: AF FARE BASIS:
+    Verify Specific Line Is Written In The PNR    *OFFER**TOTAL FARE: ${total_fare_alt_1}*
+    Verify Specific Line Is Written In The PNR    *OFFER**CHANGES: SCHEDULE CHANGE PERMITTED FREE
+    Verify Specific Line Is Written In The PNR    *OFFER**CLASS OF TRAVEL:
+    Verify Specific Line Is Written In The PNR    *OFFER**CANCELLATION: FULL REFUND*
+    Verify Specific Line Is Written In The PNR    *OFFER**VALID ON: AF*
+    Verify Specific Line Is Written In The PNR    *OFFER**REROUTE: PERMITTED*
+    Verify Specific Line Is Written In The PNR    *OFFER**MINIMUM STAY: NO MINIMUM STAY*
+    Verify Specific Line Is Written In The PNR    *OFFER**MAXIMUM STAY: ONE YEAR*
+    Verify Specific Line Is Written In The PNR    *OFFER**DETAILS:
+    Verify Specific Line Is Not Written In The PNR    RMZ CONF*NOMINIRULES*
+
+[AB UK] Verify That Fare Restrictions Are Applied For Amadeus Mini Rules When SO Is Booked Only, BF Is Auto-Priced, AF Is Manual
+    [Tags]    us4569    us4707    us4662    uk    us5465
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare And Segment    2
+    Delete Fare Quote and Flight Segment    RTOF    XE1
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXB    6    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Objects Are Hidden    Fare 1
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Click Fare Tab    Alternate Fare 1
+    Delete Alternate Fare Tab    Alternate Fare 1
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 1
+    Verify Air Fare Restriction Objects Are Visible    Alternate Fare 1
+    Populate Alternate Fare Details    LHRCDG    AF    3333    2222    AF 3333
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Finish PNR    Amend Booking Workflow For Amadeus Mini Rules (UK)
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Amadeus Mini Rules (UK)
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    CHGS-SCHEDULE CHANGE PERMITTED FREE
+    Verify Specific Line Is Not Written In The PNR    CANX-FULL REFUND
+    Verify Specific Line Is Not Written In The PNR    APP-AF:RERTE-PERMITTED
+    Verify Specific Line Is Not Written In The PNR    MIN-NO MINIMUM STAY:MAX-ONE YEAR
+    Verify Specific Line Is Written In The PNR    MERCHANT FEES-
+    Verify Specific Line Is Written In The PNR    PCC-TEST123
+    Verify Specific Line Is Written In The PNR    ROUTING: LHR-CDG
+    Verify Specific Line Is Written In The PNR    CHANGES: SCHEDULE CHANGE PERMITTED FREE
+    Verify Specific Line Is Written In The PNR    CANCELLATION: FULL REFUND
+    Verify Specific Line Is Written In The PNR    VALID ON: AF
+    Verify Specific Line Is Written In The PNR    MIN:NO MINIMUM STAY/MAX:ONE YEAR
+    Verify Specific Line Is Written In The PNR    RERTE: PERMITTED
+    Verify Specific Line Is Written In The PNR    BOOKING CLASS:
+    Verify Specific Line Is Written In The PNR    ROUTE: LONDON PARIS
+    Comment    Verify Specific Line Is Written In The PNR    PASSPORT AND VISA INFORMATION
+    Comment    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY: UNITED KINGDOM
+    Comment    Verify Specific Line Is Written In The PNR    VALID PASSPORT HELD: UNABLE TO CONFIRM
+    Comment    Verify Specific Line Is Written In The PNR    VISA CHECK: FRANCE NOT REQUIRED
+    Verify Specific Line Is Written In The PNR    ROUTING : LONDON PARIS
+    Verify Specific Line Is Not Written In The PNR    CHANGE OF RESERVATION : SCHEDULE CHANGE PERMITTED
+    Verify Specific Line Is Not Written In The PNR    CANCELLATION : FULL REFUND
+    Verify Specific Line Is Not Written In The PNR    REROUTING : PERMITTED
+    Verify Specific Line Is Not Written In The PNR    VALID ON : AF
+    Verify Specific Line Is Not Written In The PNR    MINIMUM STAY : NO MINIMUM STAY
+    Verify Specific Line Is Not Written In The PNR    MAXIMUM STAY : ONE YEAR
+    Verify Specific Line Is Written In The PNR    *TLXL*TICKETING DATE NOT SET CONFIRM BY
+    Verify Specific Line Is Written In The PNR    FARES ARE NOT GUARANTEED UNTIL YOUR TICKET HAS
+    Verify Specific Line Is Written In The PNR    *OFFER**ROUTING: LONDON PARIS
+    Verify Specific Line Is Written In The PNR    *OFFER**AIRLINE: AF FARE BASIS:
+    Verify Specific Line Is Written In The PNR    *OFFER**TOTAL FARE:
+    Verify Specific Line Is Written In The PNR    *OFFER**CHANGES: SCHEDULE CHANGE PERMITTED
+    Verify Specific Line Is Written In The PNR    *OFFER**CLASS OF TRAVEL:
+    Verify Specific Line Is Written In The PNR    *OFFER**CANCELLATION: FULL REFUND*
+    Verify Specific Line Is Written In The PNR    *OFFER**VALID ON: AF*
+    Verify Specific Line Is Written In The PNR    *OFFER**REROUTE: PERMITTED*
+    Verify Specific Line Is Written In The PNR    *OFFER**MINIMUM STAY: NO MINIMUM STAY*
+    Verify Specific Line Is Written In The PNR    *OFFER**MAXIMUM STAY: ONE YEAR*
+    Verify Specific Line Is Written In The PNR    *OFFER**DETAILS:
+    Verify Specific Line Is Not Written In The PNR    RMZ CONF*NOMINIRULES*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Fare Restrictions Are Applied For Amadeus Mini Rules When SO Is Offers Only, BF Is Auto-Priced, AF Is Offer
+    [Tags]    us4569    us4707    us4662    fr    us5465
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ Power Hotel Integration    Lane    Maurice
+    Click New Booking
+    Create Amadeus Offer    CDGLHR/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Objects Are Visible    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Verify Air Fare Restriction Objects Are Hidden    Alternate Fare 1
+    Verify Alternate Fare Details Are Disabled    Alternate Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    MERCHANT FEES-
+    Verify Specific Line Is Written In The PNR    PCC-TEST123
+    Verify Specific Line Is Written In The PNR    CHGS-CHANGEMENT D'HORAIRE SANS FRAIS
+    Verify Specific Line Is Written In The PNR    CANX-REMBOURSEMENT INTEGRAL
+    Verify Specific Line Is Written In The PNR    APP-AF:RERTE-AUTORISE
+    Verify Specific Line Is Written In The PNR    MIN-PAS DE SEJOUR MINIMUM:MAX-1 AN
+    Verify Specific Line Is Written In The PNR    PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    NATIONALITE DU VOYAGEUR: FR
+    Verify Specific Line Is Written In The PNR    VALIDITE DU PASSEPORT: OUI
+    Verify Specific Line Is Written In The PNR    ROUTING: PARIS LONDON
+    Verify Specific Line Is Written In The PNR    MODIFICATION : CHANGEMENT D'HORAIRE SANS FRAIS
+    Verify Specific Line Is Written In The PNR    ANNULATION: REMBOURSEMENT INTEGRAL
+    Verify Specific Line Is Written In The PNR    CONDITIONS TARIFAIRES:
+    Verify Specific Line Is Written In The PNR    VALABLE SUR : AF
+    Verify Specific Line Is Written In The PNR    VALIDITE MINIMUM : PAS DE SEJOUR MINIMUM
+    Verify Specific Line Is Written In The PNR    VALIDITE MAXIMUM :
+    Verify Specific Line Is Written In The PNR    *TLXL*EMISSION A CONFIRMER AU PLUS TARD LE
+    Verify Specific Line Is Not Written In The PNR    RMF AF-
+    Verify Specific Line Is Not Written In The PNR    RIR *OFFER**
+    Verify Specific Line Is Not Written In The PNR    RMZ CONF*NOMINIRULES*
+
+[AB FR] Verify That Fare Restrictions Are Applied For Amadeus Mini Rules When SO Is Offers Only, BF Is Auto-Priced, AF Is Manual
+    [Tags]    us4569    us4707    us4662    de6095    fr    us5465
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare And Segment    2
+    Delete Fare Quote and Flight Segment    RTOF    XE1
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXB    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify Air Fare Restriction Objects Are Visible    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 1
+    Verify Air Fare Restriction Objects Are Visible    Alternate Fare 1
+    Populate Alternate Fare Details    LHRCDG    AF    3333    2222    AF 3333
+    Click Finish PNR    Amend Booking Workflow For Amadeus Mini Rules (FR)
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Amadeus Mini Rules (FR)
+    Comment    Re-Execute Amend Booking Workflow For Amadeus Mini Rules (FR) If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    MERCHANT FEES-
+    Verify Specific Line Is Written In The PNR    PCC-TEST123
+    Verify Specific Line Is Written In The PNR    CHGS-CHANGEMENT D'HORAIRE SANS FRAIS
+    Verify Specific Line Is Written In The PNR    CANX-REMBOURSEMENT INTEGRAL
+    Verify Specific Line Is Written In The PNR    APP-AF:RERTE-AUTORISE
+    Verify Specific Line Is Written In The PNR    MIN-PAS DE SEJOUR MINIMUM:MAX-1 AN
+    Verify Specific Line Is Written In The PNR    PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    NATIONALITE DU VOYAGEUR: FR
+    Verify Specific Line Is Written In The PNR    VALIDITE DU PASSEPORT: OUI
+    Verify Specific Line Is Written In The PNR    ROUTING: LONDON PARIS
+    Verify Specific Line Is Written In The PNR    TARIF APPLIQUE:
+    Verify Specific Line Is Written In The PNR    MODIFICATION : CHANGEMENT D'HORAIRE SANS FRAIS
+    Verify Specific Line Is Written In The PNR    ANNULATION: REMBOURSEMENT INTEGRAL
+    Verify Specific Line Is Written In The PNR    CONDITIONS TARIFAIRES:
+    Verify Specific Line Is Written In The PNR    VALABLE SUR : AF
+    Verify Specific Line Is Written In The PNR    VALIDITE MINIMUM : PAS DE SEJOUR MINIMUM
+    Verify Specific Line Is Written In The PNR    VALIDITE MAXIMUM : 1 AN
+    Verify Specific Line Is Written In The PNR    *TLXL*EMISSION A CONFIRMER AU PLUS TARD LE
+    Verify Specific Line Is Written In The PNR    RMF AF-
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**
+    Verify Specific Line Is Not Written In The PNR    RMZ CONF*NOMINIRULES*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Fare Restrictions Are Not Applied For Amadeus Mini Rules When SO Is Booked Only, Offline Module Set To KDS, PNR Is KDS, BF Is Auto-Priced, AF Is Offer In New Booking
+    [Tags]    us4569    us4707    us4662    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ 1A FR Car Panel Testing    Smith    Walden
+    Click New Booking
+    Create Amadeus Offer    CDGLHR/AAF    SS1Y1    FXP    6
+    Click Panel    Client Info
+    Populate Client Info Panel With Default Values
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Objects for OBT Are Visible    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Verify Air Fare Restriction Objects for OBT Are Visible    Alternate Fare 1
+    Populate Alternate Fare Details    LHRCDG    AF    3333    2222    AF 3333
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    ROUTING: PARIS LONDON
+    Verify Specific Line Is Written In The PNR    MODIFICATION : MODIFIABLE
+    Verify Specific Line Is Written In The PNR    ANNULATION: REMBOURSABLE
+    Verify Specific Line Is Written In The PNR    CONDITIONS TARIFAIRES:
+    Verify Specific Line Is Written In The PNR    VALIDITE MINIMUM :
+    Verify Specific Line Is Written In The PNR    VALIDITE MAXIMUM :
+    Verify Specific Line Is Written In The PNR    *TLXL*EMISSION A CONFIRMER AU PLUS TARD LE
+    Verify Specific Line Is Written In The PNR    RMF AF-
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That The Correct Book Fare Type For Each Alternate Fare Is Added For KDS
+    [Tags]    us2837    us554    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With Round Trip Flight And One Alternate Offer Using Default Values    Amadeus FR 15 - Auto ¦ US2837 KDS    AutoOneFiveTwo    EmeaTrvlrOne    LAXCDG/AAF    SS1Y1    FXB/S2
+    ...    FXD/S2    LAXCDG/AAF    SS1Y1    FXB/S3    ${EMPTY}    AIR FARE
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Alternate Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true
+    Select Realised Saving Code Value    TNU - TARIF NORMAL UTILISE
+    Select Missed Saving Code Value    PDR - PAS DE REFUS
+    Verify Missed Savings Code Default Value    PDR - PAS DE REFUS
+    Verify Realised Savings Code Default Value    TNU - TARIF NORMAL UTILISE
+    Select Class Code Value    CC - Affaires Tarif Negocie
+    Populate Fare Tab With Default Values    Fare 1    true
+    Select Realised Saving Code Value    TNU - TARIF NORMAL UTILISE
+    Select Missed Saving Code Value    PDR - PAS DE REFUS
+    Verify Missed Savings Code Default Value    PDR - PAS DE REFUS
+    Verify Realised Savings Code Default Value    TNU - TARIF NORMAL UTILISE
+    Select Class Code Value    CD - Affaires Tarif Abonne
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Select Alternate Fare Class Code    Alternate Fare 1    CD - Affaires Tarif Abonne
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 2
+    Populate Alternate Fare Details Using Copy Air Button    TEST    250    FC - First Tarif Negocie
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRO
+    Verify Specific Line Is Written In The PNR    CP1 AIR [A-Z,0-9]+/[A-Z]+/[0-9]+/[A-Z,0-9]+/[0-9]+/[0-9]+/[A-Z]+/[A-Z]+/[A-Z]/A    true
+    Verify Specific Line Is Written In The PNR    CP2 AIR [A-Z,0-9]+/[A-Z]+/[0-9]+/[A-Z,0-9]+/[0-9]+/[0-9]+/[A-Z]+/[A-Z]+/[A-Z]/B    true
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RM *7306*PDR/S2
+    Verify Specific Line Is Written In The PNR    RM *7306*PDR/S3
+    Verify Specific Line Is Written In The PNR    RM *7305*TNU/S2
+    Verify Specific Line Is Written In The PNR    RM *7305*TNU/S3
+
+[AB FR] Verify That The Correct Book Fare Type For Each Alternate Fare Is Updated For KDS
+    [Tags]    us2837    us554    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    true
+    Verify Missed Savings Code Default Value    PDR - PAS DE REFUS
+    Verify Realised Savings Code Default Value    TNU - TARIF NORMAL UTILISE
+    Select Class Code Value    CD - Affaires Tarif Abonne
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true
+    Verify Missed Savings Code Default Value    PDR - PAS DE REFUS
+    Verify Realised Savings Code Default Value    TNU - TARIF NORMAL UTILISE
+    Select Class Code Value    CC - Affaires Tarif Negocie
+    Get Fare Details    Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Select Alternate Fare Class Code    Alternate Fare 1    CC - Affaires Tarif Negocie
+    Click Fare Tab    Alternate Fare 2
+    Select Alternate Fare Class Code    Alternate Fare 2    FC - First Tarif Negocie
+    Click Finish PNR    Amend Booking Workflow For Correct Book Fare Type For Each Alternate Fare Is Updated For KDS
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Correct Book Fare Type For Each Alternate Fare Is Updated For KDS
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRO
+    Verify Specific Line Is Written In The PNR    RMO CP1 AIR S1/.*    true
+    Verify Specific Line Is Written In The PNR    RMO CP2 AIR S2/.*    true
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Comment    Verify Specific Line Is Written In The PNR    RM *7306*PDR/S2
+    Comment    Verify Specific Line Is Written In The PNR    RM *7306*PDR/S3
+    Comment    Verify Specific Line Is Written In The PNR    RM *7305*TNU/S2
+    Comment    Verify Specific Line Is Written In The PNR    RM *7305*TNU/S3
+    Verify Air Savings Remarks Are Written    S2    Fare 1
+    Verify Air Savings Remarks Are Written    S3    Fare 2
+
+[CB FR] Verify That The Correct Book Fare Type For Each Alternate Fare Is Retained For KDS
+    [Tags]    us2837    fr
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR    Cancel Booking Workflow For OBT
+    Execute Simultaneous Change Handling    Cancel Booking Workflow For OBT
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRO
+    Verify Specific Line Is Written In The PNR    RMO CP1 AIR S1/.*    true
+    Verify Specific Line Is Written In The PNR    RMO CP2 AIR S2/.*    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That The Correct Book Fare Type For Each Alternate Fare Is Added For Traveldoo
+    [Tags]    us2837    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With Round Trip Flight And One Alternate Offer Using Default Values    Amadeus FR 15 - Auto ¦ US2837 Traveldoo    AutoOneFiveTwo    EmeaTrvlrTwo    CDGLYS/AAF    SS1Y1    FXB/S2
+    ...    FXD/S2    LYSCDG/AAF    SS1Y1    FXB/S3    ${EMPTY}    AIR FARE
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Alternate Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Select Alternate Fare Class Code    Alternate Fare 1    YD - Economy Tarif Abonne
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 2
+    Populate Alternate Fare Details Using Copy Air Button    TEST    250    YC - Economy Tarif Negocie
+    Select Alternate Fare Class Code    Alternate Fare 2    YC - Economy Tarif Negocie
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRO
+    Verify Specific Line Is Written In The PNR    CP1 AIR [A-Z,0-9]+/[A-Z]+/[0-9]+/[A-Z,0-9]+/[0-9]+/[0-9]+/[A-Z]+/[A-Z]+/[A-Z]/A    true
+    Verify Specific Line Is Written In The PNR    CP2 AIR [A-Z,0-9]+/[A-Z]+/[0-9]+/[A-Z,0-9]+/[0-9]+/[0-9]+/[A-Z]+/[A-Z]+/[A-Z]/B    true
+
+[AB FR] Verify That The Correct Book Fare Type For Each Alternate Fare Is Updated For Traveldoo
+    [Tags]    us2837    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Alternate Fare 1
+    Select Alternate Fare Class Code    Alternate Fare 1    FD - First Tarif Abonne
+    Click Fare Tab    Alternate Fare 2
+    Select Alternate Fare Class Code    Alternate Fare 2    YD - Economy Tarif Abonne
+    Click Finish PNR    Amend Booking Workflow For Correct Book Fare Type For Each Alternate Fare Is Updated For Traveldoo
+    Re-Execute Amend Booking Workflow For Correct Book Fare Type For Each Alternate Fare Is Updated For Traveldoo If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRO
+    Verify Specific Line Is Written In The PNR    CP1 AIR [A-Z,0-9]+/[A-Z]+/[0-9]+/[A-Z,0-9]+/[0-9]+/[0-9]+/[A-Z]+/[A-Z]+/[A-Z]/A    true
+    Verify Specific Line Is Written In The PNR    CP2 AIR [A-Z,0-9]+/[A-Z]+/[0-9]+/[A-Z,0-9]+/[0-9]+/[0-9]+/[A-Z]+/[A-Z]+/[A-Z]/A    true
+
+[CB FR] Verify That The Correct Book Fare Type For Each Alternate Fare Is Retained For Traveldoo
+    [Tags]    us2837    fr
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR    Cancel Booking Workflow For OBT
+    Execute Simultaneous Change Handling    Cancel Booking Workflow For OBT
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRO
+    Verify Specific Line Is Written In The PNR    CP1 AIR [A-Z,0-9]+/[A-Z]+/[0-9]+/[A-Z,0-9]+/[0-9]+/[0-9]+/[A-Z]+/[A-Z]+/[A-Z]/A    true
+    Verify Specific Line Is Written In The PNR    CP2 AIR [A-Z,0-9]+/[A-Z]+/[0-9]+/[A-Z,0-9]+/[0-9]+/[0-9]+/[A-Z]+/[A-Z]+/[A-Z]/A    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Multiple Amadeus Offer Will Be Loaded In Express
+    [Tags]    us5732    fr
+    [Setup]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR Legacy - Auto ¦ US681    AutoLegacy    EmeaTrvlrOneFive
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now Without Pricing    MNLMAN/AEY    SS1Y2    6    8
+    Book Flight X Months From Now Without Pricing    MANMNL/AEY    SS1Y2    7    8
+    Enter GDS Command    FXP
+    Enter GDS Command    FXD    OFS/A1    OFS/A2    OFS/A3    OFS/A4
+    Enter GDS Command    OFS/A5    OFS/A6    OFS/A7
+    Click Read Booking
+    Verify Fare Tab Is Visible    Alternate Fare 1    Alternate Fare 2    Alternate Fare 3    Alternate Fare 4    Alternate Fare 5
+    Verify Fare Tab Is Visible    Alternate Fare 6    Alternate Fare 7
+    Enter GDS Command    RTOF    XE7
+    Click Read Booking
+    Verify Fare Tab Is Visible    Alternate Fare 1    Alternate Fare 2    Alternate Fare 3    Alternate Fare 4    Alternate Fare 5    Alternate Fare 6
+    [Teardown]    Click Clear All
+
+[NB UK] Verify That the Skip Remark Is Not Written In The PNR If The Amadeus Minirules SO Is Booked and Offers
+    [Tags]    us5465    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ US5465 Amadeus Minirules Booked Offers    Auto    TravellerOne
+    Click New Booking
+    Update PNR for EN or GB
+    Create Amadeus Offer    LHRCDG/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Objects Are Hidden    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Verify Alternate Fare Details Are Disabled    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RMZ CONF*NOMINIRULES*
+
+[AB UK] Verify That the Skip Remark Is Not Written In The PNR If The Amadeus Minirules SO Is Booked and Offers
+    [Tags]    uk    us5465
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare And Segment    2
+    Delete Fare Quote and Flight Segment    RTOF    XE1
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXB    6    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Objects Are Hidden    Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For Amadeus Mini Rules Booked and Offers
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Amadeus Mini Rules Booked and Offers
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RMZ CONF*NOMINIRULES*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That Alternate Fare Tab Details Are Displaying Correctly
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Set Alternate Fare Airline    AF
+    Verify Total Alternate Fare    200.00
+    Verify Alternate Flight Details Is Correct    Alternate Fare 1    CDGLHR
+    Set Alternate Fare Details With New Line Details    THISTEST2
+    Set Alternate Fare Amount    200
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Finish PNR    Amend Booking For Verify That Alternate Fare Tab Details Are Displaying Correctly
+
+Amend Booking For Verify That Alternate Updated Fare Tab Details Are Displaying Correctly
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Alternate Fare 1
+    Set Alternate Fare Airline    AF
+    Verify Total Alternate Fare    200.00
+    Verify Alternate Flight Details Is Correct    Alternate Fare 1    CDGLHR
+    Set Alternate Fare Details With New Line Details    THISTEST3
+    Set Alternate Fare Amount    200.00
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Finish PNR    Amend Booking For Verify That Alternate Updated Fare Tab Details Are Displaying Correctly
+
+Amend Booking Workflow For Alternate Fare Tab
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Alternate Fare 1
+    Set Alternate Fare Airline    AF
+    Verify Total Alternate Fare    200.00
+    Retrieve PNR From Amadeus
+    Verify Alternate Flight Details Is Correct    ${pnr_details}    LAXCDG
+    Set Alternate Fare Details With New Line Details    THISTEST3
+    Set Alternate Fare Amount    200.00
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR    Amend Booking Workflow For Alternate Fare Tab
+
+Amend Booking Workflow For Amadeus Mini Rules (FR)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare And Segment    2
+    Delete Fare Quote and Flight Segment    RTOF    XE1
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXB    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Objects Are Visible    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 1
+    Verify Air Fare Restriction Objects Are Visible    Alternate Fare 1
+    Populate Alternate Fare Details    LHRCDG    AF    3333    2222    AF 3333
+    Click Finish PNR    Amend Booking Workflow For Amadeus Mini Rules (FR)
+
+Amend Booking Workflow For Amadeus Mini Rules (UK)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare And Segment    2
+    Delete Fare Quote and Flight Segment    RTOF    XE1
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXB    6    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Objects Are Hidden    Fare 1
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Click Fare Tab    Alternate Fare 1
+    Delete Alternate Fare Tab    Alternate Fare 1
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 1
+    Verify Air Fare Restriction Objects Are Visible    Alternate Fare 1
+    Populate Alternate Fare Details    LHRCDG    AF    3333    2222    AF 3333
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Finish PNR    Amend Booking Workflow For Amadeus Mini Rules (UK)
+
+Amend Booking Workflow For Amadeus Offer Remarks Are Changed In The PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Remove Amadeus Offer Remarks On PNR    ${current_pnr}
+    Enter GDS Command    TTE/ALL    XE2    RTOF    XE1    RT
+    Create Amadeus Offer    CDGLHR/AAF    SS1Y1    FXB
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Get Fare Details    Fare 1
+    Delete Alternate Fare Tab    Alternate Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow For Amadeus Offer Remarks Are Changed In The PNR
+
+Amend Booking Workflow For Amadeus Offer Remarks Are Removed In The PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Remove Amadeus Offer Remarks On PNR    ${current_pnr}
+    Enter GDS Command    RTOF    XE1
+    Click Read Booking
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 1
+    Verify Fare Tab Is Not Visible    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow For Amadeus Offer Remarks Are Removed In The PNR
+
+Amend Booking Workflow For Correct Book Fare Type For Each Alternate Fare Is Updated For KDS
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    true
+    Verify Missed Savings Code Default Value    PDR - PAS DE REFUS
+    Verify Realised Savings Code Default Value    TNU - TARIF NORMAL UTILISE
+    Select Class Code Value    YA - Economy Tarif Public
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true
+    Verify Missed Savings Code Default Value    PDR - PAS DE REFUS
+    Verify Realised Savings Code Default Value    TNU - TARIF NORMAL UTILISE
+    Select Class Code Value    YA - Economy Tarif Public
+    Get Fare Details    Fare 2
+    Click Fare Tab    Alternate Fare 1
+    Select Alternate Fare Class Code    Alternate Fare 1    CC - Affaires Tarif Negocie
+    Click Fare Tab    Alternate Fare 2
+    Select Alternate Fare Class Code    Alternate Fare 2    FC - First Tarif Negocie
+    Click Finish PNR    Amend Booking Workflow For Correct Book Fare Type For Each Alternate Fare Is Updated For KDS
+
+Amend Booking Workflow For Correct Book Fare Type For Each Alternate Fare Is Updated For Traveldoo
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Alternate Fare 1
+    Select Alternate Fare Class Code    Alternate Fare 1    FD - First Tarif Abonne
+    Click Fare Tab    Alternate Fare 2
+    Select Alternate Fare Class Code    Alternate Fare 2    YD - Economy Tarif Abonne
+    Click Finish PNR    Amend Booking Workflow For Correct Book Fare Type For Each Alternate Fare Is Updated For Traveldoo
+
+Amend Booking Workflow For Four Normal Fares W Amadeus Offer
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    IR    XE2
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2    Fare 3    Alternate Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get Fees Fare Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Get Fees Fare Value    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Get High, Charged And Low Fare In Fare Tab    Fare 3
+    Get Fees Fare Value    Fare 3
+    Get Overall Total Fares    Fare 1    Fare 2    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking Workflow For Four Normal Fares W Amadeus Offer
+
+Amend Departure Date In Amadeus
+    [Arguments]    ${city_pair}    ${given_flight_date}=${EMPTY}
+    Set Test Variable    ${days_from_now}    1
+    ${current_day}    Get Time    'day'
+    Get Single Flight Details    ${city_pair}
+    ${given_flight_date}    Set Variable If    "${given_flight_date}" != "${EMPTY}"    ${given_flight_date}    ${flight_date}
+    ${current_departure_date}    Get Substring    ${given_flight_date}    0    2
+    ${current_departure_date}    Convert To Integer    ${current_departure_date}
+    ${current_day}    Convert To Integer    ${current_day}
+    ${days_from_now}    Evaluate    ${current_departure_date} - ${current_day} + 1
+    ${departure_date}    Set Departure Date X Months From Now In Gds Format    6    ${days_from_now}
+    Set Test Variable    ${departure_date}
+    Enter GDS Command    SB${departure_date}${segment_number}
+    Redo Amend Departure Date If Rebook Is Rejected    ${days_from_now}
+
+Amend Workflow For KDS Fare Conditions for Normal Fare And Alternate Fare
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select Fare Restriction    SEMI FLEXIBLE
+    Select Changes Dropdown Value    3: Non Modifiable
+    Select Cancellation Dropdown Value    3: Non Remboursable
+    Click Fare Tab    Fare 2
+    Select Fare Restriction    SEMI FLEXIBLE
+    Select Changes Dropdown Value    1: Modifiable
+    Select Cancellation Dropdown Value    1: Remboursable
+    Click Fare Tab    Alternate Fare 1
+    Select Fare Restriction    FULLY FLEXIBLE
+    Select Changes Dropdown Value    1: Modifiable
+    Select Cancellation Dropdown Value    1: Remboursable
+    Click Fare Tab    Alternate Fare 2
+    Select Fare Restriction    NON FLEXIBLE
+    Select Changes Dropdown Value    3: Non Modifiable
+    Select Cancellation Dropdown Value    3: Non Remboursable
+    Remove Amadeus Offer Remarks On PNR    ${current_pnr}    1
+    Enter GDS Command    RTOF    XE1    RT    TTE/ALL    FXB
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 2
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Option Is Selected By Default    SEMI FLEXIBLE
+    Populate Fare Tab With Default Values    Fare 1
+    Verify Possible Values For Changes And Cancellation For Each Air Fare Restriction    Fare 1
+    Select Fare Restriction    SEMI FLEXIBLE
+    Select Changes Dropdown Value    3: Non Modifiable
+    Select Cancellation Dropdown Value    2: Partiellement Remboursable
+    Verify Possible Values For Changes And Cancellation For Each Air Fare Restriction    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Finish PNR    Amend Workflow For KDS Fare Conditions for Normal Fare And Alternate Fare
+
+Amend Workflow For Multiple Amadeus Offer Remarks Are Changed In The PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    Amend Departure Date In Amadeus    CDGLYS
+    Amend Departure Date In Amadeus    LYSCDG    ${flight_date}
+    Enter GDS Command    FXB/S2    FXB/S3    FXD/S2    OFS/A1    FXD/S3    OFS/A1
+    Get Data From GDS Screen
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Verify Fare Tab Is Visible    Alternate Fare 1    Alternate Fare 2
+    Verify Values In Alternate Fare Tab    Alternate Fare 3    CDG-LYS    2
+    Populate Alternate Fare With Default Values    Alternate Fare 3
+    Get Alternate Fare Details    Alternate Fare 3
+    Verify Values In Alternate Fare Tab    Alternate Fare 4    LYS-CDG    3
+    Populate Alternate Fare With Default Values    Alternate Fare 4
+    Get Alternate Fare Details    Alternate Fare 4
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Workflow For Multiple Amadeus Offer Remarks Are Changed In The PNR
+    Execute Simultaneous Change Handling    Amend Workflow For Multiple Amadeus Offer Remarks Are Changed In The PNR
+
+Amend Workflow For One Of Multiple Amadeus Offer Remarks Are Changed In The PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Remove Amadeus Offer Remarks On PNR    ${current_pnr}
+    Enter GDS Command    TTE/ALL    XE2-3    RTOF    XE1-4    RT
+    Create Amadeus Offer    CDGLAX/AAF    SS1Y1    FXB
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Delete Alternate Fare Tab    Alternate Fare 3
+    Delete Alternate Fare Tab    Alternate Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Workflow For One Of Multiple Amadeus Offer Remarks Are Changed In The PNR
+    Execute Simultaneous Change Handling    Amend Workflow For One Of Multiple Amadeus Offer Remarks Are Changed In The PNR
+
+Amend Workflow For One Of Multiple Amadeus Offer Remarks Are Removed In The PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 5
+    Delete Alternate Fare Tab    Alternate Fare 4
+    Remove Amadeus Offer Remarks On PNR    ${current_pnr}    4
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Alternate Fare 1    Alternate Fare 2    Alternate Fare 3
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 3
+    Get Alternate Fare Details    Alternate Fare 3
+    Verify Fare Tab Is Not Visible    Alternate Fare 4
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Workflow For One Of Multiple Amadeus Offer Remarks Are Removed In The PNR
+    Execute Simultaneous Change Handling    Amend Workflow For One Of Multiple Amadeus Offer Remarks Are Removed In The PNR
+
+Cancel Booking Workflow For OBT
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR    Cancel Booking Workflow For OBT
+
+Redo Amend Departure Date If Rebook Is Rejected
+    [Arguments]    ${days_from_now}
+    : FOR    ${current}    IN RANGE    1    99
+    \    Get Data From GDS Screen
+    \    ${substring}    Get String Between Strings    ${gds_screen_data}    SB${departure_date}${segment_number}    >
+    \    ${status}    Run Keyword And Return Status    Should Contain    ${substring}    REBOOK REJECTED
+    \    Run Keyword If    "${status}" == "False"    Exit For Loop
+    \    ${days_from_now}    Run Keyword If    "${status}" == "True"    Evaluate    ${days_from_now} + 1
+    \    ...    ELSE    Set Variable    ${days_from_now}    ${days_from_now}
+    \    ${departure_date}    Run Keyword If    "${status}" == "True"    Set Departure Date X Months From Now In Gds Format    6    ${days_from_now}
+    \    Enter GDS Command    SB${departure_date}${segment_number}
+    Set Test Variable    ${flight_date}    ${departure_date}
+
+Remove Amadeus Offer Remarks On PNR
+    [Arguments]    ${current_pnr}    ${offer_number}=0
+    Run Keyword If    "${offer_number}" == "0"    Determine Amadeus Offer Remark Lines    ${current_pnr}
+    ...    ELSE    Determine Specific Amadeus Offer Remark Lines    ${current_pnr}    ${offer_number}
+    Enter GDS Command    RT
+    Enter GDS Command    XE${offer_line_numbers}
+    Enter GDS Command    RFCWTTEST
+    Enter GDS Command    ER
+
+Send Itinerary Workflow For Multiple Amadeus Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Send Itinerary Workflow For Multiple Amadeus Remarks
+
+Verify Changes And Cancellation Values Are Retained In Amend Booking For Fare Tab
+    [Arguments]    ${fare_tab}    ${restriction}    ${changes}    ${cancellation}
+    Click Fare Tab    ${fare_tab}
+    Verify Air Fare Restriction Option Is Selected By Default    ${restriction}
+    Verify Changes Field Actual Value    ${changes}
+    Verify Cancellations Field Actual Value    ${cancellation}
+
+Verify Error Message Is Displayed: "Vous Devez Choisir Un Elément De La Liste" For Cancellations
+    Comment    Run Keyword And Continue On Failure    Object Exists    ${sikuli_image_path}/error_symbol1.png    0.8    ${timeout}
+    Comment    Auto It Set Option    MouseCoordMode    2
+    Comment    Mouse Move    867    505
+    Comment    Auto It Set Option    MouseCoordMode    0
+    Comment    Run Keyword And Continue On Failure    Object Exists    ${sikuli_image_path}/error_message_changes_or_cancellations_fr.png    0.8    ${timeout}
+    ${actual_tooltip_text}    Get Tooltip Text    875    535
+    Should Be Equal    Vous devez choisir un élément de la liste    ${actual_tooltip_text}
+    [Teardown]    Take Screenshot
+
+Verify Error Message Is Displayed: "Vous Devez Choisir Un Elément De La Liste" For Changes
+    Comment    Run Keyword And Continue On Failure    Object Exists    ${sikuli_image_path}/error_symbol1.png    0.8    ${timeout}
+    Comment    Auto It Set Option    MouseCoordMode    2
+    Comment    Mouse Move    867    465
+    Comment    Auto It Set Option    MouseCoordMode    0
+    Comment    Run Keyword And Continue On Failure    Object Exists    ${sikuli_image_path}/error_message_changes_or_cancellations_fr.png    0.8    ${timeout}
+    ${actual_tooltip_text}    Get Tooltip Text    875    495
+    Should Be Equal    Vous devez choisir un élément de la liste    ${actual_tooltip_text}
+    [Teardown]    Take Screenshot
+
+Verify Possible Values For Changes And Cancellation For Each Air Fare Restriction
+    [Arguments]    ${fare_tab}
+    Click Fare Tab    ${fare_tab}
+    Select Fare Restriction    FULLY FLEXIBLE
+    Verify Changes Field Actual Value    1: Modifiable
+    Verify Cancellations Field Actual Value    1: Remboursable
+    Set Changes Value    kdjasdlksa
+    Verify Error Message Is Displayed: "Vous Devez Choisir Un Elément De La Liste" For Changes
+    Set Changes Value    1: Modifiable
+    Set Cancellation Value    kdjasdlksa
+    Verify Error Message Is Displayed: "Vous Devez Choisir Un Elément De La Liste" For Cancellations
+    Set Cancellation Value    1: Remboursable
+    Select Fare Restriction    SEMI FLEXIBLE
+    Verify Changes Dropdown Values    1: Modifiable    2: Partiellement Modifiable    3: Non Modifiable
+    Verify Cancellation Dropdown Values    1: Remboursable    2: Partiellement Remboursable    3: Non Remboursable
+    Set Changes Value    kdjasdlksa
+    Verify Error Message Is Displayed: "Vous Devez Choisir Un Elément De La Liste" For Changes
+    Set Changes Value    2: Partiellement Modifiable
+    Set Cancellation Value    kdjasdlksa
+    Verify Error Message Is Displayed: "Vous Devez Choisir Un Elément De La Liste" For Cancellations
+    Set Cancellation Value    2: Partiellement Remboursable
+    Select Fare Restriction    NON FLEXIBLE
+    Verify Changes Field Actual Value    3: Non Modifiable
+    Verify Cancellations Field Actual Value    3: Non Remboursable
+    Set Changes Value    kdjasdlksa
+    Set Cancellation Value    kdjasdlksa
+    Click Panel    Recap
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Tick Fare Not Finalised
+    Click Panel    Recap
+    Verify Panel Is Green    Air Fare
+    Click Panel    Air Fare
+    Untick Fare Not Finalised
+    Click Fare Tab    ${fare_tab}
+    Select Fare Restriction    NON FLEXIBLE
+    Set Changes Value    3: Non Modifiable
+    Set Cancellation Value    3: Non Remboursable
+    Click Panel    Recap
+    Verify Panel Is Green    Air Fare
+    Click Panel    Air Fare
+
+Verify Values In Alternate Fare Tab
+    [Arguments]    ${fare_tab}    ${routing}    ${segment}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${gds_routing}    Replace String    ${routing}    -    ${EMPTY}
+    Click Fare Tab    ${fare_tab}
+    Get Fare Basis Offer    ${fare_tab}
+    ${data_clipboard}    Get Clipboard Data Amadeus    TQQ/O${fare_tab_index}
+    Verify Text Contains Expected Value    ${data_clipboard}    ${fare_basis_alt_${fare_tab_index}}
+    Verify Fare Class Is Mandatory And Has No Value
+    Verify Alternate Fare Routing Field Value    ${routing}
+    Get Single Flight Details    ${gds_routing}
+    Verify Alternate Fare Details Field    ${fare_tab}
+    Verify Offer Amount    ${fare_tab_index}
+
+Amend Booking Workflow For Amadeus Mini Rules Booked and Offers
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare And Segment    2
+    Delete Fare Quote and Flight Segment    RTOF    XE1
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXB    6    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Objects Are Hidden    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Verify Alternate Fare Details Are Disabled    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For Amadeus Mini Rules Booked and Offers

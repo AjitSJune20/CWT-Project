@@ -1,0 +1,86 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../complete_verification.txt
+Resource          ../../../resources/panels/complete.txt
+Resource          ../../database/database_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Contact Is Retained After Clear All Same Booking New Traveller If Contact Is Traveller With Arranger
+    [Tags]    us1426    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 15 - Auto ¦ US1426    AutoArrangerOneFifteenEight    NoramArrangerFive
+    Untick Traveller Checkbox
+    Get Arranger Details
+    Set Client And Traveler    Sabre 15 - Auto ¦ US1426    AutoOneFiveEight    NoramTrvlrFour
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DENLAX‡AA    01Y1    WPRQ    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Get Routing Value    Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All With Options    Same Booking, New Traveller
+    Handle Generic Window Popup
+    Verify Arranger Remains The Same After Clear All Same Booking New Traveller
+    Set Client And Traveler    Sabre 15 - Auto ¦ US1426    AutoOneFiveEight    NoramTrvlrFour
+    Click New Booking
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *I    0
+    Verify Air Segment Is Retained    DENLAX
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Traveller Is Automatically Identified When New Booking, Same Traveller Is Selected With Contact/Traveller Tab Only
+    [Tags]    noram    us4966
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 15 - Auto ¦ US1426    AutoOneFiveEight    NoramTrvlrFour
+    Select Trip Type Value    Personal
+    Get Traveller Tab Details    Traveller/Contact
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXDEN‡AA    01Y1    WPRQ    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Delete Current Specific Log File    SyExPerfLog
+    Click Clear All With Options    New Booking, Same Traveller
+    Verify That Traveller Tab Details Are Retained    Traveller/Contact
+    Verify Existing Bookings Tab Is Displayed
+    Verify Perflog And AppUsage For New Booking Same Traveller    2    0
+    Click New Booking
+    Click Clear All
+    [Teardown]
+
+[SI] Verify That Traveller Is Automatically Identified When New Booking, Same Traveller Is Selected With Contact/Traveller Tab Only
+    [Tags]    noram    us4966
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Select Trip Type Value    Meetings
+    Get Traveller Tab Details    Traveller/Contact
+    Click Finish PNR    Send Itin New Booking, Same Traveller With Contact/Traveller Tab Only
+    Execute Simultaneous Change Handling    Send Itin New Booking, Same Traveller With Contact/Traveller Tab Only
+    Delete Current Specific Log File    SyExPerfLog
+    Click Clear All With Options    New Booking, Same Traveller
+    Verify That Traveller Tab Details Are Retained    Traveller/Contact
+    Verify Existing Bookings Tab Is Displayed
+    Verify Perflog And AppUsage For New Booking Same Traveller    2    0
+    Click New Booking
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Set Column Names
+    [Documentation]    necessary because query is by column ids not column names
+    Set Test Variable    ${column_applicationeventid}    0
+    Set Test Variable    ${column_applicationeventdescription}    1
+    Set Test Variable    ${column_computername}    2
+    Set Test Variable    ${column_applicationusagedate}    3
+
+Send Itin New Booking, Same Traveller With Contact/Traveller Tab Only
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Select Trip Type Value    Meetings
+    Get Traveller Tab Details    Traveller/Contact
+    Click Finish PNR    Send Itin New Booking, Same Traveller With Contact/Traveller Tab Only

@@ -1,0 +1,32 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../database_verification.txt
+Library           SSHLibrary
+Library           ../../../resources/libraries/RSALibrary.py
+
+*** Test Cases ***
+[NB] Verify That Cancel Workflow Writes To Application Usage Table
+    [Tags]    us1918
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With One Way Flight Using Default Values    Apollo 15 - Auto ¦ US2657    AutoFifteenTwelve    OptimizeTrvlrTen    MSPORD+UA
+    Click Finish PNR
+
+[CB] Verify That Cancel Workflow Writes To Application Usage Table
+    [Tags]    us1918
+    Retrieve PNR with Timestamp    Apollo 15 - Auto ¦ US2657    AutoFifteenTwelve    OptimizeTrvlrTen    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR With Timestamp
+    Re-Execute Cancel Booking Workflow If Simultaneous Change Error Is Displayed
+    Verify Transaction Is Reflected in OTT Table    US Head Office    14:3FE7E    U003WXR    NORAM    NAMER    US
+    ...    1V    3    A:88CCA    A:403127D2    False    ${current_pnr}
+    ...    None    True    None
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Cancel Booking Workflow
+    Retrieve PNR with Timestamp    Apollo 15 - Auto ¦ US2657    AutoFifteenTwelve    OptimizeTrvlrTen    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR With Timestamp

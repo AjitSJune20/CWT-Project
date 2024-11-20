@@ -1,0 +1,250 @@
+*** Settings ***
+Resource          ../../../../resources/common/global_resources.txt
+Resource          ../../../../acceptance_tests/gds/gds_verification.txt
+Resource          ../delivery_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[NB IN] Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller/Contact
+    [Tags]    us302    team_c    US992    in    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION IN - US992    BEAR    INNINENINETWO
+    Verify The E-Mail Address On Contact Tab    Traveller/Contact    fcatacutan@carlsonwagonlit.com
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELHKG/A9W    SS1Y1    FXP/S2    6
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    fcatacutan@carlsonwagonlit.com    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    mehola.teodoro@cwt.com    True    False
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    2    mteodoro1231321312312312323123123122323123123123131231232123312@cwt.com    True    True
+    Select Delivery Method    No Queue Placement (TKOK)
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL FCATACUTAN@CARLSONWAGONLIT.COM
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL MEHOLA.TEODORO@CWT.COM
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL MTEODORO123132131231231232312312312232 3123123123131231232123312@CWT.COM    multi_line_search_flag=true
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/FCATACUTAN@CARLSONWAGONLIT.COM
+    Verify Specific Remark Is Not Written In The PNR    RM *EMAIL/MEHOLA.TEODORO@CWT.COM
+    Verify Specific Line Is Written In The PNR    RM *EMAIL/MTEODORO123132131231231232312312312232312312312313 1231232123312@CWT.COM    multi_line_search_flag=true
+
+[AB IN] Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller/Contact
+    [Tags]    us302    team_c    us992    in    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify The E-Mail Address On Contact Tab    Traveller/Contact    fcatacutan@carlsonwagonlit.com
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    FCATACUTAN@CARLSONWAGONLIT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    MEHOLA.TEODORO@CWT.COM    True    False
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    2    MTEODORO1231321312312312323123123122323123123123131231232123312@CWT.COM    True    True
+    Select Delivery Method    No Queue Placement (TKOK)
+    Populate Air Fare Panel Adding Values On All Fields    1
+    Set Transaction Fee On Air Fare Panel    10
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller/Contact
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL FCATACUTAN@CARLSONWAGONLIT.COM
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL MEHOLA.TEODORO@CWT.COM
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL MTEODORO123132131231231232312312312232 3123123123131231232123312@CWT.COM    multi_line_search_flag=true
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/FCATACUTAN@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RM *EMAIL/MTEODORO123132131231231232312312312232312312312313 1231232123312@CWT.COM    multi_line_search_flag=true
+    Verify Specific Remark Is Not Written In The PNR    RM *EMAIL/MEHOLA.TEODORO@CWT.COM
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller And Contact
+    [Tags]    us302    team_c    us992    hk    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION HK - US992    BEAR    HKNINENINETWO
+    Verify The E-Mail Address On Contact Tab    Traveller/Contact    mehola.teodoro@cwt.com    True    False
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION HK - US992    BEAR    CONTACT
+    Verify The E-Mail Address On Contact Tab    Traveller/Contact    contact1.mhay@cwt.com    False    True
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    contact1.mhay@cwt.com    False    False
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    mehola.teodoro@cwt.com    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    0    True    True
+    Set Receive Itineray and Invoice Option On Deliver Panel    1    True    True
+    Add Email Address Receive Itinerary and Invoice On Deliver Panel    2    bear.hk@cwt.com    True    True
+    Select Delivery Method    No Queue Placement (TKOK)
+    Click Panel    Air Fare
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL CONTACT1.MHAY@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL MEHOLA.TEODORO@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL BEAR.HK@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/CONTACT1.MHAY@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/MEHOLA.TEODORO@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/BEAR.HK@CWT.COM
+
+[AB HK] Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller/Contact
+    [Tags]    us302    team_c    us992    hk    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    CONTACT1.MHAY@CWT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    MEHOLA.TEODORO@CWT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    2    BEAR.HK@CWT.COM    True    True
+    Set Receive Itineray and Invoice Option On Deliver Panel    0    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    1    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    2    True    True
+    Select Delivery Method    No Queue Placement (TKOK)
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For [HK] Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller/Contact
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Remark Is Not Written In The PNR    RMZ CONF*SEND TO MAIL CONTACT1.MHAY@CWT.COM
+    Verify Specific Remark Is Not Written In The PNR    RMZ CONF*SEND TO MAIL MEHOLA.TEODORO@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL BEAR.HK@CWT.COM
+    Verify Specific Remark Is Not Written In The PNR    RM *EMAIL/CONTACT1.MHAY@CWT.COM
+    Verify Specific Remark Is Not Written In The PNR    RM *EMAIL/MEHOLA.TEODORO@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/BEAR.HK@CWT.COM
+
+[AB HK] Verify That E-Mail Addresses Are Retrieved From PNR Remarks And Portrait
+    [Tags]    us302    team_c    us992    hk    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    BEAR.HK@CWT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    contact1.mhay@cwt.com    False    False
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    2    mehola.teodoro@cwt.com    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    0    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    1    False    True
+    Set Receive Itineray and Invoice Option On Deliver Panel    2    True    True
+    Select Delivery Method    No Queue Placement (TKOK)
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That E-Mail Addresses Are Retrieved From PNR Remarks And Portrait
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Remark Is Not Written In The PNR    RMZ CONF*SEND TO MAIL CONTACT1.MHAY@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL MEHOLA.TEODORO@CWT.COM
+    Verify Specific Remark Is Not Written In The PNR    RMZ CONF*SEND TO MAIL BEAR.HK@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/CONTACT1.MHAY@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/MEHOLA.TEODORO@CWT.COM
+    Verify Specific Remark Is Not Written In The PNR    RM *EMAIL/BEAR.HK@CWT.COM
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller And Contact (Arranger)
+    [Tags]    us302    team_c    us992    sg    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 4    BEAR    KMB
+    Verify The E-Mail Address On Contact Tab    Traveller/Contact    kmbtest@cwt.com    True    False
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 4    BEAR    NAH
+    Verify The E-Mail Address On Contact Tab    Contact    beartest@cwt.com    False    True
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINHKG/ASQ    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    beartest@cwt.com    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    kmbtest@cwt.com    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    1    True    True
+    Add Email Address Receive Itinerary and Invoice On Deliver Panel    2    oqwertyuioqwertyyuioqwertyyuikkooqwertyyluioqwertyyuioqwertyyuioqwertyyuioqwekrtyyuioqwertyyuikkok@cwt.com    True    True
+    Select Delivery Method    Amadeus edited TKXL
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL BEARTEST@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL KMBTEST@CWT.COM
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL OQWERTYUIOQWERTYYUIOQWERTYYUIKKOOQWERT YYLUIOQWERTYYUIOQWERTYYUIOQWERTYYUIOQWEKRTYYUIOQWERTYYUIK KOK@CWT.COM    multi_line_search_flag=true
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/BEARTEST@CWT.COM
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/KMBTEST@CWT.COM
+    Verify Specific Line Is Written In The PNR    RM *EMAIL/OQWERTYUIOQWERTYYUIOQWERTYYUIKKOOQWERTYYLUIOQWERTY YUIOQWERTYYUIOQWERTYYUIOQWEKRTYYUIOQWERTYYUIKKOK@CWT.COM    multi_line_search_flag=true    remove_spaces=false
+    [Teardown]
+
+[AB SG] Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller And Contact (Arranger)
+    [Tags]    us302    team_c    us992    sg    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    BEARTEST@CWT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    KMBTEST@CWT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    2    OQWERTYUIOQWERTYYUIOQWERTYYUIKKOOQWERTYYLUIOQWERTYYUIOQWERTYYUIOQWERTYYUIOQWEKRTYYUIOQWERTYYUIKKOK@CWT.COM    True    True
+    Set Receive Itineray and Invoice Option On Deliver Panel    1    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    2    False    False
+    Select Delivery Method    Amadeus edited TKXL
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller And Contact (Arranger)
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL BEARTEST@CWT.COM
+    Verify Specific Remark Is Not Written In The PNR    RMZ CONF*SEND TO MAIL KMBTEST@CWT.COM
+    Verify Specific Multi Line Is Not Written In The PNR    RMZ CONF*SEND TO MAIL OQWERTYUIOQWERTYYUIOQWERTYYUIKKOOQWERT YYLUIOQWERTYYUIOQWERTYYUIOQWERTYYUIOQWEKRTYYUIOQWERTYYUIK KOK@CWT.COM    multi_line_search_flag=true
+    Verify Specific Remark Is Written In The PNR    RM *EMAIL/BEARTEST@CWT.COM
+    Verify Specific Remark Is Not Written In The PNR    RM *EMAIL/KMBTEST@CWT.COM
+    Verify Specific Multi Line Is Not Written In The PNR    RM *EMAIL/OQWERTYUIOQWERTYYUIOQWERTYYUIKKOOQWERTYYLUIOQWERTYYUIOQWERTYYUIOQWERTYYUIOQWEKRTYYUIOQWERTYYUIKKOK@CWT.COMIOQWERTY    multi_line_search_flag=true    remove_spaces=true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller And Contact (Arranger)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    BEARTEST@CWT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    KMBTEST@CWT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    2    OQWERTYUIOQWERTYYUIOQWERTYYUIKKOOQWERTYYLUIOQWERTYYUIOQWERTYYUIOQWERTYYUIOQWEKRTYYUIOQWERTYYUIKKOK@CWT.COM    True    True
+    Set Receive Itineray and Invoice Option On Deliver Panel    1    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    2    False    False
+    Select Delivery Method    Amadeus edited TKXL
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+
+Amend Booking For Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller/Contact
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify The E-Mail Address On Contact Tab    Traveller/Contact    fcatacutan@carlsonwagonlit.com
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    FCATACUTAN@CARLSONWAGONLIT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    MEHOLA.TEODORO@CWT.COM    True    False
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    2    MTEODORO1231321312312312323123123122323123123123131231232123312@CWT.COM    True    True
+    Select Delivery Method    No Queue Placement (TKOK)
+    Populate Air Fare Panel Adding Values On All Fields    1
+    Set Transaction Fee On Air Fare Panel    10
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Finish PNR
+
+Amend Booking For [HK] Verify That E-Mail Addresses Are Pre-Populated From Both Portrait And GDS Profile For Traveller/Contact
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    CONTACT1.MHAY@CWT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    MEHOLA.TEODORO@CWT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    2    BEAR.HK@CWT.COM    True    True
+    Set Receive Itineray and Invoice Option On Deliver Panel    0    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    1    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    2    True    True
+    Select Delivery Method    No Queue Placement (TKOK)
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+
+Amend Booking For Verify That E-Mail Addresses Are Retrieved From PNR Remarks And Portrait
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    0    BEAR.HK@CWT.COM    True    True
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    1    contact1.mhay@cwt.com    False    False
+    Verify That E-Mail Addresses Are Displayed On Delivery Panel    2    mehola.teodoro@cwt.com    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    0    False    False
+    Set Receive Itineray and Invoice Option On Deliver Panel    1    False    True
+    Set Receive Itineray and Invoice Option On Deliver Panel    2    True    True
+    Select Delivery Method    No Queue Placement (TKOK)
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR

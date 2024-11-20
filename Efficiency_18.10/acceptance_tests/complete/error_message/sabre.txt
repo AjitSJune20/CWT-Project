@@ -1,0 +1,34 @@
+*** Settings ***
+Force Tags        sabre    noram
+Resource          ../complete_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Error Message(s) After "Booking File Created Successfully!" Is Written In Red Font
+    [Tags]    us3700
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With Round Trip Air Flight Using Default Values    Sabre 16 - Auto ¦ US3700    AutoSixteenSeven    NoramTrvlrEleven    LAXLHR‡UA    01Y1    ${EMPTY}
+    ...    CDGORD‡UA    01Y1    WPRQ
+    Click Finish PNR
+    Verify Color Of "Booking File Created Successfully!" Message Is Green
+    Verify Color Of "Failed queue placement(s).." Error Is Red
+
+[AB] Verify That Error Message(s) After "Booking File Created Successfully!" Is Written In Red Font
+    [Tags]    us3700
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow In Verifying That Error Nessage(s) After "Booking File Created Successfully!" Is Written In Red Font
+    Verify Color Of "Booking File Updated Successfully!" Message Is Green
+    Verify Color Of "Failed queue placement(s).." Error Is Red
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow In Verifying That Error Nessage(s) After "Booking File Created Successfully!" Is Written In Red Font
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

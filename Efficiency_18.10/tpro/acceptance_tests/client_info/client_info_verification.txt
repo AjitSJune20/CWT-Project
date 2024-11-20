@@ -1,0 +1,79 @@
+*** Settings ***
+Resource          ../../../resources/common/utilities.txt
+Resource          ../../../resources/gds/amadeus.txt
+Resource          ../../../acceptance_tests/air_fare/air_fare_verification.txt
+
+*** Keywords ***
+Identify Form Of Payment Code For APAC
+    [Arguments]    ${card_type}
+    ${credit_card_code}    Run Keyword If    "${card_type}" == "AX"    Set Variable    CX2
+    ...    ELSE IF    "${card_type}" == "DC"    Set Variable    CX3
+    ...    ELSE IF    "${card_type}" == "VI" or "${card_type}" == "CA"    Set Variable    CX4
+    ...    ELSE IF    "${card_type}" == "TP"    Set Variable    CX5
+    ...    ELSE IF    "${card_type.upper()}" == "CASH" or "${card_type.upper()}" == "INVOICE"    Set Variable    CASH
+    ...    ELSE    Set Variable    INVALIDTYPE
+    Set Suite Variable    ${credit_card_code}
+    [Return]    ${credit_card_code}
+
+Select Merchant Fee Type
+    [Arguments]    ${fop_merchant_fee_type}
+    Wait Until Control Object Is Visible    [NAME:FopMerchantComboBox]    ${title_power_express}
+    Select Value From Dropdown List    [NAME:FopMerchantComboBox]    ${fop_merchant_fee_type}
+    Set Suite Variable    ${fop_merchant_fee_type}
+
+Verify FOP Line Is Written Per TST
+    [Arguments]    ${fare_tab}    ${segment_number}    ${airline_commission_or_rebate}=Airline Commission    ${tmp_card}=False    ${is_decimal_applicable}=true
+    ${country}    Get Substring    ${TEST NAME}    4    6
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Test Variable    ${is_tmp_card}    false
+    ${fop_merchant_type}    Get Variable Value    ${fop_merchant_fee_type_${fare_tab_index}}    None
+    Identify Form Of Payment Code For APAC    ${str_card_type_${fare_tab_index}}
+    Run Keyword If    "${nett_fare_value_${fare_tab_index}}" == "0" or "${nett_fare_value_${fare_tab_index}}" == "0.00"    Set Test Variable    ${base_or_nett_fare_${fare_tab_index}}    ${base_fare_${fare_tab_index}}
+    ...    ELSE    Set Test Variable    ${base_or_nett_fare_${fare_tab_index}}    ${nett_fare_value_${fare_tab_index}}
+    ${tmp_card}    Run Keyword If    "${str_card_type_${fare_tab_index}.upper()}" != "CASH" and "${str_card_type_${fare_tab_index}.upper()}" != "INVOICE"    Get Substring    ${str_card_number_${fare_tab_index}}    \    6
+    ${ctcl_card}    Run Keyword If    "${str_card_type_${fare_tab_index}.upper()}" != "CASH" and "${str_card_type_${fare_tab_index}.upper()}" != "INVOICE"    Get Substring    ${str_card_number_${fare_tab_index}}    \    8
+    Run Keyword If    ("${tmp_card}" == "364403" and "${str_card_type_${fare_tab_index}}" == "DC") or ("${ctcl_card}" == "44848860" and "${str_card_type_${fare_tab_index}}" == "VI")    Set Test Variable    ${is_tmp_card}    True
+    ${fop_amount}    Run Keyword If    "${airline_commission_or_rebate.upper()}" != "AIRLINE COMMISSION"    EVALUATE    (${base_or_nett_fare_${fare_tab_index}} + ${total_tax_${fare_tab_index}} + ${mark_up_value_${fare_tab_index}}) - ${commission_rebate_value_${fare_tab_index}}
+    ...    ELSE    EVALUATE    ${base_or_nett_fare_${fare_tab_index}} + ${total_tax_${fare_tab_index}} + ${mark_up_value_${fare_tab_index}}
+    ${fop_amount}    Run Keyword If    "${country}" == "SG"    Convert To Float    ${fop_amount}    2
+    ...    ELSE    Convert To Float    ${fop_amount}    0
+    Run Keyword If    "${credit_card_code.upper()}" != "CASH" or "${credit_card_code.upper()}" != "INVOICE"    Verify Remarks Line Contains Masked Card    EXP${str_exp_date${fare_tab_index}}/${fop_amount}/${segment_number}
+    Run Keyword If    "${credit_card_code.upper()}" == "CASH" or "${credit_card_code.upper()}" == "INVOICE" or ("${is_tmp_card}" == "True" and "${country}" == "SG")    Verify Specific Remark Is Written In The PNR    RM *FOP/CASH/${segment_number}
+    ...    ELSE IF    "${fop_merchant_type.upper()}" == "Airline" and "${status_masked}" == "False"    Verify Specific Remark Is Written In The PNR    RM *FOP/CC/${str_card_type${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date${fare_tab_index}}/${fop_amount}/${segment_number}
+    ...    ELSE IF    "${fop_merchant_type.upper()}" == "CWT" and "${status_masked}" == "False"    Verify Specific Remark Is Written In The PNR    RM *FOP/${credit_card_code}/${str_card_type_${fare_tab_index}}${str_card_number_${fare_tab_index}}EXP${str_exp_date${fare_tab_index}}/${fop_amount}/${segment_number}
+    ...    ELSE IF    "${fop_merchant_type.upper()}" == "Airline" and "${status_masked}" == "True"    Verify Specific Remark Is Written In The PNR    RM *FOP/CC/${str_card_type${fare_tab_index}}${str_card_number2_${fare_tab_index}}EXP${str_exp_date${fare_tab_index}}/${fop_amount}/${segment_number}
+    ...    ELSE IF    "${fop_merchant_type.upper()}" == "CWT" and "${status_masked}" == "True"    Verify Specific Remark Is Written In The PNR    RM *FOP/${credit_card_code}/${str_card_type_${fare_tab_index}}${str_card_number2_${fare_tab_index}}EXP${str_exp_date${fare_tab_index}}/${fop_amount}/${segment_number}
+
+Verify Merchant Fee Type Is Blank And Mandatory
+    Wait Until Control Object Is Visible    [NAME:FopMerchantComboBox]    ${title_power_express}
+    Verify Control Object Text Value Is Correct    [NAME:FopMerchantComboBox]    ${EMPTY}
+    Verify Control Object Background Color    [NAME:FopMerchantComboBox]    FFD700
+    [Teardown]    Take Screenshot
+
+Verify Merchant Fee Type Is Not Visible
+    Verify Control Object Is Not Visible    [NAME:MerchantFeeTypeComboBox]
+    [Teardown]    Take Screenshot
+
+Verify That FOP Remark Is Written In The RM Lines
+    [Arguments]    ${fare_tab}    ${fop_merchant_fee_type}    ${country}
+    Set Test Variable    ${country}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${credit_card_code}    Identify Form Of Payment Code    ${str_card_type}    ${country}
+    ${cwt_is_airline}    Run Keyword If    "${fop_merchant_fee_type}" == "Airline"    Set Variable    CC
+    ...    ELSE    Set Variable    ${credit_card_code}
+    ${base_or_nett_fare}    Get Variable Value    ${nett_fare_value_${fare_tab_index}}    ${base_fare_value_${fare_tab_index}}
+    ${base_or_nett_fare}    Set Variable If    "${base_or_nett_fare}" == "${EMPTY}" or "${base_or_nett_fare}" == "0.00" or "${base_or_nett_fare}" == "0.0" or "${base_or_nett_fare}" == "0"    ${base_fare_value_${fare_tab_index}}    ${base_or_nett_fare}
+    ${commision_rebate_amount}    Get Variable Value    ${commission_rebate_value_${fare_tab_index}}    0
+    ${markup_amount}    Get Variable Value    ${mark_up_value_${fare_tab_index}}    0
+    ${fop_amount}    Run Keyword If    "${fop_merchant_fee_type}" == "TRUE"    Evaluate    (${base_or_nett_fare} + ${tax_amount_${fare_tab_index}} + ${markup_amount}) - ${commision_rebate_amount}
+    ${fop_amount}    Evaluate    "%.2f" % ${fop_amount}
+    Verify Specific Remark Is Written In The PNR    RM*FOP/${str_card_type}/${str_card_number}/${fop_amount}/${segment_number}
+    [Teardown]    Take Screenshot
+
+Compute Tax From TST
+    [Arguments]    ${fare_tab}    ${is_decimal_applicable}=true
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${tax}    Evaluate    ${grand_total_fare_${fare_tab_index}} - ${base_fare_${fare_tab_index}}
+    ${tax}    Run Keyword If    "${is_decimal_applicable.lower()}" == "true"    Convert To Float    ${tax}
+    ...    ELSE    Set Variable
+    [Return]    ${tax}

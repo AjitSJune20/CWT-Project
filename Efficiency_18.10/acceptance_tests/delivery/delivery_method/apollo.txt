@@ -1,0 +1,37 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../delivery_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Delivery Method Defaults to VEN And Is Written In The PNR For LCC Bookings
+    [Tags]    us3048
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US3204    AutoSixteenTwo    NoramTrvlrThirteen
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0 3K 1025Y ${departure_date1} LAXDEN BK1
+    Enter GDS Command    0 3K 1026Y ${departure_date2} DENLAX BK1
+    Enter GDS Command    0 DY 1027Y ${departure_date3} LAXAMS BK1
+    Enter GDS Command    0 DY 1028Y ${departure_date4} AMSLAX BK1
+    Enter LCC Remarks For Specific Airline Code    3K    USD    180.00    25.00    10.00    10.00
+    ...    250.50    2014032733    ABCDEF    000SA1    49.50
+    Enter LCC Remarks For Specific Airline Code    DY    USD    185.50    25.00    10.00    15.00
+    ...    255.00    2014032734    ABCDEF    000SA2    59.50
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Unticked
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Vendor sale (Non ARC)
+    Set Email Address In Delivery Panel
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Delivery Method Selected Is Reflected In The Ticketing Line    TKTG-TAU/24LY/    *VEN
+    Verify Specific Line Is Written In The PNR    T/TKT1-VEN/TK
+    Verify Specific Line Is Written In The PNR    T/TKT1-VEN-FQ
+    Verify Specific Line Is Written In The PNR    T/TKT2-VEN/TK
+    Verify Specific Line Is Written In The PNR    T/TKT2-VEN-FQ
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

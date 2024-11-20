@@ -1,0 +1,155 @@
+*** Settings ***
+Force Tags        insurance    valid_fail
+Resource          ../other_services.txt
+
+*** Test Cases ***
+[NB OS SG] Verify That Service Info Fields Of Insurance Behave Correctly And Written In The PNR When FOP Is CC
+    [Tags]    US462    valid_fail
+    Create PNR Using Credit Card As FOP
+    Click Other Services
+    Select Product And Vendor    Insurance    AXA INSURANCE
+    Select Plan    Single Trip Plan
+    Set Selling Price    500.00
+    Select Form Of Payment (FOP)    Credit Card (CC)    VI    4444333322221111    12    2026
+    Get Selling Price
+    Get Form Of Payment
+    Compute Nett Cost Value    35
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Nett Cost Value    35
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2    false    true
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Tab In Other Services Panel    Insurance
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Click Remarks Tab
+    Select Itinerary Remarks    AATEST REMARK
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Insurance Accounting General Remarks    Insurance    AXA INSURANCE    Credit Card (CC)    SG
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    4444333322221111    VI    12    2026    Credit Card (CC)    SG
+    Verify Specific Remark Is Written In The PNR    RIR AATEST REMARK
+    Comment    Verify Insurance Remarks Are Written When FOP Is Credit Card In The PNR    Insurance    09    025006
+
+[AB OS SG] Verify That Service Info Fields Of Insurance Behave Correctly And Written In The PNR When FOP Is CX
+    [Tags]    US462    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Insurance    AXA INSURANCE
+    Select Plan    Single Trip Plan
+    Set Selling Price    1000.00
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    378282246310005    12    2026
+    Get Selling Price
+    Get Form Of Payment
+    Compute Nett Cost Value    35
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Plan    Annual Plan
+    Compute Nett Cost Value    20
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Tab In Other Services Panel    Insurance
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Click Remarks Tab
+    Select Itinerary Remarks    AATEST REMARK
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Insurance Accounting General Remarks    Insurance    AXA INSURANCE    Credit Card (CX)    SG
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    378282246310005    AX    12    2026    Credit Card (CX)    SG
+    Verify Specific Remark Is Written In The PNR    RIR AATEST REMARK
+
+[OS SG] Verify That Service Info Fields Of Insurance Behave Correctly And Written In The PNR When FOP Is Cash or Invoice
+    [Tags]    US462    valid_fail
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    AXA INSURANCE
+    Click Continue In Other Svcs
+    Select Plan    Single Trip Plan
+    Set Selling Price    800
+    Select Form Of Payment (FOP)    Credit Card (CC)    AX    378282246310005    12    2026
+    Get Selling Price
+    Get Form Of Payment
+    Compute Nett Cost Value    35
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Compute Nett Cost Value    35
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Plan    Annual Plan
+    Compute Nett Cost Value    20
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Tab In Other Services Panel    Insurance
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Click Remarks Tab
+    Select Itinerary Remarks    AATEST REMARK
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Insurance Accounting General Remarks    Insurance    AXA INSURANCE    Cash or Invoice    SG
+    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    SG
+    Verify Specific Remark Is Written In The PNR    RIR AATEST REMARK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***

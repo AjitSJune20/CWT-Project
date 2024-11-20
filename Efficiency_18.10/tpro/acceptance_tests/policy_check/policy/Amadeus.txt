@@ -1,0 +1,347 @@
+*** Settings ***
+Force Tags        amadeus    apac
+Resource          ../../../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          ../../../../acceptance_tests/policy_check/policy_check_verification.txt
+Resource          policy_verification.txt
+
+*** Test Cases ***
+[IN][NB]Verify Correct Policies Are Displayed For Air Vendor, Country/City, Yellow Fever Advisory And That Correct Remarks Are Written
+    [Tags]    us342    us343    us589    in    voltes
+    Open Power Express And Retrieve Profile    ${version}    Test    U003axo    en-GB    aobsum    APAC SYN
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ IN POLICY    BEAR    JARED IN Policy
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP    6    3
+    Book Flight X Months From Now    PEKBKK/ATG    SS1Y1    FXP/S3    6    5
+    Book Flight X Months From Now    MADGRU/AUX    SS1Y1    FXP/S4    7    13
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    Philippine Airlines Non-Preferred
+    Verify Policy Status Is Blank By Default    Bangkok Prohibited
+    Verify Policy Status Is Blank By Default    China Banned
+    Verify Policy Status Is Blank By Default    Sao Paulo Deferred
+    Verify Policy Status Is Blank By Default    Brazil Yellow Fever
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Select Policy Status    Bangkok Prohibited    TA - Traveller/Booker Advised
+    Select Policy Status    China Banned    HA - Has authority to travel
+    Select Policy Status    Sao Paulo Deferred    NV - Not going to affected area
+    Select Policy Status    Brazil Yellow Fever    NV - Not going to affected area
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Air Vendor Policy Remarks Are Written    26968    PHILIPPINE AIRLINES NON-PREFERRED    AA - AWAITING APPROVAL    IN
+    Verify Country Policy Remarks Are Written    15847    CHINA BANNED    BANNED COUNTRY - CN    HA - HAS AUTHORITY TO TRAVEL    IN
+    Verify City Policy Remarks Are Written    2312    BANGKOK PROHIBITED    BANGKOK IS PROHIBITED    TA - TRAVELLER/BOOKER ADVISED
+    Verify Yellow Fever Policy Remarks Are Written    BRAZIL    NV - NOT GOING TO AFFECTED AREA    IN    16109
+
+[IN][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City, Yellow Fever Advisory And That Correct Remarks Are Written When A Segment Is Deleted
+    [Tags]    us342    us343    us589    in    voltes    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare and Segment    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Air Vendor    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    City    Bangkok Prohibited    TA - Traveller/Booker Advised
+    Verify Policy Status Is Defaulted To Correct Value    Country    China Banned    HA - Has authority to travel
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Select Policy Status    Bangkok Prohibited    TA - Traveller/Booker Advised
+    Select Policy Status    China Banned    HA - Has authority to travel
+    Click Finish PNR    [IN][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City, Yellow Fever Advisory And That Correct Remarks Are Written When A Segment Is Deleted
+    Execute Simultaneous Change Handling    [IN][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City, Yellow Fever Advisory And That Correct Remarks Are Written When A Segment Is Deleted
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Air Vendor Policy Remarks Are Written    26968    PHILIPPINE AIRLINES NON-PREFERRED    AA - AWAITING APPROVAL    IN
+    Verify Country Policy Remarks Are Written    15847    CHINA BANNED    BANNED COUNTRY - CN    HA - HAS AUTHORITY TO TRAVEL    IN
+    Verify City Policy Remarks Are Written    2312    BANGKOK PROHIBITED    BANGKOK IS PROHIBITED    TA - TRAVELLER/BOOKER ADVISED
+    Verify Yellow Fever Policy Remarks Are Not Written    BRAZIL    NV - NOT GOING TO AFFECTED AREA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG][NB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written
+    [Tags]    us342    us343    us589    sg    voltes
+    Open Power Express And Retrieve Profile    ${version}    Test    U003axo    en-GB    aobsum    APAC SYN
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ SG POLICY    BEAR    JARED SG
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP    5    3
+    Book Flight X Months From Now    PEKKUL/AMH    SS1Y1    FXP/S3    5    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    Philippine Airlines Non-Preferred
+    Verify Policy Status Is Blank By Default    Kuala Lumpur Controlled
+    Verify Policy Status Is Blank By Default    China Banned
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Select Policy Status    Kuala Lumpur Controlled    TA - Traveller/Booker Advised
+    Select Policy Status    China Banned    HA - Has authority to travel
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Air Vendor Policy Remarks Are Written    26657    PHILIPPINE AIRLINES NON-PREFERRED    AA - AWAITING APPROVAL    SG
+    Verify City Policy Remarks Are Written    2309    KUALA LUMPUR CONTROLLED    KL IS A CONTROLLED COUNTRY    TA - TRAVELLER/BOOKER ADVISED
+    Verify Country Policy Remarks Are Written    15841    CHINA BANNED    BANNED COUNTRY - CN    HA - HAS AUTHORITY TO TRAVEL    SG
+
+[SG][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk Country Is Added
+    [Tags]    us342    us343    us589    sg    voltes
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    SINTPE/ASQ    SS1Y1    FXP/S4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Air Vendor    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    City    Kuala Lumpur Controlled    TA - Traveller/Booker Advised
+    Verify Policy Status Is Defaulted To Correct Value    Country    China Banned    HA - Has authority to travel
+    Verify Policy Status Is Blank By Default    Taiwan, Republic of China Deferred
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Select Policy Status    Kuala Lumpur Controlled    TA - Traveller/Booker Advised
+    Select Policy Status    China Banned    HA - Has authority to travel
+    Select Policy Status    Taiwan, Republic of China Deferred    NV - Not going to affected area
+    Click Finish PNR    [SG][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk Country Is Added
+    Execute Simultaneous Change Handling    [SG][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk Country Is Added
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Air Vendor Policy Remarks Are Written    26657    PHILIPPINE AIRLINES NON-PREFERRED    AA - AWAITING APPROVAL    SG
+    Verify City Policy Remarks Are Written    2309    KUALA LUMPUR CONTROLLED    KL IS A CONTROLLED COUNTRY    TA - TRAVELLER/BOOKER ADVISED
+    Verify Country Policy Remarks Are Written    15901    TAIWAN, REPUBLIC OF CHINA DEFERRED    ${EMPTY}    NV - NOT GOING TO AFFECTED AREA    SG
+    Verify Country Policy Remarks Are Written    15841    CHINA BANNED    BANNED COUNTRY - CN    HA - HAS AUTHORITY TO TRAVEL    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK][NB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written
+    [Tags]    us342    us343    us589    hk    voltes
+    Open Power Express And Retrieve Profile    ${version}    Test    U003axo    en-GB    aobsum    APAC SYN
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ HK POLICY    BEAR    JARED HK
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP    6    3
+    Book Flight X Months From Now    MNLBKK/ATG    SS1Y1    FXP/S3    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    Philippine Airlines Non-Preferred
+    Verify Policy Status Is Blank By Default    Bangkok Risk
+    Verify Policy Status Is Blank By Default    Philippines Controlled
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Select Policy Status    Bangkok Risk    TA - Traveller/Booker Advised
+    Select Policy Status    Philippines Controlled    HA - Has authority to travel
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Air Vendor Policy Remarks Are Written    26485    PHILIPPINE AIRLINES NON-PREFERRED    AA - AWAITING APPROVAL    HK
+    Verify City Policy Remarks Are Written    2297    BANGKOK RISK    RISK CITY - BANGKOK    TA - TRAVELLER/BOOKER ADVISED
+    Verify Country Policy Remarks Are Written    15838    PHILIPPINES CONTROLLED    BANNED COUNTRY - PN    HA - HAS AUTHORITY TO TRAVEL    HK
+
+[HK][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk City Is Added
+    [Tags]    us342    us343    us589    hk    voltes
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    HKGKHI/ATG    SS1Y1    FXP/S4-5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    Hong Kong Risk
+    Verify Policy Status Is Blank By Default    Karachi Risk
+    Verify Policy Status Is Defaulted To Correct Value    City    Bangkok Risk    TA - Traveller/Booker Advised
+    Verify Policy Status Is Defaulted To Correct Value    Air Vendor    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    Country    Philippines Controlled    HA - Has authority to travel
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Bangkok Risk    TA - Traveller/Booker Advised
+    Select Policy Status    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Select Policy Status    Philippines Controlled    HA - Has authority to travel
+    Select Policy Status    Hong Kong Risk    NV - Not going to affected area
+    Select Policy Status    Karachi Risk    NV - Not going to affected area
+    Click Finish PNR    [HK][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk City Is Added
+    Execute Simultaneous Change Handling    [HK][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk City Is Added
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Air Vendor Policy Remarks Are Written    26485    PHILIPPINE AIRLINES NON-PREFERRED    AA - AWAITING APPROVAL    HK
+    Verify Country Policy Remarks Are Written    15838    PHILIPPINES CONTROLLED    BANNED COUNTRY - PN    HA - HAS AUTHORITY TO TRAVEL    HK
+    Verify City Policy Remarks Are Written    2297    BANGKOK RISK    RISK CITY - BANGKOK    TA - TRAVELLER/BOOKER ADVISED
+    Verify City Policy Remarks Are Written    2300    HONG KONG RISK    RISK CITY - HONG KONG    NV - NOT GOING TO AFFECTED AREA
+    Verify City Policy Remarks Are Written    2293    KARACHI RISK    RISK CITY - QUAID E AZAM    NV - NOT GOING TO AFFECTED AREA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN][NB] Verify That The Policy Panel Is Displayed With Malaria Fever Advisory And Correct Remarks Are Written When Flight Is Booked To The Malaria Tagged Country/s
+    [Tags]    us588    voltes
+    Open Power Express And Retrieve Profile    ${version}    Test    U003axo    en-GB    aobsum    APAC SYN
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ IN POLICY AUTOMATION    BEAR    kb in
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELJFK/AAI    SS1Y1    FXP    6    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    India Malaria
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    India Malaria    AA - Awaiting Approval
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Malaria Policy Remarks Are Written    INDIA MALARIA    AA - AWAITING APPROVAL    IN    16109
+
+[IN][AB] Verify That Policy Panel Is Displayed With Malaria Fever Advisory When New Segment With Malaria Tagging Is Added
+    [Tags]    us588    voltes
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    BKKKHI/ATG    SS1Y1    FXP/S3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Country    India Malaria    AA - Awaiting Approval
+    Verify Policy Status Is Blank By Default    Pakistan Malaria
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Pakistan Malaria    HA - Has authority to travel
+    Select Policy Status    India Malaria    AA - Awaiting Approval
+    Click Finish PNR    [IN][AB] Verify That Policy Panel Is Displayed With Malaria Fever Advisory When New Segment With Malaria Tagging Is Added
+    Execute Simultaneous Change Handling    [IN][AB] Verify That Policy Panel Is Displayed With Malaria Fever Advisory When New Segment With Malaria Tagging Is Added
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Malaria Policy Remarks Are Written    INDIA MALARIA    AA - AWAITING APPROVAL    IN    16109
+    Verify Malaria Policy Remarks Are Written    PAKISTAN MALARIA    HA - HAS AUTHORITY TO TRAVEL    IN    16109
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG][NB] Verify That The Policy Panel Is Not Displayed For Malaria Fever Advisory And Remarks Are Not Written When Flight Booked Is Not Tagged As Malaria Country/s
+    [Tags]    us588    voltes
+    Open Power Express And Retrieve Profile    ${version}    Test    U003axo    en-GB    aobsum    APAC SYN
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ SG POLICY AUTOMATION    BEAR    kb sg
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGLAX/ACX    SS1Y1    FXP    6    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    Hong Kong Risk
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Hong Kong Risk    AA - Awaiting Approval
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Malaria Policy Remark Is Not Written    INDIA MALARIA
+
+[HK][NB] Verify That The Policy Panel Is Displayed With Malaria Fever Advisory And Correct Remarks Are Written When Flight Is Booked To The Malaria Tagged Country/s
+    [Tags]    us588    voltes
+    Open Power Express And Retrieve Profile    ${version}    Test    U003axo    en-GB    aobsum    APAC SYN
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ HK POLICY AUTOMATION    BEAR    kb hk
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MNLMEX/AJL    SS1Y1    FXP/S2-4    6    3
+    Book Flight X Months From Now    DELJFK/AAI    SS1Y1    FXP/S5    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    Philippines Malaria
+    Verify Policy Status Is Blank By Default    Mexico Malaria
+    Verify Policy Status Is Blank By Default    India Malaria
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Philippines Malaria    AA - Awaiting Approval
+    Select Policy Status    Mexico Malaria    HA - Has authority to travel
+    Select Policy Status    India Malaria    NV - Not going to affected area
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Malaria Policy Remarks Are Written    PHILIPPINES MALARIA    AA - AWAITING APPROVAL    HK    16109
+    Verify Malaria Policy Remarks Are Written    MEXICO MALARIA    HA - HAS AUTHORITY TO TRAVEL    HK    16109
+    Verify Malaria Policy Remarks Are Written    INDIA MALARIA    NV - NOT GOING TO AFFECTED AREA    HK    16109
+
+[HK][AB] Verify That Updated Policy Panel Is Displayed When 1 Segment Is Deleted
+    [Tags]    us588    voltes
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare and Segment    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Country    Philippines Malaria    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    Country    Mexico Malaria    HA - Has authority to travel
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Philippines Malaria    AA - Awaiting Approval
+    Select Policy Status    Mexico Malaria    HA - Has authority to travel
+    Click Finish PNR    [HK][AB] Verify That Updated Policy Panel Is Displayed When 1 Segment Is Deleted
+    Execute Simultaneous Change Handling    [HK][AB] Verify That Updated Policy Panel Is Displayed When 1 Segment Is Deleted
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Malaria Policy Remarks Are Written    PHILIPPINES MALARIA    AA - AWAITING APPROVAL    HK    16109
+    Verify Malaria Policy Remarks Are Written    MEXICO MALARIA    HA - HAS AUTHORITY TO TRAVEL    HK    16109
+    Verify Malaria Policy Remark Is Not Written    INDIA MALARIA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+[SG][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk Country Is Added
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    SINTPE/ASQ    SS1Y1    FXP/S5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Air Vendor    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    City    Kuala Lumpur Controlled    TA - Traveller/Booker Advised
+    Verify Policy Status Is Defaulted To Correct Value    Country    China Banned    HA - Has authority to travel
+    Verify Policy Status Is Blank By Default    Taiwan, Republic of China Deferred
+    Select Policy Status    Taiwan, Republic of China Deferred    NV - Not going to affected area
+    Click Finish PNR    [SG][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk Country Is Added
+    Execute Simultaneous Change Handling    [SG][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk Country Is Added
+
+[IN][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City, Yellow Fever Advisory And That Correct Remarks Are Written When A Segment Is Deleted
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare and Segment    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Air Vendor    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    City    Bangkok Prohibited    TA - Traveller/Booker Advised
+    Verify Policy Status Is Defaulted To Correct Value    Country    China Banned    HA - Has authority to travel
+    Click Scroll Down
+    Select Policy Status Using Index Number    3    C0 - Client owned accommodations
+    Click Finish PNR
+    Execute Simultaneous Change Handling    [IN][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City, Yellow Fever Advisory And That Correct Remarks Are Written When A Segment Is Deleted
+
+[HK][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk City Is Added
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    HKGKHI/ATG    SS1Y1    FXP/S4-5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    Hong Kong Risk
+    Select Policy Status    Hong Kong Risk    NV - Not going to affected area
+    Verify Policy Status Is Defaulted To Correct Value    City    Bangkok Risk    TA - Traveller/Booker Advised
+    Verify Policy Status Is Blank By Default    Karachi Risk
+    Select Policy Status    Karachi Risk    NV - Not going to affected area
+    Click Scroll Down
+    Verify Policy Status Is Defaulted To Correct Value    Air Vendor    Philippine Airlines Non-Preferred    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    Country    Philippines Controlled    HA - Has authority to travel
+    Click Finish PNR    [HK][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk City Is Added
+    Execute Simultaneous Change Handling    [HK][AB]Verify Correct Policies Are Displayed For Air Vendor, Country/City And That Correct Remarks Are Written When A New Segment With Risk City Is Added
+
+[IN][AB] Verify That Policy Panel Is Displayed With Malaria Fever Advisory When New Segment With Malaria Tagging Is Added
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    BKKKHI/ATG    SS1Y1    FXP/S3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Country    INDIA MALARIA    AA - AWAITING APPROVAL
+    Verify Policy Status Is Blank By Default    Pakistan Malaria
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Pakistan Malaria    HA - Has authority to travel
+    Select Policy Status    India Malaria    AA - Awaiting Approval
+    Click Finish PNR    [IN][AB] Verify That Policy Panel Is Displayed With Malaria Fever Advisory When New Segment With Malaria Tagging Is Added
+    Execute Simultaneous Change Handling    [IN][AB] Verify That Policy Panel Is Displayed With Malaria Fever Advisory When New Segment With Malaria Tagging Is Added
+
+[HK][AB] Verify That Updated Policy Panel Is Displayed When 1 Segment Is Deleted
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare and Segment    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Country    Philippines Malaria    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    Country    Mexico Malaria    HA - Has authority to travel
+    Populate Policy Check Panel With Default Values
+    Select Policy Status    Philippines Malaria    AA - Awaiting Approval
+    Select Policy Status    Mexico Malaria    HA - Has authority to travel
+    Click Finish PNR    [HK][AB] Verify That Updated Policy Panel Is Displayed When 1 Segment Is Deleted
+    Execute Simultaneous Change Handling    [HK][AB] Verify That Updated Policy Panel Is Displayed When 1 Segment Is Deleted

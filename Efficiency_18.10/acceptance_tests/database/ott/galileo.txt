@@ -1,0 +1,81 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../database_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That Successful Send To PNR Retry Writes To Application Usage Table
+    [Tags]    us1918
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Timestamp With Round Trip Air Flight Using Default Values (Incorrect Date Order)    Galileo 15 - Auto ¦ US2643    AutoFifteenTen    OptimizeTrvlrThirty    LHRJFK/AF    01Y1    ${EMPTY}
+    ...    JFKLHR/AF    01Y1    FQ    ${EMPTY}
+    Click Finish PNR With Timestamp
+    Comment    Click Finish PNR With Timestamp    GDS Response: CHECK DATE/TIME CONTINUITY SEGMENT 02
+    Verify Transaction Is Reflected In OTT Table    UK Head Office    14:3FE82    U003WXR    EMEA    EUROP    GB
+    ...    1G    1    A:8A439    B:403AF251    False    ${current_pnr}
+    ...    None    True    None
+
+[SI UK] Verify That Send Itinerary Workflow Writes To Application Usage Table
+    [Tags]    us1918
+    Retrieve PNR with Timestamp    Galileo 15 - Auto ¦ US2643    AutoFifteenTen    OptimizeTrvlrThirty    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR With Timestamp
+    Execute Simultaneous Change Handling    Send Itinerary Workflow
+    Verify Transaction Is Reflected In OTT Table    UK Head Office    14:3FE82    U003WXR    EMEA    EUROP    GB
+    ...    1G    4    A:8A439    B:403AF251    False    ${current_pnr}
+    ...    None    True    None
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Send To PNR With Simultaneous Changes To PNR Error Writes To Application Usage Table
+    [Tags]    us1918
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo 15 - Auto ¦ US2643    AutoFifteenTen    OptimizeTrvlrThirty    LHRJFK/AF    01Y1    ${EMPTY}
+    ...    JFKLHR/AF    01Y1    FQ    ${EMPTY}
+    Click Finish PNR
+
+[AB UK] Verify That Send To PNR With Simultaneous Changes To PNR Error Writes To Application Usage Table
+    [Tags]    us1918
+    Retrieve PNR with Timestamp    Galileo 15 - Auto ¦ US2643    AutoFifteenTen    OptimizeTrvlrThirty    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    FXALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    LHRCDG/AF    01Y1    FQ    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Enter GDS Command    T.T*    0SURZZAK1DXB12AUG-TYP-XXX/BRAZILIAN VISA CHARGE    R.TESTPNR    ER    ER
+    Click Finish PNR With Timestamp
+    Verify Simultaneous Changes Error Message Is Displayed
+    Verify Transaction Is Reflected In OTT Table    UK Head Office    14:3FE82    U003WXR    EMEA    EUROP    GB
+    ...    1G    2    A:8A439    B:403AF251    False    ${current_pnr}
+    ...    None    False    SIMULTANEOUS CHANGES TO BOOKING FILE - IGNORE TRANSACTION
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Unsuccessful Send To Pnr Retry Writes To Application Usage Table
+    [Tags]    us1918
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Timestamp With Round Trip Air Flight Using Default Values    Galileo 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrTwo    CDGLHR/AF    01Y1    ${EMPTY}
+    ...    LHRCDG/AF    01Y1    FQ    ${EMPTY}
+    Click Panel    Recap
+    Click Send To PNR
+    Wait Until Progress Info is Completed
+    Get Overall Transaction End Time
+    Verify No PNR Is Created
+    Verify Transaction Is Reflected in OTT Table    UK Head Office    14:3FE82    U003WXR    EMEA    EUROP    GB
+    ...    1G    1    A:8A24F    A:40334AC6    False    None
+    ...    None    False    MODIFY BOOKING
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Send Itinerary Workflow
+    Retrieve PNR with Timestamp    Galileo 15 - Auto ¦ US2643    AutoFifteenTen    OptimizeTrvlrTwo    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR With Timestamp
+
+Get Overall Transaction End Time
+    ${exp_overalltransaction_end_time}    Get Time
+    Set Test Variable    ${exp_overalltransaction_end_time}
+
+Verify Simultaneous Changes Error Message Is Displayed
+    Run Keyword And Continue On Failure    Should Be Equal    1    ${final_simultaneous}    Simultaneous Changes To PNR error message is not displayed.    FALSE

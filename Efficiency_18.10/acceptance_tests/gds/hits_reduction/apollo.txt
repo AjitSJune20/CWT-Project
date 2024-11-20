@@ -1,0 +1,92 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../gds_verification.txt
+
+*** Test Cases ***
+[NB] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 15 - Auto ¦ US2657    AutoFifteenTwelve    OptimizeTrvlrTen
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD+UA    01Y1    T:$B/S1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    *R
+
+[AB] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657    us2733    valid_fail    de6612
+    Delete Current Specific Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    RetrieveBFByPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    GetPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    BusinessFunctionMetric.RetrievePNRIDCallerBox
+    Click Amend Booking
+    Book Flight X Months From Now    ORDMSP+UA    01Y1    T:$B/S2    7
+    Create Manual Ticketing Line For Apollo
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow If Simultaneous Change Error Is Displayed
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    *R
+
+[SI] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657    us2733
+    Delete Current Specific Log File    SyExPerfLog
+    Retrieve PNR via Existing Bookings Tab    Apollo 15 - Auto ¦ US2657    AutoFifteenTwelve    OptimizeTrvlrTen    ${current_pnr}
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    RetrieveBFByPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    GetPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    BusinessFunctionMetric.RetrievePNRExistingPNRBox
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+    Re-Execute Send Itinerary Workflow If Simultaneous Change Error Is Displayed
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    *R
+
+[CB] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+    Re-Execute Cancel Booking Workflow If Simultaneous Change Error Is Displayed
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    *R
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    ORDMSP+UA    01Y1    T:$B/S2    7
+    Create Manual Ticketing Line For Apollo
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+
+Cancel Booking Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+
+Create Manual Ticketing Line For Apollo
+    ${ticket_date} =    Subtract Days In Gds Format    ${departure_date}    1
+    Enter GDS Command    C:2T:TAU/${ticket_date}
+    Sleep    3
+    [Teardown]    Take Screenshot
+
+Send Itinerary Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR

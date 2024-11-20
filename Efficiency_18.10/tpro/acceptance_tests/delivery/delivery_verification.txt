@@ -1,0 +1,281 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+Resource          ../../../acceptance_tests/delivery/delivery_verification.txt
+Resource          ../../../acceptance_tests/gds/gds_verification.txt
+Resource          ../../../acceptance_tests/client_info/client_info_verification.txt
+Resource          ../../../resources/panels/apis_sfpd.txt
+
+*** Keywords ***
+Verify The E-Mail Address On Contact Tab
+    [Arguments]    ${tab_name}    ${email_address_expected}    ${traveller_option}=${EMPTY}    ${contact_option}=${EMPTY}
+    ${email_address}    Get Email Address From Contact Tab    ${tab_name}
+    Run Keyword And Continue On Failure    Should Be Equal    ${email_address}    ${email_address_expected}    Actual and Expected Email should be the same.
+    Run Keyword If    "${traveller_option}" == "True"    Tick Traveller Checkbox
+    ...    ELSE IF    "${traveller_option}" == "False"    Untick Traveller Checkbox
+    Run Keyword If    "${contact_option}" == "True"    Tick Contact Checkbox
+    ...    ELSE IF    "${contact_option}" == "False"    Untick Contact Checkbox
+
+Verify That E-Mail Addresses Are Displayed On Delivery Panel
+    [Arguments]    ${index}    ${expected_email}    ${itinerary_checkbox_expected}    ${invoice_checkbox_expected}=${EMPTY}
+    ${actual_email}    Get Email Address On Deliver Panel    ${index}
+    Run Keyword And Continue On Failure    Should Be Equal    ${actual_email}    ${expected_email}    Actual and Expected Email should be the same.
+    Verify The Itinerary Checkbox    ${index}    ${itinerary_checkbox_expected}
+    Run Keyword If    "${invoice_checkbox_expected}" != "${EMPTY}"    Verify The Invoice Checkbox    ${index}    ${invoice_checkbox_expected}
+    [Teardown]    Take Screenshot
+
+Verify The Itinerary Checkbox
+    [Arguments]    ${index}    ${itinerary_checkbox_expected}
+    ${checkbox_status}    Get checkbox status    [NAME:cchkItinerary${index}]
+    Run Keyword And Continue On Failure    Should Be Equal    ${checkbox_status}    ${itinerary_checkbox_expected}    Receive Itinerary checkbox Status should be ${itinerary_checkbox_expected}.
+
+Verify The Invoice Checkbox
+    [Arguments]    ${index}    ${invoice_checkbox_status_expected}
+    ${checkbox_status}    Get checkbox status    [NAME:chkInvoice${index}]
+    Run Keyword And Continue On Failure    Should Be Equal    ${checkbox_status}    ${invoice_checkbox_status_expected}    Receive Invoice checkbox Status should be ${invoice_checkbox_status_expected}.
+
+Get Email Address On Deliver Panel
+    [Arguments]    ${email_index}
+    ${actual_email}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:ctxtEmail${email_index}]
+    [Return]    ${actual_email}
+
+Set Traveller/Contact Checkbox Option On Contact Tab
+    [Arguments]    ${tab_name}    ${traveller_option}    ${contact_option}
+    Click Tab In Contact Details    ${tab_name}
+    Run Keyword If    "${traveller_option}" == "True"    Tick Traveller Checkbox
+    ...    ELSE    Untick Traveller Checkbox
+    Run Keyword If    "${contact_option}" == "True"    Tick Contact Checkbox
+    ...    ELSE    Untick Contact Checkbox
+
+Add Email Address Receive Itinerary and Invoice On Deliver Panel
+    [Arguments]    ${index}    ${email_address}    ${itinerary_option}    ${invoice_option}
+    Click Control Button    ${button_addrecipients}
+    Set Control Text Value    [NAME:ctxtEmail${index}]    ${email_address}
+    Run Keyword If    "${itinerary_option}" == "True"    Tick Receive Itinerary Checkbox On Delivery Panel    ${index}
+    ...    ELSE    Untick Receive Itinerary Checkbox On Delivery Panel    ${index}
+    Run Keyword If    "${invoice_option}" == "True"    Tick Receive Invoice Checkbox On Delivery Panel    ${index}
+    ...    ELSE    Untick Receive Invoice Checkbox On Delivery Panel    ${index}
+
+Tick Receive Itinerary Checkbox On Delivery Panel
+    [Arguments]    ${index}
+    ${is_ticked}    Get Checkbox State    [NAME:cchkItinerary${index}]
+    Run Keyword If    ${is_ticked} == False    Click Control    [NAME:cchkItinerary${index}]
+    ...    ELSE    Log    Already ticked
+
+Untick Receive Itinerary Checkbox On Delivery Panel
+    [Arguments]    ${index}
+    ${is_ticked}    Get Checkbox State    [NAME:cchkItinerary${index}]
+    Run Keyword If    ${is_ticked} == True    Click Control    [NAME:cchkItinerary${index}]
+    ...    ELSE    Log    Already unticked
+
+Tick Receive Invoice Checkbox On Delivery Panel
+    [Arguments]    ${index}
+    ${is_ticked}    Get Checkbox State    [NAME:chkInvoice${index}]
+    Run Keyword If    ${is_ticked} == False    Click Control    [NAME:chkInvoice${index}]
+    ...    ELSE    Log    Already ticked
+
+Untick Receive Invoice Checkbox On Delivery Panel
+    [Arguments]    ${index}
+    ${is_ticked}    Get Checkbox State    [NAME:chkInvoice${index}]
+    Run Keyword If    ${is_ticked} == True    Click Control    [NAME:chkInvoice${index}]
+    ...    ELSE    Log    Already unticked
+
+Set Receive Itineray and Invoice Option On Deliver Panel
+    [Arguments]    ${index}    ${itinerary_option}    ${invoice_option}
+    Run Keyword If    "${itinerary_option}" == "True"    Tick Receive Itinerary Checkbox On Delivery Panel    ${index}
+    ...    ELSE    Untick Receive Itinerary Checkbox On Delivery Panel    ${index}
+    Run Keyword If    "${invoice_option}" == "True"    Tick Receive Invoice Checkbox On Delivery Panel    ${index}
+    ...    ELSE    Untick Receive Invoice Checkbox On Delivery Panel    ${index}
+
+Verify Ticketing RIR Remarks
+    [Arguments]    ${ticket_info}
+    Get Default Ticketing Date
+    ${default_ticketing_date}    Convert Date    ${default_ticketing_date}    date_format=%m/%d/%Y    result_format=%d/%m/%Y
+    Run Keyword If    "${ticket_info}"=="TLIS"    Verify Specific Remark Is Written In The PNR    RIR *TLIS*YOUR TICKETS WILL BE ISSUED ON *${default_ticketing_date}*
+    ...    ELSE IF    "${ticket_info}"=="TLXL"    Verify Specific Remark Is Written In The PNR    RIR *TLXL*TICKETING DATE NOT SET CONFIRM BY *${default_ticketing_date}*
+    Run Keyword If    "${awaiting_secure_flight_data}"== "True"    Verify Specific Remark Is Written In The PNR    RIR ONHOLD:AWAITING SECURE FLIGHT DATA
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR ONHOLD:AWAITING SECURE FLIGHT DATA
+    Run Keyword If    "${awaiting_customer_references}" =="True"    Verify Specific Remark Is Written In The PNR    RIR ONHOLD:AWAITING CUSTOMER REFERENCES
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR ONHOLD:AWAITING CUSTOMER REFERENCES
+    Run Keyword If    "${awaiting_fare_details}"== "True"    Verify Specific Remark Is Written In The PNR    RIR ONHOLD:AWAITING FARE DETAILS
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR ONHOLD:AWAITING FARE DETAILS
+    Run Keyword If    "${awaiting_approval}"=="True"    Verify Specific Remark Is Written In The PNR    RIR ONHOLD:AWAITING APPROVAL
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR ONHOLD:AWAITING APPROVAL
+    Run Keyword If    "${awaiting_itinerary_segment}"=="True"    Verify Specific Remark Is Written In The PNR    RIR ONHOLD:AWAITING ITINERARY SEGMENT :${awaiting_itinerary_segment_text_value}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR ONHOLD:AWAITING ITINERARY SEGMENT
+    Run Keyword If    "${awaiting_itinerary_segment}"=="False"    Verify Specific Remark Is Not Written In The PNR    RIR ONHOLD:AWAITING ITINERARY SEGMENT :${awaiting_itinerary_segment_text_value}
+
+Untick On Hold Reason
+    [Arguments]    @{on_hold_reason}
+    Set Test Variable    ${awaiting_secure_flight_data}    False
+    Set Test Variable    ${awaiting_customer_references}    False
+    Set Test Variable    ${awaiting_fare_details}    False
+    Set Test Variable    ${awaiting_approval}    False
+    Set Test Variable    ${awaiting_itinerary_segment}    False
+    ${is_Checked0}    ${isEnabled0}    Get Checkbox Status (Onhold Reasons)    ${check_box_holdreason0}
+    ${is_Checked1}    ${isEnabled1}    Get Checkbox Status (Onhold Reasons)    ${check_box_holdreason1}
+    ${is_Checked2}    ${isEnabled2}    Get Checkbox Status (Onhold Reasons)    ${check_box_holdreason2}
+    ${is_Checked3}    ${isEnabled3}    Get Checkbox Status (Onhold Reasons)    ${check_box_holdreason3}
+    ${is_Checked4}    ${isEnabled4}    Get Checkbox Status (Onhold Reasons)    ${check_box_holdreason4}
+    : FOR    ${on_hold_reason_item}    IN    @{on_hold_reason}
+    \    Run Keyword If    "${on_hold_reason_item.upper()}" == "AWAITING APPROVAL" and "${is_Checked3}" == "True" and "${isEnabled3}" == "True"    Click On Hold Booking Reason Checkbox    ${check_box_holdreason3}
+    \    ...    ELSE IF    "${on_hold_reason_item.upper()}" == "AWAITING APPROVAL" and "${isEnabled3}" == "False"    Log    FAIL    AWAITING APPROVAL checkbox is disabled.
+    \    Run Keyword If    "${on_hold_reason_item.upper()}" == "AWAITING ITINERARY SEGMENT" and "${is_Checked4}" == "True" and "${isEnabled4}" == "True"    Click On Hold Booking Reason Checkbox    ${check_box_holdreason4}
+    \    ...    ELSE IF    "${on_hold_reason_item.upper()}" == "AWAITING ITINERARY SEGMENT" and "${isEnabled4}" == "False"    Log    FAIL    AWAITING ITINERARY SEGMENT DATA checkbox is disabled.
+    Run Keyword If    "${is_Checked0}" == "True" and "${isEnabled0}" == "False"    Set Test Variable    ${awaiting_secure_flight_data}    True
+    Run Keyword If    "${is_Checked1}" == "True" and "${isEnabled1}" == "False"    Set Test Variable    ${awaiting_customer_references}    True
+    Run Keyword If    "${is_Checked2}" == "True" and "${isEnabled2}" == "False"    Set Test Variable    ${awaiting_fare_details}    True
+
+Verify RIR On Hold Reason Remarks Are Not Written
+    Run Keyword If    "${awaiting_secure_flight_data}" == "True"    Verify Specific Remark Is Written In The PNR    RIR ONHOLD:AWAITING SECURE FLIGHT DATA
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR ONHOLD:AWAITING SECURE FLIGHT DATA
+    Run Keyword If    "${awaiting_customer_references}" == "True"    Verify Specific Remark Is Written In The PNR    RIR ONHOLD:AWAITING CUSTOMER REFERENCES
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR ONHOLD:AWAITING CUSTOMER REFERENCES
+    Run Keyword If    "${awaiting_fare_details}" == "True"    Verify Specific Remark Is Written In The PNR    RIR ONHOLD:AWAITING FARE DETAILS
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR ONHOLD:AWAITING FARE DETAILS
+    Run Keyword If    "${awaiting_approval}" == "True"    Verify Specific Remark Is Written In The PNR    RIR ONHOLD:AWAITING APPROVAL
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR ONHOLD:AWAITING APPROVAL
+    Run Keyword If    "${awaiting_itinerary_segment}" == "True"    Verify Specific Remark Is Written In The PNR    RIR ONHOLD:AWAITING ITINERARY SEGMENT :${awaiting_itinerary_segment_text_value}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RIR ONHOLD:AWAITING ITINERARY SEGMENT
+    Run Keyword If    "${awaiting_itinerary_segment}" == "False"    Verify Specific Remark Is Not Written In The PNR    RIR ONHOLD:AWAITING ITINERARY SEGMENT :${awaiting_itinerary_segment_text_value}
+
+Verify Ticketing RMM Remarks
+    Run Keyword If    "${awaiting_secure_flight_data}"== "True"    Verify Specific Remark Is Written In The PNR    RMM ONHOLD:AWAITING SECURE FLIGHT DATA
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RMM ONHOLD:AWAITING SECURE FLIGHT DATA
+    Run Keyword If    "${awaiting_customer_references}" =="True"    Verify Specific Remark Is Written In The PNR    RMM ONHOLD:AWAITING CUSTOMER REFERENCES
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RMM ONHOLD:AWAITING CUSTOMER REFERENCES
+    Run Keyword If    "${awaiting_fare_details}"== "True"    Verify Specific Remark Is Written In The PNR    RMM ONHOLD:AWAITING FARE DETAILS
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RMM ONHOLD:AWAITING FARE DETAILS
+    Run Keyword If    "${awaiting_approval}"=="True"    Verify Specific Remark Is Written In The PNR    RMM ONHOLD:AWAITING APPROVAL
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RMM ONHOLD:AWAITING APPROVAL
+    Run Keyword If    "${awaiting_itinerary_segment}"=="True"    Verify Specific Remark Is Written In The PNR    RMM ONHOLD:AWAITING ITINERARY SEGMENT :${awaiting_itinerary_segment_text_value}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RMM ONHOLD:AWAITING ITINERARY SEGMENT
+    Run Keyword If    "${awaiting_itinerary_segment}"=="False"    Verify Specific Remark Is Not Written In The PNR    ${awaiting_itinerary_segment_text_value}
+
+Tick Awaiting Itinerary Segment
+    [Arguments]    ${awaiting_itinerary_segment_text_value}
+    Run Keyword    Click On Hold Booking Reason Checkbox    ${check_box_holdreason4}
+    Sleep    1
+    Set Control Text Value    [NAME:ctxtHoldReason]    ${awaiting_itinerary_segment_text_value}
+
+Populate Air Fare Panel Adding Values On All Fields
+    [Arguments]    ${tab_number}
+    Click Fare Tab    Fare Quote ${tab_number}
+    Populate Air Fare Savings Code Using Default Values
+
+Verify TK OK Is Written In The PNR
+    [Arguments]    ${pcc}
+    Get Ticketing Date
+    ${ticketing_date}    Convert Date To GDS Format    ${ticketing_date}    %m/%d/%Y
+    Verify Specific Remark Is Written In The PNR    TK OK${ticketing_date}/${pcc}
+
+Verify TK XL Is Written In The PNR
+    [Arguments]    ${pcc}    ${ticketing_time_configured}
+    Get Ticketing Date
+    ${ticketing_date}    Convert Date To GDS Format    ${ticketing_date}    %m/%d/%Y
+    Verify Specific Remark Is Written In The PNR    TK XL${ticketing_date}/${ticketing_time_configured}/${pcc}
+
+Verify TK TL Is Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${has_onhold}=false
+    ${ticketing_date}    Convert Date To GDS Format    ${ticketing_date}    %m/%d/%Y
+    ${ticketing_element_remark}    Set Variable If    "${has_onhold.lower()}" == "true"    TK TL${ticketing_date}/${pcc}/Q${queue_number}C${queue_category}-ONHOLD    TK TL${ticketing_date}/${pcc}/Q${queue_number}C${queue_category}
+    Verify Specific Remark Is Written In The PNR    ${ticketing_element_remark}
+
+Verify Specific On Hold Reason Status
+    [Arguments]    ${on_hold_reason}    ${is_tick}
+    ${actual_status}    Get On Hold Reason Checkbox Status    ${on_hold_reason}
+    Verify Actual Value Matches Expected Value    ${actual_status}    ${is_tick}
+    Take Screenshot
+
+Set On Hold Reasons
+    [Arguments]    ${awaiting_itinerary_segment_text_value}    @{on_hold_reason}
+    [Documentation]    and get checkbox status (for future refactoring)
+    Set Suite Variable    ${awaiting_itinerary_segment_text_value}
+    Set Test Variable    ${awaiting_secure_flight_data}    False
+    Set Test Variable    ${awaiting_customer_references}    False
+    Set Test Variable    ${awaiting_fare_details}    False
+    Set Test Variable    ${awaiting_approval}    False
+    Set Test Variable    ${awaiting_itinerary_segment}    False
+    ${is_Checked0}    ${isEnabled0}    Get Checkbox Status (Onhold Reasons)    ${check_box_holdreason0}
+    ${is_Checked1}    ${isEnabled1}    Get Checkbox Status (Onhold Reasons)    ${check_box_holdreason1}
+    ${is_Checked2}    ${isEnabled2}    Get Checkbox Status (Onhold Reasons)    ${check_box_holdreason2}
+    ${is_Checked3}    ${isEnabled3}    Get Checkbox Status (Onhold Reasons)    ${check_box_holdreason3}
+    ${is_Checked4}    ${isEnabled4}    Get Checkbox Status (Onhold Reasons)    ${check_box_holdreason4}
+    : FOR    ${on_hold_reason_item}    IN    @{on_hold_reason}
+    \    Run Keyword If    "${on_hold_reason_item.upper()}" == "AWAITING APPROVAL" and "${is_Checked3}" == "False" and "${isEnabled3}" == "True"    Click On Hold Booking Reason Checkbox    ${check_box_holdreason3}
+    \    ...    ELSE IF    "${on_hold_reason_item.upper()}" == "AWAITING APPROVAL" and "${isEnabled3}" == "False"    Run Keyword And Continue On Failure    Log    FAIL
+    \    ...    AWAITING APPROVAL checkbox is disabled.
+    \    Run Keyword If    "${on_hold_reason_item.upper()}" == "AWAITING ITINERARY SEGMENT" and "${is_Checked4}" == "False" and "${isEnabled4}" == "True"    Tick Awaiting Itinerary Segment    ${awaiting_itinerary_segment_text_value}
+    \    ...    ELSE IF    "${on_hold_reason_item.upper()}" == "AWAITING ITINERARY SEGMENT" and "${isEnabled4}" == "False"    Run Keyword And Continue On Failure    Log    FAIL
+    \    ...    AWAITING ITINERARY SEGMENT DATA checkbox is disabled.
+    \    Run Keyword If    "${on_hold_reason_item.upper()}" == "AWAITING APPROVAL"    Set Test Variable    ${awaiting_approval}    True
+    \    Run Keyword If    "${on_hold_reason_item.upper()}" == "AWAITING ITINERARY SEGMENT"    Set Test Variable    ${awaiting_itinerary_segment}    True
+    Run Keyword If    "${is_Checked0}" == "True" and "${isEnabled0}" == "False"    Set Test Variable    ${awaiting_secure_flight_data}    True
+    Run Keyword If    "${is_Checked1}" == "True" and "${isEnabled1}" == "False"    Set Test Variable    ${awaiting_customer_references}    True
+    Run Keyword If    "${is_Checked2}" == "True" and "${isEnabled2}" == "False"    Set Test Variable    ${awaiting_fare_details}    True
+
+Verify Specific Multi Line Is Not Written In The PNR
+    [Arguments]    ${expected_text}    ${reg_exp_flag}=false    ${multi_line_search_flag}=false    ${remove_spaces}=false
+    Verify Multi Line Does Not Contain Value    ${pnr_details}    ${expected_text}    ${reg_exp_flag}    ${multi_line_search_flag}    ${remove_spaces}
+
+Verify Multi Line Does Not Contain Value
+    [Arguments]    ${text}    ${expected_value}    ${reg_exp_flag}=false    ${multi_line_search_flag}=false    ${remove_spaces}=false
+    Log    Expected: ${expected_value}
+    Log    Actual: ${text}
+    ${line_containing_expected_value} =    Get Lines Containing String    ${text}    ${expected_value}
+    Set Test Variable    ${line_containing_expected_value}
+    ${flattened_text}    Run Keyword If    "${multi_line_search_flag.lower()}" == "true"    Flatten String    ${text}
+    ${flattened_text}    Run Keyword If    "${multi_line_search_flag.lower()}" == "true" and "${remove_spaces}" == "true"    Set Variable    ${flattened_text.replace(" ", "")}
+    ...    ELSE    Set Variable    ${flattened_text}
+    Run Keyword And Continue On Failure    Run Keyword If    "${reg_exp_flag.lower()}" == "false" and "${multi_line_search_flag.lower()}" == "false"    Should Not Contain    ${text}    ${expected_value}    "${expected_value}" is not found.
+    ...    FALSE
+    Run Keyword And Continue On Failure    Run Keyword If    "${reg_exp_flag.lower()}" == "true" and "${multi_line_search_flag.lower()}" == "false"    Should Not Match RegExp    ${text}    ${expected_value}    "${expected_value}" is not found.
+    ...    FALSE
+    Run Keyword And Continue On Failure    Run Keyword If    "${reg_exp_flag.lower()}" == "false" and "${multi_line_search_flag.lower()}" == "true"    Should Not Contain    ${flattened_text}    ${expected_value}    "${expected_value}" is not found.
+    ...    FALSE
+    Run Keyword And Continue On Failure    Run Keyword If    "${reg_exp_flag.lower()}" == "true" and "${multi_line_search_flag.lower()}" == "true"    Should Not Match RegExp    ${flattened_text}    ${expected_value}    "${expected_value}" is not found.
+    ...    FALSE
+
+Get Follow Up Date Value
+    ${follow_up_date}    Get Control Text Value    ${date_followup}
+    Set Suite Variable    ${follow_up_date}
+    [Teardown]    Take Screenshot
+
+Verify Specific Remark Is Not Written X Times In The PNR
+    [Arguments]    ${expected_remark}    ${occurence}
+    ${actual_count_match}    Get Count    ${pnr_details}    ${expected_remark}
+    Run Keyword And Continue On Failure    Run Keyword If    ${actual_count_match} <= ${occurence}    Log    PASS: "${expected_remark}" was not written more than "${occurence}" times in the PNR.
+    ...    ELSE    FAIL    "${expected_remark}" was written "${actual_count_match}" times in the PNR and not the expected count: " ${occurence}"
+
+Verify On Hold Queue Place Is Not Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${occurence}=1
+    Verify Specific Remark Is Not Written X Times In The PNR    QE/${pcc}/${queue_number}${queue_category}    ${occurence}
+
+Verify On Hold Queue Minder Is Not Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${occurence}=1
+    ${followup_date}    Convert Date To GDS Format    ${followup_date}    %m/%d/%Y
+    Verify Specific Remark Is Not Written X Times In The PNR    OP ${pcc}/${follow_up_date}/${queue_number}${queue_category}/PNR ON HOLD SEE REMARKS    ${occurence}
+
+Verify Aqua Queue Minder Is Not Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${occurence}=1
+    Verify Specific Remark Is Not Written X Times In The PNR    OP ${pcc}/${current_date}/${queue_number}${queue_category}/AQUA QUEUING    ${occurence}
+
+Verify Aqua Queue Place Is Not Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${occurence}=1
+    Verify Specific Remark Is Not Written X Times In The PNR    QE/${pcc}/${queue_number}${queue_category}    ${occurence}
+
+Verify On Hold Queue Place Is Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}
+    Verify Specific Remark Is Written In The PNR    QE/${pcc}/${queue_number}${queue_category}
+
+Verify On Hold Queue Minder Is Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}
+    ${followup_date}    Convert Date To GDS Format    ${followup_date}    %m/%d/%Y
+    Verify Specific Remark Is Written In The PNR    OP ${pcc}/${follow_up_date}/${queue_number}${queue_category}/PNR ON HOLD SEE REMARKS
+
+Verify Aqua Queue Minder Is Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}
+    Verify Specific Remark Is Written In The PNR    OP ${pcc}/${current_date}/${queue_number}${queue_category}/AQUA QUEUING
+
+Verify Aqua Queue Place Is Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}
+    Verify Specific Remark Is Written In The PNR    QE/${pcc}/${queue_number}${queue_category}

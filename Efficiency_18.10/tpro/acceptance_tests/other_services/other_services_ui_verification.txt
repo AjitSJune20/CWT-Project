@@ -1,0 +1,657 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verify Arrival Flight Items Are Correct
+    ${expected_arrival_items}    Get Air Segments From GDS
+    ${ui_arrival_flights_items}    Get Dropdown Values    [NAME:ArrivalFlightComboBox]
+    ${ui_arrival_flights_items}    Remove Empty Value From List    ${ui_arrival_flights_items}
+    Log    Expected Arrival Segments: \n${expected_arrival_items}
+    Log    Actual Arrival Segments: \n${ui_arrival_flights_items}
+    Lists Should Be Equal    ${ui_arrival_flights_items}    ${expected_arrival_items}
+
+Verify Card Vendor Types Are Correct
+    [Arguments]    @{card_vendor_types}
+    ${ui_card_vendor_types}    Get Dropdown Values    [NAME:FopVendorComboBox]
+    ${ui_card_vendor_types}    Remove Empty Value From List    ${ui_card_vendor_types}
+    Log    Expected card vendor types: \n${card_vendor_types}
+    Log    Actual card vendor types: \n${ui_card_vendor_types}
+    Run Keyword And Continue On Failure    Lists Should Be Equal    ${ui_card_vendor_types}    ${card_vendor_types}
+
+Verify Computation For Commision, GST Value, Merchant Fee And Total Selling Price
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+
+Verify Computation For Commision, Merchant Fee And Total Selling Price
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+
+Verify Default Of Arrival Flight Is Correct
+    [Arguments]    ${arrival_flight}=${EMPTY}
+    Get Arrival Flight Value
+    ${expected_arrival_flight}    Get Variable Value    ${prev_arrival_flight_${arrival_flight.lower()}}    ${arrival_flight}
+    Log    Expected Value: ${expected_arrival_flight}
+    Log    Actual Value: ${ui_arrival_flight}
+    Verify Actual Value Matches Expected Value    ${ui_arrival_flight}    ${expected_arrival_flight}
+
+Verify Default Of Depart Flight Is Correct
+    [Arguments]    ${depart_flight}=${EMPTY}
+    Get Departure Flight Value
+    ${expected_depart_flight}    Get Variable Value    ${prev_depart_flight_${depart_flight.lower()}}    ${depart_flight}
+    Log    Expected Value: ${expected_depart_flight}
+    Log    Actual Value: ${ui_depart_flight}
+    Verify Actual Value Matches Expected Value    ${ui_depart_flight}    ${expected_depart_flight}
+
+Verify Default Value For Arrival Flight
+    Wait Until Control Object Is Visible    [NAME:FareNoTextBox]
+    Get Arrival Flight Segment
+    Verify Actual Value Matches Expected Value    ${arrival_flight}    ${EMPTY}
+
+Verify Default Value For Depart Flight
+    Wait Until Control Object Is Visible    [NAME:FareNoTextBox]
+    Get Depart Flight Segment
+    Verify Actual Value Matches Expected Value    ${depart_flight}    ${EMPTY}
+
+Verify Departure Flight Items Are Correct
+    ${expected_departure_items}    Get Air Segments From GDS
+    ${ui_departure_items}    Get Dropdown Values    [NAME:DepartFlightComboBox]
+    ${ui_departure_items}    Remove Empty Value From List    ${ui_departure_items}
+    Log    Expected Departure Segments: \n${expected_departure_items}
+    Log    Actual Departure Segments: \n${ui_departure_items}
+    Lists Should Be Equal    ${ui_departure_items}    ${expected_departure_items}
+
+Verify Departure Routing Details Are Correct
+    [Arguments]    ${exp_origin}    ${exp_destination}    ${exp_routing}
+    Get Depart Origin
+    Get Depart Destination
+    Get Depart Routing Description
+    Verify Actual Value Matches Expected Value    ${depart_origin}    ${exp_origin}
+    Verify Actual Value Matches Expected Value    ${depart_destination}    ${exp_destination}
+    Verify Actual Value Matches Expected Value    ${depart_routing}    ${exp_routing}
+    [Teardown]    Take Screenshot
+
+Verify EO Values Are Correct
+    [Arguments]    ${prefix}    ${number}
+    Get EO Number Of Consolidator Ticket
+    Verify Actual Value Matches Expected Value    ${consolidator_ticket_prefix}    ${prefix}
+    Verify Actual Value Matches Expected Value    ${consolidator_ticket_number}    ${number}
+
+Verify Error Icon Is Displayed For Hotel Segments
+    [Arguments]    ${expected_tooltip}
+    Verify Error Icon Is Displayed In Hotel Info Tab    ${expected_tooltip}
+
+Verify Error Icon Is Displayed In Hotel Info Tab
+    [Arguments]    ${expected_tooltip}    ${parent_control_id}=OtherServicesSegmentControl
+    Comment    Sleep    3
+    ${actual_tool_tip}    Get Tooltip From Error Icon    ${parent_control_id}
+    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_tool_tip}    ${expected_tooltip}
+    Take Screenshot
+
+Verify Error Icon Is Displayed When Expiry Date Is Earlier Than Current Date
+    [Arguments]    ${expected_tooltip}
+    ${date}    Subtract Month From Current Date    1
+    ${month}    Evaluate    "{:02d}".format(${date.month})
+    Select Expiry Month    ${month}
+    Select Expiry Year    ${date.year}
+    ${actual_tooltip}    Get Tooltip From Error Icon    OtherServicesFormOfPayment
+    Should Be Equal As Strings    ${actual_tooltip}    ${expected_tooltip}
+    [Teardown]    Take Screenshot
+
+Verify Error Icon Is Displayed When No Hotel Is Selected
+    [Arguments]    ${expected_tooltip}
+    Verify Error Icon Is Displayed For Ticket Type    ${expected_tooltip}    OtherServicesSegmentControl
+
+Verify Exchange And Itinerary Order Remarks Fields Are working Correctly
+    Click Remarks Tab
+    Get All Original Data From EO Grid
+    Get All Original Data From IO Grid
+    Select An Item in Exchange Order Remarks Grid View By Index    1
+    Verify Left Exchange Order Remarks Grid View is Uneditable
+    Click Add Button in Exchange Order Remarks Grid View
+    Verify All Exchange Order Remarks Items Are Retained In Left Grid View
+    Verify Selected Exchange Order Remarks Item Is Reflected In Right Grid View
+    Verify Right Exchange Order Remarks Grid View Is Uneditable
+    Click Delete Button on an Item in Exchange Order Remarks Grid View by Index    0
+    Verify All Exchange Order Remarks Items Are Deleted In Right Grid View
+    Select Multiple Items in Exchange Order Remarks Left Grid View By Index Range    0    2    3
+    Click Add Button in Exchange Order Remarks Grid View
+    Verify All Exchange Order Remarks Items Are Retained In Left Grid View
+    Verify Multiple Selected Exchange Order Remarks Items Are Reflected In Right Grid View
+    Click Sort Down Button On A Specific Item In Exchange Order Remarks Grid View By Index    0
+    Click Sort Up Button On A Specific Item In Exchange Order Remarks Grid View By Index    2
+    Verify Sorting Of Exchange Order Remarks Items Are Correct
+    Click Delete Button on an Item in Exchange Order Remarks Grid View by Index    1
+    Verify Multiple Exchange Order Remarks Items Are Deleted In Right Grid View
+    Click Delete All Button In Exchange Order Remarks Grid View
+    Click Add All Button In Exchange Order Remarks Grid View
+    Verify All Exchange Order Remarks Items Are Retained In Left Grid View
+    Verify All Selected Exchange Order Remarks Items Are Reflected In Right Grid VIew
+    Click Delete All Button In Exchange Order Remarks Grid View
+    Verify All Exchange Order Remarks Items Are Deleted In Right Grid View
+    Select An Item in Itinerary Remarks Grid View By Index    1
+    Verify Left Itinerary Remarks Grid View is Uneditable
+    Click Add Button in Itinerary Remarks Grid View
+    Verify All Itinerary Remarks Items Are Retained In Left Grid View
+    Verify Selected Itinerary Remarks Item Is Reflected in Right Grid VIew
+    Verify Right Itinerary Remarks Grid View Is Uneditable
+    Click Delete Button on an Item in Itinerary Remarks Grid View by Index    0
+    Verify All Itinerary Remarks Items Are Deleted In Right Grid View
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    1    2    3
+    Click Add Button in Itinerary Remarks Grid View
+    Verify All Itinerary Remarks Items Are Retained In Left Grid View
+    Verify Multiple Selected Itinerary Remarks Items Are Reflected In Right Grid View
+    Click Sort Down Button On An Item In Itinerary Remarks Grid View By Index    0
+    Click Sort Up Button On An Item In Itinerary Remarks Grid View By Index    2
+    Verify Sorting Of Itinerary Remarks Items Are Correct
+    Click Delete Button on an Item in Itinerary Remarks Grid View by Index    1
+    Verify Multiple Itinerary Remarks Items Are Deleted In Right Grid View
+    Click Delete All Button In Itinerary Remarks Grid View
+    Click Add All Button In Itinerary Remarks Grid View
+    Verify All Itinerary Remarks Items Are Retained In Left Grid View
+    Verify All Selected Itinerary Remarks Items Are Reflected In Right Grid VIew
+    Click Delete All Button In Itinerary Remarks Grid View
+    Verify All Itinerary Remarks Items Are Deleted In Right Grid View
+
+Verify Exchange Order Number
+    [Arguments]    ${expected_exchangeorder_no}
+    ${exchangeorder_no}    Get Control Text Value    [NAME:ExhangeOrderNumberTextBox]
+    Set Suite Variable    ${exchangeorder_no}
+    Verify Actual Value Matches Expected Value    ${exchangeorder_no}    ${expected_exchangeorder_no}
+
+Verify Exchange Order Remarks Are Correct
+    [Arguments]    @{exp_remarks}
+    ${actual_eo_remarks}    Get All Cell Values In Data Grid Pane    [NAME:ToEoDataGridView]
+    Log List    ${actual_eo_remarks}
+    Log List    ${exp_remarks}
+    : FOR    ${exp_remark}    IN    @{exp_remarks}
+    \    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_eo_remarks}    ${exp_remark}
+    [Teardown]    Take Screenshot
+
+Verify HHL Hotel Segments Are Displayed In The Hotel Segment List
+    Get Select Hotel Segments
+    Log List    ${displayed_hotel_segment_list}
+    Log List    ${hhl_segments_list}
+    : FOR    ${expected_segment}    IN    @{hhl_segments_list}
+    \    Run Keyword And Continue On Failure    Should Contain Match    ${displayed_hotel_segment_list}    ${expected_segment}*
+
+Verify HTL Hotel Segments Are Displayed In The Hotel Segment List
+    Get Select Hotel Segments
+    Log List    ${displayed_hotel_segment_list}
+    Log List    ${htl_segments_list}
+    : FOR    ${expected_segment}    IN    @{htl_segments_list}
+    \    Run Keyword And Continue On Failure    Should Contain Match    ${displayed_hotel_segment_list}    ${expected_segment}*
+
+Verify Hotel Fields Are Disabled
+    Verify Control Object Is Disabled    [NAME:CommisionTextBox]
+    Verify Control Object Is Disabled    [NAME:MerchantFeeTextBox]
+    Verify Control Object Is Disabled    [NAME:DiSellingPriceTextBox]
+    Verify Control Object Is Disabled    [NAME:MerchantFeeAbsorbCheckBox]
+    Verify Control Object Is Disabled    [NAME:ExhangeOrderNumberTextBox]
+
+Verify Hotel Info Fields Are Enabled
+    Verify Control Object Is Enabled    [NAME:VendorContactTextBox]
+    Verify Control Object Is Enabled    [NAME:NetCostTextBox]
+    Verify Control Object Is Enabled    [NAME:SellingPriceTextBox]
+    Verify Control Object Is Enabled    [NAME:PassengerIdTextBox]
+
+Verify MI Class Of Service Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get MI Class Of Service
+    Verify Actual Value Matches Expected Value    ${mi_class_of_service_value}    ${expected}
+
+Verify MI Class Of Services In Dropdown Are Correct
+    @{expected_class_services}    Create List    FF - First Class Full Fare    FD - First Class Discounted Fare    FC - First Class Corporate Fare    FW - First Class CWT Negotiated Fare    CF - Business Class Full Fare
+    ...    CD - Business Class Discounted Fare    CC - Business Class Corporate Fare    CW - Business Class CWT Negotiated Fare    YF - Economy Class Full Fare    YD - Economy Class Discounted Fare    YC - Economy Class Corporate Fare
+    ...    YW - Economy Class CWT Negotiated Fare
+    @{actual_class_services}    Get Dropdown Values    [NAME:ClassOfServicesComboBox]
+    : FOR    ${class}    IN    @{expected_class_services}
+    \    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_class_services}    ${class}
+
+Verify MI Default Field Values
+    [Arguments]    ${country}
+    Get MI Filed Fare Number
+    Get MI Reference Fare
+    Get MI Low Fare
+    Get MI Final Destination
+    Get MI Low Fare Carrier
+    Get MI Type Of Ticket
+    Get MI Realised Saving Code
+    Get MI Missed Saving Code
+    Get MI Class Of Service
+    ${zero}    Set Variable If    "${country}" == "SG"    0.00    0
+    Verify Actual Value Matches Expected Value    ${mi_file_fare_number}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${mi_reference_fare}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${mi_low_fare}    ${zero}
+    Verify Actual Value Matches Expected Value    ${mi_final_destination}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${mi_low_fare_carrier}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${et_pt}    ET
+    Verify Actual Value Matches Expected Value    ${mi_realised_saving_code}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${mi_missed_saving_code}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${mi_class_of_service}    ${EMPTY}
+
+Verify MI Filed Fare Number Field Is Correct
+    @{actual_filed_fare}    Get Dropdown Values    [NAME:FiledFareNumberComboBox]
+    ${expected_fare_number}    Get Segment Number From TST
+    #Compare Values From UI to TST From GDS
+    Run Keyword And Continue On Failure    List Should Contain Sub List    ${actual_filed_fare}    ${expected_fare_number}
+
+Verify MI Filed Fare Number Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get MI Filed Fare Number
+    Verify Actual Value Matches Expected Value    ${mi_file_fare_number}    ${expected}
+
+Verify MI Final Destination Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get MI Final Destination
+    Verify Actual Value Matches Expected Value    ${mi_final_destination}    ${expected}
+
+Verify MI Low Fare Carrier Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get MI Low Fare Carrier
+    Verify Actual Value Matches Expected Value    ${mi_low_fare_carrier}    ${expected}
+
+Verify MI Low Fare Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get MI Low Fare
+    Verify Actual Value Matches Expected Value    ${mi_low_fare}    ${expected}
+
+Verify MI Missed Saving Code Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get MI Missed Saving Code
+    Verify Actual Value Matches Expected Value    ${mi_missed_saving}    ${expected}
+
+Verify MI Missed Saving Codes In Dropdown Are Correct
+    [Arguments]    ${country}
+    @{expected_missed_code}    Generate Missed Saving Code List    ${country}
+    @{actual_missed_code}    Get Dropdown Values    [NAME:MissedSavingCodeComboBox]
+    Comment    : FOR    ${code.upper()}    IN    @{actual_missed_code}
+    Comment    \    Run Keyword And Continue On Failure    List Should Contain Value    ${expected_missed_code}    ${code.upper()}
+    : FOR    ${code.upper()}    IN    @{expected_missed_code}
+    \    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_missed_code}    ${code.upper()}
+
+Verify MI PT And ET Selection Are Available
+    ${expected}    Create List    PT    ET
+    @{actual}    Get Dropdown Values    [NAME:[NAME:PtEtComboBox]
+    : FOR    ${option}    IN    @{expected}
+    \    Run Keyword And Continue On Failure    List Should Contain Value    ${actual}    ${option}
+
+Verify MI Realised Saving Code Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get MI Realised Saving Code
+    Verify Actual Value Matches Expected Value    ${mi_realised_saving}    ${expected}
+
+Verify MI Realised Saving Codes In Dropdown Are Correct
+    [Arguments]    ${country}
+    @{expected_realised_code}    Generate Realise Saving Code List    ${country}
+    @{actual_realised_code}    Get Dropdown Values    [NAME:RealisedSavingCodeComboBox]
+    ${actual_realised_code}    Evaluate    [realised_code.upper() for realised_code in ${actual_realised_code}]
+    Comment    : FOR    ${code.upper()}    IN    @{actual_realised_code}
+    Comment    \    Run Keyword And Continue On Failure    List Should Contain Value    ${expected_realised_code}    ${code.upper()}
+    : FOR    ${code.upper()}    IN    @{expected_realised_code}
+    \    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_realised_code}    ${code.upper()}
+
+Verify MI Reference Fare Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get MI Reference Fare
+    Verify Actual Value Matches Expected Value    ${mi_reference_fare}    ${expected}
+
+Verify MI Type Of Ticket Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get MI Type Of Ticket
+    Verify Actual Value Matches Expected Value    ${et_pt}    ${expected}
+
+Verify Passenger Id
+    [Arguments]    ${expected_passenger_id}
+    ${passenger_id}    Get Control Text Value    [NAME:PassengerIdTextBox]
+    Set Suite Variable    ${passenger_id}
+    Verify Actual Value Matches Expected Value    ${passenger_id}    ${expected_passenger_id}
+
+Verify Return Routing Details Are Correct
+    [Arguments]    ${exp_origin}    ${exp_destination}    ${exp_routing}
+    Get Return Origin
+    Get Return Destination
+    Get Return Routing Description
+    Verify Actual Value Matches Expected Value    ${return_origin}    ${exp_origin}
+    Verify Actual Value Matches Expected Value    ${return_destination}    ${exp_destination}
+    Verify Actual Value Matches Expected Value    ${return_routing}    ${exp_routing}
+    [Teardown]    Take Screenshot
+
+Verify Service Info Fields
+    [Arguments]    ${fop}    ${is_gst}    ${country}
+    Verify Service Info Fields Are Displayed Depending On Country    ${country}    ${is_gst}    ${fop}
+    Verify Service Info Fields Are Enabled Depending On Country    ${country}    ${is_gst}    ${fop}
+    Verify Service Info Fields Are Disabled Depending On Country    ${country}    ${is_gst}    ${fop}
+
+Verify Service Info Fields Are Disabled Depending On Country
+    [Arguments]    ${country}    ${is_with_gst}    ${fop}
+    ${country}    Convert To Uppercase    ${country}
+    Verify Control Object Is Disabled    [NAME:CommisionTextBox]    ${title_power_express}
+    Run Keyword If    '${country}' == 'SG' and '${is_with_gst}' == 'True'    Run Keyword    Verify Control Object Is Disabled    [NAME:GSTTextBox]    ${title_power_express}
+    Run Keyword If    '${fop}' == 'Cash or Invoice'    Verify Control Object Is Disabled    [NAME:MerchantFeeAbsorbCheckBox]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:MerchantFeeTextBox]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:DiSellingPriceTextBox]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:ExhangeOrderNumberTextBox]    ${title_power_express}
+
+Verify Service Info Fields Are Displayed Depending On Country
+    [Arguments]    ${country}    ${is_with_gst}    ${fop}
+    [Documentation]    [NAME:CalculateSellingPriceButton] has been commented as it does not exists on current build.
+    ...    [NAME:DiSellingPriceTextBox]has been commented as it does not exists on current build.
+    ...    [NAME:Description2TextBox]has been commented as it does not exists on current build.
+    ${country}    Convert To Uppercase    ${country}
+    Verify Control Object Is Visible    [NAME:VendorContactTextBox]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:NetCostTextBox]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:SellingPriceTextBox]    ${title_power_express}
+    Comment    Verify Control Object Is Visible    [NAME:CalculateSellingPriceButton]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:CommisionTextBox]    ${title_power_express}
+    Run Keyword If    '${country}' == 'SG' and '${is_with_gst}' == 'True'    Run Keywords    Verify Control Object Is Visible    [NAME:GSTTextBox]    ${title_power_express}
+    ...    AND    Verify Control Object Is Visible    [NAME:GstAbsorbCheckBox]    ${title_power_express}
+    ...    ELSE    Run Keywords    Verify Control Object Is Not Visible    [NAME:GSTTextBox]    ${title_power_express}
+    ...    AND    Verify Control Object Is Not Visible    [NAME:GstAbsorbCheckBox]    ${title_power_express}
+    Run Keyword If    '${fop}' != 'Cash or Invoice'    Run Keywords    Verify Control Object Is Visible    [NAME:FopVendorComboBox]    ${title_power_express}
+    ...    AND    Verify Control Object Is Visible    [NAME:CardNumberMaskedTextBox]    ${title_power_express}
+    ...    AND    Verify Control Object Is Visible    [NAME:ExpiryMonthComboBox]    ${title_power_express}
+    ...    AND    Verify Control Object Is Visible    [NAME:ExpiryYearComboBox]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:MerchantFeeTextBox]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:MerchantFeeAbsorbCheckBox]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:DiSellingPriceTextBox]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:FormOfPaymentComboBox]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:DescriptionTextBox]    ${title_power_express}
+    Comment    Verify Control Object Is Visible    [NAME:Description2TextBox]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:BtaDescriptionTextBox]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:dtpDate]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ExhangeOrderNumberTextBox]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:CancelButton]    ${title_power_express}
+
+Verify Service Info Fields Are Enabled Depending On Country
+    [Arguments]    ${country}    ${is_with_gst}    ${fop}
+    ${country}    Convert To Uppercase    ${country}
+    Verify Control Object Is Enabled    [NAME:VendorContactTextBox]    ${title_power_express}
+    Verify Control Object Is Enabled    [NAME:NetCostTextBox]    ${title_power_express}
+    Verify Control Object Is Enabled    [NAME:SellingPriceTextBox]    ${title_power_express}
+    Run Keyword If    '${country}' == 'SG' and '${is_with_gst.lower()}' == 'true'    Verify Control Object Is Enabled    [NAME:GstAbsorbCheckBox]
+    Verify Control Object Is Enabled    [NAME:FormOfPaymentComboBox]    ${title_power_express}
+    Run Keyword If    '${fop}' != 'Cash or Invoice'    Run Keywords    Verify Control Object Is Enabled    [NAME:FopVendorComboBox]    ${title_power_express}
+    ...    AND    Verify Control Object Is Enabled    [NAME:CardNumberMaskedTextBox]    ${title_power_express}
+    ...    AND    Verify Control Object Is Enabled    [NAME:ExpiryMonthComboBox]    ${title_power_express}
+    ...    AND    Verify Control Object Is Enabled    [NAME:ExpiryYearComboBox]    ${title_power_express}
+    ...    AND    Verify Control Object Is Enabled    [NAME:MerchantFeeAbsorbCheckBox]    ${title_power_express}
+    Verify Control Object Is Enabled    [NAME:DescriptionTextBox]    ${title_power_express}
+    Verify Control Object Is Enabled    [NAME:BtaDescriptionTextBox]    ${title_power_express}
+    Verify Control Object Is Enabled    [NAME:dtpDate]    ${title_power_express}
+
+Verify Ticket No Values Are Correct
+    [Arguments]    ${prefix}    ${number}
+    Get Ticket No Value
+    Verify Actual Value Matches Expected Value    ${ticket_prefix}    ${prefix}
+    Verify Actual Value Matches Expected Value    ${ticket_no}    ${number}
+
+Verify Ticket Type Value Is Correct
+    [Arguments]    ${exp_value}
+    Get Ticket Type
+    Verify Actual Value Matches Expected Value    ${ticket_type}    ${exp_value}
+
+Verify Vendor Info Fields
+    Click Vendor Info Tab
+    Verify Vendor Info Fields Are Visible
+    Verify Vendor Info Fields Are Enabled
+    Verify Vendor Info Fields Are Disabled
+
+Verify Visa Processing CWT Handling Value Is Correct
+    [Arguments]    ${expected_mf_cwt_handling}=${EMPTY}
+    ${expected_mf_cwt_handling}    Run Keyword If    "${expected_mf_cwt_handling}" == "${EMPTY}"    Get Variable Value    ${computed_mf_cwt_handling}    ${expected_mf_cwt_handling}
+    ...    ELSE    Set Variable    ${expected_mf_cwt_handling}
+    Verify Actual Value Matches Expected Value    ${cwt_handling}    ${expected_mf_cwt_handling}
+
+Verify Visa Processing Commission Value Is Correct
+    [Arguments]    ${expected_commission}=${EMPTY}
+    ${expected_commission}    Run Keyword If    "${expected_commission}" == "${EMPTY}"    Get Variable Value    ${computed_commission}    ${expected_commission}
+    ...    ELSE    Set Variable    ${expected_commission}
+    Verify Actual Value Matches Expected Value    ${commission}    ${expected_commission}
+
+Verify Visa Processing Country Details
+    [Arguments]    ${exp_country}    ${exp_type}    ${exp_entries}    ${exp_validity_months}    ${exp_processing}    ${exp_passenger_id}=${EMPTY}
+    ...    ${exp_visa_number}=${EMPTY}
+    Get Country
+    Get Type
+    Get Entries
+    Get Validity
+    Get Processing
+    Get Passenger ID Value
+    Verify Actual Value Matches Expected Value    ${country_other_services}    ${exp_country}
+    Verify Actual Value Matches Expected Value    ${type}    ${exp_type}
+    Verify Actual Value Matches Expected Value    ${entries}    ${exp_entries}
+    Verify Actual Value Matches Expected Value    ${validity}    ${exp_validity_months}
+    Verify Actual Value Matches Expected Value    ${processing}    ${exp_processing}
+    ${is_visa_number_visible}    Is Control Edit Visible    PassengerIdTextBox
+    Run Keyword If    ${is_visa_number_visible} == 1    Get Passenger ID Value
+    Run Keyword If    ${is_visa_number_visible} == 1    Verify Actual Value Matches Expected Value    ${passenger_id}    ${exp_passenger_id}
+    ${is_visa_number_visible}    Is Control Edit Visible    VisaNumberTextBox
+    Run Keyword If    ${is_visa_number_visible} == 1    Get Visa Number
+    Run Keyword If    ${is_visa_number_visible} == 1    Verify Actual Value Matches Expected Value    ${visa_number_other_services}    ${exp_visa_number}
+
+Verify Visa Processing Nett Cost Value Is Correct
+    [Arguments]    ${expected_nett_cost_value}=${EMPTY}
+    ${expected_nett_cost}    Run Keyword If    "${expected_nett_cost_value}" == "${EMPTY}"    Get Variable Value    ${computed_mf_nett_cost}    ${expected_nett_cost_value}
+    ...    ELSE    Set Variable    ${expected_nett_cost_value}
+    Verify Actual Value Matches Expected Value    ${nett_cost}    ${expected_nett_cost}
+
+Verify Visa Processing Selling Price Value Is Correct
+    [Arguments]    ${expected_selling_price}=${EMPTY}
+    ${expected_selling_price}    Get Variable Value    ${computed_selling_price}    ${expected_selling_price}
+    Verify Actual Value Matches Expected Value    ${selling_price}    ${expected_selling_price}
+
+Verify Visa Processing Total Selling Price Is Correct
+    [Arguments]    ${expected_total_selling_price}=${EMPTY}
+    ${expected_vendor_handling}    Get Variable Value    ${computed_total_selling_price}    ${expected_total_selling_price}
+    Verify Actual Value Matches Expected Value    ${total_selling_price}    ${expected_vendor_handling}
+
+Verify Visa Processing Vendor Handling Value Is Correct
+    [Arguments]    ${expected_vendor_handling}=${EMPTY}
+    ${expected_vendor_handling}    Get Variable Value    ${computed_mf_vendor_handling}    ${expected_vendor_handling}
+    Verify Actual Value Matches Expected Value    ${vendor_handling}    ${expected_vendor_handling}
+
+Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services
+    [Arguments]    ${identifier1}    ${identifier2}
+    [Documentation]    This Keyword can be used For The Below Non-Air Other Services
+    ...    • Despatch
+    ...    • Ets Call Charges
+    ...    • Ferry
+    ...    • Merchant fee
+    ...    • Mice Domestic
+    ...    • MICE international
+    ...    • Oths handling Fee
+    ...    • Rebate
+    ...    • Tour Domestic
+    ...    • Transaction Fee-Air only
+    ...    • VAT
+    Run Keyword And Continue On Failure    Should Be Equal    ${request_list${identifier1.lower()}}    ${request_list${identifier2.lower()}}
+
+Verify Fields Are Displayed In Request When Product Is Non-Air Other Services
+    [Documentation]    This Keyword can be used For The Below Non-Air Other Services
+    ...    • Despatch
+    ...    • Ets Call Charges
+    ...    • Ferry
+    ...    • Merchant fee
+    ...    • Mice Domestic
+    ...    • MICE international
+    ...    • Oths handling Fee
+    ...    • Rebate
+    ...    • Tour Domestic
+    ...    • Transaction Fee-Air only
+    ...    • VAT
+    Verify Control Object Is Visible    [NAME:Details1TextBox]
+    Verify Control Object Is Visible    [NAME:Details2TextBox]
+    Verify Control Object Is Visible    [NAME:Details3TextBox]
+    Verify Control Object Is Visible    [NAME:InternalRemarksTextBox]
+
+Verify Fields Are Mandatory In Request When Product Is Non-Air Other Services
+    [Documentation]    This Keyword can be used For The Below Non-Air Other Services
+    ...    • Despatch
+    ...    • Ets Call Charges
+    ...    • Ferry
+    ...    • Merchant fee
+    ...    • Mice Domestic
+    ...    • MICE international
+    ...    • Oths handling Fee
+    ...    • Rebate
+    ...    • Tour Domestic
+    Run Keyword And Continue On Failure    Verify Control Object Field Is Mandatory    [NAME:Details1TextBox]
+
+Verify Request Fields Are Optional In Request When Product Is Non-Air Other Services
+    [Documentation]    This Keyword can be used For The Below Non-Air Other Services
+    ...    • Despatch
+    ...    • Ets Call Charges
+    ...    • Ferry
+    ...    • Merchant fee
+    ...    • Mice Domestic
+    ...    • MICE international
+    ...    • Oths handling Fee
+    ...    • Rebate
+    ...    • Tour Domestic
+    ...    • Transaction Fee-Air only
+    ...    • VAT
+    Verify Control Object Field Is Not Mandatory    [NAME:Details2TextBox]
+    Verify Control Object Field Is Not Mandatory    [NAME:Details3TextBox]
+    Verify Control Object Field Is Not Mandatory    [NAME:InternalRemarksTextBox]
+
+Verify Exchange Order Number Is Retained After Amend EO
+    ${previous_eo_number}=    Set Variable    ${eo_number}
+    Get Exchange Order Number
+    Verify Exchange Order Number Is Retained    ${previous_eo_number}
+
+Verify Field Values In Charges On Amend EO
+    [Arguments]    ${identifier1}    ${identifier2}
+    Run Keyword And Continue On Failure    Should Be Equal    ${final_charges_list${identifier1.lower()}}    ${final_charges_list${identifier2.lower()}}
+
+Verify Tabs Are Not Displayed In Other Services
+    [Arguments]    @{unexpected_tabs}
+    Wait Until Control Object Is Visible    [NAME:OtherServicesTabControl]
+    @{other_service_tabs}    Get Tab Items    OtherServicesTabControl
+    Should Not Be Equal As Strings    ${other_service_tabs}    ${expected_tabs}    msg=Tab Missing
+
+Verify Field Values In Request On Amend Eo When Product Is Insurance
+    [Arguments]    ${identifier1}    ${identifier2}
+    Run Keyword And Continue On Failure    Should Be Equal    ${request_collection${identifier1.lower()}}    ${request_collection${identifier2.lower()}}
+
+Verify Default Values Of Request Tab When Product Is Insurance
+    Verify Default Values Of Details When Product Is Insurance
+    Verify Default Values Of Internal Remark When Product Is Insurance
+    Verify Default Values Of Employee Number When Product Is Insurance
+    Verify Default Values Of Employee Name When Product Is Insurance
+    Verify Default Values Of Area When Product Is Insurance
+    Verify Default Values Of Passport Number When Product Is Insurance
+    Verify Default Values Of Assignee Name When Product Is Insurance
+    Verify Default Values Of Gender When Product Is Insurance
+    Verify Default Values Of Date Of Birth When Product Is Insurance
+    Verify Default Values Of Address Of House When Product Is Insurance
+    Verify Default Values Of Street Name When Product Is Insurance
+    Verify Default Values Of Sub Area When Product Is Insurance
+    Verify Default Values Of Pin Code When Product Is Insurance
+    Verify Default Values Of State When Product Is Insurance
+    Verify Default Values Of Country When Product Is Insurance
+    Verify Default Values Of Mobile Number When Product Is Insurance
+    Verify Default Values Of Marital Status When Product Is Insurance
+    Verify Default Values Of Departure Date When Product Is Insurance
+    Verify Default Values Of Arrival Date When Product Is Insurance
+
+Verify Default Values Of Details When Product Is Insurance
+    ${details1}    Get Control Text Value    [NAME:Details1TextBox]
+    ${details2}    Get Control Text Value    [NAME:Details2TextBox]
+    ${details3}    Get Control Text Value    [NAME:Details3TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${details1}"!="${EMPTY}"    FAIL
+    Run Keyword And Continue On Failure    Run Keyword If    "${details2}"!="${EMPTY}"    FAIL
+    Run Keyword And Continue On Failure    Run Keyword If    "${details3}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Internal Remark When Product Is Insurance
+    ${internal_remark}    Get Control Text Value    [NAME:InternalRemarksTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${internal_remark}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Employee Number When Product Is Insurance
+    ${employee_number}    Get Control Text Value    [NAME:EmployeeNumberTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${employee_number}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Employee Name When Product Is Insurance
+    ${employee_name}    Get Control Text Value    [NAME:EmployeeNameTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${employee_name}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Area When Product Is Insurance
+    ${area}    Get Control Text Value    [NAME:AreaTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${area}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Passport Number When Product Is Insurance
+    ${passport_number}    Get Control Text Value    [NAME:PassportNumberTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${passport_number}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Assignee Name When Product Is Insurance
+    ${assignee_name}    Get Control Text Value    [NAME:AssigneeNameTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${assignee_name}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Gender When Product Is Insurance
+    ${gender}    Get Control Text Value    [NAME:GenderTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${gender}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Date Of Birth When Product Is Insurance
+    ${date_of_birth}    Get Control Text Value    [NAME:DateOfBirthTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${date_of_birth}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Address Of House When Product Is Insurance
+    ${address_of_house}    Get Control Text Value    [NAME:AddressHouseBldgTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${address_of_house}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Street Name When Product Is Insurance
+    ${street_name}    Get Control Text Value    [NAME:StreetNameTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${street_name}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Sub Area When Product Is Insurance
+    ${sub_area}    Get Control Text Value    [NAME:SubAreaCityTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${sub_area}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Pin Code When Product Is Insurance
+    ${pin_code}    Get Control Text Value    [NAME:PinCodeTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${pin_code}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of State When Product Is Insurance
+    ${state}    Get Control Text Value    [NAME:StateTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${state}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Country When Product Is Insurance
+    ${country}    Get Control Text Value    [NAME:CountryTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${country}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Mobile Number When Product Is Insurance
+    ${mobile_number}    Get Control Text Value    [NAME:MobileNumberTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${mobile_number}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Marital Status When Product Is Insurance
+    ${marital_status}    Get Control Text Value    [NAME:MaritalStatusTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${marital_status}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Departure Date When Product Is Insurance
+    ${departure_date}    Get Control Text Value    [NAME:DepartureDateTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${departure_date}"!="${EMPTY}"    FAIL
+
+Verify Default Values Of Arrival Date When Product Is Insurance
+    ${arrival_date}    Get Control Text Value    [NAME:ArrivalDateTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${arrival_date}"!="${EMPTY}"    FAIL
+
+Verify Raise Cheque Display Message
+    Wait Until Window Exists    Raise Cheque Process    timeout=8    retry_interval=4
+    ${actual_email_confirm_message}    Get Control Text Value    [CLASS:Static; INSTANCE:1]    Raise Cheque Process
+    ${actual_email_confirm_message}    Remove String Using Regexp    ${actual_email_confirm_message}    \\n
+    ${actual_email_confirm_message}    Strip String    ${actual_email_confirm_message}
+    ${actual_email_confirm_message}    Replace String    ${actual_email_confirm_message}    ${SPACE}${SPACE}    ${SPACE}
+    ${expected_raise_check_message}    Set Variable If    "${eo_status.lower()}" == "new"    Cheque request successfully sent    "${eo_status.lower()}" == "pending"    Cheque request is pending    "${eo_status.lower()}" == "completed"
+    ...    Cheque number exists. Cheque request not successful    "${eo_status.lower()}" == "cancelled"    Can only raise cheque for New exchange orders
+    Verify Actual Value Matches Expected Value    ${actual_email_confirm_message}    ${expected_raise_check_message}
+    Send    {ENTER}
+    Get Expected Last Amend Date
+    Set Suite Variable    ${eo_number}
+
+Verify Amend Is Not Allowed When EO Status Is Pending
+    Wait Until Window Exists    Amend Exchange Order    timeout=8    retry_interval=4
+    ${actual_amend_error_message}    Get Control Text Value    [CLASS:Static; INSTANCE:1]    Amend Exchange Order
+    Verify Actual Value Matches Expected Value    ${actual_amend_error_message}    Record cannot be Amended
+    Send    {ENTER}

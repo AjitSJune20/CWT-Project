@@ -1,0 +1,380 @@
+*** Settings ***
+Force Tags        amadeus    apac
+Resource          ../../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          workflow_verification.txt
+
+*** Test Cases ***
+[NB HK] Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed
+    [Tags]    us765    not_ready    for_removal    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US765    BEAR    HKSEVENSIXFIVE
+    Click New Booking
+    Verify Enabled Buttons After New Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Cust Refs
+    Click Update PNR
+    Verify Enabled Buttons After Update PNR
+    Verify Panels Are Arranged Correctly
+    Verify No PNR Is Created
+    Book Flight X Months From Now    LAXJFK/AAA    SS1J1    FXP    6    3
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    #Set High Fare Field (If blank) with Charged Fare
+    #Set Low Fare Field    1000
+    Populate Air Fare Savings Code    XX - NO SAVING    P - PASSENGER DECLINED RESTRICTED FARE    YF - Economy Class Full Fare
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Verify Panel Is Red    Air Fare
+    Verify Panel Is Red    Delivery
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    #Set High Fare Field (If blank) with Charged Fare
+    #Set Low Fare Field    1000
+    Populate Air Fare Savings Code    XX - NO SAVING    P - PASSENGER DECLINED RESTRICTED FARE    YF - Economy Class Full Fare
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+
+[AB HK] Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed
+    [Tags]    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Enabled Buttons After Amend Booking
+    Verify Panels Are Arranged Correctly
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Recap
+    Click Finish PNR
+    Amend Booking For Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed For HK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Create Shell Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed
+    [Tags]    us765    not_ready    for_removal
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US765    BEAR    HKSEVENSIXFIVE
+    Click New Booking
+    Verify Enabled Buttons After New Booking
+    Verify Panels Are Arranged Correctly
+    Click Create Shell
+    Verify Enabled Buttons After Create Shell
+    Verify Panels Are Arranged Correctly
+    Click Panel    Complete
+    Verify PNR Is Successfully Created
+    Book Flight X Months From Now    LAXJFK/AAA    SS1J1    FXP    6    3
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Populate Air Fare Savings Code    XX - NO SAVING    P - PASSENGER DECLINED RESTRICTED FARE    YF - Economy Class Full Fare
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Verify Panel Is Red    Air Fare
+    Verify Panel Is Red    Delivery
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Populate Air Fare Savings Code    XX - NO SAVING    P - PASSENGER DECLINED RESTRICTED FARE    YF - Economy Class Full Fare
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+
+[NB IN] Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed
+    [Tags]    us765    not_ready    for_removal
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US765    BEAR    INSEVENSIXFIVE
+    Click New Booking
+    Click Panel    Cust Refs
+    Verify Enabled Buttons After New Booking
+    Verify Panels Are Arranged Correctly
+    Click Update PNR
+    Verify Enabled Buttons After Update PNR
+    Verify Panels Are Arranged Correctly
+    Verify No PNR Is Created
+    Book Flight X Months From Now    LAXJFK/AAA    SS1Y1    FXP    6    3
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field    10000
+    Select Realised Saving Code Value    XX - NO SAVING
+    Select Missed Saving Code Value    E - EXCHANGE
+    Select Class Code Value    FF - First Class Full Fare
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Verify Panel Is Red    Air Fare
+    Verify Panel Is Red    Delivery
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field    10000
+    Select Realised Saving Code Value    XX - NO SAVING
+    Select Missed Saving Code Value    E - EXCHANGE
+    Select Class Code Value    FF - First Class Full Fare
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+
+[AB IN] Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Enabled Buttons After Amend Booking
+    Verify Panels Are Arranged Correctly
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Recap
+    Click Finish PNR
+    Amend Booking For Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed For IN
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That Create Shell Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed
+    [Tags]    us765    not_ready    for_removal
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US765    BEAR    INSEVENSIXFIVE
+    Click New Booking
+    Click Panel    Cust Refs
+    Verify Enabled Buttons After New Booking
+    Verify Panels Are Arranged Correctly
+    Click Create Shell
+    Verify Enabled Buttons After Create Shell
+    Verify Panels Are Arranged Correctly
+    Click Panel    Complete
+    Verify PNR Is Successfully Created
+    Book Flight X Months From Now    LAXJFK/AAA    SS1Y1    FXP    6    3
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field    10000
+    Select Realised Saving Code Value    XX - NO SAVING
+    Select Missed Saving Code Value    E - EXCHANGE
+    Select Class Code Value    FF - First Class Full Fare
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Verify Panel Is Red    Air Fare
+    Verify Panel Is Red    Delivery
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field    10000
+    Select Realised Saving Code Value    XX - NO SAVING
+    Select Missed Saving Code Value    E - EXCHANGE
+    Select Class Code Value    FF - First Class Full Fare
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+
+[NB SG] Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed
+    [Tags]    us765    not_ready    for_removal
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US765    BEAR    SGSEVENSIXFIVE
+    Click New Booking
+    Verify Enabled Buttons After New Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Verify Enabled Buttons After Update PNR
+    Verify Panels Are Arranged Correctly
+    Verify No PNR Is Created
+    Book Flight X Months From Now    LAXJFK/AAA    SS1Y1    FXP    6    3
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Select Realised Saving Code Value    XX - NO SAVING
+    Select Missed Saving Code Value    M - Miscellaneous
+    Select Class Code Value    FF - First Class Full Fare
+    Set Commission Rebate Amount    0
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Verify Panel Is Red    Air Fare
+    Verify Panel Is Red    Delivery
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Select Realised Saving Code Value    XX - NO SAVING
+    Select Missed Saving Code Value    E - EXCHANGE
+    Select Class Code Value    FF - First Class Full Fare
+    Set Commission Rebate Amount    0
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Finish PNR
+    Click Clear All
+
+[AB SG] Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed
+    [Tags]    us765    not_ready    for_removal
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Enabled Buttons After Amend Booking
+    Verify Panels Are Arranged Correctly
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Air Fare
+    Set Commission Rebate Amount    0
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Verify Panel Is Red    Cust Refs
+    Verify Panel Is Red    Air Fare
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Air Fare
+    Set Commission Rebate Amount    0
+    Click Panel    Recap
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed For SG If Simultaneous Change Error Is Displayed
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Create Shell Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed
+    [Tags]    us765    not_ready    for_removal
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US765    BEAR    SGSEVENSIXFIVE
+    Click New Booking
+    Verify Enabled Buttons After New Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Create Shell
+    Verify Enabled Buttons After Create Shell
+    Verify Panels Are Arranged Correctly
+    Click Panel    Complete
+    Verify PNR Is Successfully Created
+    Book Flight X Months From Now    LAXJFK/AAA    SS1Y1    FXP    6    3
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Cust Refs
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Select Realised Saving Code Value    XX - NO SAVING
+    Select Missed Saving Code Value    M - Miscellaneous
+    Select Class Code Value    FF - First Class Full Fare
+    Set Commission Rebate Amount    0
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Verify Panel Is Red    Air Fare
+    Verify Panel Is Red    Delivery
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Policy Check
+    Select Policy Status    American Airlines Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Select Realised Saving Code Value    XX - NO SAVING
+    Select Missed Saving Code Value    M - Miscellaneous
+    Select Class Code Value    FF - First Class Full Fare
+    Set Commission Rebate Amount    0
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Enabled Buttons After Amend Booking
+    Verify Panels Are Arranged Correctly
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Air Fare
+    Set Commission Rebate Amount    0
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Click Read Booking
+    Verify Enabled Buttons After Read Booking
+    Verify Panels Are Arranged Correctly
+    Verify Panel Is Red    Cust Refs
+    Verify Panel Is Red    Air Fare
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Air Fare
+    Set Commission Rebate Amount    0
+    Click Panel    Recap
+    Click Finish PNR
+
+Amend Booking For Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed For HK
+
+Amend Booking For Verify That Update PNR Workflow Panel And Correct Ordering Of Workflow Panels Are Displayed For IN

@@ -1,0 +1,1692 @@
+*** Settings ***
+Force Tags        amadeus    ca
+Resource          ../../resources/common/core.txt
+Resource          ../air_fare/air_fare_verification.txt
+Resource          ../policy_check_verification.txt
+
+*** Test Cases ***
+[1A CA][NB] Verify that Appropriate Panel Displayed,Air Fare Panel Display Turnaround Point and High Fare Remarks, Low Fare Remarks,Turnaround Point Remarks are Written in the PNR
+    [Documentation]    \#US6732 Prerequisite
+    ...    --------------------------------
+    ...    *Service Option*-------------------------*Value*
+    ...
+    ...    Requires Approval--------------------YES
+    ...
+    ...    Car-Show Panel-----------------------YES
+    ...    -------------------------------------------------------------------------------------------------
+    [Tags]    US6732    US3365    US3360    us6942
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Select Trip Type Value    Business
+    Click New Booking
+    Verify Actual Panel Equals To Expected Panel    Cust Refs    Client Info
+    Update PNR for EN or GB
+    Verify Actual Panel Equals To Expected Panel    Cust Refs    Client Info    Complete
+    Verify Hotel Icon is Displayed
+    #Route A-B-C
+    Book Flight X Months From Now Without Pricing    LHRCDG/AAF    SS1Y1    6    1
+    Book Flight X Months From Now    CDGLAX/AAF    SS1Y1    FXP    6    3
+    Enter GDS Command    FXP/S2-3    FXT01/P1    RT
+    #Route A-B
+    Book Flight X Months From Now Without Pricing    SINMNL    SS1Y1    6    5
+    Enter GDS Command    FXP/S4    FXT01/P1    RT
+    Book Active Car Segment    LAX    6    7    6    9    ET
+    ...    1    CCAR
+    Click Read Booking
+    Verify Actual Panel Equals To Expected Panel    Cust Refs    Client Info    Policy Check    Air Fare    Car    Pspt and Visa
+    ...    APIS/SFPD    Delivery    Recap
+    #Start US3365
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Turnaround Field Is Enabled
+    Verify Turnaround Value Is Correct    Fare 1    ${EMPTY}
+    Select Turnaround    LAX
+    Click Fare Tab    Fare 2
+    Verify Turnaround Field Is Enabled
+    Verify Turnaround Value Is Correct    Fare 2    MNL
+    # End US3365
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Car
+    Click Panel    Car
+    Select New Missed Saving Code For Car    3
+    #Start US3360
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 2
+    Set High Fare Field    100.00
+    Set Low Fare Field    51.00
+    Set Charged Fare Field    51.00
+    Select Realised Saving Code Value    7 - Can decline a fare with any threshold
+    Select BSP Routing Code    Africa
+    Select Fully Flexible
+    Click Fare Tab    Fare 1
+    Set High Fare Field    333.000
+    Set Low Fare Field    50.000
+    Set Charged Fare Field    100.00
+    Select Missed Saving Code Value    A - Accepted
+    Select BSP Routing Code    Africa
+    Select Fully Flexible
+    Verify High Fare Limits To Two Decimals Only
+    Verify Low Fare Limits To Two Decimals Only
+    # End US3360
+    Click Panel    Recap
+    Click Finish PNR
+    Verify Actual Panel Equals To Expected Panel    Cust Refs    Client Info    Policy Check    Air Fare    Car    Pspt and Visa
+    ...    APIS/SFPD    Delivery    Recap    Complete
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    #Start US3365
+    Verify Specific Line Is Written In The PNR    RM *DE/-LAX
+    Verify Specific Line Is Not Written In The PNR    RM *DE/-MNL
+    # End US3365
+    #Start US3360
+    Verify Specific Line Is Written In The PNR    RM *FF/-333.00
+    Verify Specific Line Is Written In The PNR    RM *LP/-50.00
+    Verify Specific Line Is Written In The PNR    RM *FS/-A
+    Verify Specific Line Is Not Written In The PNR    RM *FF/-51.00
+    Verify Specific Line Is Not Written In The PNR    RM *LP/-51.00
+    Verify Specific Line Is Not Written In The PNR    RM *FS/-E
+    # End US3360
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Veify that TET Remark is written in the PNR at New Booking
+    [Tags]    us6816
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Personal
+    Click New Booking
+    Book Flight X Months From Now    JFKCDG/AAF    SS1Y1    FXP    6
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Center    TST123
+    Set CDR Value    T-Matrix DP Code    C098
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Update PNR for EN or GB
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *U59/-MUSUUUUUUUUA
+    Click Read Booking
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *U59/-MUSUUUUUUUUA
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Panel    Policy Check
+    Select Policy Status    Requires approval prior to ticketing    AA - Awaiting Approval
+    Select Policy Status    France Prohibited    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Select Missed Saving Code Value    A - Accepted
+    Select BSP Routing Code    Caribbean and Bermuda
+    Select Fully Flexible
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *U59/-MUSSUUUUUUUA
+
+[1A CA][QA] Veify that TET Remark is written in the PNR at Quick Amend Booking
+    [Tags]    us6816
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U59/-MUSSUUUUUUUA
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Change for TET Remark at Quick Amend Booking
+    Execute Simultaneous Change Handling    Simultaneous Change for TET Remark at Quick Amend Booking
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *U59/-MUSSUUUUUUUA
+
+[1A CA][AB] Veify that TET Remark is written in the PNR at Amend Booking
+    [Tags]    us6816
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U59/-MUSSUUUUUUUA
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Change for TET Remark at Amend Booking
+    Execute Simultaneous Change Handling    Simultaneous Change for TET Remark at Amend Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U59/-MUSSUUUUUUUA
+
+[1A CA][SI] Veify that TET Remark is written in the PNR at Send Itin
+    [Tags]    us6816
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U59/-MUSSUUUUUUUA
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Click Finish PNR    Simultaneous Change for TET Remark at Send Itin
+    Execute Simultaneous Change Handling    Simultaneous Change for TET Remark at Send Itin
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U59/-MUSSUUUUUUUA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Itinerary Remarks For fr-CA Are Written In The PNR When Selected Language Is fr-CA From The Itinerary Language List
+    [Tags]    us6910
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrTwo
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Select Itinerary Language fr-CA
+    Book Flight X Months From Now    JFKCDG/AAF    SS1Y1    FXP    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    RMA SYEXGVS:A:175EC A:E4F78 A:13039 A:4071A4A3 T-U1SOE EN-CA
+    Verify Changed Itinerary Language Written in PNR    FR-CA
+
+[1A CA][AB] Verify That Itinerary Remarks For fr-CA Are Written In The PNR When Selected Language Is fr-CA From The Itinerary Language List
+    [Tags]    us6910
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    RMA SYEXGVS:A:175EC A:E4F78 A:13039 A:4071A4A3 T-U1SOE EN-CA
+    Verify Changed Itinerary Language Written in PNR    FR-CA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA] [NB] Verify That Express Is Automatically Selecting The Preffered Language And Writting The Itinerary Remarks For fr-CA When Prefferd Language Is fr-CA
+    [Tags]    us6910
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now    JFKCDG/AAF    SS1Y1    FXP    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    RMA SYEXGVS:A:175EC A:E4F78 A:13038 A:4071A4B6 T-U1SOE FR-CA
+    Verify Changed Itinerary Language Written in PNR    FR-CA
+
+[1A CA] [AB] Verify That Express Is Automatically Selecting The Preffered Language And Writting The Itinerary Remarks For fr-CA When Prefferd Language Is fr-CA
+    [Tags]    us6910
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    RMA SYEXGVS:A:175EC A:E4F78 A:13038 A:4071A4B6 T-U1SOE FR-CA
+    Verify Changed Itinerary Language Written in PNR    FR-CA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Itinerary Remarks For Selected Language Are Written In The PNR When Prefferd Language Is fr-CA
+    [Tags]    us6910
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Select Itinerary Language en-US
+    Book Flight X Months From Now    JFKCDG/AAF    SS1Y1    FXP    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    RMA SYEXGVS:A:175EC A:E4F78 A:13038 A:4071A4B6 T-U1SOE FR-CA
+    Verify Changed Itinerary Language Written in PNR    EN-US
+
+[1A CA][AB] Verify That Itinerary Remarks For Selected Language Are Written In The PNR When Prefferd Language Is fr-CA
+    [Tags]    us6910
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    RMA SYEXGVS:A:175EC A:E4F78 A:13038 A:4071A4B6 T-U1SOE FR-CA
+    Verify Changed Itinerary Language Written in PNR    EN-US
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Low Fare Field Is Pre populated For Domestic Booking From FXD
+    [Tags]    us6989
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - FXD Low Calculation    Juarez    Marie
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - FXD Low Calculation
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    YYCYQR/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify FXD lowest Value to Low Fare in Air Fare Panel    Fare 1    FXD/S2//W2
+    Verify Route Code Field Value    DOM
+    Populate Fare Tab With Default Values    Fare 1
+    Select Route Code Value    DOM
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Low Fare FXD Remark Is Written In The PNR    Fare 1
+
+[1A CA][AB] Verify That Low Fare Field Is Pre populated For International Booking From FXD
+    [Tags]    us6989
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LHRMNL    SS1Y1    FXP/S2    6    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify Route Code Field Value    INTL
+    Populate Fare Tab With Default Values    Fare 1
+    Select Route Code Value    INTL
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Verify FXD lowest Value to Low Fare in Air Fare Panel    Fare 1    FXD/S2//R,UP
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Low Fare FXD Remark Is Written In The PNR
+	[Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Low Fare Field Is Pre populated For Domestic Multiple Booking From FXD
+    [Tags]    us6989
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - FXD Intl Low Calculation    Kumar    Ajju
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - FXD Intl Low Calculation
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    CDGJFK/AAF    SS1Y1    FXP/S2    6    2
+    Book Flight X Months From Now    YULYYZ/AAC    SS1Y1    FXP/S3    6    3
+    Book Flight X Months From Now    YYZYUL/AAC    SS1Y1    FXP/S4    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify FXD lowest Value to Low Fare in Air Fare Panel    Fare 1    FXD/S2//R,*BD,UP/A-9B
+    Verify Route Code Field Value    INTL
+    Populate Fare Tab With Default Values    Fare 1
+    Select Route Code Value    INTL
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Verify FXD lowest Value to Low Fare in Air Fare Panel    Fare 2    FXD/S3//w2/A-9B
+    Verify Route Code Field Value    DOM
+    Populate Fare Tab With Default Values    Fare 2
+    Select Route Code Value    DOM
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Verify FXD lowest Value to Low Fare in Air Fare Panel    Fare 3    FXD/S4//w2/A-9B
+    Verify Route Code Field Value    DOM
+    Populate Fare Tab With Default Values    Fare 3
+    Select Route Code Value    DOM
+    Get High, Charged And Low Fare In Fare Tab    Fare 3
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Low Fare FXD Remark Is Written In The PNR    Fare 1
+    Verify Low Fare FXD Remark Is Written In The PNR    Fare 2
+    Verify Low Fare FXD Remark Is Written In The PNR    Fare 3
+
+[1A CA][AB] Verify That Low Fare Field Is Pre populated For International Multiple Booking From FXD
+    [Tags]    us6989
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP/S2    6    2
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S3    6    3
+    Book Flight X Months From Now    YHZYOW/AAC    SS1Y1    FXP/S4    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    #Fare Tab 1
+    Click Fare Tab    Fare 1
+    Verify Route Code Field Value    INTL
+    Populate Fare Tab With Default Values    Fare 1
+    Select Route Code Value    INTL
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    #Fare Tab 2
+    Click Fare Tab    Fare 2
+    Verify Route Code Field Value    DOM
+    Populate Fare Tab With Default Values    Fare 2
+    Select Route Code Value    DOM
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    #Fare Tab 3
+    Click Fare Tab    Fare 3
+    Verify Route Code Field Value    DOM
+    Populate Fare Tab With Default Values    Fare 3
+    Select Route Code Value    DOM
+    Get High, Charged And Low Fare In Fare Tab    Fare 3
+    Click Finish PNR
+    Verify FXD lowest Value to Low Fare in Air Fare Panel    Fare 1    FXD/S2//R,*BD,UP/A-9B
+    Verify FXD lowest Value to Low Fare in Air Fare Panel    Fare 2    FXD/S3//R,*BD,UP/A-9B
+    Verify FXD lowest Value to Low Fare in Air Fare Panel    Fare 3    FXD/S4//w2/A-9B
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Low Fare FXD Remark Is Written In The PNR    Fare 1
+    Verify Low Fare FXD Remark Is Written In The PNR    Fare 2
+    Verify Low Fare FXD Remark Is Written In The PNR    Fare 3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB AB] Verify That Itinerary Remarks Of APIS/SFPD Panel Are Written In The PNR With fr-CA Translation
+    [Tags]    ca    us7003
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now    ORDSYD/AAA    SS1Y1    FXP    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    Verify Panel Is Green    APIS/SFPD
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Finish PNR    
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Remark Is Written In The PNR    VOS RENSEIGNEMENTS QUE LE DEPARTMENT OF HOMELAND SECURITY EXIGE    true    true
+    Verify Specific Line Is Written In The PNR    QUE NOUS OBTENIONS DE VOUS OU VOTRE PROFILE ONT ETE ENVOYES AU    true    true
+    Verify Specific Line Is Written In The PNR    TSA QUI POURRAIT COMMUNIQUER AVEC VOUS POUR OBTENIR DES
+    Verify Specific Line Is Written In The PNR    RENSEIGNEMENTS SUPPLEMENTAIRES. POUR CONSULTER LA POLITIQUE SUR    true    true
+    Verify Specific Line Is Written In The PNR    LA CONFIDENTIALITE DU TSA RENDEZ-VOUS SUR LE SITE WWW.TSA.GOV    true    true
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    click panel    APIS/SFPD
+    Populate APIS/SFPD Panel With Default Values
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Itinerary Remarks Of APIS/SFPD Panel Are Written For fr-CA/en-US
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    PUISQUE VOUS NE NOUS AVEZ PAS FOURNI LES RENSEIGNEMENTS
+    Verify Specific Line Is Written In The PNR    EXIGES PAR LE DEPARTEMENT OF HOMELAND SECURITY, LE BILLET    true    true
+    Verify Specific Line Is Written In The PNR    NE PEUT PAS ETRE EMIS. CES RENSEIGNEMENTS SONT OBLIGATOIRES.    true    true
+    Verify Specific Line Is Written In The PNR    VEUILLEZ ENTRER EN CONTACT AVEC VOTRE CONSEILLER EN VOYAGES    true    true
+    Verify Specific Line Is Written In The PNR    IMMEDIATEMENT POUR AJOUTER L'INFORMATION AU DOSSIER OU VOTRE    true    true
+    Verify Specific Line Is Written In The PNR    RESERVATION SERA ANNULEE. POUR CONSULTER LA POLITIQUE SUR LA    true    true
+    Verify Specific Line Is Written In The PNR    CONFIDENTIALITE DU TSA RENDEZ-VOUS SUR LE SITE WWW.TSA.GOV.    true    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB AB] Verify That Itinerary Remarks Of PSPT/VISA Panel Are Written In The PNR With fr-CA Translation
+    [Tags]    ca    us7003
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now    LAXSYD/AAA    SS1Y1    FXP    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    click panel    Pspt and Visa
+    Click Check Visa Requirements
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR    
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    LE PASSPORT DOIT ETRE VALIDE PENDANT AU MOIN 6 MOIS SUIVANT    true    true
+    Verify Specific Line Is Written In The PNR    LA DATE DU RETOUR.
+    Verify Specific Line Is Written In The PNR    NATIONALITE DU VOYAGEUR: CA
+    Verify Specific Line Is Written In The PNR    VALIDITE DU PASSEPORT: NO.
+    Verify Specific Line Is Written In The PNR    CONTROLE DE VISA: AUSTRALIA REQUIRED
+    Verify Specific Line Is Written In The PNR    CONTROLE DE VISA: UNITED STATES UNABLE TO CONFIRM
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    click panel    Pspt and Visa
+    Click Check Visa Requirements
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Itinerary Remarks Of PSPT/VISA Panel Are Written For fr-CA/en-US
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    LE PASSPORT DOIT ETRE VALIDE PENDANT AU MOIN 6 MOIS SUIVANT    true    true
+    Verify Specific Line Is Written In The PNR    LA DATE DU RETOUR.
+    Verify Specific Line Is Written In The PNR    NATIONALITE DU VOYAGEUR: CA
+    Verify Specific Line Is Written In The PNR    VALIDITE DU PASSEPORT: NO.
+    Verify Specific Line Is Written In The PNR    CONTROLE DE VISA: AUSTRALIA REQUIRED
+    Verify Specific Line Is Written In The PNR    CONTROLE DE VISA: UNITED STATES UNABLE TO CONFIRM
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB AB] Verify That Itinerary Remarks Of Policy Check Panel Are Written In The PNR With fr-CA Translation
+    [Tags]    ca    us7003
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrFour
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Tick Traveller Checkbox
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    MANAMS/AKL    SS1Y1    FXP/S2    0    5
+    Click Read Booking
+    click panel    Policy Check
+    Verify Policy Is Displayed    Air Advance Purchase    AIR
+    Verify Policy Is Displayed    Air Cabin    AIR
+    Verify Policy Is Displayed    Requires Approval    Approval
+    Select Policy Status By Name    Air Advance Purchase    AA - Awaiting Approval
+    Select Policy Status By Name    Air Cabin    HA - Has authority to travel
+    Select Policy Status By Name    Requires Approval    TA - Traveller Booker Advised
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    AVERTISSEMENT POLITIQUE VOYAGE
+    Verify Specific Line Is Written In The PNR    RAISON REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Written In The PNR    CONSEILS TESTING FR-CA
+    Verify Specific Line Is Written In The PNR    STATUT AA - AWAITING APPROVAL
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    click panel    Policy Check
+    Verify Policy Is Displayed    Air Advance Purchase    AIR
+    Verify Policy Is Displayed    Air Cabin    AIR
+    Verify Policy Is Displayed    Requires Approval    Approval
+    Select Policy Status By Name    Air Advance Purchase    TA - Traveller Booker Advised
+    Select Policy Status By Name    Air Cabin    HA - Has authority to travel
+    Select Policy Status By Name    Requires Approval    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Itinerary Remarks Of Policy Check Panel Are Written For en-US/fr-CA
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    AVERTISSEMENT POLITIQUE VOYAGE
+    Verify Specific Line Is Written In The PNR    RAISON REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Written In The PNR    CONSEILS TESTING FR-CA
+    Verify Specific Line Is Written In The PNR    STATUT TA - TRAVELLER/BOOKER ADVISED
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB AB] Verify That Itinerary Remarks Of Delivery Panel Are Written In The PNR With fr-CA Translation
+    [Tags]    ca    us7003
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now    LAXSYD/AAA    SS1Y1    FXP    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    click panel    Delivery
+    Set Header And Ticket Text Values    HEADERTEXT    TICKETTEXT
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    *RITOP**HEADERTEXT*
+    Verify Specific Line Is Written In The PNR    *TICKET**TICKETTEXT*
+    Verify Specific Line Is Written In The PNR    SI VOUS VOYAGEZ DANS LE CADRE DU PROGRAMME
+    Verify Specific Line Is Written In The PNR    D EXEMPTION DE VISA VOUS DEVEZ SOUMETTRE ET
+    Verify Specific Line Is Written In The PNR    RECEVOIR UNE AUTORISATION ELECTRONIQUE DE VOYAGE
+    Verify Specific Line Is Written In The PNR    RIR AUSTRALIA HTTPS://WWW.ETA.IMMI.GOV.AU/ETAS3/ETAS
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Itinerary Remarks Of Delivery Panel Are Written For en-US/fr-CA
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    *RITOP**HEADERTEXT*
+    Verify Specific Line Is Written In The PNR    *TICKET**TICKETTEXT*
+    Verify Specific Line Is Written In The PNR    EN ATTENTE:AWAITING CUSTOMER REFERENCES
+    Comment    Verify Specific Line Is Written In The PNR    EN ATTENTE:AWAITING FARE DETAILS
+    Comment    Verify Specific Line Is Written In The PNR    EN ATTENTE:AWAITING APPROVAL
+    Verify Specific Line Is Written In The PNR    EN ATTENTE:AWAITING FORM OF PAYMENT
+    Verify Specific Line Is Written In The PNR    SI VOUS VOYAGEZ DANS LE CADRE DU PROGRAMME
+    Verify Specific Line Is Written In The PNR    D EXEMPTION DE VISA VOUS DEVEZ SOUMETTRE ET
+    Verify Specific Line Is Written In The PNR    RECEVOIR UNE AUTORISATION ELECTRONIQUE DE VOYAGE
+    Verify Specific Line Is Written In The PNR    RIR AUSTRALIA HTTPS://WWW.ETA.IMMI.GOV.AU/ETAS3/ETAS
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Itinerary Remarks Of Air Fare Panel Are Written In The PNR With fr-CA Translation
+    [Tags]    ca    us7003
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now    LAXSYD/AAA    SS1Y1    FXP    6
+    Create Amadeus Offer Retain Flight    S2
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    click panel    Pspt and Visa
+    Click Check Visa Requirements
+    click panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Populate Air Fare Restrictions    Semi Flexible    After departure    Before departure:    AA only    Permitted    xx weeks
+    ...    xx weeks
+    Click Fare Tab    Alternate Fare 1
+    Populate Air Fare Restrictions    Semi Flexible    Inbound    xx percent    AA only    Not permitted    xx weeks
+    ...    xx weeks
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR   
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Itinerary Remarks Are Written For fr-CA
+    Verify Offer Remarks Are Written For fr-CA
+	[Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB AB] Verify That Itinerary Remarks Of APIS/SFPD Panel Are Written In The PNR When Itinerary Language Is en-US
+    [Tags]    ca    us7003
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrTwo
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now    ORDSYD/AAA    SS1Y1    FXP    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    Verify Panel Is Green    APIS/SFPD
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Remark Is Written In The PNR    THE DEPARTMENT OF HOMELAND SECURITY INFORMATION REQUIRED TO BE    true    true
+    Verify Specific Line Is Written In The PNR    COLLECTED FROM YOU OR YOUR PROFILE WAS SENT TO THE AIRLINE FOR    true    true
+    Verify Specific Line Is Written In The PNR    TRANSMITTAL TO THE TSA. TO VIEW THE TSA PRIVACY POLICIES, THE    true    true
+    Verify Specific Line Is Written In The PNR    RECORDS NOTICE OR THE PRIVACY IMPACT ASSESSMENT, GO TO
+    Verify Specific Line Is Written In The PNR    WWW.TSA.GOV.
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    click panel    APIS/SFPD
+    Populate APIS/SFPD Panel With Default Values
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Itinerary Remarks Of APIS/SFPD Panel Are Written For fr-CA/en-US
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    DUE TO THE FACT THAT YOU HAVE NOT PROVIDED US WITH THE
+    Verify Specific Line Is Written In The PNR    DEPARTMENT OF HOMELAND SECURITY INFORMATION REQUIRED TO BE    true    true
+    Verify Specific Line Is Written In The PNR    COLLECTED FROM YOU A TICKET CANNOT BE ISSUED. THIS INFORMATION    true    true
+    Verify Specific Line Is Written In The PNR    IS NEEDED SO PLEASE CONTACT A TRAVEL COUNSELOR IMMEDIATELY TO    true    true
+    Verify Specific Line Is Written In The PNR    ADD YOUR INFORMATION OR YOUR RESERVATION WILL BE CANCELLED. TO    true    true
+    Verify Specific Line Is Written In The PNR    VIEW THE TSA PRIVACY POLICIES, THE RECORDS
+    Verify Specific Line Is Written In The PNR    NOTICE OR THE PRIVACY IMPACT ASSESSMENT, GO TO WWW.TSA.GOV.    true    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB AB] Verify That Itinerary Remarks Of PSPT/VISA Panel Are Written In The PNR When Itinerary Language Is en-US
+    [Tags]    ca    us7003
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrTwo
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now    LAXSYD/AAA    SS1Y1    FXP    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    click panel    Pspt and Visa
+    Click Check Visa Requirements
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR    
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    PASSPORT AND VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    A VALID PASSPORT WITH AMPLE BLANK PAGES AND WITH AT LEAST    true    true
+    Verify Specific Line Is Written In The PNR    SIX MONTHS VALIDITY BEYOND THE RETURN DATE IS REQUIRED
+    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY - AT
+    Verify Specific Line Is Written In The PNR    VALID PASSPORT HELD - YES
+    Verify Specific Line Is Written In The PNR    VISA CHECK - AUSTRALIA REQUIRED
+    Verify Specific Line Is Written In The PNR    VISA CHECK - UNITED STATES REQUIRED
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    click panel    Pspt and Visa
+    Click Check Visa Requirements
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Itinerary Remarks Of PSPT/VISA Panel Are Written For fr-CA/en-US
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    PASSPORT AND VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    A VALID PASSPORT WITH AMPLE BLANK PAGES AND WITH AT LEAST    true    true
+    Verify Specific Line Is Written In The PNR    SIX MONTHS VALIDITY BEYOND THE RETURN DATE IS REQUIRED
+    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY - AT
+    Verify Specific Line Is Written In The PNR    VALID PASSPORT HELD - YES
+    Verify Specific Line Is Written In The PNR    VISA CHECK - AUSTRALIA REQUIRED
+    Verify Specific Line Is Written In The PNR    VISA CHECK - UNITED STATES REQUIRED
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB AB] Verify That Itinerary Remarks Of Policy Check Panel Are Written In The PNR When Itinerary Language Is en-US
+    [Tags]    ca    us7003
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrFour
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Tick Traveller Checkbox
+    Click New Booking
+    Select Itinerary Language en-US
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    MANAMS/AKL    SS1Y1    FXP/S2    0    5
+    Click Read Booking
+    click panel    Policy Check
+    Verify Policy Is Displayed    Air Advance Purchase    AIR
+    Verify Policy Is Displayed    Air Cabin    AIR
+    Verify Policy Is Displayed    Requires Approval    Approval
+    Select Policy Status By Name    Air Advance Purchase    AA - Awaiting Approval
+    Select Policy Status By Name    Air Cabin    HA - Has authority to travel
+    Select Policy Status By Name    Requires Approval    TA - Traveller Booker Advised
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    POLICY WARNING
+    Verify Specific Line Is Written In The PNR    REASON REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Written In The PNR    ADVICE TESTING FOR EN-US
+    Verify Specific Line Is Written In The PNR    STATUS AA - AWAITING APPROVAL
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    click panel    Policy Check
+    Verify Policy Is Displayed    Air Advance Purchase    AIR
+    Verify Policy Is Displayed    Air Cabin    AIR
+    Verify Policy Is Displayed    Requires Approval    Approval
+    Select Policy Status By Name    Air Advance Purchase    AA - Awaiting Approval
+    Select Policy Status By Name    Air Cabin    HA - Has authority to travel
+    Select Policy Status By Name    Requires Approval    TA - Traveller Booker Advised
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Itinerary Remarks Of Policy Check Panel Are Written For en-US/fr-CA
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    POLICY WARNING
+    Verify Specific Line Is Written In The PNR    REASON REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Written In The PNR    ADVICE TESTING FOR EN-US
+    Verify Specific Line Is Written In The PNR    STATUS AA - AWAITING APPROVAL
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB AB] Verify That Itinerary Remarks Of Delivery Panel Are Written In The PNR When Itinerary Language Is en-US
+    [Tags]    ca    us7003
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrTwo
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now    LAXSYD/AAA    SS1Y1    FXP    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    click panel    Delivery
+    Set Header And Ticket Text Values    HEADERTEXT    TICKETTEXT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    *RITOP**HEADERTEXT*
+    Verify Specific Line Is Written In The PNR    *TICKET**TICKETTEXT*
+    Verify Specific Line Is Written In The PNR    IF YOU ARE TRAVELLING UNDER THE VISA WAIVER PROGRAM
+    Verify Specific Line Is Written In The PNR    YOU MUST SUBMIT AND RECEIVE
+    Verify Specific Line Is Written In The PNR    AN ELECTRONIC AUTHORIZATION TO TRAVEL
+    Verify Specific Line Is Written In The PNR    RIR AUSTRALIA HTTPS://WWW.ETA.IMMI.GOV.AU/ETAS3/ETAS
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Itinerary Remarks Of Delivery Panel Are Written For en-US/fr-CA
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    *RITOP**HEADERTEXT*
+    Verify Specific Line Is Written In The PNR    *TICKET**TICKETTEXT*
+    Verify Specific Line Is Written In The PNR    ON HOLD - AWAITING CUSTOMER REFERENCES
+    Verify Specific Line Is Written In The PNR    ON HOLD - AWAITING FORM OF PAYMENT
+    Verify Specific Line Is Written In The PNR    IF YOU ARE TRAVELLING UNDER THE VISA WAIVER PROGRAM
+    Verify Specific Line Is Written In The PNR    YOU MUST SUBMIT AND RECEIVE
+    Verify Specific Line Is Written In The PNR    AN ELECTRONIC AUTHORIZATION TO TRAVEL
+    Verify Specific Line Is Written In The PNR    RIR AUSTRALIA HTTPS://WWW.ETA.IMMI.GOV.AU/ETAS3/ETAS
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Itinerary Remarks Of Air Fare Panel Are Written In The PNR When Itinerary Language Is en-US
+    [Tags]    ca    us7003
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrTwo
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now    LAXSYD/AAA    SS1Y1    FXP    6
+    Create Amadeus Offer Retain Flight    S2
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    click panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Populate Air Fare Restrictions    Semi Flexible    After departure    Before departure:    AA only    Permitted    xx weeks
+    ...    xx weeks
+    Click Fare Tab    Alternate Fare 1
+    Populate Air Fare Restrictions    Semi Flexible    Inbound    xx percent    AA only    Not permitted    xx weeks
+    ...    xx weeks
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Itinerary Remarks Are Written For en-US
+    Verify Offer Remarks Are Written For en-US
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Correct Delivery Field Remark Is Written In The PNR For E-Ticket
+    [Tags]    us3367    us7012
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    Arriesgado    PaulPaul
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MANAMS/AKL    SS1Y1    FXP    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket Canada
+    Click Panel    Air Fare
+    Select Fare Restriction    Fully Flexible
+    Verify Air Fare Restriction Objects Are Visible    Fare 1
+    Verify Default Fare Restriction Field Is Not Visible
+    Select BSP Routing Code Value    Europe-incl. Morocco/Tunisia/Algeria/Greenland
+    Take Screenshot
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-ETK
+    Verify Specific Line Is Written In The PNR Only Once    Q8C1-ONHOLD
+    [Teardown]
+
+[1A CA][AB] Verify That Correct Delivery Field Remark Is Written In The PNR For E-Ticket
+    [Tags]    us3367    us7012
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Click Panel    Air Fare
+    #US7012
+    Verify Air Fare Restriction Objects Are Visible    Fare 1
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Correct Delivery Remark For E-Ticket Amadeus Mini Rules Off
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    #US3367
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-ETK
+    Verify Specific Line Is Written In The PNR Only Once    Q8C1-ONHOLD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Correct Delivery Field Remark Is Written In The PNR For Invoice Car Only
+    [Tags]    us3367
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    Arriesgado    PaulPaul
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MANAMS    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Invoice Car Only
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+	Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-INV-CAR
+    Verify Specific Line Is Written In The PNR Only Once    Q8C1-ONHOLD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Correct Delivery Field Remark Is Written In The PNR For Invoice Hotel Only
+    [Tags]    us3367
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    Arriesgado    PaulPaul
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MANAMS    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Invoice Hotel Only
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-INV-HTL
+    Verify Specific Line Is Written In The PNR Only Once    Q8C1-ONHOLD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Correct Delivery Field Remark Is Written In The PNR For Invoice Limo Only
+    [Tags]    us3367
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    Arriesgado    PaulPaul
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MANAMS    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs    Policy Check    Client Info
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Invoice Limo Only
+    Click Panel    Cust Refs
+    Untick Checkbox    [NAME:cChkSkipValidation]
+    Set CDR Value    Cost Center    ABCDEF
+    Click Panel    Policy Check
+    Select Policy Status    Requires approval prior to ticketing    TA - Traveller Booker Advised
+    Click Panel    Client Info
+    Untick Not Known At Time Of Booking For Form Of Payment
+    Select Form Of Payment    Invoice
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-INV-LIMO
+    Verify Specific Line Is Written In The PNR    Q8C1
+    Verify Specific Line Is Not Written In The PNR    Q8C1-ONHOLD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Correct Delivery Field Remark Is Written In The PNR For Invoice Only Car Hotel Limo Combo
+    [Tags]    us3367
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    Arriesgado    PaulPaul
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MANAMS    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Invoice Only Car Hotel Limo Combo
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-INV-HTL
+    Verify Specific Line Is Written In The PNR Only Once    Q8C1-ONHOLD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Correct Delivery Field Remark Is Written In The PNR For Vendor Sale
+    [Tags]    us3367
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    Arriesgado    PaulPaul
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MANAMS    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Vendor sale (Non BSP)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-VEN
+    Verify Specific Line Is Written In The PNR Only Once    Q8C1-ONHOLD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Correct Delivery Field Remark Is Written In The PNR For Other Ticket Type With Ticket Remark
+    [Tags]    us3367
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    Arriesgado    PaulPaul
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MANAMS    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Changed PNR ...
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-CPNR
+    Verify Specific Line Is Written In The PNR Only Once    Q8C1-ONHOLD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Fare Restrictions Are Hidden When Amadeus Mini Rules Is On
+    [Tags]    us3367    us7012
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub4    AutoNineTeenFour    TravelerTwentyOne
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub4
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MANAMS/AKL    SS1Y1    FXP    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Click Panel    Air Fare
+    #US7012
+    Verify Air Fare Restriction Objects Are Hidden    Fare 1
+    Select BSP Routing Code Value    Europe-incl. Morocco/Tunisia/Algeria/Greenland
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    #US3367
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-ETK
+    Verify Specific Line Is Written In The PNR Only Once    Q8C1-ONHOLD
+    [Teardown]
+
+[1A CA][AB] Verify That Fare Restrictions Are Hidden When Amadeus Mini Rules Is On
+    [Tags]    us3367    us7012
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Click Panel    Air Fare
+    #US7012
+    Verify Air Fare Restriction Objects Are Hidden    Fare 1
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Correct Delivery Remark For E-Ticket Amadeus Mini Rules On
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    #US3367
+    Verify Specific Line Is Written In The PNR Only Once    RMT TKT1-ETK
+    Verify Specific Line Is Written In The PNR Only Once    Q8C1-ONHOLD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That LCC Delivery Method Is Defaulted Correctly And Write The The RMT/TKT remarks for Vendor Code ( (Vendor Sale (Non Arc)) without ticket No, without vendor Code and without ticket ID-with Vendor Code
+    [Tags]    us6822    19.4
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    6
+    Enter GDS Command    SS U21075 Y ${departure_date} BSLBER GK1 / 11551440 / ABCDEFG    RMF/${SPACE*2}LCC-U2*CF-AGENT    RMF/${SPACE*2}LCC-U2*VN-SA2    RMF/${SPACE*2}LCC-U2*COMM-47.80 CAD
+    Enter GDS Command    RMF/${SPACE*2}LCC-U2*TAX1 10.00XG    RMF/${SPACE*2}LCC-U2*TAX2 15.00RC    RMF/${SPACE*2}LCC-U2*TAX3 \ 35.00XQ    RMF/${SPACE*2}LCC-U2*TAX4 \ 178.00XT
+    Enter GDS Command    RMF/${SPACE*2}LCC-U2*BASE FARE CAD 457.96    RMF/${SPACE*2}LCC-U2*FARE TOTAL CAD 79.54    RMF/${SPACE*2}LCC-U2*TAXES TOTAL 238.00    RMF/${SPACE*2}LCC-U2*GRAND TOTAL CAD 695.96
+    Enter GDS Command    SS FR1075 Y ${departure_date1} SINMNL GK1 / 11551440 / ABCDEFG    RMF/${SPACE*2}LCC-FR*CF-AGENT    RMF/${SPACE*2}LCC-FR*COMM-47.80 GBP    RMF/${SPACE*2}LCC-FR*BASE FARE GBP 457.96
+    Enter GDS Command    RMF/${SPACE*2}LCC-FR*TAX1 10.00XG    RMF/${SPACE*2}LCC-FR*TAX2 15.00RC    RMF/${SPACE*2}LCC-FR*TAX3 \ 35.00XQ    RMF/${SPACE*2}LCC-FR*TAX4 \ 178.00XT
+    Enter GDS Command    RMF/${SPACE*2}LCC-FR*FARE TOTAL GBP 74.54    RMF/${SPACE*2}LCC-FR*TAXES TOTAL 238.00    RMF/${SPACE*2}LCC-FR*GRAND TOTAL GBP 726.18
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Vendor sale (Non ARC)
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    Fully Flexible
+    Click Fare Tab    LCC Fare 2
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    Fully Flexible
+    Click Panel    Delivery
+    Select Delivery Method    Vendor sale (Non ARC)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Specific Line Is Written In The PNR    RMT TKT1-VEN/VN-SA2/S2
+    Verify Specific Line Is Written In The PNR    RMT TKT2-VEN/S3
+
+[1A CA][AB] Verify That LCC Delivery Method Is Defaulted Correctly And Write The The RMT/TKT remarks for Vendor Code ( (Vendor Sale (Non Arc)) without ticket No, without vendor Code and without ticket ID-with Vendor Code
+    [Tags]    us6822    19.4
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Vendor sale (Non ARC)
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    Fully Flexible
+    Click Fare Tab    LCC Fare 2
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    Fully Flexible
+    Click Panel    Delivery
+    Select Delivery Method    Vendor sale (Non ARC)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Specific Line Is Written In The PNR    RMT TKT1-VEN/VN-SA2/S2
+    Verify Specific Line Is Written In The PNR    RMT TKT2-VEN/S3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That LCC Delivery Method Is Defaulted Correctly And Write The The RMT/TKT remarks for Vendor Code ( E- Ticket) without ticket No, without vendor Code and without ticket ID-with Vendor Code
+    [Tags]    us6822    19.4
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    6
+    Enter GDS Command    SS U21075 Y ${departure_date} BSLBER GK1 / 11551440 / ABCDEFG    RMF/${SPACE*2}LCC-U2*CF-AGENT    RMF/${SPACE*2}LCC-U2*VN-SA2    RMF/${SPACE*2}LCC-U2*COMM-47.80 CAD
+    Enter GDS Command    RMF/${SPACE*2}LCC-U2*TAX1 10.00XG    RMF/${SPACE*2}LCC-U2*TAX2 15.00RC    RMF/${SPACE*2}LCC-U2*TAX3 \ 35.00XQ    RMF/${SPACE*2}LCC-U2*TAX4 \ 178.00XT
+    Enter GDS Command    RMF/${SPACE*2}LCC-U2*BASE FARE CAD 457.96    RMF/${SPACE*2}LCC-U2*FARE TOTAL CAD 79.54    RMF/${SPACE*2}LCC-U2*TAXES TOTAL 238.00    RMF/${SPACE*2}LCC-U2*GRAND TOTAL CAD 695.96
+    Enter GDS Command    SS FR1075 Y ${departure_date1} SINMNL GK1 / 11551440 / ABCDEFG    RMF/${SPACE*2}LCC-FR*CF-AGENT    RMF/${SPACE*2}LCC-FR*COMM-47.80 GBP    RMF/${SPACE*2}LCC-FR*BASE FARE GBP 457.96
+    Enter GDS Command    RMF/${SPACE*2}LCC-FR*TAX1 10.00XG    RMF/${SPACE*2}LCC-FR*TAX2 15.00RC    RMF/${SPACE*2}LCC-FR*TAX3 \ 35.00XQ    RMF/${SPACE*2}LCC-FR*TAX4 \ 178.00XT
+    Enter GDS Command    RMF/${SPACE*2}LCC-FR*FARE TOTAL GBP 74.54    RMF/${SPACE*2}LCC-FR*TAXES TOTAL 238.00    RMF/${SPACE*2}LCC-FR*GRAND TOTAL GBP 726.18
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Vendor sale (Non ARC)
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    Fully Flexible
+    Click Fare Tab    LCC Fare 2
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    Fully Flexible
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Specific Line Is Written In The PNR    RMT TKT1-ETK/VN-SA2/S2
+    Verify Specific Line Is Written In The PNR    RMT TKT2-ETK/S3
+
+[1A CA][AB] Verify That LCC Delivery Method Is Defaulted Correctly And Write The The RMT/TKT remarks for Vendor Code ( E- Ticket) without ticket No, without vendor Code and without ticket ID-with Vendor Code
+    [Tags]    us6822    19.4
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    6
+    Enter GDS Command    SS U21075 Y ${departure_date} BSLBER GK1 / 11551440 / ABCDEFG    RMF/${SPACE*2}LCC-U2*CF-AGENT    RMF/${SPACE*2}LCC-U2*VN-SA2    RMF/${SPACE*2}LCC-U2*COMM-47.80 CAD
+    Enter GDS Command    RMF/${SPACE*2}LCC-U2*TAX1 10.00XG    RMF/${SPACE*2}LCC-U2*TAX2 15.00RC    RMF/${SPACE*2}LCC-U2*TAX3 \ 35.00XQ    RMF/${SPACE*2}LCC-U2*TAX4 \ 178.00XT
+    Enter GDS Command    RMF/${SPACE*2}LCC-U2*BASE FARE CAD 457.96    RMF/${SPACE*2}LCC-U2*FARE TOTAL CAD 79.54    RMF/${SPACE*2}LCC-U2*TAXES TOTAL 238.00    RMF/${SPACE*2}LCC-U2*GRAND TOTAL CAD 695.96
+    Enter GDS Command    SS FR1075 Y ${departure_date1} SINMNL GK1 / 11551440 / ABCDEFG    RMF/${SPACE*2}LCC-FR*CF-AGENT    RMF/${SPACE*2}LCC-FR*COMM-47.80 GBP    RMF/${SPACE*2}LCC-FR*BASE FARE GBP 457.96
+    Enter GDS Command    RMF/${SPACE*2}LCC-FR*TAX1 10.00XG    RMF/${SPACE*2}LCC-FR*TAX2 15.00RC    RMF/${SPACE*2}LCC-FR*TAX3 \ 35.00XQ    RMF/${SPACE*2}LCC-FR*TAX4 \ 178.00XT
+    Enter GDS Command    RMF/${SPACE*2}LCC-FR*FARE TOTAL GBP 74.54    RMF/${SPACE*2}LCC-FR*TAXES TOTAL 238.00    RMF/${SPACE*2}LCC-FR*GRAND TOTAL GBP 726.18
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Vendor sale (Non ARC)
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    Fully Flexible
+    Click Fare Tab    LCC Fare 2
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    Fully Flexible
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Specific Line Is Written In The PNR    RMT TKT1-ETK/VN-SA2/S2
+    Verify Specific Line Is Written In The PNR    RMT TKT2-ETK/S3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Correct Remarks Are Added To LCC PNRs
+    [Tags]    us6822    19.4    US7031    US7013    US7030
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    Arriesgado    PaulPaul
+    Select Client Account Value    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub1
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    6
+    Enter GDS Command    SS U21075 Y ${departure_date} BSLBER GK1 / 11551440 / ABCDEFG    RMF/${SPACE*2}LCC-U2*CF-AGENT    RMF/${SPACE*2}LCC-U2*VN-SA2    RMF/${SPACE*2}LCC-U2*COMM-47.80 CAD
+    Enter GDS Command    RMF/${SPACE*2}LCC-U2*TAX1 10.00XG    RMF/${SPACE*2}LCC-U2*TAX2 15.00RC    RMF/${SPACE*2}LCC-U2*TAX3 \ 35.00XQ    RMF/${SPACE*2}LCC-U2*TAX4 \ 178.00XT
+    Enter GDS Command    RMF/${SPACE*2}LCC-U2*BASE FARE CAD 457.96    RMF/${SPACE*2}LCC-U2*FARE TOTAL CAD 79.54    RMF/${SPACE*2}LCC-U2*TAXES TOTAL 238.00    RMF/${SPACE*2}LCC-U2*GRAND TOTAL CAD 695.96
+    Enter GDS Command    SS FR1075 Y ${departure_date1} SINMNL GK1 / 11551440 / ABCDEFG    RMF/${SPACE*2}LCC-FR*CF-AGENT    RMF/${SPACE*2}LCC-FR*COMM-47.80 GBP    RMF/${SPACE*2}LCC-FR*BASE FARE GBP 457.96
+    Enter GDS Command    RMF/${SPACE*2}LCC-FR*TAX1 10.00XG    RMF/${SPACE*2}LCC-FR*TAX2 15.00RC    RMF/${SPACE*2}LCC-FR*TAX3 \ 35.00XQ    RMF/${SPACE*2}LCC-FR*TAX4 \ 178.00XT
+    Enter GDS Command    RMF/${SPACE*2}LCC-FR*FARE TOTAL GBP 74.54    RMF/${SPACE*2}LCC-FR*TAXES TOTAL 238.00    RMF/${SPACE*2}LCC-FR*GRAND TOTAL GBP 726.18
+    Book Active Car Segment Simple    YYZ    1    1    1    2
+    Take Screenshot
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Vendor sale (Non ARC)
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Car
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Comment    Select Fare Restriction    Fully Flexible
+    Click Fare Tab    LCC Fare 2
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Comment    Select Fare Restriction    Fully Flexible
+    Click Panel    Delivery
+    Select Delivery Method    Vendor sale (Non ARC)
+    Set Header And Ticket Text Values    HEADER-TEST    TICKET-TEST
+    Click Panel    Car
+    Select New Missed Saving Code For Car    2
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Generate Ticket Queue Remark For Verification    PARWL2877    62
+    Click Finish PNR
+    #US6822, US7030
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Specific Line Is Written In The PNR    RMT TKT1-VEN/VN-SA2/S3
+    Verify Specific Line Is Written In The PNR    RMT TKT2-VEN/S4
+    #US7031
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    P AND V : RESID COUNTRY
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Z AUTOMAIL-
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Z AUTOMAIL-NO
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-SEG
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-TKT
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-FQ0
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-TKT0
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    F (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    W (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Q (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    RM CAR
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    Q AUTOMAIL-
+    #US7013
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    ${day_month_string}
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    RIR *RITOP**HEADER-TEST*
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    RIR *TICKET**TICKET-TEST*
+    [Teardown]
+
+[1A CA][AB] Verify That Correct Remarks Are Added To LCC PNRs
+    [Tags]    us6822    19.4    US7031    US7013
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Vendor sale (Non ARC)
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Car
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Comment    Select Fare Restriction    Fully Flexible
+    Click Fare Tab    LCC Fare 2
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Comment    Select Fare Restriction    Fully Flexible
+    Click Panel    Delivery
+    Select Delivery Method    Vendor sale (Non ARC)
+    Set Header And Ticket Text Values    HEADER-NEW    TICKET-NEW
+    Click Panel    Car
+    Select New Missed Saving Code For Car    2
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Click Finish PNR    Simultaneous Change For Amend Booking For Correct Remarks For LCC
+    Execute Simultaneous Change Handling    Simultaneous Change For Amend Booking For Correct Remarks For LCC
+    #US6822, US7030
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Verify Specific Line Is Written In The PNR    RMT TKT1-VEN/VN-SA2/S3
+    Verify Specific Line Is Written In The PNR    RMT TKT2-VEN/S4
+    #US7031
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    P AND V : RESID COUNTRY
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Z AUTOMAIL-
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Z AUTOMAIL-NO
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-SEG
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-TKT
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-FQ0
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-TKT0
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    F (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    W (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Q (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    RM CAR
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    Q AUTOMAIL-
+    #US7013
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    ${day_month_string}
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    RIR *RITOP**HEADER-NEW*
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    RIR *TICKET**TICKET-NEW*
+    [Teardown]
+
+[1A CA][SI] Verify That Correct Remarks Are Added To LCC PNRs
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Change For Send Itinerary For Correct Remarks For LCC
+    Execute Simultaneous Change Handling    Simultaneous Change For Send Itinerary For Correct Remarks For LCC
+    #US7031
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    P AND V : RESID COUNTRY
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Z AUTOMAIL-
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Z AUTOMAIL-NO
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-SEG
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-TKT
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-FQ0
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-TKT0
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    F (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    W (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Q (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    RM CAR
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    Q AUTOMAIL-
+    #US7013
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    ${day_month_string}
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    RIR *RITOP**HEADER-NEW*
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    RIR *TICKET**TICKET-NEW*
+    [Teardown]
+
+[1A CA][CB] Verify That Correct Remarks Are Added To LCC PNRs
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Change For Cancel Booking For Correct Remarks For LCC
+    Execute Simultaneous Change Handling    Simultaneous Change For Cancel Booking For Correct Remarks For LCC
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    P AND V : RESID COUNTRY
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Z AUTOMAIL-
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Z AUTOMAIL-NO
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-SEG
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-TKT
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-FQ0
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    M SPCL-TKT0
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    F (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    W (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    Q (\w{0,20})-NO    true
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    RM CAR
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    Q AUTOMAIL-
+    #US7013
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Run Keyword And Continue On Failure    Verify Specific Line Is Written In The PNR    ${day_month_string}
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    RIR *RITOP**HEADER-NEW*
+    Run Keyword And Continue On Failure    Verify Specific Line Is NOT Written In The PNR    RIR *TICKET**TICKET-NEW*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB] Verify That Correct PNR Remarks, RMT Ticket Lines And FS Lines Are Written In The PNR For BSP Air Segment
+    [Tags]    us7013    us7031    us7030    us7032
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrTwo
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now Without Pricing    YYZSYD/AAC    SS1Y1    6    4
+    Book Flight X Months From Now Without Pricing    SYDYYZ/AAC    SS1Y1    6    7
+    Book Flight X Months From Now Without Pricing    YYZMSP/AAA    SS1Y1    6    10
+    Enter GDS Command    FXP/S2-3    FXT01/P1
+    Enter GDS Command    FXP/S4-5    FXT01/P1
+    Tick Show All Client Defined References
+    Set CDR Value    Cost Center    AAAAAA
+    Set CDR Value    T-Matrix DP Code    TEST
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Update PNR
+    Click Read Booking
+    Click Panel    Policy Check
+    Select Policy Status Using Index Number    0    H0 - Booked on own
+    Select Policy Status Using Index Number    1    H0 - Booked on own
+    Select Policy Status Using Index Number    2    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Comment    Populate Air Fare Restrictions    Semi Flexible    After departure    Before departure:    AC only    Permitted
+    ...    xx weeks    xx weeks
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Click Fare Tab    Fare 2
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Turnaround    MSP
+    Comment    Select Fully Flexible
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Set Header Text    HEADERTEXT
+    Set Ticket Text    TICKETTEXT
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    #START US7031
+    Verify General Remarks Are Not Written In The PNR
+    #END US7031
+    Verify Required Remarks Are Written For BSP
+
+[1A CA][QA] Verify That Correct PNR Remarks, RMT Ticket Lines And FS Lines Are Written In The PNR For BSP Air Segment
+    [Tags]    us7013
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Enter GDS Command    XE4-5    RFCWTPTEST    ER
+    Select Value From Dropdown List    [NAME:ccboPolicyStatus2]    HA - Has authority to travel
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket Canada
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Enter GDS Command    MDR
+    Verify Specific Line Is Written In The PNR    *RITOP**HEADERTEXT*
+    Verify Specific Line Is Written In The PNR    *TICKET**TICKETTEXT*
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RMZ CONF*LANG:EN
+    Verify OP Remark Is Written    PARWL2877    62    0    SEND ITINERARY//
+
+[1A CA][AB] Verify That Correct PNR Remarks, RMT Ticket Lines And FS Lines Are Written In The PNR For BSP Air Segment
+    [Tags]    us7013    us7031    us7030    us7032
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now Without Pricing    YYZORD/AAA    SS1Y1    6
+    Enter GDS Command    FXP/S2    FXT01/P1
+    Click Read Booking
+    Click Panel    Policy Check
+    Select Policy Status Using Index Number    0    H0 - Booked on own
+    Click Panel    Air Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Click Fare Tab    Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Comment    Select Fully Flexible
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket Canada
+    Set Header Text    HEADERVALUE
+    Set Ticket Text    TICKETVALUE
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify General Remarks Are Not Written In The PNR
+    Verify Required Remarks Are Written For BSP In Amend
+
+[1A CA][SI] Verify That Correct PNR Remarks, RMT Ticket Lines And FS Lines Are Written In The PNR For BSP Air Segment
+    [Tags]    us7013
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Enter GDS Command    MDR
+    Verify Specific Line Is Written In The PNR    *RITOP**HEADERVALUE*
+    Verify Specific Line Is Written In The PNR    *TICKET**TICKETVALUE*
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RMZ CONF*LANG:EN
+    Verify OP Remark Is Written    PARWL2877    62    0    SEND ITINERARY//
+
+[1A CA][CB] Verify That Correct PNR Remarks, RMT Ticket Lines And FS Lines Are Written In The PNR For BSP Air Segment
+    [Tags]    us7013
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Enter GDS Command    MDR
+    Verify Specific Line Is Not Written In The PNR    *RITOP**HEADERVALUE*
+    Verify Specific Line Is Not Written In The PNR    *TICKET**TICKETVALUE*
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RMZ CONF*LANG:EN
+    Verify OP Remark Is Written    PARWL2877    62    0    SEND ITINERARY//
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Hotel Icon is Displayed
+    Verify Control Object Is Visible    [NAME:grpBookHotel]
+
+Select BSP Routing Code
+    [Arguments]    ${bsp_routing_code}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboBSP
+    Select Value From Dropdown List    ${object_name}    ${bsp_routing_code}
+    [Teardown]    Take Screenshot
+
+Simultaneous Change for TET Remark at Quick Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM*U59/MUSUUUUUUUUA
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Change for TET Remark at Quick Amend Booking
+
+Simultaneous Change for TET Remark at Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM*U59/MUSUUUUUUUUA
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Change for TET Remark at Amend Booking
+
+Simultaneous Change for TET Remark at Send Itin
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM*U59/MUSUUUUUUUUA
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Click Finish PNR    Simultaneous Change for TET Remark at Send Itin
+
+Amend Booking For Correct Delivery Remark For E-Ticket Amadeus Mini Rules Off
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Click Panel    Air Fare
+    #US7012
+    Verify Air Fare Restriction Objects Are Visible    Fare 1
+    Click Finish PNR
+
+Amend Booking For Correct Delivery Remark For E-Ticket Amadeus Mini Rules On
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Click Panel    Air Fare
+    #US7012
+    Verify Air Fare Restriction Objects Are Hidden    Fare 1
+    Click Finish PNR
+    Simultaneous Change For Amend Booking For Correct Remarks For LCC
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Vendor sale (Non ARC)
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Car
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    Fully Flexible
+    Click Fare Tab    LCC Fare 2
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Fare Restriction    Fully Flexible
+    Click Panel    Delivery
+    Select Delivery Method    Vendor sale (Non ARC)
+    Set Header And Ticket Text Values    HEADER-NEW    TICKET-NEW
+    Click Panel    Car
+    Select New Missed Saving Code For Car    2
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Click Finish PNR
+
+Simultaneous Change For Send Itinerary For Correct Remarks For LCC
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Simultaneous Change For Cancel Booking For Correct Remarks For LCC
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Select Itinerary Language fr-CA
+    Mouse Click    LEFT    928    42
+    Mouse Click    LEFT    893    196
+
+Verify Changed Itinerary Language Written in PNR
+    [Arguments]    ${itinerary_language}
+    Verify Specific Line Is Written In The PNR    ${itinerary_language}
+
+Select Itinerary Language en-US
+    Mouse Click    LEFT    928    42
+    Mouse Click    LEFT    899    128
+
+Select New Missed Saving Code For Car
+    [Arguments]    ${index}
+    Select Car Missed Savings Code By Index    ${index}    true
+
+Generate CA Backoffice Car Remark
+    [Arguments]    ${pickup_month}    ${pickup_day}    ${pickup_city}
+    ${pickup_date} =    Set Departure Date X Months From Now In Gds Format    ${pickup_month}    ${pickup_day}
+    ${missed_saving_raw}=    Get Control Text Value    [NAME:cbMissedSaving]
+    ${missed_saving_code}=    Fetch From Left    ${missed_saving_raw}    ${SPACE}-
+    Comment    ${missed_saving_code}=    Strip String    ${missed_saving}
+    Set Suite Variable    ${backoffice_remark}    RM *CS/${pickup_date}${pickup_city}/SV-${missed_saving_code}
+
+Get FXD Low Value in GDS
+    [Arguments]    ${lowesfare_command}
+    Retrieve PNR Details From Amadeus    ${current_pnr}    ${lowesfare_command}
+    ${fxd_quote}    Get String Between Strings    ${pnr_details}    GROUPS    TO
+    ${fxd_value}    Get Lines Containing String    ${fxd_quote}    FROM GBP
+    ${fxd_value}    Fetch From Right    ${fxd_value}    GBP
+    ${fxd_value}    Remove Leading And Ending Spaces    ${fxd_value}
+    Set Suite Variable    ${fxd_value}
+    [Teardown]    Take Screenshot
+
+Verify FXD lowest Value to Low Fare in Air Fare Panel
+    [Arguments]    ${fare_tab}    ${lowesfare_command}
+    Activate Power Express Window
+    Click Panel    Air Fare
+    Click Fare Tab    ${fare_tab}
+    Get Low Fare Value    ${fare_tab}
+    Get FXD Low Value in GDS    ${lowesfare_command}
+    Run Keyword And Continue On Failure    Should Be Equal    ${converted_low_fare}    ${fxd_value}
+
+Verify Low Fare FXD Remark Is Written In The PNR
+    [Arguments]    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    RMT TKT[0-9]-FQ${charged_fare_${fare_tab_index}}/LP-${low_fare_${fare_tab_index}}/[A-Z]+-[0-9A-Za-z]/FF-${high_fare_${fare_tab_index}}/[A-Z]+[0-9]+/[A-Z]+-[A-Z]{3}    True
+
+Verify Itinerary Remarks Are Written For fr-CA
+    Verify Specific Line Is Written In The PNR    RIR <B>ROUTING: LOS ANGELES SYDNEY</B>    true
+    Verify Specific Line Is Written In The PNR    RIR CONDITIONS TARIFAIRES:
+    Verify Specific Line Is Written In The PNR    RIR MODIFICATION : AFTER DEPARTURE
+    Verify Specific Line Is Written In The PNR    RIR ANNULATION: BEFORE DEPARTURE:
+    Verify Specific Line Is Written In The PNR    RIR VALABLE SUR : AA ONLY
+    Verify Specific Line Is Written In The PNR    RIR VALIDITE MINIMUM : XX WEEKS
+    Verify Specific Line Is Written In The PNR    RIR VALIDITE MINIMUM : XX WEEKS
+
+Verify Offer Remarks Are Written For fr-CA
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**ITINERAIRE: LOS ANGELES SYDNEY*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**COMPAGNIE AERIENNE: AA FARE BASIS: ${fare_basis_alt_${fare_tab_index}}*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**PRIX TOTAL: ${total_fare_alt_${fare_tab_index}}*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**CHANGEMENTS: INBOUND*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**ANNULATION: XX PERCENT*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**VALABLE SUR: AA ONLY*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**REROUTING: NOT PERMITTED*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**SEJOUR MINIMUM: XX WEEKS*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**SEJOUR MAXIMUM: XX WEEKS*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**DETAILS: ${details_offer_alt_${fare_tab_index}}*
+
+Verify That Itinerary Remarks Of APIS/SFPD Panel Are Written For fr-CA/en-US
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    click panel    APIS/SFPD
+    Populate APIS/SFPD Panel With Default Values
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD
+    Click Finish PNR
+
+Verify That Itinerary Remarks Of PSPT/VISA Panel Are Written For fr-CA/en-US
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    click panel    Pspt and Visa
+    Click Check Visa Requirements
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR
+
+Verify That Itinerary Remarks Of Policy Check Panel Are Written For en-US/fr-CA
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    click panel    Policy Check
+    Verify Policy Is Displayed    Air Advance Purchase    AIR
+    Verify Policy Is Displayed    Air Cabin    AIR
+    Verify Policy Is Displayed    Requires Approval    Approval
+    Select Policy Status By Name    Air Advance Purchase    TA - Traveller Booker Advised
+    Select Policy Status By Name    Air Cabin    HA - Has authority to travel
+    Select Policy Status By Name    Requires Approval    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Itinerary Remarks Of Policy Check Panel Are Written For en-US/fr-CA
+
+Verify That Itinerary Remarks Of Delivery Panel Are Written For en-US/fr-CA
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Verify Itinerary Remarks Are Written For en-US
+    Verify Specific Line Is Written In The PNR    <B>ROUTING: LOS ANGELES SYDNEY</B>
+    Verify Specific Line Is Written In The PNR    RIR MAIN RESTRICTIONS:
+    Verify Specific Line Is Written In The PNR    RIR CHANGE OF RESERVATION - AFTER DEPARTURE
+    Verify Specific Line Is Written In The PNR    RIR CANCELLATION: BEFORE DEPARTURE:
+    Verify Specific Line Is Written In The PNR    RIR VALID ON: AA ONLY
+    Verify Specific Line Is Written In The PNR    RIR MINIMUM STAY : XX WEEKS
+    Verify Specific Line Is Written In The PNR    RIR MAXIMUM STAY : XX WEEKS
+
+Verify Offer Remarks Are Written For en-US
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**ROUTING: LOS ANGELES SYDNEY*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**AIRLINE: AA FARE BASIS: ${fare_basis_alt_${fare_tab_index}}*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**TOTAL FARE: ${total_fare_alt_${fare_tab_index}}*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**CHANGES: INBOUND*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**CANCELLATION: XX PERCENT*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**VALID ON: AA ONLY*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**REROUTE: NOT PERMITTED*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**MINIMUM STAY: XX WEEKS*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**MAXIMUM STAY: XX WEEKS*
+    Verify Specific Line Is Written In The PNR    RIR *OFFER**DETAILS: ${details_offer_alt_${fare_tab_index}}*
+
+Create Day Month String For Ticket Queue Remark
+    ${test_date}=    Get Current Date
+    @{date_elements}=    Split String    ${test_date}    /
+    ${month_int}=    Set Variable    @{date_elements}[0]
+    ${month_name}=    Get Month Name    ${month_int}
+    ${day_int}=    Set Variable    @{date_elements}[1]
+    ${day_month_string}=    Catenate    SEPARATOR=    ${day_int}    ${month_name}
+    [Return]    ${day_month_string}
+
+Generate Ticket Queue Remark For Verification
+    [Arguments]    ${pcc}    ${queue_number}
+    ${raw_date}=    SyexDateTimeLibrary.Get Current Date
+    ${test_date}=    Convert Date To Gds Format    ${raw_date}    %m/%d/%Y
+    Set Suite Variable    ${day_month_string}    ${EMPTY}
+    ${ticket_queue_remark}=    Catenate    SEPARATOR=/    ${pcc}    ${test_date}    ${queue_number}
+    Set Suite Variable    ${day_month_string}    ${ticket_queue_remark}
+
+Verify General Remarks Are Not Written In The PNR
+    Verify Specific Line Is Not Written In The PNR    RMP P AND V : RESID COUNTRY
+    Verify Specific Line Is Not Written In The PNR    RMZ AUTOMAIL-YES
+    Verify Specific Line Is Not Written In The PNR    RMZ AUTOMAIL-NO
+    Verify Specific Line Is Not Written In The PNR    RMM SPCL-SEG
+    Verify Specific Line Is Not Written In The PNR    RMM SPCL-TKT
+    Verify Specific Line Is Not Written In The PNR    RMM SPCL-FQ0
+    Verify Specific Line Is Not Written In The PNR    RMM SPCL-TKT0
+    Verify Specific Line Is Not Written In The PNR    RMF TKTSUSPEND-NO
+    Verify Specific Line Is Not Written In The PNR    RMW HOTELSUSPEND-NO
+    Verify Specific Line Is Not Written In The PNR    RMQ TKTSUSPEND-NO
+    Verify Specific Line Is Not Written In The PNR    RMT PRICE-NO
+    Verify Specific Line Is Not Written In The PNR    RMP PSPT/CO
+
+Verify Required Remarks Are Written For BSP
+    #START US7013
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Enter GDS Command    MDR
+    Verify Specific Line Is Written In The PNR    *RITOP**HEADERTEXT*
+    Verify Specific Line Is Written In The PNR    *TICKET**TICKETTEXT*
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RMZ CONF*LANG:EN
+    #END US7013
+    #START US7032
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *FF/-${high_fare_amount}/S2-3
+    Verify Specific Line Is Written In The PNR    RM *LP/-${low_fare_amount}/S2-3
+    Verify Specific Line Is Written In The PNR    RM *FS/-7/S2-3
+    Verify Specific Line Is Written In The PNR    RM *DE/-SYD/S2-3
+    #START US7032
+    #START US7030
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Get Base Fare From Amadeus    S2-3    Fare 1
+    Verify Specific Line Is Written In The PNR    RMT TKT1-BFCAD${base_fare_1}/S2-3
+    Verify Specific Line Is Written In The PNR    RMT TKT1-ETK/S2-3
+    Get Base Fare From Amadeus    S4-5    Fare 2
+    Verify Specific Line Is Written In The PNR    RMT TKT2-BFCAD${base_fare_2}/S4-5
+    Verify Specific Line Is Written In The PNR    RMT TKT2-ETK/S4-5
+    #END US7030
+    #START US7031
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRQ
+    Verify Specific Line Is Written In The PNR    RMQ AUTOMAIL-YES
+    #END US7031
+    #START US7013
+    Verify OP Remark Is Written    PARWL2877    62    0    SEND ITINERARY//
+    #START US7013
+
+Verify Required Remarks Are Written For BSP In Amend
+    #START US7013
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Enter GDS Command    MDR
+    Verify Specific Line Is Written In The PNR    *RITOP**HEADERVALUE*
+    Verify Specific Line Is Written In The PNR    *TICKET**TICKETVALUE*
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RMZ CONF*LANG:EN
+    #END US7013
+    #START US7032
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *FF/-${high_fare_amount}/S2
+    Verify Specific Line Is Written In The PNR    RM *LP/-${low_fare_amount}/S2
+    Verify Specific Line Is Written In The PNR    RM *FS/-L/S2
+    Verify Specific Line Is Written In The PNR    RM *DE/-CHI/S2
+    #START US7032
+    #START US7030
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRT
+    Get Base Fare From Amadeus    S2    Fare 1
+    Verify Specific Line Is Written In The PNR    RMT TKT1-BFCAD${base_fare_1}/S2
+    Verify Specific Line Is Written In The PNR    RMT TKT1-ETK/S2
+    Get Base Fare From Amadeus    S3-4    Fare 2
+    Verify Specific Line Is Written In The PNR    RMT TKT2-BFCAD${base_fare_2}/S3-4
+    Verify Specific Line Is Written In The PNR    RMT TKT2-ETK/S3-4
+    #END US7030
+    #START US7031
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRQ
+    Verify Specific Line Is Written In The PNR    RMQ AUTOMAIL-YES
+    #END US7031
+    #START US7013
+    Verify OP Remark Is Written    PARWL2877    62    0    SEND ITINERARY//
+    #START US7013

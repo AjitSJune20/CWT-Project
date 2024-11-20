@@ -1,0 +1,369 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That CDR Field Is Hidden Based on FOP Pop Up Rule
+    [Tags]    us6639    uk
+    Open Power Express And Retrieve Profile    ${version}    TEST    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ US6639 Business Rules    Hong    Shirleen
+    Click New Booking With FOP Pop Up
+    Verify Window Exists    CDR Driving Account/FOP
+    Set FOP Value In Pop Up    CDR Driving Account/FOP    1111
+    Click Panel    Cust Refs
+    Verify CDR Is Not Visible    EMPLY.ID
+    Click Update PNR
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    [Teardown]
+
+[AB] Verify That CDR Field Is Hidden When Rule is Triggered
+    [Tags]    us6639    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    TRVLCOST    1111
+    Verify CDR Is Not Visible    EMPLY.ID
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That CDR Field Is Disabled Based on FOP Pop Up Rule
+    [Tags]    us6639    uk
+    Open Power Express And Retrieve Profile    ${version}    TEST    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ US6639 Business Rules    Hong    Shirleen
+    Click New Booking With FOP Pop Up
+    Verify Window Exists    CDR Driving Account/FOP
+    Set FOP Value In Pop Up    CDR Driving Account/FOP    1122
+    Click Panel    Cust Refs
+    Verify CDR Is Disabled And Text Value Is Correct    DEPTNAME    AAA
+    Click Update PNR
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+
+[AB] Verify That CDR Field Is Disabled When Rule is Triggered
+    [Tags]    us6639    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    TRVLCOST    1122
+    Verify CDR Is Disabled And Text Value Is Correct    DEPTNAME    AAA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That CDR Field Is Populated Based on FOP Pop Up Rule
+    [Tags]    us6639    uk
+    Open Power Express And Retrieve Profile    ${version}    TEST    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ US6639 Business Rules    Hong    Shirleen
+    Click New Booking With FOP Pop Up
+    Verify Window Exists    CDR Driving Account/FOP
+    Set FOP Value In Pop Up    CDR Driving Account/FOP    2222
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value is Correct    ALINE.BUS    123
+    Click Update PNR
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+
+[AB] Verify That CDR Field Is Populated When Rule is Triggered
+    [Tags]    us6639    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    TRVLCOST    2222
+    Verify CDR Is Enabled And Text Value is Correct    ALINE.BUS    123
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify that When Rules Are Satisfied For Search Remarks In Air Segment, Field in Cust Ref Panel Is Populated
+    [Tags]    fr    us6218    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ US6218 1A_BussinessRules_Read Itinerary    Juarez    Rosalie
+    Click New Booking
+    Book Flight X Months From Now    LHRFRA/ALH    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value is Correct    COSTCENTER    BRTEST
+    Verify CDR Is Enabled And Text Value is Correct    GEID    6
+    Verify CDR Is Enabled And Text Value is Correct    EMPLOYEEID    12345
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    *0601*6
+    Verify Specific Line Is Written In The PNR    *0602*BRTEST
+    Verify Specific Line Is Written In The PNR    *0603*12345
+
+[AB] Verify that When Rules Are Satisfied For Search Remarks In Air Segment, A Selection Pop-Up Will Displayed And Makes Field Mandatory
+    [Tags]    fr    us6218    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Window Exists    EMEA Confirmation Booking
+    Set Value In Pop Up    EMEA Confirmation Booking    Yes
+    Click Panel    Cust Refs
+    Set CDR Value    EMPLOYEEID    ${EMPTY}
+    Verify CDR Is Mandatory    EMPLOYEEID
+    Set CDR Value    EMPLOYEEID    RPJ
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0601*6
+    Verify Specific Line Is Written In The PNR    *0602*BRTEST
+    Verify Specific Line Is Written In The PNR    *0603*RPJ
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify that When Rules Are Satisfied For Search Remarks In Car Segment Value, A Selection Pop-Up Will Displayed And Write Remarks
+    [Tags]    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ US6218_1A_BusinessRules_Car    Mercado    Mae
+    Click New Booking
+    Book Active Car Segment X Month From Now    CDG
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value is Correct    GEID    R
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    BR CAR CITIES BOOKED CHECKING
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Window Exists    Before making a booking read below:
+    Set Value In Pop Up    Before making a booking read below:    Yes
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    TEST BUSINESS RULES
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify that When Rules Are Satisfied For Search Remarks In Passive Segment Value, Field in Cust Ref Panel Is Populated
+    [Tags]    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ US6218 1A_BussinessRules_Read Itinerary    Juarez    Rosalie
+    Click New Booking
+    Book Passive Flight X Months From Now    CDGLHR
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value is Correct    EMPLOYEEID    BR222
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    *0603*BR222
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That Power Express Reads The GDS Remarks To Determine The UDID When Business Rule Condition Is Set Up
+    [Tags]    ca    us6773    us6943
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    DENLAX/AUA    SS1Y1    FXP    6
+    Enter GDS Command    RM*U8/-1234
+    Enter GDS Command    RM*U55/-55
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Mandatory    SU-Department Name
+    Verify CDR Is Enabled And Text Value Is Correct    T-Matrix DP Code    T111
+    Verify CDR Is Enabled And Text Value Is Correct    T-Booking Date    55
+    Set CDR Value    Cost Center    BRTEST
+    Set CDR Value    SU-Department Name    DEPART
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RM R-ABC1234-TEST
+    Verify Specific Line Is Written In The PNR    RM *U8/-1234
+    Verify Specific Line Is Written In The PNR    RM *U55/-55
+    Verify Specific Line Is Written In The PNR    RM *DP/-T111
+
+[AB CA] Verify That Power Express Reads The GDS Remarks To Determine The UDID When Business Rule Condition Is Set Up
+    [Tags]    ca    us6773    us6943
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value Is Correct    SU-Department Name    1234ABC
+    Verify CDR Is Enabled And Text Value Is Correct    T-Booking Date    11 20 18
+    Set CDR Value    T-Matrix DP Code    T111
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR    Verify That PE Reads The GDS Remarks To Determine The UDID
+    Execute Simultaneous Change Handling    Verify That PE Reads The GDS Remarks To Determine The UDID
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RM R-UID-TBOOKDATE
+    Verify Specific Line Is Written In The PNR    RM *U8/-1234
+    Verify Specific Line Is Written In The PNR    RM *U55/-11 20 18
+    Verify Specific Line Is Written In The PNR    RM *U60/-1234ABC
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[CA][NB] Verify That DP And BB Codes Are Written Into The PNR At New Booking Before Update PNR
+    [Tags]    us6772    ca    19.1    us6943
+    Open Power Express And Retrieve Profile    ${version}    TEST    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - US6772 Test    AutoOneNineteen    CaTrvlrRulesOne
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - US6772 Test
+    Select Trip Type Value    Personal
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *DP/-A123
+    Verify Specific Line Is Written In The PNR    RM *BB/-TST456
+    Book Flight X Months From Now    YVRYLW/AAC    SS1Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_PNR}    RTY
+    Verify Specific Line Is Written In The PNR    RM *DP/-A123
+    Verify Specific Line Is Written In The PNR    RM *BB/-TST456
+    Verify Specific Line Is Written In The PNR    RM *CF/-ZZZ0000000N
+    [Teardown]    Click Clear All
+
+[CA][AB] Verify That BB Code Is Updated At Amend Booking
+    [Tags]    19.1    ca    us6772    us6943
+    Retrieve PNR    ${current_PNR}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That BB Code Is Updated
+    Retrieve PNR Details From Amadeus    ${current_PNR}    RTY
+    Verify Specific Line Is Written In The PNR    RM *DP/-A123
+    Verify Specific Line Is Written In The PNR    RM *BB/-XYZ678
+    Verify Specific Line Is Not Written In The PNR    RM *BB/-TST456
+    Verify Specific Line Is Written In The PNR    RM *CF/-ZZZ0000000N
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[CA][NB] Verify That BB Code Is Written Into The PNR At New Booking Before Update PNR
+    [Tags]    19.1    ca    us6772    us6943
+    Open Power Express And Retrieve Profile    ${version}    TEST    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - US6772 Test    AutoOneNineteen    CaTrvlrRulesOne
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - US6772 Test
+    Select Trip Type Value    Meetings
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *BB/-CDE654
+    Book Flight X Months From Now    YVRYLW/AAC    SS1Y1    FXP    6    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_PNR}    RTY
+    Verify Specific Line Is Written In The PNR    RM *BB/-CDE654
+    Verify Specific Line Is Written In The PNR    RM *CF/-SOE0000000Q
+    [Teardown]    Click Clear All
+
+[CA][AB] Verify That DP Code Is Written Into The PNR At Amend Booking
+    [Tags]    19.1    ca    us6772    us6943
+    Retrieve PNR    ${current_PNR}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Verify That DP Code Is Written In The PNR
+    Execute Simultaneous Change Handling    Verify That DP Code Is Written In The PNR
+    Retrieve PNR Details From Amadeus    ${current_PNR}    RTY
+    Verify Specific Line Is Written In The PNR    RM *DP/-D012
+    Verify Specific Line Is Written In The PNR    RM *BB/-CDE654
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[CA][NB] Verify That Matrix DP Code Is Defaulted In Cust Refs Panel At New Booking
+    [Tags]    19.1    ca    us6772    us6943
+    Open Power Express And Retrieve Profile    ${version}    TEST    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Meetings
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Center    TST123
+    Verify CDR Value Is Correct    T-Matrix DP Code    G098
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    ${current_PNR}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U58/-TST123
+    Verify Specific Line Is Written In The PNR    RM *DP/-G098
+    Book Flight X Months From Now    YLWYVR/AAC    SS1Y1    FXP    6    3
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Value Is Correct    Cost Center    TST123
+    Verify CDR Value Is Correct    T-Matrix DP Code    G098
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_PNR}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U58/-TST123
+    Verify Specific Line Is Written In The PNR    RM *DP/-G098
+    [Teardown]
+
+[CA][AB] Verify That Matrix DP Code Is Defaulted In Cust Refs Panel At Amend Booking Booking
+    [Tags]    19.1    ca    us6772    us6943
+    Retrieve PNR    ${current_PNR}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Accounting    A1B
+    Verify CDR Value Is Correct    Cost Center    TST123
+    Verify CDR Value Is Correct    T-Matrix DP Code    H765
+    Populate All Panels (Except Given Panels If Any)
+    Sleep    5
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_PNR}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U58/-TST123
+    Verify Specific Line Is Written In The PNR    RM *DP/-H765
+    Verify Specific Line Is Written In The PNR    RM *U57/-A1B
+    Verify Specific Line Is Not Written In The PNR    RM *DP/-G098
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify That PE Reads The GDS Remarks To Determine The UDID
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value Is Correct    SU-Department Name    1234ABC
+    Verify CDR Is Enabled And Text Value Is Correct    T-Booking Date    11 20 18
+    Set CDR Value    T-Matrix DP Code    T111
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+
+Verify That DP Code Is Written In The PNR
+    Retrieve PNR    ${current_PNR}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Verify That BB Code Is Updated
+    Retrieve PNR    ${current_PNR}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

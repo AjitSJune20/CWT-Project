@@ -1,0 +1,116 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../database_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+    [Tags]    us2147    rail_display
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Jump To Different PCC    PARWL210G
+    Create New Booking With Round Trip Flight Rail Cars And Hotel    Amadeus FR Legacy - Auto ¦ US427    AutoLegacy    EmeaTrvlrFour    LHRCDG/AAF    SS1Y1    FXP/S4
+    ...    CDGLHR/AAF    SS1Y2    FXP/S5    LHR    CDG    HA1
+    ...    HP1    HS3/G-CCAX378282246310005EXP0220/P1/CD-12345/ID-123
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2
+    Click Finish PNR
+    Verify Correct Transaction Details Are Logged In ApplicationOverallTransactionTimeBookingContentType    2,Air Segment,2    3,Fare,3    4,Rail Segment,1    5,Hotel Segment,1    6,Car Segment,1    10,Awaiting Fare,Y
+    ...    11,Awaiting Approval,Y
+    Verify Transaction Details Are Not Logged In ApplicationOverallTransactionTimeBookingContentType    12,Awaiting Policy,Y    13,Awaiting Itinerary,Y    8,Awaiting SFPD,Y
+
+[AB] Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+    [Tags]    us2147    valid_fail    rail_display
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 2
+    Click Add Alternate Fare
+    Populate Alternate Fare Details Using Copy Air Button    FULL    100    YC - Tarif Client Classe Economique
+    Click Fare Tab    Alternate Fare 1
+    Click Add Alternate Fare
+    Populate Alternate Fare Details Using Copy Air Button    TEST2    100    YC - Tarif Client Classe Economique
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+    Re-Execute Amend Booking Workflow Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table If Simultaneous Change Error Is Displayed
+    Verify Correct Transaction Details Are Logged In ApplicationOverallTransactionTimeBookingContentType    2,Air Segment,2    3,Fare,3    4,Rail Segment,1    5,Hotel Segment,1    6,Car Segment,1    10,Awaiting Fare,Y
+    ...    11,Awaiting Approval,Y    15,Alternate Fare,2
+    Verify Transaction Details Are Not Logged In ApplicationOverallTransactionTimeBookingContentType    12,Awaiting Policy,Y    13,Awaiting Itinerary,Y    8,Awaiting SFPD,Y
+
+[SI] Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+    [Tags]    us2147    valid_fail    rail_display
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Read Booking
+    Click Finish PNR    Send Itinerary Workflow Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+    Re-Execute Send Itinerary Workflow Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table If Simultaneous Change Error Is Displayed
+    Verify Correct Transaction Details Are Logged In ApplicationOverallTransactionTimeBookingContentType    2,Air Segment,2    3,Fare,3    4,Rail Segment,1    5,Hotel Segment,1    6,Car Segment,1    15,Alternate Fare,2
+    Verify Transaction Details Are Not Logged In ApplicationOverallTransactionTimeBookingContentType    12,Awaiting Policy,Y    13,Awaiting Itinerary,Y    8,Awaiting SFPD,Y    11,Awaiting Approval,Y    10,Awaiting Fare,Y
+
+[CB] Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+    [Tags]    us2147    valid_fail    rail_display
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR    Cancel Booking Workflow In Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+    Verify Correct Transaction Details Are Logged In ApplicationOverallTransactionTimeBookingContentType    3,Fare,3    4,Rail Segment,1    5,Hotel Segment,1    6,Car Segment,1    15,Alternate Fare,2
+    Verify Transaction Details Are Not Logged In ApplicationOverallTransactionTimeBookingContentType    12,Awaiting Policy,Y    13,Awaiting Itinerary,Y    8,Awaiting SFPD,Y    11,Awaiting Approval,Y    10,Awaiting Fare,Y
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB] Verify That Start Count Of Application Usage Log Should Start On The First Search Traveller Even When Searching For Traveller Twice
+    [Tags]    us1918    de
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler With Timestamp    Amadeus DE 16 - Auto ¦ US1423    AutoOneSixSeven    NoramTrvlrFive
+    Unselect Traveller And Wait For 2 Minutes
+    Create New Booking With Round Trip Air Flight Using Default Values    Amadeus DE 16 - Auto ¦ US1423    AutoOneSixSeven    NoramTrvlrFive    LHRJFK/AAF    SS1Y1    ${EMPTY}
+    ...    JFKLHR/AAF    SS1Y1    FXB
+    Click Finish PNR With Timestamp
+    Verify Transaction Is Reflected In OTT Table    DE Head Office    14:3FE80    U003WXR    EMEA    EUROP    DE
+    ...    1A    1    A:87F1D    A:40303D72    False    ${current_pnr}
+    ...    None    True    None
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Application OTT ID Is Logged When Clear All Button Is Clicked After Manual Search Traveler
+    [Tags]    us3161    de
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler With Timestamp    Amadeus DE 16 - Auto ¦ US1423    AutoOneSixSeven    NoramTrvlrFive
+    Click Clear All With Timestamp
+    Verify Entry Is Present In Application Usage DB    Select Traveller    ${exp_overalltransaction_start_time}
+    Verify Entry Is Present In Application Usage DB    Clear All    ${exp_overalltransaction_end_time}
+    Verify Transaction Is Reflected In OTT Table    DE Head Office    14:3FE80    U003WXR    EMEA    EUROP    DE
+    ...    1A    None    A:87F1D    A:40303D72    False    None
+    ...    None    False    None
+    Verify ApplicationOverallTransactionTimeId Is Same For ApplicationUsage And ApplicationOverallTransactionTime Tables
+    Verify ApplicationOverallTransactionTimeId For Clear All Event Is NULL
+    [Teardown]
+
+*** Keywords ***
+Amend Booking Workflow Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 2
+    Click Add Alternate Fare
+    Populate Alternate Fare Details Using Copy Air Button    FULL    100    YC - Tarif Client Classe Economique
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+
+Cancel Booking Workflow In Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR    Cancel Booking Workflow In Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+
+Send Itinerary Workflow Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Read Booking
+    Click Finish PNR    Send Itinerary Workflow Verify That Correct Booking And Transaction Details Are Stored Into ApplicationOverallTransactionTimeBookingContentType Table
+
+Unselect Traveller And Wait For 2 Minutes
+    Click Control Button    [NAME:ccboCompany]
+    Send    {Tab}
+    Send    {Space}
+    Sleep    120
+    [Teardown]    Take Screenshot

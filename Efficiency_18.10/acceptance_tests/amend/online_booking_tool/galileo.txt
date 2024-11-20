@@ -1,0 +1,50 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../amend_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Express Writes Appropriate Remarks Depending On Values in Amend Panel
+    [Tags]    us2816    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo HK 16 - Auto ¦ US2816    AutoSixteenTwo    ApacTrvlrThree    SINSYD/QF    01Y1    FQS1
+    ...    SYDSIN/QF    01Y1    FQS2
+    Enter GDS Command    NP.BT*CBK
+    Enter GDS Command    DI.FT-FF34/EB
+    Enter GDS Command    DI.FT-FF35/CBK
+    Enter GDS Command    DI.FT-FF36/S
+    Click Finish PNR
+
+[AB] Verify That Express Writes Appropriate Remarks Depending On Values in Amend Panel
+    [Tags]    us2816    DE6075    valid_fail    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Agent Assisted
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For OBT Remarks
+    Retrieve PNR Details From Travelport    \    *DI
+    Verify EB Remarks Are Written In PNR
+    Verify OBT Remarks Are Written In PNR    Fare 1
+    Verify OBT Remarks Are Written In PNR    Fare 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For OBT Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Agent Assisted
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR

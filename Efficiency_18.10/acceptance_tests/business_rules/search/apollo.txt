@@ -1,0 +1,73 @@
+*** Settings ***
+Force Tags        apollo
+Resource          ../business_rules_verification.txt
+Resource          ../../../resources/panels/pop_up.txt
+
+*** Test Cases ***
+[NB] Verify That Search Remark For Amount and Email Will Be Returned In Cust Refs Panel And Written In The PNR
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4618    AutoLast    AutoFirst
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    EMPLOYEEID    ONE
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Wait Until Progress Info is Completed
+    Book Flight X Months From Now    DENORD+UA    01Y2    T:$B    6
+    Click Read Booking
+    Wait Until Progress Info is Completed
+    Click Panel    Cust Refs
+    Set CDR Value    EMPLOYEEID    ONE
+    Click Control Button    [NAME:ctxtCDRValue2]
+    Verify CDR Value Is Correct    COSTCENTER    300
+    Verify CDR Value Is Correct    EMPLOYEEID    TEST//TEST.COM
+    Set CDR Value    EMPLOYEEID    TWO
+    Set CDR Value    COSTCENTER    300
+    Click Control Button    [NAME:ctxtCDRValue1]
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    \    *ALL    1
+    Verify Specific Line Is Written In The PNR    U99-300
+    Verify Specific Line Is Written In The PNR    U98-TEST//TEST.COM
+    Verify Specific Line Is Written In The PNR    U97-PCC/TKT-123/CC-UK/CMC-HBO
+    Verify Specific Line Is Written In The PNR    REAL THIS IS A NOTEPAD REMARK
+    Verify Specific Line Is Written In The PNR    XXXE/TEST//TEST.COM
+    Verify Specific Line Is Written In The PNR    G*BB/U1555
+    Verify Specific Line Is Written In The PNR    G*DP/Q555
+    Verify Specific Line Is Written In The PNR    U15-REAL TEST UDID LINE
+    Verify Specific Line Is Written In The PNR    K/THIS IS REAL A K QUALIFIED REMARK
+    Verify Specific Line Is Written In The PNR    XXXM/63-955555
+    Verify Specific Line Is Written In The PNR    XXXE/TESTREALEMAIL@REALTEST.COM
+
+[AB] Verify That Search Remark For Currency, Phone and Email Will Be Written In The PNR And Displayed In Cust Refs
+    [Tags]
+    Set Test Variable    ${GDS_switch}    Apollo
+    Set Test Variable    ${locale}    en-US
+    Set Test Variable    ${syex_env}    Test
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Retrieve PNR    L2Q5K4
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Value Is Correct    EMPLOYEEID    303-555-1212-
+    Set CDR Value    EMPLOYEEID    TWO
+    Set CDR Value    Matrix DP Code    ${EMPTY}
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    \    *ALL    1
+    Verify Specific Line Is Written In The PNR    U96-TEST#TEST.COM
+    Verify Specific Line Is Written In The PNR    U95-4-44-444444555666
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify CDR Text If Contains Value
+    [Arguments]    ${fieldname}    ${expected_text_value}
+    Verify Control Object Text Value Is Correct    ${fieldname}    ${expected_text_value}    ${currvalue} should be equal to ${expected_text_value}

@@ -1,0 +1,195 @@
+*** Settings ***
+Force Tags        apollo
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That CDR Popup Appears For Fare Class And Coach Fare Is Mandatory
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 3 - SyEx ¦ CDR Popup Auto    AplAutoRules    AplTrvTwo
+    Click New Booking
+    Verify CDR Is Disabled And Text Value Is Correct    Approver Name for    JOEFER
+    Verify CDR Is Visible    Coach Fare
+    Verify CDR Is Not Mandatory    Coach Fare
+    Click Update PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U-12-JOEFER
+    Book Flight X Months From Now    BOSLAX+AA    01J1    T:$BS1
+    Book Flight X Months From Now    LAXBOS+AA    01J1    T:$BS2    6    5
+    Click Read Booking
+    Verify Window Exists    Premium Class
+    Set Value In Popup    Premium Class    NO
+    Click Panel    Cust Refs
+    Verify CDR Is Mandatory    Coach Fare
+    Tick Not known at time of booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+
+[AB] Verify That CDR Popup Appears For Fare Class And Coach Fare Is Mandatory
+    [Tags]
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Comment    Enter GDS Command    XT
+    Comment    Enter GDS Command    XI
+    Comment    Book Flight X Months From Now    BOSLAX+AA    01J1    T:$BS1
+    Comment    Book Flight X Months From Now    LAXBOS+AA    01J1    T:$BS2    6    5
+    Click Read Booking
+    Verify Window Exists    Premium Class
+    Set Value In Popup    Premium Class    YES
+    Click Panel    Cust Refs
+    Verify CDR Is Mandatory    Coach Fare
+    Verify CDR Is Disabled And Text Value Is Correct    Approver Name for    JOEFER
+    Tick Not known at time of booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U-12-JOEFER
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That CDR Popup Writes Remarks Into PNR When Answer In Popup Is Yes
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 3 - SyEx ¦ CDR Popup Notice    AplAutoRules    AplTrvThree
+    Click New Booking
+    Click Panel    Client Info
+    Click Update PNR
+    Set Value In Popup Notice    STOP - before making a booking read the below:    Yes
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HAVE ADVSD 14 DAY ADV/ BUSINESS CLASS/ CHEAPEST FLT POLICY
+    Book Flight X Months From Now    LAXDEN+UA    01Y1    T:$B
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Not known at time of booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HAVE ADVSD 14 DAY ADV/ BUSINESS CLASS/ CHEAPEST FLT POLICY
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That CDR Popup Writes Remarks Into PNR When Answer In Popup Is No
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 3 - SyEx ¦ CDR Popup Notice    AplAutoRules    AplTrvThree
+    Click New Booking
+    Click Panel    Client Info
+    Click Update PNR
+    Set Value In Popup Notice    STOP - before making a booking read the below:    No
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    DID NOT ADVISE TRAVEL POLICY UPON NEW BOOKING
+    Book Flight X Months From Now    DENLAX+UA    01Y1    T:$B
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Not known at time of booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    DID NOT ADVISE TRAVEL POLICY UPON NEW BOOKING
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That CDR Popup Answer Is Defaulted As Value In Power Express And Written In The PNR
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 3 - SyEx ¦ CDR Popup Answer    AplAutoRules    AplTrvFour
+    Click New Booking
+    Click Clear All
+    Set Client And Traveler    Apollo 3 - SyEx ¦ CDR Popup Answer    AplAutoRules    AplTrvFour
+    Click New Booking
+    Set Answer In Popup    Cost Center Format    1098
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value Is Correct    Cost Center    1098
+    Verify CDR Is Enabled And Text Value Is Correct    Division    CORPORATE
+    Click Panel    Client Info
+    Click Update PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U-13-1098
+    Verify Specific Line Is Written In The PNR    U-14-CORPORATE
+    Click Clear All
+    [Teardown]
+
+[NB] Verify That Yes Answer In First Popup Drives Another Popup
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 3 - SyEx ¦ CDR Popup Answer    AplAutoRules    AplTrvFour
+    Select Trip Type Value    Personal
+    Click New Booking
+    Set Answer In Popup    Client Facing Trip?    Yes
+    Set Answer In Popup    Client Name    AUTO QA
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value Is Correct    Client Name    AUTO QA
+    Tick Not known at time of booking
+    Click Panel    Client Info
+    Click Update PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U-15-AUTO QA
+    Click Clear All
+    [Teardown]
+
+[NB] Verify That No Answer In First Popup Drives Another Popup
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 3 - SyEx ¦ CDR Popup Answer    AplAutoRules    AplTrvFour
+    Select Trip Type Value    Personal
+    Click New Booking
+    Set Answer In Popup    Client Facing Trip?    No
+    Set Answer In Popup    Approved Exception    Yes
+    Set Answer In Popup    Authorizer    Matt Lee
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value Is Correct    Authorizer    MATT LEE
+    Tick Not known at time of booking
+    Click Panel    Client Info
+    Click Update PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U-16-MATT LEE
+    Click Clear All
+    [Teardown]
+
+[NB] Verify That Matrix DP Code From Popup Is Written Into The PNR
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 3 - SyEx ¦ Vidya -CDR Validation 2    AplAutoRules    AplAutoFive
+    Click New Booking
+    Set Answer In Popup    Ally DP Listing    H228 - Ally Financial - Contractor/Non-Employee
+    Set CDR Value    BUS Unit Name    ABC.12TEST
+    Tick Not Known At Time Of Booking
+    Click Panel    Client Info
+    Click Update PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    G*DP/H228
+    Book Flight X Months From Now    DFWATL+AA    01Y1    T:$BS1    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Cust Refs
+    Tick Not known at time of booking
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    G*DP/H228
+    Click Clear All
+    [Teardown]
+
+[AB] Verify That CDR And PNR Remarks Read To Populate Cost Center
+    [Tags]
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value Is Correct    Cost Center    D-3*45
+    Verify CDR Is Enabled And Text Value Is Correct    BUS Unit Name    ABC.12TEST
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    G*DP/H228
+    Verify Specific Line Is Written In The PNR    U-13-ABC.12TEST
+    Verify Specific Line Is Written In The PNR    U-12-D-3*45
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***

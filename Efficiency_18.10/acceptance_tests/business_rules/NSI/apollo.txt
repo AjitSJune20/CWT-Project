@@ -1,0 +1,51 @@
+*** Settings ***
+Force Tags        apollo
+Resource          ../../../resources/common/global_resources.txt
+
+*** Test Cases ***
+[NB] Verify That Single NSI Is Written For Non EXTSYSID Appended The UDID Value For Single NSI Without PNR Mapping In Update PNR Including Various Itinerary Segments
+    [Tags]    us5589
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4618    AUTOLAST    AUTOFIRST
+    Select Trip Type Value    Business
+    Click New Booking
+    Tick Show All Client Defined References
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Retrieve PNR Details From Travelport
+    Verify Specific Line Is Written In The PNR    1AUTOLAST/AUTOFIRST MR*ABC123
+    Book Flight X Months From Now    MSPORD+UA    01Y5    T:$B
+    Enter GDS Command    0TURZZBK1XXX12JAN-** ***
+    Enter GDS Command    /1+0HTLMXMK1MSP20APR-OUT24APR/P-59240/R-SGLB/W-MOTEL 6 MINNEAPOLIS-BROO¤2741 FREEWAY BLVD¤BROOKLYN CENTER MN¤US¤55430¤763-560-9789/**ITB-SGLB/RT-79.00/PC59240**/CF-ABC123
+    Enter GDS Command    0AA583S22APRMXPLHRHK1
+    Enter GDS Command    0AA583S23APRMXPLHRGK1
+    Enter GDS Command    0AKOPENYSLCCVGNO1
+    Enter GDS Command    0CARZIBK1STL10APR-13APRICAR/RT-USD35.00DY-UNL FM/ARR-9A/DT-9A/CF-123456
+    Enter GDS Command    CAL2APR-3APRLHR/ARR-2P/DT-2P    01A1
+    Enter GDS Command    0CARZEBK1STL10MAY-13MAYICAR/RT-USD35.00DY-UNL FM/ARR-9A/DT-9A/CF-123456
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    Matrix DP Code    RULE
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Verify Specific Line Is Written In The PNR    1AUTOLAST/AUTOFIRST MR*ABC123
+
+[AB] Verify That Single NSI Is Updated For Non EXTSYSID Appended The UDID Value For Single NSI Without PNR Mapping In Finish PNR
+    [Tags]
+    Retrieve PNR via Existing Bookings Tab    Apollo 16 - Auto ¦ US4618    AUTOLAST    AUTOFIRST    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Tick Show All Client Defined References
+    Click Panel    Client Info
+    Retrieve PNR Details From Travelport
+    Verify Specific Line Is Written In The PNR    1AUTOLAST/AUTOFIRST MR*ABC123
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport
+    Verify Specific Line Is Written In The PNR    AUTOLAST/AUTOFIRST MR*CWT88-TEST111
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***

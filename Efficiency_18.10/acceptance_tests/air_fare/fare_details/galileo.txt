@@ -1,0 +1,798 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../air_fare_verification.txt
+Resource          ../../pspt_and_visa/pspt_and_visa_verification.txt
+
+*** Test Cases ***
+[NB HK] Verify That Lowest Carrier Code Is Written In The PNR
+    [Tags]    us3514    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo HK 16 - Auto ¦ US3514    DOS    APAC    HKGSYD/QF    01Y1    FQS1
+    ...    SYDHKG/QF    01Y1    FQS2    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Verify LFCC Field Is Mandatory
+    Set LFCC Field    QF
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    20
+    Populate Fare Tab With Default Values    Fare 2
+    Verify LFCC Field Is Mandatory
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    25
+    Comment    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Lowest Carrier Code Is Written In The PNR    FREE TEXT-FF81/*1/QF
+    Verify Lowest Carrier Code Is Written In The PNR    FREE TEXT-FF81/*2/PR
+    [Teardown]
+
+[AB HK] Verify That Lowest Carrier Code Is Written In The PNR
+    [Tags]    us3514    apac
+    Amend Booking Worfklow For Lowest Carrier Code
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Lowest Carrier Code Is Written In The PNR    FREE TEXT-FF81/*1/EK
+    Verify Lowest Carrier Code Is Written In The PNR    FREE TEXT-FF81/*2/AA
+    Verify Lowest Carrier Code Is Written In The PNR    FREE TEXT-FF81/*3/PR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Old Format For Remarks Are Not Written When PNR Has No Alternate Fare
+    [Tags]    us3698    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo SG 16 - Auto ¦ US3698    AutoSixteenSeven    ApacTrvlrSeventeen    SINSYD/QF    01Y1    ${EMPTY}
+    ...    SYDSIN/QF    01Y1    FQ    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Comment    Enter Specific Command On Native GDS    T.TAU/11MAY
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Passport Details Is Written Only Once In The PNR    TRAVELLERS NATIONALITY: SINGAPORE    VALID PASSPORT HELD: YES    VISA CHECK: AUSTRALIA REQUIRED
+    Verify Unnecessary Itinerary Remarks Are Not Written In The PNR
+    [Teardown]
+
+[AB SG] Verify That Old Format For Remarks Are Not Written When PNR Has Alternate Fare
+    [Tags]    us3698    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    Yes
+    Select Visa Requirement    Required
+    Populate Fare Tab With Default Values    Fare 1
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Set Alternate Fare Amount    10000.01
+    Set Alternate Fare Fare Basis    ACODE
+    Select Fare Restriction    Fully Flexible
+    Comment    Enter Specific Command On Native GDS    T.TAU/11MAY
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Itinerary Remarks If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Passport Details Is Written Only Once In The PNR    TRAVELLERS NATIONALITY: SINGAPORE    VALID PASSPORT HELD: YES    VISA CHECK: AUSTRALIA REQUIRED
+    Verify Unnecessary Itinerary Remarks Are Not Written In The PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Fare Type Corporate Fare And Nett Remit Fare Remark Is Written In The PNR For INTL Route
+    [Tags]    us3541    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo SG 16 - Auto ¦ US3541    AutoOneSixteenFour    ApacTrvlrTwo    SINSYD/QF    01Y1    FQS1
+    ...    SYDSIN/QF    01Y1    FQS2    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Nett Remit Fare
+    Comment    Enter GDS Command    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Correct Fare Type Is Written In The PNR    TK*FARETYPE-1:SQC
+    Verify Correct Fare Type Is Written In The PNR    TK*FARETYPE-2:APF
+    [Teardown]
+
+[AB SG] Verify That Fare Type Publish Fare And SQP – SQ/MI Published Fare remark Is Written In The PNR For INTL Route
+    [Tags]    us3541    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    SQP – SQ/MI Published Fare
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Comment    Enter GDS Command    T.T*
+    Click Finish PNR
+    Amend Booking Workflow For Fare Type Published Fare And SQP – SQ/MI Published Fare
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Correct Fare Type Is Written In The PNR    TK*FARETYPE-1:PUB
+    Verify Correct Fare Type Is Written In The PNR    TK*FARETYPE-2:SQP
+    [Teardown]
+
+[AB SG] Verify That Fare Type SQN Published Fare And SQ/MI Published Nett Fare Fare remark Is Written In The PNR For INTL Route
+    [Tags]    us3541    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    SQN – SQ/MI Published Nett Fare
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    SQP – SQ/MI Published Fare
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Comment    Enter GDS Command    T.T*
+    Click Finish PNR
+    Amend Booking Workflow For Fare Type SQN – SQ/MI Published Nett Fare And SQP – SQ/MI Published Fare
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Correct Fare Type Is Written In The PNR    TK*FARETYPE-1:SQN
+    Verify Correct Fare Type Is Written In The PNR    TK*FARETYPE-2:SQP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB NZ] Verify That Itinerary Remarks Are Written For Single Fare
+    [Tags]    us3697    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationNZ    NZ AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo NZ 16 - Auto ¦ US3697    AutoSixteenSeven    ApacTrvlrSixteen
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQ
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Pspt and Visa
+    Tick Domestic Trip
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Passport And Visa Information Remarks Are Not Written In The PNR    NEW ZEALAND    UNABLE TO CONFIRM    AUSTRALIA UNABLE TO CONFIRM
+    Verify Fare Quote Remarks Are Written In The PNR    1    QANTAS AIRWAYS    SINGAPORE/SYDNEY    NZ
+    [Teardown]
+
+[AB NZ] Verify That Itinerary Remarks Are Written For Single Fare With Alternate Fare
+    [Tags]    us3697    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    Yes
+    Select Visa Requirement    Required
+    Populate Fare Tab With Default Values    Fare 1
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Set Alternate Fare Amount    10000.01
+    Set Alternate Fare Fare Basis    ACODE
+    Select Fare Restriction    Fully Flexible
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Itinerary Remarks If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Passport And Visa Information Is Written On Top Of The Itinerary Quote Remarks In The PNR    NZ
+    Verify Fare Quote Remarks Are Written In The PNR    1    QANTAS AIRWAYS    SINGAPORE/SYDNEY    NZ
+    Verify Alternate Fare Remarks Are Written In The PNR    1    QANTAS AIRWAYS    SINGAPORE/SYDNEY    ${EMPTY}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Itinerary Remarks Are Written For Multiple Fare And With Alternate Fare
+    [Tags]    us3697    us4585    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo SG 16 - Auto ¦ US3541    AutoOneSixteenFour    ApacTrvlrTwo    SINSYD/QF    01Y1    FQS1
+    ...    SYDSIN/QF    01Y1    FQS2    ${EMPTY}    Air Fare    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    Yes
+    Select Visa Requirement    Required
+    Populate Fare Tab With Default Values    Fare 1
+    Set Low Fare Field With Charged Fare
+    Select Fare Type    CAT 35 Fare
+    Populate Fare Tab With Default Values    Fare 2
+    Set Low Fare Field With Charged Fare
+    Select Fare Type    CAT 35 Fare
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Set Alternate Fare Amount    10000.01
+    Set Alternate Fare Fare Basis    ACODE
+    Select Fare Restriction    Fully Flexible
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Enter Specific Command On Native GDS    T.TAU/10MAY
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *RI
+    Verify Passport And Visa Information Is Written On Top Of The Itinerary Quote Remarks In The PNR    SG
+    Verify Fare Quote Remarks Are Written In The PNR    1    QANTAS AIRWAYS    SINGAPORE/SYDNEY    SG
+    Verify Fare Quote Remarks Are Written In The PNR    2    QANTAS AIRWAYS    SYDNEY/SINGAPORE    SG
+    Verify Alternate Fare Remarks Are Written In The PNR    1    QANTAS AIRWAYS    SINGAPORE/SYDNEY/SINGAPORE    ${EMPTY}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Fare Remarks Are Written
+    [Tags]    legacy    de6246    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values    Galileo Legacy - Auto ¦ Fare Remarks    AutoLegacy    EmeaTrvlrThree    MANAMS    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Air Fare Savings Code    VA - Value Added Offer    MC - Miscellaneous Client Specific    YC - Economy Client Fare
+    Get Fare Details    Fare 1
+    Get Fees Fare Value    Fare 1
+    Get Filed Fare    1
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Auto Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-*0702*AUTOMATION#CARLSONWAGONLIT.COM    \    true
+    Verify Specific Line Is Written In The PNR    AC ACCT-.717171    \    true
+    Verify Specific Line Is Written In The PNR    FREE TEXT-*0653*MUSS    \    true
+    Verify Specific Line Is Written In The PNR    HP*BIRTHDATE-09MAR79    \    true
+    Verify Specific Line Is Written In The PNR    HP*FULLNAME : EMEATRVLRTHREE//AUTOLEGACY    \    true
+    Verify Specific Line Is Written In The PNR    HP*LANGUAGE*EN    \    true
+    Verify Specific Line Is Written In The PNR    CWT EMPLOYEE    \    true
+    Verify Specific Line Is Written In The PNR    *CUSTADS**STAFFTRAVEL*    \    true
+    Verify Specific Line Is Written In The PNR    PASSPORT AND VISA INFORMATION    \    true
+    Verify Itinerary Remarks Are Written For Galileo    Fare 1
+    Verify NPHF Lines Are Correct    TEST123    0104    123
+    Verify DI Lines Are Correct    0104    0717171
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Correct DI Lines Total Are Written In The PNR For Two Normal Fares Without Alternate Fares When Fare Not Finalized Is Unchecked
+    [Tags]    de4368    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo 16 - Auto ¦ US3521    AutoOneFifteenTen    OptimizeTrvlrTwo    LAXCDG/AF    01Y2    FQ:NR
+    ...    CDGLAX/AF    01Y1    FQS2:NR    ${EMPTY}    AIR FARE
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Get Total Of High Fare, Charged Fare And Low Fare For 2 Fare Tabs
+    Enter GDS Command    T.TAU/01MAY
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *9991*${total_charged_fare}
+    Verify Specific Line Is Written In The PNR    *9992*${total_low_fare}
+    Verify Specific Line Is Written In The PNR    *9994*${total_high_fare}
+
+[AB] Verify That Correct DI Lines Total Are Written In The PNR For Three Normal Fares Without Alternate Fares
+    [Tags]    de4368    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    LAXPHX/UA    01Y1    FQS3
+    Enter GDS Command    FQS4
+    Enter GDS Command    FQS5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Get Total Of High Fare, Charged Fare And Low Fare For 3 Fare Tabs
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Correct DI Lines Total Are Written In The PNR For Three Normal Fares
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *9991*${total_charged_fare}
+    Verify Specific Line Is Written In The PNR    *9992*${total_low_fare}
+    Verify Specific Line Is Written In The PNR    *9994*${total_high_fare}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That No Merchant Fee Is Applied When FNONREF Remark Is Present
+    [Tags]    uat    uk    emea    cost_critical    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    AUTOFIFTEENUK    EMEAUATUKTWO
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT-A/VI************0002/D0122-TEST VISA
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking    TICK
+    Click Update PNR
+    Verify Message Is Not Displayed In Summary    Remarks Update Failed
+    Book Flight X Months From Now    AMSCPH/KL    01Y1    \    6
+    Book Flight X Months From Now    CPHAMS/KL    01Y1    FQS1-2:NR    6    1
+    Enter GDS Command    TMU1FNONREF
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fees Value Is Correct    Fare 1    0.00
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HF*MERCHANT FEES-0.00
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Realised Saving Code Is Empty When Full BA Published Fare In Economy Or Business Cabin Is Used
+    [Tags]    uat    uk    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Contact    John
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Traveller    John
+    Click Tab In Contact Details    Traveller/Contact
+    Untick Traveller Checkbox
+    Click New Booking
+    Update PNR for EN or GB
+    Verify Message Is Not Displayed In Summary    Remarks Update Failed
+    Book Flight X Months From Now    LHRCDG/BA    01Y1    \    6
+    Book Flight X Months From Now    CDGLHR/BA    01Y1    FQ:NR    6    2
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    ${EMPTY}
+    [Teardown]    Click Clear All
+
+[NB UK] Verify That Routing, Turnaround And High/Low/Charged Fare Fields Are Populate Correctly When Eurostar Route Deal Is Used
+    [Tags]    uat    uk    emea    data_dependent
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Traveller    John
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    QQSXPG    01J1    \    2
+    Book Flight X Months From Now    XPGQQS    01J1    FQ-THAL01    2    2
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Turnaround Value Is Correct    Fare 1    PAR
+    Verify Routing Field Value    QQS-XPG-QQS
+    Verify Charged Fare Is Equal To Total Fare In Galileo    Fare 1
+    [Teardown]    Click Clear All
+
+[NB UK] Verify That Z Status Fare Details Are Correct
+    [Tags]    uat    uk    emea    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Traveller    John
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Contact    John
+    Click Tab In Contact Details    Traveller/Contact
+    Untick Traveller Checkbox
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    NonRef
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking    Tick
+    Click Update PNR
+    Verify Message Is Not Displayed In Summary    Remarks Update Failed
+    Book Flight X Months From Now    NCLAMS/KL    01Y1    \    6
+    Book Flight X Months From Now    AMSICN/KL    01Y1    \    6
+    Book Flight X Months From Now    GMPUSN/KE    01Y1    \    6    3
+    Book Flight X Months From Now    USNGMP/KE    01Y1    \    6    8
+    Book Flight X Months From Now    ICNAMS/KL    01Y1    \    6    13
+    Book Flight X Months From Now    AMSNCL/KL    01Y1    FQ:NR    6    13
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Turnaround Value Is Correct    Fare 1    USN
+    Verify Routing Field Value    NCL-AMS-ICN-GMP-USN-GMP-ICN-AMS-NCL
+    Verify Realised Savings Code Default Value    N1 - CWT Negotiated Fare Accepted
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Verify Class Code Default Value Is Correct    YM - Economy CWT Marked Up Fare
+    [Teardown]    Click Clear All
+
+[NB UK] Verify That Routing And Turnaround Fields Are Populated Correctly And Shell PNR Lines Are Removed
+    [Tags]    uat    uk    emea    data_dependent
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO
+    Set Last Name    Contact
+    Click Create One Time Contact
+    Populate Caller Tab    Walter    Black    63    987654    automation@carlsonwagonlit.com
+    Select Client Account Value    717171 ¦ DC April test ¦ UK-STAFF TEST AUTO
+    Set Last Name    Traveller
+    Click Search Portrait Profile
+    Click Create Traveller Profile
+    Populate Add New Traveller    General    Juan    Dela Cruz    automation@carlsonwagonlit.com    63    12
+    ...    345678    \    test
+    Select Client Account Value    717171 ¦ DC April test ¦ UK-STAFF TEST AUTO
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Book Flight X Months From Now    LHRDUB/EI    01Y1    \    3
+    Book Flight X Months From Now    DUBLHR/EI    01Y1    FQTE-GB:NR    3    3
+    Click Create Shell
+    Get Shell PNR Remark Line
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    *FB1    FBUEB/TESTENDORSEMENT    FBFALL
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Turnaround Value Is Correct    Fare 1    DUB
+    Verify Routing Field Value    LHR-DUB-LHR
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Verify Shell PNR Remark Is Not Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That CC Disclaimer Text Is Present In Itinerary Remarks
+    [Tags]    uk    uat    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Contact    John
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Traveller    John
+    Click Tab In Contact Details    Traveller/Contact
+    Untick Traveller Checkbox
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT/VI************0002/D0625-TRAVELLERCARD2
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    AMSCDG/AF    01Y1    FQ:NR    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}    *RIU
+    Verify Specific Line Is Written In The PNR    ALL FARES QUOTED ARE INCLUDING AIRPORT DEPARTURE
+    Verify Specific Line Is Written In The PNR    AND SECURITY TAXES AND MAY INCLUDE A NONREFUNDABLE
+    [Teardown]
+
+[AB UK] Verify That Charged Fare Is Calculated Correctly
+    [Tags]    uk    uat    emea    valid_fail    DE4940
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify High Fare, Charged Fare, Low Fare and Fee Are Correct
+    [Teardown]    Click Clear All
+
+[AB UK] Verify That Merchant Fee Is Displayed In The Fees Field
+    [Tags]    uk    uat    emea
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Add KDS Remarks    DI.FT-*7311*1KD
+    Get KDS Remark Line Number
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Merchant Fee Is Displayed In The Fees Field
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fee Amount Is The Same Merchant Fee Amount Written In PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Enter DI Remark
+    [Teardown]    Click Clear All
+
+[AB UK] Verify That Low Fare Matches Result Of Low Fare Calculation Entry Using FQBB++-AB Calculation
+    [Tags]    uk    uat    emea
+    Retrieve PNR Details From Galileo    ${current_pnr}    *FFALL
+    Verify Fare Status    G
+    Change Itinerary Flight Date    1    6    10    False
+    Retrieve PNR Details From Galileo    gds_command=*FFALL
+    Verify Fare Status    I
+    Verify Fare Status    G
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Low Fare Calculation Is Correct
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For [AB UK] Verify That Low Fare Matches Result Of Low Fare Calculation Entry Using FQBB++-AB Calculation
+    [Teardown]    Click Clear All
+
+[AB UK] Verify That All Required NPHF And DI Lines Are Present When Itinerary Date Is Modified
+    [Tags]    uk    uat    emea
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Get Filed Fare    1
+    Verify NPHF Lines Are Correct    TEST123    0104    123
+    Verify DI Lines Are Correct    0104    0717171
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That In Air Fare Panel User Can Add Fare Condition Per Line In Semi Flex During New Booking
+    [Tags]    us5328    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo Legacy - Auto ¦ Fare Remarks    AutoLegacy    EmeaTrvlrThree
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    AMSCDG/AF    01Y1    FQ:NR    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Select Fare Restriction    SEMI FLEXIBLE
+    Click Add Changes Button    Fare 1
+    Set Changes Value    Not permitted    Fare 1
+    Set Changes Value    10 percent    Fare 1    2
+    Click Add Cancellation Button    Fare 1
+    Set Cancellation Value    For a fee of    Fare 1
+    Set Cancellation Value    15 percent    Fare 1    2
+    Populate Air Fare Savings Code Using Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    CHANGE OF RESERVATION : NOT PERMITTED
+    Verify Specific Remark Is Written In The PNR    CHANGE OF RESERVATION : 10 PERCENT
+    Verify Specific Remark Is Written In The PNR    CANCELLATION : FOR A FEE OF
+    Verify Specific Remark Is Written In The PNR    CANCELLATION : 15 PERCENT
+
+[AB] Verify That In Air Fare Panel User Can Delete Fare Condition Per Line In Semi Flex During New Booking
+    [Tags]    us5328    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Remove Changes Button    Not permitted    Fare 1
+    Click Remove Cancellation Button    For a fee of    Fare 1
+    Populate Air Fare Savings Code Using Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Remove Changes And Cancellation In Semiflex Fare Condition
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Remark Is Not Written In The PNR    CHANGE OF RESERVATION : NOT PERMITTED
+    Verify Specific Remark Is Not Written In The PNR    CANCELLATION : FOR A FEE OF
+    Verify Specific Remark Is Written In The PNR    CHANGE OF RESERVATION : 10 PERCENT
+    Verify Specific Remark Is Written In The PNR    CANCELLATION : 15 PERCENT
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Realized Savings Control Is Hidden And Not Written In The PNR
+    [Tags]    us5078
+    Open Power Express And Retrieve Profile    ${version}    Test    U002TXC    en-GB    tchua    UK QA Team Galileo
+    Select GDS    Galileo
+    Set Client And Traveler    UK Galileo 1 - SyEx ¦ UK - Galileo Sub1    ARRIESGADO    PAULETTE
+    Select Client Account Using Default Value
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    MANAMS    01Y3    FQS1    6
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Control Object Is Not Visible    ccboRealised_1
+    Verify Control Object Is Not Visible    ccboMissed_1
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    HC- LC- CL-YD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That Merchant Fee Is Displayed In The Fees Field
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Add KDS Remarks    DI.FT-*7311*1KD
+    Get KDS Remark Line Number
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking For [AB UK] Verify That Low Fare Matches Result Of Low Fare Calculation Entry Using FQBB++-AB Calculation
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL    \    \    False
+    Verify Fare Status    G
+    Change Itinerary Flight Date    1    6    10    False
+    Retrieve PNR Details From Travelport    \    *FFALL    \    \    False
+    Verify Fare Status    I
+    Verify Fare Status    G
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Low Fare Calculation Is Correct
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+
+Amend Booking Worfklow For Lowest Carrier Code
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Segmented One Way Flight X Months From Now    HKGSYD/QF    S3    7
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Verify LFCC Field Is Mandatory
+    Set LFCC Field    EK
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    25
+    Populate Fare Tab With Default Values    Fare 2
+    Verify LFCC Field Is Mandatory
+    Set LFCC Field    AA
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    25
+    Populate Fare Tab With Default Values    Fare 3
+    Verify LFCC Field Is Mandatory
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    25
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Worfklow For Lowest Carrier Code If Simultaneous Change Error Is Displayed
+
+Amend Booking Workflow For Correct DI Lines Total Are Written In The PNR For Three Normal Fares
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    LAXPHX/UA    01Y1    FQS3
+    Enter GDS Command    FQS4
+    Enter GDS Command    FQS5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Get Total Of High Fare, Charged Fare And Low Fare For 3 Fare Tabs
+    Click Finish PNR
+
+Amend Booking Workflow For Fare Type ${fare_type1} And ${fare_type2}
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    ${fare_type1}
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    ${fare_type2}
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Enter GDS Command    T.T*
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Fare Type ${fare_type1} And ${fare_type2} If Simultaneous Change Error Is Displayed
+
+Amend Booking Workflow For Itinerary Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    Yes
+    Select Visa Requirement    Required
+    Populate Fare Tab With Default Values    Fare 1
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Set Alternate Fare Amount    10000.01
+    Set Alternate Fare Fare Basis    ACODE
+    Select Fare Restriction    Fully Flexible
+    Click Finish PNR
+
+Amend Booking For Remove Changes And Cancellation In Semiflex Fare Condition
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Remove Changes Button    Not permitted    Fare 1
+    Click Remove Cancellation Button    For a fee of    Fare 1
+    Populate Air Fare Savings Code Using Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Get Credit Card Fee
+    Retrieve PNR Details From Galileo    \    FO1
+    ${cc_fee}    Get Lines Containing String    ${pnr_details}    CC SURCHRG
+    @{cc_fee_source}    Split String    ${cc_fee}
+    Log    ${cc_fee_source[-1]}
+    Set Test Variable    ${credit_card_fee}    ${cc_fee_source[-1]}
+
+Get KDS Remark Line Number
+    Retrieve PNR Details From Galileo    ${current_pnr}    *DI
+    ${kds_remark_number}    Get Line Number In PNR Remarks    FREE TEXT-*7311*1KD
+    Set Test Variable    ${kds_remark_number}
+
+Get Low Fare Amount From Galileo
+    [Arguments]    ${low_fare_quote}
+    Retrieve PNR Details From Galileo    \    ${low_fare_quote}
+    ${gds_low_fare_line}    Get Lines Containing String    ${pnr_details}    GRAND TOTAL INCLUDING TAXES ****
+    @{low_fare_source_line}    Split String    ${gds_low_fare_line}
+    Log    ${low_fare_source_line[-1]}
+    Set Test Variable    ${gds_low_fare}    ${low_fare_source_line[-1]}
+
+Verify Charged Fare Is Equal To Total Fare In Galileo
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Total Fare From Galileo    ${fare_tab}    1
+    Verify Charged Fare Field Value    ${total_fare_${fare_tab_index}}
+    Verify High Fare Field Value    ${total_fare_${fare_tab_index}}
+    Verify Low Fare Field Value    ${total_fare_${fare_tab_index}}
+
+Verify DI Lines Are Correct
+    [Arguments]    ${external_system_parameter_value}    ${client_account_number}
+    Retrieve PNR Details From Galileo    ${current_pnr}    *DI
+    Verify Specific Line Is Written In The PNR    FREE TEXT-*${external_system_parameter_value}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-*0106*${client_account_number}
+
+Verify Fare Status
+    [Arguments]    ${fare_status}
+    Verify Specific Line Is Written In The PNR    P1.*ADT.*${fare_status}    True
+
+Verify Fee Amount Is The Same Merchant Fee Amount Written In PNR
+    ${fee_amount}    Get Fees Value    Fare 1
+    Retrieve PNR Details From Galileo    ${current_pnr}    *NPHF
+    Verify Specific Line Is Written In The PNR    HF\\*MERCHANT FEES-${fee_amount}    true
+
+Verify High Fare, Charged Fare, Low Fare and Fee Are Correct
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get Fees Fare Value    Fare 1
+    Add Fees To High Fare, Charged Fare And Low Fare
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written    Fare 1
+    Get Credit Card Fee
+    Verify Fees Value Is Correct    Fare 1    ${credit_card_fee}
+
+Verify Low Fare Calculation Is Correct
+    Get Low Fare Value
+    Get Low Fare Amount From Galileo    FQBB++-AB
+    Should Be Equal As Numbers    ${low_fare_amount}    ${gds_low_fare}
+
+Verify NPHF Lines Are Correct
+    [Arguments]    ${backoffice_id}    ${external_system_parameter_value}    ${consultant_id}    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Retrieve PNR Details From Galileo    ${current_pnr}    *NPHF
+    Verify Specific Line Is Written In The PNR    PCC-${backoffice_id} AG-${consultant_id}
+    Verify Specific Line Is Written In The PNR    ${external_system_parameter_value}-${backoffice_id}/0107-${consultant_id}
+
+Verify Passport And Visa Information Is Written On Top Of The Itinerary Quote Remarks In The PNR
+    [Arguments]    ${country}
+    ${itinerary_quote_header}    Set Variable If    "${country.upper()}" == "NZ" or "${country.upper()}" == "AU"    ************* ITINERARY QUOTE ***************    ************* ITINERARY QUOTE PER PASSENGER ***********
+    ${itinerary_quote_line_num}    Get Line Number In PNR Remarks    ${itinerary_quote_header}
+    ${pspt_visa_line_num}    Get Line Number In PNR Remarks    ********** PASSPORT AND VISA INFORMATION **********
+    Run Keyword If    ${pspt_visa_line_num}< ${itinerary_quote_line_num}    Log    Passport and Visa remarks is written on top of the itinerary quote
+    ...    ELSE    Fail    Passport and Visa remarks should be written on top of the itinerary quote
+
+Verify Unnecessary Itinerary Remarks Are Not Written In The PNR
+    Run Keywords    Verify Text Does Not Contain Value    ${pnr_details}    ROUTING : SIN TO SYD
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    HIGH FARE : SGD*
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    CHARGED FARE : SGD*.
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    LOWEST FARE : SGD*.
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    SAVINGS ACHIEVED VS HIGH FARE SGD0.00
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    SAVINGS MISSED VS LOWEST FARE SGD0.00
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    MAIN RESTRICTIONS:
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    CHANGE OF RESERVATION : SCHEDULE CHANGE PERMITTED FREE OF CHARGE
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    MINIMUM STAY : NO MINIMUM STAY
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    MAXIMUM STAY : ONE YEAR
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    THIS FARE WILL BE ISSUED AS AN TESTQW
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    *TLXL*TICKETING DATE NOT SET CONFIRM BY
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    ALL FARES QUOTED ARE INCLUDING AIRPORT DEPARTURE
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    AND SECURITY TAXES. FARES ARE NOT GUARANTEED UNTIL
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    YOUR TICKET HAS BEEN ISSUED.
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    ONCE YOUR TICKETS HAVE BEEN ISSUED PLEASE PRINT AN E TICKET
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    RECEIPT VIA THE LINK ON WWW.VIEWTRIP.COM
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    THIS CAN BE USED AS PROOF OF TICKET ISSUE IF REQUESTED
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    USE YOUR FQTV OR CREDIT CARD TO IDENTIFY YOUR BOOKING
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    TO THE E TKT MACHINE OR CHECK IN AGENT AT THE AIRPORT
+
+Get Filed Fare
+    [Arguments]    ${segment_number}    ${current_pnr}=${EMPTY}    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Retrieve PNR Details From Galileo    \    *FF${segment_number}
+    ${filed_fare_line} =    Get Lines Containing String    ${pnr_details}    FARE${SPACE}
+    @{filed_fare_line_split}    Split String    ${filed_fare_line.strip()}    ${SPACE}
+    ${filed_fare} =    Remove All Non-Integer (retain period)    ${filed_fare_line_split[1]}
+    Set Suite Variable    ${filed_fare}
+    Set Suite Variable    ${filed_fare_${fare_tab_index}}    ${filed_fare}
+    Set Suite Variable    ${currency_and_filed_fare_${fare_tab_index}}    ${filed_fare_line_split[1]}
+    [Return]    ${filed_fare}
+
+Enter DI Remark
+    : FOR    ${INDEX}    IN RANGE    5
+    \    Enter GDS Command    I    *${current_pnr}    DI.${kds_remark_number}@    R.CWTPTEST    ER
+    \    ${clip}    Get Clipboard Data
+    \    ${is_simult}    Run Keyword And Return Status    Should Contain    ${clip}    SIMULT
+    \    Exit For Loop If    ${is_simult} == False
+
+Add Fees To High Fare, Charged Fare And Low Fare
+    ${result}    Evaluate    ${high_fare_${fare_tab_index}} + ${fees_fare_${fare_tab_index}}
+    ${result}    Convert To Decimal With Trailing Zero    ${result}
+    Set Suite Variable    ${high_fare_${fare_tab_index}}    ${result}
+    ${result}    Evaluate    ${charged_fare_${fare_tab_index}} + ${fees_fare_${fare_tab_index}}
+    ${result}    Convert To Decimal With Trailing Zero    ${result}
+    Set Suite Variable    ${charged_fare_${fare_tab_index}}    ${result}
+    ${result}    Evaluate    ${low_fare_${fare_tab_index}} + ${fees_fare_${fare_tab_index}}
+    ${result}    Convert To Decimal With Trailing Zero    ${result}
+    Set Suite Variable    ${low_fare_${fare_tab_index}}    ${result}
+
+Convert To Decimal With Trailing Zero
+    [Arguments]    ${result}
+    ${result}    Convert To Number    ${result}    2
+    ${result}    Evaluate    "%.2f" % ${result}
+    [Return]    ${result}

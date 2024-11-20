@@ -1,0 +1,104 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../complete_verification.txt
+Resource          ../../id_traveller/id_traveller_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Traveller Is Automatically Identified When New Booking, Same Traveller Is Selected With Sponsor
+    [Tags]    US4966
+    Open Power Express And Retrieve Profile    ${version}    Test    U013PXM    en-US    pmonillauk    UK QA Team Galileo
+    Select GDS    Galileo
+    Set Client And Traveler    Citigroup ¦ UK SYEX Sponsor 1    islam    zahid
+    Set Client And Traveler    Citigroup ¦ UK SYEX Sponsor 2    islam    shah
+    Click Tab In Contact Details    Traveller/Contact
+    Tick Sponsor Checkbox
+    Select Client Account    2 ¦ HORIZON HARMONY TEST ACCOUNT ¦ UK SYEX Sponsor 1
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    TVLTYPE    ${EMPTY}
+    Set CDR Value    REV/NONR    ${EMPTY}
+    Set CDR Value    NOHTLCD    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Book Active Car Segment    ORD    5    1    5    2    ZI
+    ...    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Populate Car Panel
+    Populate Delivery Panel With Default Values
+    Click Panel    Car
+    Click Finish PNR
+    Delete Current Specific Log File    SyExPerfLog
+    Complete.Click Clear All New Booking Same Traveller
+    Verify Result After Clear All
+    Click Tab In Contact Details    Traveller
+    Click Given Object Using Coords    [NAME:btnRemoveProfile]
+    Untick Sponsor Checkbox
+    Tick Contact Checkbox
+    Tick Traveler Checkbox
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    ORDMSP/UA    01Y1    FQ    6
+    Click Readbooking
+    Click Clear All
+    [Teardown]
+
+[AB] Verify That Traveller Is Automatically Identified When New Booking, Same Traveller Is Selected With Sponsor
+    [Tags]    US4966
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    TVLTYPE    ${EMPTY}
+    Set CDR Value    REV/NONR    ${EMPTY}
+    Set CDR Value    NOHTLCD    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking
+    Delete Current Specific Log File    SyExPerfLog
+    Complete.Click Clear All New Booking Same Traveller
+    Verify Result After Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Result After Clear All
+    Verify Application Usage Additional Information Was Logged    New Booking - Same Traveler
+    Verify Logs
+    Comment    Verify First Name Is Correct    Sponsor/Contact    Zahid
+    Verify First Name Is Correct    Traveller    shah
+
+Verify Application Usage Additional Information Was Logged
+    [Arguments]    ${actual_application_usage_additionalinfo}
+    Set Test Variable    ${schema}    ApplicationUsage_Test
+    ${username}    Get UserName
+    Set Test Variable    ${sql_query}    SELECT top 1 b.*, a.ComputerName, a.ApplicationUsageDate, a.AdditionalInformation FROM APPLICATIONUSAGE a join applicationevent b on b.applicationeventid = a.applicationeventid \ WHERE a.COMPUTERNAME like '%${username}%' ORDER BY a.applicationusageid DESC
+    Verify Correct Value Is Reflected In OTT Table    4    ${actual_application_usage_additionalinfo}
+
+Verify Logs
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.ClearAll.NewBookingSameTraveler
+    Verify Entry Is Not Present In Perf Log File    R.ZAHID ISLAM¦44-124512455
+    Verify Entry Is Not Present In Perf Log File    REALL
+    Verify Entry Is Not Present In Perf Log File    RB.ALL@
+    Verify Entry Is Not Present In Perf Log File    T.@
+    Verify Entry Is Not Present In Perf Log File    *PI
+
+Populate Car Panel
+    Click Panel    Car
+    Select Value From Dropdown List    [NAME:cbRealisedSaving]    Y - Car booked by online booking tool
+    Select Value From Dropdown List    [NAME:cbMissedSaving]    R - Preferred supplier not in city
+    Select Value From Dropdown List    [NAME:cbPaymentType]    R - Referral
+
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    TVLTYPE    ${EMPTY}
+    Set CDR Value    REV/NONR    ${EMPTY}
+    Set CDR Value    NOHTLCD    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR

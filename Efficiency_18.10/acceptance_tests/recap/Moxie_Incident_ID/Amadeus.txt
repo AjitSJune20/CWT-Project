@@ -1,0 +1,111 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../recap_verification.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+[1A CA][NB] Verify That Moxie Remarks Is Updated With The New Value When The Moxie Incident Number Is Updated
+    [Tags]    ca    us6815
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    DENLAX/AUA    SS1Y1    FXP    6
+    Enter GDS Command    RMJ/MOXIE INCIDENT ID-123456789
+    Click Read Booking
+    Click Panel    Recap
+    Verify That Moxie ID Field Is Pre-Populated With Correct Value    123456789
+    Set Moxie Incident ID Field Value    987654321
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Moxie Remark Is Written Correct In The PNR    987654321
+
+[1A CA][AB] Verify That Moxie Remarks Is Updated With The New Value When The Moxie Incident Number Is Updated
+    [Tags]    ca    us6815
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Recap
+    Verify That Moxie ID Field Is Pre-Populated With Correct Value    987654321
+    Set Moxie Incident ID Field Value    1122334455
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Moxie Remark Is Written Correct In The PNR    1122334455
+
+[1A CA][SI] Verify That Moxie Remarks Is Updated With The New Value When The Moxie Incident Number Is Updated
+    [Tags]    ca    us6815
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Recap
+    Click Panel    Recap
+    Verify That Moxie ID Field Is Pre-Populated With Correct Value    1122334455
+    Set Moxie Incident ID Field Value    222333444
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Moxie Remark Is Written Correct In The PNR    222333444
+
+[1A CA][CB] Verify That Moxie Remarks Is Updated With The New Value When The Moxie Incident Number Is Updated
+    [Tags]    ca    us6815
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Recap
+    Click Panel    Recap
+    Verify That Moxie ID Field Is Pre-Populated With Correct Value    222333444
+    Set Moxie Incident ID Field Value    555666777
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Moxie Remark Is Written Correct In The PNR    555666777
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A CA][NB AB] Verify That Moxie Remark Is Removed From PNR When The Moxie Incident Number Is Removed In The Recap Panel
+    [Tags]    ca    us6815
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Book Flight X Months From Now    DENLAX/AUA    SS1Y1    FXP    6
+    Enter GDS Command    RMJ/MOXIE INCIDENT ID-123456789
+    Click Read Booking
+    Click Panel    Recap
+    Verify That Moxie ID Field Is Pre-Populated With Correct Value    123456789
+    Set Moxie Incident ID Field Value    987654321
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Moxie Remark Is Written Correct In The PNR    987654321
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Recap
+    Verify That Moxie ID Field Is Pre-Populated With Correct Value    987654321
+    Set Moxie Incident ID Field Value    ${EMPTY}
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Moxie Remark Is Not Written In The PNR    1122334455
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Moxie Remark Is Written Correct In The PNR
+    [Arguments]    ${id_value}
+    Verify Specific Line Is Written In The PNR    RMJ MOXIE INCIDENT ID-${id_value}
+
+Verify That Moxie ID Field Is Pre-Populated With Correct Value
+    [Arguments]    ${id_value}
+    Verify Control Object Text Contains Expected Value    [NAME:ctxtMoxieIncidentId]    ${id_value}
+
+Set Moxie Incident ID Field Value
+    [Arguments]    ${id_value}
+    Set Control Text Value    [NAME:ctxtMoxieIncidentId]    ${id_value}
+
+Verify Moxie Remark Is Not Written In The PNR
+    [Arguments]    ${id_value}
+    Verify Specific Line Is Not Written In The PNR    RMJ MOXIE INCIDENT ID-${id_value}

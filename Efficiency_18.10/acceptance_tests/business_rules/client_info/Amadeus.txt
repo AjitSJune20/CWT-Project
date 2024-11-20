@@ -1,0 +1,172 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../business_rules_verification.txt
+Resource          ../../id_traveller/id_traveller_verification.txt
+
+*** Test Cases ***
+[NB CA] Verify That the Rules Are Applying If the FOP Selected in the UI is Credit Card
+    [Tags]    amadeus    us6226    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Business Rules    AutoOneEighteen    TestThree
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1229
+    Click Panel    Cust Refs
+    Verify CDR Is Mandatory    APPROVER
+    Verify CDR Is Not Visible    BUS.UNIT
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    DENLAX/AUA    SS1Y1    FXP    6
+    Click Read Booking
+    Comment    Click Panel    Cust Refs
+    Comment    Verify CDR Is Mandatory    APPROVER
+    Comment    Verify CDR Is Not Visible    BUS.UNIT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[AB CA] Verify That the Rules Are Applying If the FOP in the UI is Changed to another Credit Card
+    [Tags]    amadeus    us6226    ca
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4012888888881881    1025
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value Is Correct    DEPTNAME    AAA
+    Verify CDR Is Disabled And Text Value Is Correct    EMPLY.ID    111
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend FOP from CC to CC
+    Execute Simultaneous Change Handling    Amend FOP from CC to CC
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    X-US6226
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That the Rules Are Applying If the FOP Selected in the UI is Invoice
+    [Tags]    amadeus    us6226    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Business Rules    AutoOneEighteen    TestThree
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Panel    Cust Refs
+    Verify CDR Is Not Visible    CAREER.L
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    DENLAX/AUA    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    INV-US6226
+
+[AB CA] Verify That the Rules Are Applying If the FOP in the UI is Changed from Invoice to Credit Card
+    [Tags]    amadeus    us6226    ca
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1229
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Mandatory    APPROVER
+    Verify CDR Is Not Visible    BUS.UNIT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend FOP from Invoice to CC
+    Execute Simultaneous Change Handling    Amend FOP from Invoice to CC
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Not Written In The PNR    INV-US6226
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That the Rules Are Applying If the FOP Line in the PNR is Credit Card
+    [Tags]    amadeus    us6226    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Business Rules    AutoOneEighteen    TestThree
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4900000000000003    1221
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    DENLAX/AUA    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value Is Correct    ALINE.BUS    A33
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[AB CA] Verify That the Rules Are Applying If the FOP Line in the PNR is Changed to another Credit Card
+    [Tags]    amadeus    us6226    ca
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4900000000000086    1122
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend FOP Line to Credit Card
+    Execute Simultaneous Change Handling    Amend FOP Line to Credit Card
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    X-6226
+    [Teardown]
+
+[AB CA] Verify That the Rules Are Applying If the FOP Line in the PNR is from Credit Card to Invoice
+    [Tags]    amadeus    us6226    ca
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Not Visible    BASE.LOC
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend FOP from CC to Invoice
+    Execute Simultaneous Change Handling    Amend FOP from CC to Invoice
+    Retrieve PNR Details From Amadeus
+    Verify Specific Line Is Written In The PNR    X-INVOICE
+    Verify Specific Line Is Not Written In The PNR    X-6226
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend FOP Line to Credit Card
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4900000000000086    1122
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend FOP Line to Credit Card
+
+Amend FOP from CC to Invoice
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Not Visible    BASE.LOC
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend FOP from CC to Invoice
+
+Amend FOP from Invoice to CC
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1229
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Mandatory    APPROVER
+    Verify CDR Is Not Visible    BUS.UNIT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend FOP from Invoice to CC
+
+Amend FOP from CC to CC
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4012888888881881    1025
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value Is Correct    DEPTNAME    AAA
+    Verify CDR Is Disabled And Text Value Is Correct    EMPLY.ID    111
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend FOP from CC to CC

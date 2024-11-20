@@ -1,0 +1,127 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    sabre
+Resource          ../business_rules_verification.txt
+Resource          ../../policy_check/policy_check_verification.txt
+Resource          ../../../resources/common/global_resources.txt
+
+*** Test Cases ***
+[1S NORAM][NB] Verify That A Business Rule For Policy Check Panel Displayed An Approver Pop-up For Out Of Policy Country
+    [Tags]    US5588
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 1 - SyEx ¦ US4684    Castro    Radha
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Ref
+    Update PNR for EN or GB
+    Book Flight X Months From Now    AUHLHR‡EY    01Y1    WPRQ    6    1
+    Click Read Booking
+    Verify Window Exists    ETL Approver
+    Set Value In Pop Up    ETL Approver    NV
+    Wait Until Progress Info is Completed
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Click Panel    Policy Check
+    Verify Policy Name Is Displayed    Country
+    Verify Policy Panel Is Displayed And Status Is Correct    Air Vendor    Etihad Airways Risk    NV - Not going to affected area
+    Retrieve PNR Details From Sabre Red
+    Enter Command In Native GDS    XI    PQD-ALL
+    Book Flight X Months From Now    MSPORD‡UA    01Y1    WPRQ    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red
+
+[1S NORAM][AB]Verify That A Business Rule For Transactional CDRs Pre-populate The Field in Policy Check Panel And Displayed Mandatory
+    [Tags]    US5588
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Retrieve PNR Details From Sabre Red
+    Enter Command In Native GDS    XI    PQD-ALL
+    Book Flight X Months From Now    CDGLHR‡AF    01Y1    \    6    1
+    Book Flight X Months From Now    LHRCDG‡AF    01Y1    WPRQ    6    1
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    T-Booking Date    091017
+    Click Panel    Policy Check
+    Verify Policy Name Is Displayed    Country
+    Verify Policy Panel Is Displayed And Status Is Correct    Country    France Risk    NV - Not going to affected area
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S NORAM][NB] Verify That A Business Rule For Policy Check Panel With Values Enabled And Pre-populate The Field in Cust Ref Panel And Displayed Mandatory Upon Read Booking
+    [Tags]    policy check    sabre    us5588
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ US4684    AutoSeventeenTwo    ApacTvlrOne
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    AUHLHR    01Y1    WPRQ    6
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Visible    T-Booking Date
+    Verify CDR Is Mandatory    T-Supervisor
+    Verify CDR Value Is Correct    T-Booking Date    092017
+    Enter GDS Command    FQD-ALL    XI
+    Book Flight X Months From Now    MSPORD    01Y1    WPRQ    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[1S NORAM][AB] Verify That A Business Rule For Policy Check Panel Without Values Disabled And Hidden The Field In Cust Ref Panel Upon Read Booking
+    [Tags]    policy check    sabre    us5588
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Enter Specific Command On Native GDS    FQD-ALL    XI
+    Book Flight X Months From Now    AUHLHR    01Y1    WPRQ    6
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Cust Refs
+    Verify CDR Field Is Not Visible    T-Supervisor
+    Enter Specific Command On Native GDS    FQD-ALL    XI
+    Book Flight X Months From Now    MSPORD    01Y1    WPRQ    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Re-Execute Verify That A Business Rule For Policy Check Panel Without Values Disabled And Hidden The Field In Cust Ref Panel Upon Read Booking
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Re-Execute Verify That A Business Rule For Policy Check Panel Without Values Disabled And Hidden The Field In Cust Ref Panel Upon Read Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Enter Specific Command On Native GDS    FQD-ALL    XI
+    Book Flight X Months From Now    AUHLHR    01Y1    WPRQ    6
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Cust Refs
+    Verify CDR Field Is Not Visible    T-Supervisor
+    Enter Specific Command On Native GDS    FQD-ALL    XI
+    Book Flight X Months From Now    MSPORD    01Y1    WPRQ    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Verify CDR Is Mandatory
+    [Arguments]    ${cdr_name}
+    ${cdr_dict}    Determine CDR Description And Index
+    ${cdr_index} =    Get From Dictionary    ${cdr_dict}    ${cdr_name}
+    Verify Control Object Field Is Mandatory    [NAME:ctxtCDRValue${cdr_index}]
+
+Verify Policy Panel Is Displayed And Status Is Correct
+    [Arguments]    ${policy_name}    ${policy_reason}    ${expected_policy_status}
+    Verify Control Object Is Visible    [NAME:grpPolicyCheck]
+    Verify Control Object Is Visible    [NAME:tlpPolicyCheck]
+    ${policy_status_row_number}    Get Policy Status Row Number    ${policy_name}    ${policy_reason}
+    ${actual_policy_status}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:ccboPolicyStatus${policy_status_row_number}]
+    Should Be Equal As Strings    ${expected_policy_status}    ${actual_policy_status}
+    [Teardown]    Take Screenshot

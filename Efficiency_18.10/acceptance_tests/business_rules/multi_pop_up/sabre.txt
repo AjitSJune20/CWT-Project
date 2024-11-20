@@ -1,0 +1,25 @@
+*** Settings ***
+Resource          ../business_rules_verification.txt
+Resource          ../../../resources/panels/multi_pop_up.txt
+
+*** Test Cases ***
+[1S NORAM] Verify That Nested Inputs From Business Rules Popup Are Written Into The PNR
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4619 SU01    AUTOSEVENTEENNINE    TRAVONE
+    Select PCC/CompanyProfile/TravellerProfile    U1S2E ¦ Sabre 2 - SyEx ¦ US4619 SU01
+    Click New Booking
+    Verify Window Exists    Preliminary Questions
+    Set Value In Pop Up    Preliminary Questions    International
+    Set Multi Popup Textbox    2    CWTPH    Preliminary Questions
+    Click Multi Popup OK Button    Preliminary Questions
+    Set Multi Popup Textbox    3    NORTHWEST AIRLINES    Preliminary Questions
+    Click Multi Popup OK Button    Preliminary Questions
+    Populate All Panels (Except Given Panels If Any)    Cust Ref
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MSPORD‡UA    01Y1    WPRQ    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red
+    Verify Specific Remark Is Written In The PNR    THIS IS A VERY SPECIAL FLIGHT

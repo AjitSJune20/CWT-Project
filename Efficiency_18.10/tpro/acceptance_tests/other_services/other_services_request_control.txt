@@ -1,0 +1,48 @@
+*** Settings ***
+Resource          ../../../acceptance_tests/gds/gds_verification.txt
+
+*** Keywords ***
+Convert Date To GDS Format For India
+    [Arguments]    ${date_dd/mmm/yyyy}
+    [Documentation]    Sample Input: \ 09/Sep/2018
+    ...    SAmple Output: 09SEP18
+    ${date}    Split String    ${date_dd/mmm/yyyy}    /
+    ${day}    Get From List    ${date}    0
+    ${len}    Get Length    ${day}
+    ${day}    Set Variable If    ${len}==1    0${day}    ${day}
+    ${month}    Get From List    ${date}    1
+    ${month}    Convert To Uppercase    ${month}
+    ${year}    Get From List    ${date}    2
+    ${year}    Get Substring    ${year}    -2
+    ${date}    Convert To String    ${day.strip()}${month.strip()}${year.strip()}
+    Set Suite Variable    ${date}
+    ${date_dd_mmm}    Convert To String    ${day.strip()}${month.strip()}
+    Set Suite Variable    ${date_dd_mmm}
+
+Get Request Tab Field Values When Product Is Visa
+    [Arguments]    ${product}    ${identifier}
+    [Documentation]    Use this keyword to get all Request field values for the following Products: Visa Fee, Visa DD or Visa Handling Fee
+    Wait Until Control Object Is Visible    [NAME:OtherServicesTabControl]
+    Get Product
+    Get Vendor
+    Get Document
+    Get Country In Request
+    Get Doc Type
+    Get Date Of Application
+    Get Internal Remarks
+    Get Entries
+    Get Validity
+    Get Validity UOM
+    Get Processing Type
+    Run Keyword If    "${product.lower()}"=="visa handling fee"    Get Demand Draft Required
+    Run Keyword If    "${product.lower()}"=="visa handling fee"    Get Demand Draft Number
+    Run Keyword If    "${product.lower()}"=="visa handling fee"    Get Validity Custom Field
+    @{custom_fields}    Run Keyword If    "${product.lower()}"=="visa handling fee"    Create List    ${demand_draft_required}    ${demand_draft_number}    ${validity_custom_field}
+    ...    ELSE    Create List    ${EMPTY}
+    Log    Creating list ...
+    @{visa}    Create List    ${product}    ${vendor}    ${document}    ${country_visa}    ${doc_type}
+    ...    ${date_of_application}    ${internal_remarks}    ${entries}    ${validity}    ${validity_uom}    ${processing_type}
+    ${visa_collection}    Combine Lists    ${visa}    ${custom_fields}
+    ${visa_collection}    Remove Empty Value From List    ${visa_collection}
+    Set Suite Variable    ${visa_collection${identifier}}    ${visa_collection}
+    Log    ${visa_collection${identifier}}

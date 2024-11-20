@@ -1,0 +1,81 @@
+*** Settings ***
+Force Tags        visa_handling
+Resource          ../../../../acceptance_tests/gds/gds_verification.txt
+Resource          ../other_services.txt
+Resource          ../other_services_visa_processing_country_control.txt
+Resource          ../other_services_remarks_verification.txt
+
+*** Test Cases ***
+[NB OS] Verify That Visa Handling Behave Correctly In Other Services Panel And Written In The PNR When FOP Type Is CX
+    [Tags]    us466
+    Create PNR Using Cash As FOP
+    Click Other Services
+    Select Product And Vendor    Visa Handling Fee    Carlson Wagonlit GST
+    Populate Service Info Cost Details    Vendor Contact    800.00    1000.00
+    Select Form Of Payment (FOP) Value    Credit Card (CX)
+    Populate Credit Card Details    4444333322221111    VI    12    2026
+    Get Other Services Form Of Payment Details
+    Get Other Services Cost Details
+    Compute Other Services Fees    7    2    false    false    country=SG
+    Verify Computation For Commision, GST Value, Merchant Fee ANd Total Selling Price
+    Tick CWT Absorb Checkbox For GST
+    Compute Other Services Fees    7    2    true    false    country=SG
+    Get Other Services Cost Details
+    Verify Computation For Commision, GST Value, Merchant Fee ANd Total Selling Price
+    Untick CWT Absorb Checkbox For GST
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    7    2    false    true    country=SG
+    Get Other Services Cost Details
+    Verify Computation For Commision, GST Value, Merchant Fee ANd Total Selling Price
+    Tick CWT Absorb Checkbox For GST
+    Compute Other Services Fees    7    2    true    true    country=SG
+    Get Other Services Cost Details
+    Verify Computation For Commision, GST Value, Merchant Fee ANd Total Selling Price
+    Populate Visa Processing Country Details    Singapore    Other    Single    Month(s)    Normal    0137563466343
+    Set Validity Number    1
+    Set Processing Days    12
+    Set Passenger ID Value    99
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Tab In Other Services Panel    Visa Info
+    Get Other Services Cost Details
+    Get Other Service Visa Processing Country Details
+    Retrieve PNR Details from Amadeus    command=RTY
+    Verify Other Services Visa Handling Accounting General Remarks    Visa Handling Fee    Carlson Wagonlit GST    Credit Card (CX)    SG
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    4444333322221111    VI    12    2026    Credit Card (CX)    SG
+
+[OS] Verify That Visa Handling Behave Correctly In Other Services Panel And Written In The PNR When FOP Type Is Cash Or Invoice
+    [Tags]    us466
+    Click Other Services
+    Select Product And Vendor    Visa Handling Fee    Carlson Wagonlit GST
+    Populate Service Info Cost Details    Vendor Contact    250.00    800.00
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Get Other Services Form Of Payment Details
+    Get Other Services Cost Details
+    Compute Other Services Fees    7    2    country=SG
+    Verify Computation For Commision, GST Value, Merchant Fee ANd Total Selling Price
+    Tick CWT Absorb Checkbox For GST
+    Compute Other Services Fees    7    2    true    false    country=SG
+    Get Other Services Cost Details
+    Verify Computation For Commision, GST Value, Merchant Fee ANd Total Selling Price
+    Populate Visa Processing Country Details    Singapore    Other    Single    Month(s)    Normal    0123456
+    Set Validity Number    1
+    Set Processing Days    12
+    Set Passenger ID Value    99
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Finish PNR    panel=Other Svcs
+    Verify PDF Is Displayed
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Tab In Other Services Panel    Visa Info
+    Get Other Services Cost Details
+    Get Other Service Visa Processing Country Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Visa Handling Accounting General Remarks    Visa Handling Fee    Carlson Wagonlit GST    Credit Card (CX)    SG
+    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***

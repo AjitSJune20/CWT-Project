@@ -1,0 +1,106 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          performance_test_resource.txt
+
+*** Variables ***
+@{travelers_Sabre}    Sabre FR Legacy - Auto ¦ Fare Remarks,AutoLegacy,PerfOne    Sabre FR Legacy - Auto ¦ Fare Remarks,AutoLegacy,PerfTwo    Sabre FR Legacy - Auto ¦ Fare Remarks,AutoLegacy,PerfThree    Sabre FR Legacy - Auto ¦ Fare Remarks,AutoLegacy,PerfFour    Sabre FR Legacy - Auto ¦ Fare Remarks,AutoLegacy,PerfFive    Sabre FR Legacy - Auto ¦ Fare Remarks,AutoLegacy,PerfSix    Sabre FR Legacy - Auto ¦ Fare Remarks,AutoLegacy,PerfSeven
+...               Sabre FR Legacy - Auto ¦ Fare Remarks,AutoLegacy,PerfEight    Sabre FR Legacy - Auto ¦ Fare Remarks,AutoLegacy,PerfNine    Sabre FR Legacy - Auto ¦ Fare Remarks,AutoLegacy,PerfTen
+@{city_pairs_Sabre}    MNLDXB    DXBMNL    MNLDXB    DXBMNL    MNLDXB    DXBMNL    MNLDXB
+...               DXBMNL    MNLDXB    DXBMNL
+
+*** Test Cases ***
+Set Performance Test Variables
+    Set Suite Variable    ${start_time}    ${EMPTY}
+    Set Suite Variable    ${end_time}    ${EMPTY}
+    Set Suite Variable    ${time}    ${EMPTY}
+    Set Suite Variable    ${converted_time}    ${EMPTY}
+    Set Suite Variable    ${client}    ${EMPTY}
+    Set Suite Variable    ${trav_last_name}    ${EMPTY}
+    Set Suite Variable    ${trav_first_name}    ${EMPTY}
+    Set Suite Variable    ${simultaneous_changes}    ${EMPTY}
+    Set Suite Variable    ${city_pair}    ${EMPTY}
+    Set Suite Variable    ${temp_pnr}    ${EMPTY}
+    ${pnr_list} =    Create List
+    Set Suite Variable    ${pnr_list}
+    ${list_set_client_traver}=    Create List
+    Set Suite Variable    ${list_set_client_traver}
+    ${list_new_booking}=    Create List
+    Set Suite Variable    ${list_new_booking}
+    ${list_update_pnr} =    Create List
+    Set Suite Variable    ${list_update_pnr}
+    ${list_read_booking_new}=    Create List
+    Set Suite Variable    ${list_read_booking_new}
+    ${list_read_booking_amend}=    Create List
+    Set Suite Variable    ${list_read_booking_amend}
+    ${list_finish_pnr_new}=    Create List
+    Set Suite Variable    ${list_finish_pnr_new}
+    ${list_finish_pnr_amend}=    Create List
+    Set Suite Variable    ${list_finish_pnr_amend}
+    ${list_finish_pnr_si}=    Create List
+    Set Suite Variable    ${list_finish_pnr_si}
+    ${list_finish_pnr_cancel}=    Create List
+    Set Suite Variable    ${list_finish_pnr_cancel}
+    ${list_amend_booking}=    Create List
+    Set Suite Variable    ${list_amend_booking}
+    ${list_send_itin}=    Create List
+    Set Suite Variable    ${list_send_itin}
+    ${list_cancel_booking}=    Create List
+    Set Suite Variable    ${list_cancel_booking}
+
+Performance Test - Sabre
+    [Documentation]    Documentation for other required steps to be documented here.
+    ...
+    ...    <TODO>
+    ...    1. Document Performance Monitor steps
+    ...
+    ...
+    ...
+    ...    SQL Query for retireving execution times:
+    ...
+    ...    use ApplicationUsage_Test
+    ...    go
+    ...
+    ...    select au.ApplicationUsageId, ApplicationEventDescription, StartTime, EndTime, ActualTime, *
+    ...    from ApplicationUsage au
+    ...    join ApplicationUsageDetail aud on aud.applicationusageid = au.applicationusageid
+    ...    join ApplicationEvent ae on ae.ApplicationEventId = au.ApplicationEventId
+    ...    where ComputerName = '<<Machine Name>>'
+    ...    and ApplicationUsageDate > '<<Start Time>>'
+    ...    and ApplicationUsageDate < '<<End Time>>'
+    ...    and ApplicationVersion = '<<version>>'
+    ...    order by aud.StartTime
+    [Tags]    performance_tests
+    Performance - Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    : FOR    ${INDEX}    IN RANGE    0    10
+    \    Get Client And Traveler    Sabre    ${INDEX}
+    \    Get City Pair    Sabre    ${INDEX}
+    \    Performance - Create New Booking With One Way Flight Using Default Values    ${client}    ${trav_last_name}    ${trav_first_name}    ${city_pair}    sabre
+    \    ...    ${EMPTY}    Air Fare
+    \    Populate Fare Tab With Default Values    Fare 1
+    \    Comment    Select Panel    Client Info
+    \    Comment    Tick Not Known At Time Of Booking For Form Of Payment
+    \    Comment    Comment    Select Form Of Payment    Cash
+    \    Performance - Click Finish PNR    Finish PNR From New Booking    ${list_finish_pnr_new}
+    \    Append PNR To PNR list
+    \    Click Clear All
+    : FOR    ${pnr}    IN    @{pnr_list}
+    \    ${temp_pnr}=    Fetch From Right    ${pnr}    ,
+    \    Set Suite Variable    ${current_pnr}    ${temp_pnr}
+    \    Performance - Amend Booking
+    \    Execute Simultaneous Change Handling    Performance - Amend Booking
+    \    Comment    Re-Execute Performance - Amend Booking If Simultaneous Change Error Is Displayed
+    : FOR    ${pnr}    IN    @{pnr_list}
+    \    ${temp_pnr}=    Fetch From Right    ${pnr}    ,
+    \    Set Suite Variable    ${current_pnr}    ${temp_pnr}
+    \    Performance - Send Itinerary
+    \    Execute Simultaneous Change Handling    Performance - Send Itinerary
+    \    Comment    Re-Execute Performance - Send Itinerary If Simultaneous Change Error Is Displayed
+    : FOR    ${pnr}    IN    @{pnr_list}
+    \    ${temp_pnr}=    Fetch From Right    ${pnr}    ,
+    \    Set Suite Variable    ${current_pnr}    ${temp_pnr}
+    \    Performance - Cancel Booking
+    \    Execute Simultaneous Change Handling    Performance - Cancel Booking
+    \    Comment    Re-Execute Performance - Cancel Booking If Simultaneous Change Error Is Displayed
+    Display Average Execution Times

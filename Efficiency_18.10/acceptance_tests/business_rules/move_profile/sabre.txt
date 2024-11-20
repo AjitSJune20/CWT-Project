@@ -1,0 +1,164 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../business_rules_verification.txt
+Resource          ../../complete/complete_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Move Profile Is Successful On Click New Booking - Update PNR
+    [Tags]    us4928
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4619 SU01    AUTOSEVENTEENFIVE    TRAVELERONE
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Comment    Click Panel    Cust Refs
+    Comment    Set CDR Value    T-Matrix DP Code    ${EMPTY}
+    Click Panel    Client Info
+    Click Update PNR
+    Retrieve PNR Details From Sabre Red    \    *R    Until End Of Scroll
+    Verify Specific Line Is Written In The PNR    ‡SOUTHWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Written In The PNR    ‡KIOSK ACCEPTS YOUR RAPID REWARDS CARD OR
+    Verify Specific Line Is Written In The PNR    ‡CREDIT CARD TO BEGIN THE CHECK-IN PROCESS
+    Verify Specific Line Is Written In The PNR    ‡SOUTHWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Written In The PNR    ‡TO ACCRUE MILEAGE ON SOUTHWEST AIRLINES, PLEASE PRESENT
+    Book One Way Flight X Months From Now    DENLAX¥AA    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Message Is Not Displayed In Summary    Error moving profile through Rules Engine
+    Verify Specific Line Is Not Written In The PNR    US4928RMKS01
+    Verify Specific Line Is Written In The PNR    US4928 MODIFIED RMKS 01
+    Verify Specific Line Is Written In The PNR    US4928RMKS02
+    Verify Specific Line Is Written In The PNR    US4928RMKS03
+    [Teardown]
+
+[AB] Verify That Move Profile Is Successful On Read Booking - Finish PNR On Amend Booking
+    [Tags]    us4928
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    \    Until End Of Scroll
+    Verify Specific Line Is Written In The PNR    ‡SOUTHWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Written In The PNR    ‡KIOSK ACCEPTS YOUR RAPID REWARDS CARD OR
+    Verify Specific Line Is Written In The PNR    ‡CREDIT CARD TO BEGIN THE CHECK-IN PROCESS
+    Verify Specific Line Is Written In The PNR    ‡SOUTHWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Written In The PNR    ‡TO ACCRUE MILEAGE ON SOUTHWEST AIRLINES, PLEASE PRESENT
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking For Sabre Move Profile Success If Simultaneous Change Error Is Displayed
+    Verify Message Is Not Displayed In Summary    Error moving profile through Rules Engine
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    ‡SOUTHWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Written In The PNR    ‡KIOSK ACCEPTS YOUR RAPID REWARDS CARD OR
+    Verify Specific Line Is Written In The PNR    ‡CREDIT CARD TO BEGIN THE CHECK-IN PROCESS
+    Verify Specific Line Is Written In The PNR    ‡SOUTHWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Written In The PNR    ‡TO ACCRUE MILEAGE ON SOUTHWEST AIRLINES, PLEASE PRESENT
+    Verify Specific Line Is Written In The PNR    ‡EASTWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Written In The PNR    ‡KIOSK ACCEPTS YOUR RAPID REWARDS CARD OR
+    Verify Specific Line Is Written In The PNR    ‡CREDIT CARD TO BEGIN THE CHECK-IN PROCESS
+    Verify Specific Line Is Written In The PNR    ‡EASTWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Written In The PNR    ‡TO ACCRUE MILEAGE ON EASTWEST AIRLINES, PLEASE PRESENT
+    Verify Specific Line Is Written In The PNR    ‡TO ACCRUE MILEAGE ON EASTWEST AIRLINES, PLEASE PRESENT
+    Verify Specific Line Is Written In The PNR    S0 VALID CONSIDERED BE WILL ITINERARY THIS OR BOOKING
+    Verify Specific Line Is Not Written In The PNR    S0 BOOKING OR THIS ITINERARY WILL BE CONSIDERED VALID
+    Verify Specific Line Is Written In The PNR    S0 VALID CONSIDERED BE WILL ITINERARY THIS OR BOOKING
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Move Profile Is Successful On Read Booking - New Booking
+    [Tags]    us4928
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4619 SU02    AUTOSEVENTEENFIVE    TRAVELERTWO
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Comment    Click Panel    Cust Refs
+    Comment    Set CDR Value    T-Matrix DP Code    ${EMPTY}
+    Click Panel    Client Info
+    Click Update PNR
+    Book One Way Flight X Months From Now    DENLAX¥AA    7
+    Enter GDS Command    5‡US4928SET2RMKS
+    Click Read Booking
+    Set Value In Pop Up    Update Itinerary Remark    US4928SET2RMKS
+    Retrieve PNR Details From Sabre Red    \    *R
+    Verify Specific Line Is Written In The PNR    US4928SET2RMKS
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Verify Message Is Not Displayed In Summary    Error moving profile through Rules Engine
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    ‡NORTHWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Written In The PNR    ‡KIOSK ACCEPTS YOUR RAPID REWARDS CARD OR
+    Verify Specific Line Is Written In The PNR    ‡CREDIT CARD TO BEGIN THE CHECK-IN PROCESS
+    Verify Specific Line Is Written In The PNR    ‡NORTHWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Written In The PNR    ‡TO ACCRUE MILEAGE ON NORTHWEST AIRLINES, PLEASE PRESENT
+    Verify Specific Line Is Written In The PNR    US4928 SET2 RMKS MODIFIED
+    Verify Specific Line Is Not Written In The PNR    US4928SET2RMKS
+    [Teardown]
+
+[AB] Verify That Error Message Is Displayed On Unsuccessful Move Profile
+    [Tags]    us4928
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    \    Until End Of Scroll
+    Verify Specific Line Is Written In The PNR    ‡NORTHWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Written In The PNR    ‡KIOSK ACCEPTS YOUR RAPID REWARDS CARD OR
+    Verify Specific Line Is Written In The PNR    ‡CREDIT CARD TO BEGIN THE CHECK-IN PROCESS
+    Verify Specific Line Is Written In The PNR    ‡NORTHWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Written In The PNR    ‡TO ACCRUE MILEAGE ON NORTHWEST AIRLINES, PLEASE PRESENT
+    Enter GDS Command    PQD-ALL    XI
+    Book One Way Flight X Months From Now    DENLAX¥AA    7
+    Enter Specific Command On Native GDS    5‡US4928SET3RMKS
+    Click Read Booking
+    Set Value In Pop Up    Update Itinerary Remark    US4928SET3RMKS
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking For Sabre Move Profile Error If Simultaneous Change Error Is Displayed
+    Verify Message Is Displayed In Summary    Error moving profile through Rules Engine
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    \    Until End Of Scroll
+    Verify Specific Line Is Written In The PNR    US4928SET3RMKS
+    Verify Specific Line Is Written In The PNR    ‡NORTHWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Written In The PNR    ‡KIOSK ACCEPTS YOUR RAPID REWARDS CARD OR
+    Verify Specific Line Is Written In The PNR    ‡CREDIT CARD TO BEGIN THE CHECK-IN PROCESS
+    Verify Specific Line Is Written In The PNR    ‡NORTHWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Written In The PNR    ‡TO ACCRUE MILEAGE ON NORTHWEST AIRLINES, PLEASE PRESENT
+    Verify Specific Line Is Not Written In The PNR    ‡KANYEWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Not Written In The PNR    ‡KANYEWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Not Written In The PNR    ‡TO ACCRUE MILEAGE ON KANYEWEST AIRLINES, PLEASE PRESENT
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Sabre Move Profile Success
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    \    Until End Of Scroll
+    Verify Specific Line Is Written In The PNR    ‡SOUTHWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Written In The PNR    ‡KIOSK ACCEPTS YOUR RAPID REWARDS CARD OR
+    Verify Specific Line Is Written In The PNR    ‡CREDIT CARD TO BEGIN THE CHECK-IN PROCESS
+    Verify Specific Line Is Written In The PNR    ‡SOUTHWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Written In The PNR    ‡TO ACCRUE MILEAGE ON SOUTHWEST AIRLINES, PLEASE PRESENT
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking For Sabre Move Profile Error
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    \    Until End Of Scroll
+    Verify Specific Line Is Written In The PNR    US4928SET3RMKS
+    Verify Specific Line Is Written In The PNR    ‡NORTHWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Written In The PNR    ‡KIOSK ACCEPTS YOUR RAPID REWARDS CARD OR
+    Verify Specific Line Is Written In The PNR    ‡CREDIT CARD TO BEGIN THE CHECK-IN PROCESS
+    Verify Specific Line Is Written In The PNR    ‡NORTHWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Written In The PNR    ‡TO ACCRUE MILEAGE ON NORTHWEST AIRLINES, PLEASE PRESENT
+    Verify Specific Line Is Not Written In The PNR    ‡KANYEWEST AIRLINES RAPID CHECK-IN SELF-SERVICE
+    Verify Specific Line Is Not Written In The PNR    ‡KANYEWEST AIRLINES DOES NOT PRE-ASSIGN SEATS
+    Verify Specific Line Is Not Written In The PNR    ‡TO ACCRUE MILEAGE ON KANYEWEST AIRLINES, PLEASE PRESENT
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Verify Remarks Update Is Successful
+    Activate Power Express Window
+    Utilities.Verify Control Object Is Visible    [NAME:lvwSummary]
+    Object Exists    ${sikuli_image_path}/remarks_updated.png    0.7    2

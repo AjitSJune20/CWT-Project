@@ -1,0 +1,10 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verify Grid Is Displayed In Associated Charges
+    [Arguments]    ${identifier1}    ${identifier2}
+    Set Suite Variable    ${associated_charges_collection${identifier1.lower()}}
+    Set Suite Variable    ${associated_charges_collection${identifier2.lower()}}
+    ${is_correct}    Run Keyword And Return Status    Lists Should Be Equal    ${associated_charges_collection${identifier1}}    ${associated_charges_collection${identifier2}}
+    Verify Actual Value Matches Expected Value    ${is_correct}    True

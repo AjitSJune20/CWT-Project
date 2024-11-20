@@ -1,0 +1,372 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../gds_verification.txt
+
+*** Test Cases ***
+[NB] Verify That DS V1.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus Legacy - Auto ¦ US485 DS1    AutoLegacy    EmeaTrvlrOneOne    LAXPAR/AAF    \    Pspt and Visa
+    ...    APIS/SFPD
+    Click Panel    Pspt and Visa
+    Add And Select New Passport    2    Passport: Normal    Philippines    11223344    Yes
+    Click Panel    APIS/SFPD
+    Populate Middle Name, Redress Number And Mark Address Checkbox As Not Known    TestA    998877
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMP NAME-EMEATRVLRONEONE/TESTA/AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    RMP DOB-03JAN90/GENDER-M
+    Verify Specific Line Is Written In The PNR    RMP CITIZENSHIP-IN
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-PH:DN-11223344:EX-${expiry_date}:DV-YES:RC-PH
+    Verify Specific Line Is Written In The PNR    RMP REDRESS NUMBER-998877
+    Verify Specific Line Is Not Written In The PNR    DT-8
+    Verify Specific Line Is Not Written In The PNR    RESIDENCY
+    Verify Specific Line Is Written In The PNR    RM *DS FORMAT V1.0
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION@CARLSON.COM
+    Verify Specific Line Is Written In The PNR    APB CTCB*EMEATRVLRONEONE AUTOLEGACY-44-2-2-2
+    Verify Specific Line Is Written In The PNR    APM CTC*EMEATRVLRONEONE AUTOLEGACY-44-1-1-1
+    Verify Specific Line Is Written In The PNR    RMP GUID/CT-A:8BBA9/SU-A:8BBAA/TT-A:60C76/T-B:40C70790
+
+[AB] Verify That DS V1.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Add And Select New Passport    3    Passport: Normal    China    22334455    No
+    Click Panel    APIS/SFPD
+    Populate Middle Name, Redress Number And Mark Address Checkbox As Not Known    TestA    998877
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD
+    Click Finish PNR    Amend Booking Workflow For DS V1.0 Remarks Verification
+    Re-Execute Amend Booking Workflow For DS V1.0 Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMP NAME-EMEATRVLRONEONE/TESTA/AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    RMP DOB-03JAN90/GENDER-M
+    Verify Specific Line Is Written In The PNR    RMP CITIZENSHIP-IN
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-CN:DN-22334455:EX-${expiry_date}:DV-NO:RC-CN
+    Verify Specific Line Is Written In The PNR    RMP REDRESS NUMBER-998877
+    Verify Specific Line Is Not Written In The PNR    DT-8
+    Verify Specific Line Is Not Written In The PNR    RMS DT-13:CZ-PH:DN-11223344:EX-${expiry_date}:DV-YES:RC-PH
+    Verify Specific Line Is Not Written In The PNR    RESIDENCY
+    Verify Specific Line Is Written In The PNR    RM *DS FORMAT V1.0
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION@CARLSON.COM
+    Verify Specific Line Is Written In The PNR    APB CTCB*EMEATRVLRONEONE AUTOLEGACY-44-2-2-2
+    Verify Specific Line Is Written In The PNR    APM CTC*EMEATRVLRONEONE AUTOLEGACY-44-1-1-1
+    Verify Specific Line Is Written In The PNR    RMP GUID/CT-A:8BBA9/SU-A:8BBAA/TT-A:60C76/T-B:40C70790
+
+[SI] Verify That DS V1.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    uk
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Send Itinerary Workflow For DS V1.0 Remarks Verification
+    Re-Execute Send Itinerary Workflow For DS V1.0 Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMP NAME-EMEATRVLRONEONE/TESTA/AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    RMP DOB-03JAN90/GENDER-M
+    Verify Specific Line Is Written In The PNR    RMP CITIZENSHIP-IN
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-CN:DN-22334455:EX-${expiry_date}:DV-NO:RC-CN
+    Verify Specific Line Is Written In The PNR    RMP REDRESS NUMBER-998877
+    Verify Specific Line Is Not Written In The PNR    DT-8
+    Verify Specific Line Is Not Written In The PNR    RMS DT-13:CZ-PH:DN-11223344:EX-${expiry_date}:DV-YES:RC-PH
+    Verify Specific Line Is Not Written In The PNR    RESIDENCY
+    Verify Specific Line Is Written In The PNR    RM *DS FORMAT V1.0
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION@CARLSON.COM
+    Verify Specific Line Is Written In The PNR    APB CTCB*EMEATRVLRONEONE AUTOLEGACY-44-2-2-2
+    Verify Specific Line Is Written In The PNR    APM CTC*EMEATRVLRONEONE AUTOLEGACY-44-1-1-1
+    Verify Specific Line Is Written In The PNR    RMP GUID/CT-A:8BBA9/SU-A:8BBAA/TT-A:60C76/T-B:40C70790
+
+[CB] Verify That DS V1.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    uk
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Cancel Booking Workflow For DS V1.0 Remarks Verification
+    Re-Execute Cancel Booking Workflow For DS V1.0 Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMP NAME-EMEATRVLRONEONE/TESTA/AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    RMP DOB-03JAN90/GENDER-M
+    Verify Specific Line Is Written In The PNR    RMP CITIZENSHIP-IN
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-CN:DN-22334455:EX-${expiry_date}:DV-NO:RC-CN
+    Verify Specific Line Is Written In The PNR    RMP REDRESS NUMBER-998877
+    Verify Specific Line Is Not Written In The PNR    DT-8
+    Verify Specific Line Is Not Written In The PNR    RMS DT-13:CZ-PH:DN-11223344:EX-${expiry_date}:DV-YES:RC-PH
+    Verify Specific Line Is Not Written In The PNR    RESIDENCY
+    Verify Specific Line Is Written In The PNR    RM *DS FORMAT V1.0
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION@CARLSON.COM
+    Verify Specific Line Is Written In The PNR    APB CTCB*EMEATRVLRONEONE AUTOLEGACY-44-2-2-2
+    Verify Specific Line Is Written In The PNR    APM CTC*EMEATRVLRONEONE AUTOLEGACY-44-1-1-1
+    Verify Specific Line Is Written In The PNR    RMP GUID/CT-A:8BBA9/SU-A:8BBAA/TT-A:60C76/T-B:40C70790
+    Verify Specific Line Is Written In The PNR    RIR *FULLCXL**FULLCXL*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    de    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Comment    Emulate PCC    FRAWL22KG
+    Create New Booking With Round Trip Air Flight Using Default Values    Amadeus Legacy - Auto ¦ US485 DS2    AutoLegacy    EmeaTrvlrOneTwo    LAXPAR/AAF    SS1Y1    ${EMPTY}
+    ...    PARLAX/AAF    SS1Y1    FXB    ${EMPTY}    Pspt and Visa    APIS/SFPD
+    Click Panel    Pspt and Visa
+    Add And Select New Passport    2    Passport: Normal    Philippines    11223344    Yes
+    Select Visa Requirement    Required
+    Click Panel    APIS/SFPD
+    Populate Middle Name, Redress Number And Mark Address Checkbox As Not Known    TestA    998877
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMP NAME-EMEATRVLRONETWO/TESTA/AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    RMP DOB-27MAR81/GENDER-M
+    Verify Specific Line Is Written In The PNR    NATID1234
+    Verify Specific Line Is Written In The PNR    RMP CITIZENSHIP-IN
+    Verify Specific Line Is Written In The PNR    RMP REDRESS NUMBER-998877
+    Verify Specific Line Is Written In The PNR    RMP CO-PH/NR-11223344/EX-${passport_date.upper()}
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-PH:DN-11223344:EX-${expiry_date}:DV-YES:RC-PH
+    Verify Specific Line Is Written In The PNR    RMP GUID/CT-A:8BBA9/SU-A:8BBAB
+    Verify Specific Line Is Written In The PNR    RMP GUID/TT-A:60C76/T-B:40C70791
+    Verify Specific Line Is Written In The PNR    RM *DS FORMAT V2.0
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION@CARLSON.COM
+    Verify Specific Line Is Written In The PNR    APB CTCB*EMEATRVLRONETWO AUTOLEGACY-44-2-2-2
+
+[SI] Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    de6123    de    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Send Itinerary Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    Execute Simultaneous Change Handling    Send Itinerary Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMP NAME-EMEATRVLRONETWO/TESTA/AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    RMP DOB-27MAR81/GENDER-M
+    Verify Specific Line Is Written In The PNR    NATID1234
+    Verify Specific Line Is Written In The PNR    RMP CITIZENSHIP-IN
+    Verify Specific Line Is Written In The PNR    RMP REDRESS NUMBER-998877
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-PH:DN-11223344:EX-${expiry_date}:DV-YES:RC-PH
+    Verify Specific Line Is Written In The PNR    RMP GUID/CT-A:8BBA9/SU-A:8BBAB
+    Verify Specific Line Is Written In The PNR    RMP GUID/TT-A:60C76/T-B:40C70791
+    Verify Specific Line Is Written In The PNR    RM *DS FORMAT V2.0
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION@CARLSON.COM
+    Verify Specific Line Is Written In The PNR    APB CTCB*EMEATRVLRONETWO AUTOLEGACY-44-2-2-2
+
+[AB] Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    de6123_valid_fail    de    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    Enter GDS Command    XE3
+    Book One Way Flight X Months From Now    PARLAX/AAF    7
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Add And Select New Passport    3    Passport: Normal    China    22334455    No
+    Click Panel    APIS/SFPD
+    Populate Middle Name, Redress Number And Mark Address Checkbox As Not Known    TestB    998877
+    Populate SFPD Gender    Female
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD
+    Click Finish PNR    Amend Booking Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMP NAME-EMEATRVLRONETWO/TESTA/AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    RMP DOB-27MAR81/GENDER-M
+    Verify Specific Line Is Written In The PNR    NATID1234
+    Verify Specific Line Is Written In The PNR    RMP CITIZENSHIP-IN
+    Verify Specific Line Is Written In The PNR    RMP REDRESS NUMBER-998877
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-CN:DN-22334455:EX-${expiry_date}:DV-NO:RC-CN
+    Verify Specific Line Is Written In The PNR    RMP GUID/CT-A:8BBA9/SU-A:8BBAB
+    Verify Specific Line Is Written In The PNR    RMP GUID/TT-A:60C76/T-B:40C70791
+    Verify Specific Line Is Written In The PNR    RM *DS FORMAT V2.0
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION@CARLSON.COM
+    Verify Specific Line Is Written In The PNR    APB CTCB*EMEATRVLRONETWO AUTOLEGACY-44-2-2-2
+
+[CB] Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    de6123    de    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Cancel Booking Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    Execute Simultaneous Change Handling    Cancel Booking Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RIR *FULLCXL**FULLCXL*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB] Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    de    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Comment    Emulate PCC    FRAWL22KG
+    Create New Booking With Round Trip Air Flight Using Default Values    Amadeus Legacy - Auto ¦ US485 DS3    AutoLegacy    EmeaTrvlrOneThree    LAXPAR/AAF    SS1Y1    ${EMPTY}
+    ...    PARLAX/AAF    SS1Y1    FXB    ${EMPTY}    Pspt and Visa    APIS/SFPD
+    Click Panel    Pspt and Visa
+    Add And Select New Passport    2    Passport: Normal    Philippines    11223344    Yes
+    Select Visa Requirement    Required
+    Click Panel    APIS/SFPD
+    Populate Middle Name, Redress Number And Mark Address Checkbox As Not Known    TestA    998877
+    Get Passport Expiry Date
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMP NAME-EMEATRVLRONETHREE/TESTA/AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    RMP DOB-09JUL75/GENDER-M
+    Verify Specific Line Is Written In The PNR    NATID1234
+    Verify Specific Line Is Written In The PNR    RMT DHS NATIONALITY:IN
+    Verify Specific Line Is Written In The PNR    RMP REDRESS NUMBER-998877
+    Verify Specific Line Is Written In The PNR    RMP CO-PH/NR-11223344/EX-${passport_date.upper()}
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-PH:DN-11223344:EX-${expiry_date}:DV-YES:RC-PH
+    Verify Specific Line Is Written In The PNR    RMP GUID/CT-A:8BBA9/SU-A:8BBAC
+    Verify Specific Line Is Written In The PNR    RM *DS FORMAT V3.0
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION@CARLSON.COM
+    Verify Specific Line Is Written In The PNR    APB CTCB*EMEATRVLRONETHREE AUTOLEGACY-44-2-2-2
+
+[AB] Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    de    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    Enter GDS Command    XE3
+    Book One Way Flight X Months From Now    PARLAX/AAF    7
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Add And Select New Passport    3    Passport: Normal    China    22334455    No
+    Click Panel    APIS/SFPD
+    Populate Middle Name, Redress Number And Mark Address Checkbox As Not Known    TestA    998877
+    Get Passport Expiry Date
+    Populate SFPD Gender    Female
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD
+    Click Finish PNR    Amend Booking Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    Re-Execute Amend Booking Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMP NAME-EMEATRVLRONETHREE/TESTA/AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    RMP DOB-09JUL75/GENDER-M
+    Verify Specific Line Is Written In The PNR    NATID1234
+    Verify Specific Line Is Written In The PNR    RMT DHS NATIONALITY:IN
+    Verify Specific Line Is Written In The PNR    RMP REDRESS NUMBER-998877
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-CN:DN-22334455:EX-${expiry_date}:DV-NO:RC-CN
+    Verify Specific Line Is Written In The PNR    RMP GUID/CT-A:8BBA9/SU-A:8BBAC
+    Verify Specific Line Is Written In The PNR    RM *DS FORMAT V3.0
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION@CARLSON.COM
+    Verify Specific Line Is Written In The PNR    APB CTCB*EMEATRVLRONETHREE AUTOLEGACY-44-2-2-2
+
+[SI] Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    de    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Send Itinerary Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    Execute Simultaneous Change Handling    Send Itinerary Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMP NAME-EMEATRVLRONETHREE/TESTA/AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    RMP DOB-09JUL75/GENDER-M
+    Verify Specific Line Is Written In The PNR    NATID1234
+    Verify Specific Line Is Written In The PNR    RMT DHS NATIONALITY:IN
+    Verify Specific Line Is Written In The PNR    RMP REDRESS NUMBER-998877
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-CN:DN-22334455:EX-${expiry_date}:DV-NO:RC-CN
+    Verify Specific Line Is Written In The PNR    RMP GUID/CT-A:8BBA9/SU-A:8BBAC
+    Verify Specific Line Is Written In The PNR    RM *DS FORMAT V3.0
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION@CARLSON.COM
+    Verify Specific Line Is Written In The PNR    APB CTCB*EMEATRVLRONETHREE AUTOLEGACY-44-2-2-2
+
+[CB] Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    [Tags]    us485    de    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Cancel Booking Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    Re-Execute Cancel Booking Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RIR *FULLCXL**FULLCXL*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+*** Keywords ***
+Amend Booking Workflow For DS V1.0 Remarks Verification
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Add And Select New Passport    3    Passport: Normal    China    22334455    No
+    Click Panel    APIS/SFPD
+    Populate Middle Name, Redress Number And Mark Address Checkbox As Not Known    TestA    998877
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD
+    Click Finish PNR    Amend Booking Workflow For DS V1.0 Remarks Verification
+
+Amend Booking Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    Enter GDS Command    XE3
+    Book One Way Flight X Months From Now    PARLAX/AAF    7
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Add And Select New Passport    3    Passport: Normal    China    22334455    No
+    Click Panel    APIS/SFPD
+    Populate Middle Name, Redress Number And Mark Address Checkbox As Not Known    TestA    998877
+    Populate SFPD Gender    Female
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD
+    Click Finish PNR    Amend Booking Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+
+Amend Booking Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    Enter GDS Command    XE3
+    Book One Way Flight X Months From Now    PARLAX/AAF    7
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Add And Select New Passport    3    Passport: Normal    China    22334455    No
+    Click Panel    APIS/SFPD
+    Populate Middle Name, Redress Number And Mark Address Checkbox As Not Known    TestA    998877
+    Get Passport Expiry Date
+    Populate SFPD Gender    Female
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD
+    Click Finish PNR    Amend Booking Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR
+
+Cancel Booking Workflow For DS V1.0 Remarks Verification
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Cancel Booking Workflow For DS V1.0 Remarks Verification
+
+Cancel Booking Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Cancel Booking Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+
+Cancel Booking Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Cancel Booking Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR
+
+Populate Middle Name, Redress Number And Mark Address Checkbox As Not Known
+    [Arguments]    ${middle_name}    ${redress_number}
+    Set Control Text Value    [NAME:ctxtMiddleNameSFPD]    ${middle_name}
+    Set Control Text Value    [NAME:ctxtRedressNumber]    ${redress_number}
+    Tick Checkbox    ${check_box_notknown4}
+    Comment    ${chkbx_notknown_status4}    Get Checkbox Status    ${check_box_notknown4}
+    Comment    Run Keyword If    "${chkbx_notknown_status4}" == "False"    Control Click    ${title_power_express}    ${EMPTY}    ${check_box_notknown4}
+    ${passport_date} =    Generate Date X Months From Now    24    0    %d%b%y
+    Set Test Variable    ${passport_date}
+    [Teardown]    Take Screenshot
+
+Send Itinerary Workflow For DS V1.0 Remarks Verification
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Send Itinerary Workflow For DS V1.0 Remarks Verification
+
+Send Itinerary Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Send Itinerary Workflow In Verify That DS V2.0 Remarks Is Correctly Written In PNR
+
+Send Itinerary Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Send Itinerary Workflow In Verify That DS V3.0 Remarks Is Correctly Written In PNR
+
+Get Passport Expiry Date
+    Set Test Variable    ${passport_date}    ${EMPTY}
+    Set Test Variable    ${passport_year}    ${EMPTY}
+    ${passport_date}    Get Control Text Value    [NAME:cdtpExpiryDate]
+    ${passport_year}    Get Substring    ${passport_date}    -2
+    ${passport_date}    Convert Date To Gds Format    ${passport_date}    %m/%d/%Y

@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        copy_booking_process

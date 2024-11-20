@@ -1,0 +1,378 @@
+*** Settings ***
+Suite Setup
+Force Tags        amadeus    valid_fail
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../other_services_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+Resource          ../other_services.txt
+
+*** Test Cases ***
+[SG NB] Verify That Prepaid Hotel Product Behaves Correctly In Other Services Panel And Written In The PNR When FOP Type Is CX
+    [Tags]    sg    us505    horton
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SG OS AUTOMATION    BEAR    SGOTHERS
+    Click New Booking
+    Book Active Hotel    JT    LON    423    7    3    123456
+    ...    A1D    GBP425.00
+    Book Passive Hotel    LON    8    3    PLAZA HOTEL TWIN ROOM NO MEALS INCLUDED
+    Update PNR for EN or GB
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Prepaid Hotel    CARLSON WAGONLIT TRAVEL
+    Click Tab In Other Services Panel    Hotel Info
+    Verify Hotel Info Fields Are Enabled
+    Verify Hotel Fields Are Disabled
+    Verify Default Form Of Payment Is Correct    Cash or Invoice
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2026
+    #Validation For Hotel Segments
+    Verify Error Icon Is Displayed For Hotel Segments    Please select atleast one
+    Retrieve PNR Details From Amadeus    command=RTH
+    Get Passive HHL Hotel Segment From The PNR
+    Get Passive HTL Hotel Segment From The PNR
+    Verify HHL Hotel Segments Are Displayed In The Hotel Segment List
+    Verify HTL Hotel Segments Are Displayed In The Hotel Segment List
+    Select Hotel Segment    2
+    Verify Default Of Arrival Flight Is Correct    ${EMPTY}
+    Verify Default Of Depart Flight Is Correct    ${EMPTY}
+    Retrieve PNR Details From Amadeus    command=RTA
+    Get Current Segments From The PNR
+    Verify Arrival Flight Items Are Correct
+    Verify Departure Flight Items Are Correct
+    Select Arrival Flight    ${EMPTY}
+    Select Departure Flight    ${EMPTY}
+    Populate Service Info Cost Details    Hotel Vendor Test    350.25    680.23
+    Set Passenger ID Value    AA
+    Get Other Services Cost Details
+    Get Passenger ID Value
+    Mask Credit Card Number
+    Get Other Services Form Of Payment Details
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    CHECK IN WITH VOUCHER COPY    REQUEST EARLY CHECK IN
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number    identifier=hotel
+    Generate Data For Specific Product    False    P1    16    Prepaid Hotel    HL    021007
+    ...    ${EMPTY}    New
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Hotel Accounting Remarks    Prepaid Hotel    16    021007
+
+[SG AOS] Verify That Prepaid Hotel Product Behaves Correctly During Amend Process In Other Services
+    [Tags]    sg    us832    horton
+    Click Other Services
+    Click Amend EO    ${eo_number_hotel}
+    Click Hotel Info Tab
+    Get Other Services Cost Details
+    Verify Vendor Contact Value Is Correct    Hotel Vendor Test
+    Verify Nett Cost Value Is Correct    350.25
+    Verify Selling Price Value Is Correct    680.23
+    Verify Commission Fee Value Is Correct    343.58
+    Verify Merchant Fee Value Is Correct    13.60
+    Verify Total Selling Price Value Is Correct    693.83
+    Verify Default Of Arrival Flight Is Correct    ${EMPTY}
+    Verify Default Of Depart Flight Is Correct    ${EMPTY}
+    Verify Passenger Id    AA
+    Verify Form Of Payment Details Are Correct    Credit Card (CX)    VI    ************1111    12    2026
+    Verify Exchange Order Number    ${eo_number_hotel}
+    Select Hotel Segment    2
+    Get Other Services Form Of Payment Details
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    CARLSON WAGONLIT TRAVEL
+    Verify Address 1 Value Is Correct    INTERCOMPANY-TRADE
+    Verify Address 2 Value Is Correct
+    Verify City Value Is Correct    SINGAPORE
+    Verify Country Value Is Correct    SINGAPORE
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    CHECK IN WITH VOUCHER COPY    REQUEST EARLY CHECK IN
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    16    Prepaid Hotel    HL    021007
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_hotel}
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Hotel Accounting Remarks    Prepaid Hotel    16    021007
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+
+[SG AB] Verify That Prepaid Hotel Product Behaves Correctly In Other Services Panel And Written In The PNR When FOP Type Is Cash Or Invoice
+    [Tags]    sg    us505    horton
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP/S2    6    3
+    Book Flight X Months From Now    MNLSIN/ASQ    SS1Y1    FXP/S3    6    5
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    1226
+    Click Read Booking
+    Populate Fare Details And Fees Tab With Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Prepaid Hotel    SAFE2TRAVEL PTE LTD
+    Click Tab In Other Services Panel    Hotel Info
+    Verify FOP Details Are Correct    Credit Card (CX)    AX    ************0005    12    2026
+    Select Form Of Payment (FOP)    Cash or Invoice
+    #Validation For Hotel Segments
+    Verify Error Icon Is Displayed For Hotel Segments    Please select atleast one
+    Retrieve PNR Details From Amadeus    command=RTH
+    Get Passive HHL Hotel Segment From The PNR
+    Get Passive HTL Hotel Segment From The PNR
+    Verify HHL Hotel Segments Are Displayed In The Hotel Segment List
+    Verify HTL Hotel Segments Are Displayed In The Hotel Segment List
+    Select Hotel Segment    5
+    Verify Default Of Arrival Flight Is Correct    ${EMPTY}
+    Verify Default Of Depart Flight Is Correct    ${EMPTY}
+    Retrieve PNR Details From Amadeus    command=RTA
+    Get Current Segments From The PNR
+    Verify Arrival Flight Items Are Correct
+    Verify Departure Flight Items Are Correct
+    Select Arrival Flight    0
+    Select Departure Flight    1
+    Set Nett Cost    350.25
+    Set Selling Price    680.23
+    Set Passenger ID Value    AA
+    Get Other Services Cost Details
+    Get Passenger ID Value
+    Get Other Services Form Of Payment Details
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Hotel Accounting Remarks    Prepaid Hotel    16    021039
+
+[SG OS] Verify That Prepaid Hotel Product Behaves Correctly In Other Services Panel And Written In The PNR When FOP Type Is CX
+    [Documentation]    Unable to Cancel PNR due to Error encountered when Cancelling Hotel Segments via XI or XE<segment>
+    [Tags]    sg    us505    horton
+    Click Other Services
+    Select Product And Vendor    Prepaid Hotel    ASL TOURS & TRAVEL PTE LTD
+    Click Tab In Other Services Panel    Hotel Info
+    Select Form Of Payment (FOP)    Credit Card (CX)    DC    30569309025904    12    2026
+    Verify Nett Cost Value Is Correct    0.00
+    Verify Selling Price Value Is Correct    0.00
+    Verify Commission Fee Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    0.00
+    Set Nett Cost    350.25
+    Set Selling Price    680.23
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    0    2    False    False
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    0    2    True    True
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Hotel Segment    3
+    Retrieve PNR Details From Amadeus    command=RTA
+    Get Current Segments From The PNR
+    Select Arrival Flight    0
+    Select Departure Flight    1
+    Set Passenger ID Value    AA
+    Get Commission
+    Get Merchant Fee In Other Services
+    Get Total Selling Price
+    Get Passenger ID Value
+    Mask Credit Card Number
+    Get Other Services Form Of Payment Details
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Hotel Accounting Remarks    Prepaid Hotel    16    021002
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK NB] Verify That Prepaid Hotel Product Behaves Correctly In Other Services Panel And Written In The PNR When FOP Type Is CX
+    [Tags]    hk    us505    horton
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC HK OS AUTOMATION    BEAR    HKOTHERS
+    Click New Booking
+    Book Active Hotel    JT    LON    423    7    3    123456
+    ...    A1D    GBP425.00
+    Book Passive Hotel    LON    8    3    PLAZA HOTEL TWIN ROOM NO MEALS INCLUDED
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    HOTEL - PREPAID    ONE OFF VENDER
+    Click Tab In Other Services Panel    Hotel Info
+    Verify Hotel Info Fields Are Enabled
+    Verify Hotel Fields Are Disabled
+    Verify Form Of Payment Details Are Correct    Cash or Invoice
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2026
+    #Validation For Hotel Segments
+    Verify Error Icon Is Displayed For Hotel Segments    Please select atleast one
+    Retrieve PNR Details From Amadeus    command=RTH
+    Get Passive HHL Hotel Segment From The PNR
+    Get Passive HTL Hotel Segment From The PNR
+    Verify HHL Hotel Segments Are Displayed In The Hotel Segment List
+    Verify HTL Hotel Segments Are Displayed In The Hotel Segment List
+    Select Hotel Segment    2
+    Verify Default Of Arrival Flight Is Correct    ${EMPTY}
+    Verify Default Of Depart Flight Is Correct    ${EMPTY}
+    Retrieve PNR Details From Amadeus    command=RTA
+    Get Current Segments From The PNR
+    Verify Arrival Flight Items Are Correct
+    Verify Departure Flight Items Are Correct
+    Select Arrival Flight    ${EMPTY}
+    Select Departure Flight    ${EMPTY}
+    Set Nett Cost    300
+    Set Selling Price    500
+    Set Passenger ID Value    ${EMPTY}
+    Get Other Services Cost Details
+    Get Passenger ID Value
+    Mask Credit Card Number
+    Get Other Services Form Of Payment Details
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Hotel Accounting Remarks    HOTEL - PREPAID    16    000810    HK
+
+[HK AB] Verify That Prepaid Hotel Product Behaves Correctly In Other Services Panel And Written In The PNR When FOP Type Is Cash Or Invoice
+    [Tags]    hk    us505    horton
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP/S2    6    3
+    Book Flight X Months From Now    MNLSIN/ASQ    SS1Y1    FXP/S3    6    5
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    1226
+    Click Read Booking
+    Populate Fare Details And Fees Tab With Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    HOTEL - PREPAID    WESTMINSTER TRAVEL LIMITED
+    Click Tab In Other Services Panel    Hotel Info
+    Verify FOP Details Are Correct    Credit Card (CX)    AX    ************0005    12    2026
+    Select Form Of Payment (FOP)    Cash or Invoice
+    #Validation For Hotel Segments
+    Verify Error Icon Is Displayed For Hotel Segments    Please select atleast one
+    Retrieve PNR Details From Amadeus    command=RTH
+    Get Passive HHL Hotel Segment From The PNR
+    Get Passive HTL Hotel Segment From The PNR
+    Verify HHL Hotel Segments Are Displayed In The Hotel Segment List
+    Verify HTL Hotel Segments Are Displayed In The Hotel Segment List
+    Select Hotel Segment    5
+    Verify Default Of Arrival Flight Is Correct    ${EMPTY}
+    Verify Default Of Depart Flight Is Correct    ${EMPTY}
+    Retrieve PNR Details From Amadeus    command=RTA
+    Get Current Segments From The PNR
+    Verify Arrival Flight Items Are Correct
+    Verify Departure Flight Items Are Correct
+    Select Arrival Flight    0
+    Select Departure Flight    1
+    Set Nett Cost    300
+    Set Selling Price    500
+    Set Passenger ID Value    AA
+    Get Other Services Cost Details
+    Get Passenger ID Value
+    Get Other Services Form Of Payment Details
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Hotel Accounting Remarks    HOTEL - PREPAID    16    000211    HK
+
+[HK OS] Verify That Prepaid Hotel Product Behaves Correctly In Other Services Panel And Written In The PNR When FOP Type Is Cash Or Invoice
+    [Documentation]    Unable to Cancel PNR due to Error encountered when Cancelling Hotel Segments via XI or XE<segment>
+    [Tags]    hk    us505    horton
+    Click Other Services
+    Select Product And Vendor    HOTEL - PREPAID    SICHUAN WANDA HOTEL CO LTD
+    Click Tab In Other Services Panel    Hotel Info
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Verify Nett Cost Value Is Correct    0
+    Verify Selling Price Value Is Correct    0
+    Verify Commission Fee Value Is Correct    0
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    0
+    Populate Service Info Cost Details    Hotel Prepaid Vendor    300    500
+    Get Other Services Cost Details
+    Compute Other Services Fees    0    2    False    False    HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Hotel Segment    4
+    Retrieve PNR Details From Amadeus    command=RTA
+    Get Current Segments From The PNR
+    Select Arrival Flight    0
+    Select Departure Flight    1
+    Set Passenger ID Value    AA
+    Get Passenger ID Value
+    Get Arrival Flight Value    identifier=hotel
+    Get Departure Flight Value    identifier=hotel
+    Get Other Services Form Of Payment Details
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    CHECK IN WITH VOUCHER COPY    REQUEST ADJOINING ROOMS
+    Click Finish PNR    panel=Other Svcs
+    Generate Exchange Order Creation Date    P1
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Hotel Accounting Remarks    HOTEL - PREPAID    16    000451    HK
+
+[HK AOS] Verify That Prepaid Hotel Product Behaves Correctly During Amend Process In Other Services
+    [Tags]    hk    us832    horton
+    Click Other Services
+    Click Amend EO    ${eo_number}
+    Verify Vendor Contact Value Is Correct    Hotel Prepaid Vendor
+    Verify Nett Cost Value Is Correct    300
+    Verify Selling Price Value Is Correct    500
+    Verify Commission Fee Value Is Correct    200
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    500
+    Verify Form Of Payment Details Are Correct    Cash or Invoice
+    Verify Default Of Arrival Flight Is Correct    hotel
+    Verify Default Of Depart Flight Is Correct    hotel
+    Verify Passenger ID    AA
+    Verify Exchange Order Number    ${eo_number}
+    Populate Service Info Cost Details    Hotel Info    800    1500
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Select Hotel Segment    5
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    SICHUAN WANDA HOTEL CO LTD
+    Verify Address 1 Value Is Correct    Sofitel Wanda Chengdu
+    Verify Address 2 Value Is Correct    No 15 Bin Jiang Zhong Road
+    Verify City Value Is Correct    Chengdu 610016
+    Verify Country Value Is Correct    China
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct    862866669999
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    CHECK IN WITH VOUCHER COPY    REQUEST ADJOINING ROOMS
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    16    HOTEL - PREPAID    HL    000451
+    ...    ${EMPTY}    New
+    Verify PDF Is Displayed
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Hotel Accounting Remarks    HOTEL - PREPAID    16    000451    HK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Click Hotel Info Tab
+    Click Tab In Other Services Panel    Hotel Info

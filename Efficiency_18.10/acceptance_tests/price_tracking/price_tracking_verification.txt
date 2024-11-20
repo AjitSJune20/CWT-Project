@@ -1,0 +1,422 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verify Air Price Tracking Details Calculation
+    [Arguments]    ${currency}    ${original_fare}    ${new_ticket_fare}    ${penalty_fee}    ${expected_saving_value}
+    Set Currency For Air    ${currency}
+    Set Original Fare Value    ${original_fare}
+    Set New Ticket Fare Value    ${new_ticket_fare}
+    Set Penalty Fee    ${penalty_fee}
+    ${saving_value}=    Get Control Text Value    [NAME:ctxtAirSaving]
+    Should Be Equal As Strings    ${saving_value}    ${expected_saving_value}
+    [Teardown]    Take Screenshot
+
+Verify Air: No Action General Remarks
+    [Documentation]    Pre-req: Use "Get Air: No Action Details" keyword before using this
+    #G Qualifier
+    Verify Specific Line Is Written In The PNR    PT/LOWER FARE FOUND
+    #Y Qualifier
+    ${air_no_action_code}    Get Substring    ${air_no_action_value}    \    2
+    Run Keyword If    "${air_no_action_code}" == "MX" and "${gds_switch}" == "sabre"    Verify Specific Line Is Written In The PNR    Y‡RBT ${air_ticket_number} 1 MX ${air_no_action_free_text.upper()}
+    Run Keyword If    "${air_no_action_code}" == "MX" and "${gds_switch}" == "sabre"    Verify Specific Line Is Written In The PNR    Y‡RBT ${air_ticket_number} 1 NS
+    Run Keyword If    "${air_no_action_code}" == "MX" and "${gds_switch}" == "amadeus"    Verify Specific Line Is Written In The PNR    RMY RBT ${air_ticket_number} MX ${air_no_action_free_text.upper()}
+    Comment    Run Keyword If    "${air_no_action_code}" != "MX" and "${gds_switch}" == "amadeus"    Verify Specific Line Is Written In The PNR    #need to update this
+
+Verify Air: No Action UI Validation
+    [Arguments]    ${expected_ticket_value}
+    ${ticket_value}=    Get Control Text Value    [NAME:cboTicketList]
+    Should Be Equal    ${ticket_value}    ${expected_ticket_value}
+    Run Keyword If    '${ticket_value}' == '${EMPTY}'    Verify Control Object Field Is Mandatory    [NAME:cboTicketList]
+    Verify Control Object Field Is Mandatory    [NAME:ccboNoActionCode]
+    Select No Action Value    MX | Other – Free Text – Explain Reason
+    Send    {TAB}
+    Verify Control Object Is Visible    [NAME:ctxtNoActionFreeText]
+    Select No Action Value    CV | Voiding Exchanges
+    Send    {TAB}
+    Verify Control Object Is Not Visible    [NAME:ctxtNoActionFreeText]
+    [Teardown]    Take Screenshot
+
+Verify Air: Refund and Re-issue General Remarks
+    #G Qualifier
+    Verify Specific Line Is Written In The PNR    PT/LOWER FARE FOUND
+    Verify Specific Line Is Written In The PNR    PT/ORIGINAL AIR FARE ${air_original_fare} / NEW AIR FARE ${air_new_ticketed_fare}
+    Verify Specific Line Is Written In The PNR    PT/PENALTY FEE ${air_penalty_fee} / SAVING AIR ${air_saving} ${air_currency}
+    Run Keyword If    "${gds_switch}" == "sabre"    Verify Specific Line Is Written In The PNR    G‡PT/REF TKT/RQ SAME SEAT/CHKD RULES/ISS NEW TKT
+    ...    ELSE IF    "${gds_switch}" == "amadeus"    Verify Specific Line Is Written In The PNR    PT/REF TKT/RQ SAME SEAT/CHKD RULES/ISS NEW TKT
+    #X Qualifier
+    Verify Specific Line Is Written In The PNR    PT/TICKETNUMBER TO BE REFUNDED ${air_ticket_number}
+    Verify Specific Line Is Written In The PNR    PT/CANCELLATION FEE ${air_penalty_fee}
+    Verify Specific Line Is Written In The PNR    PT/TOTAL REFUND AMOUNT ${air_total_for_refund}
+    Verify Specific Line Is Written In The PNR    PT/TICKET AMOUNT FOR REFUND ${air_total_fare}
+    Verify Specific Line Is Written In The PNR    PT/TAX TO BE REFUNDED ${air_tax_to_be_refunded}
+    #Z Qualifier
+    Run Keyword If    "${gds_switch}" == "sabre"    Verify Specific Line Is Written In The PNR    Z‡*CONF*SUBJECT 35*
+    ...    ELSE IF    "${gds_switch}" == "amadeus"    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:35*
+    Verify Specific Line Is Written In The PNR    *RITOP**A NEW TICKET HAS BEEN ISSUED WITH A PRICE DROP*
+    Verify Specific Line Is Written In The PNR    *RITOP**OF ${air_saving} ${air_currency} BEFORE FEES. *
+    Verify Specific Line Is Written In The PNR    *RITOP**PLEASE ADJUST YOUR EXPENSE REPORT IF APPLICABLE    False    True
+    Comment    Verify Specific Line Is Written In The PNR    *7193*P5.F.200    #need to update for amadeus
+    Comment    Verify Specific Line Is Written In The PNR    *7311*0PT
+
+Verify Air: Refund and Re-issue UI Validation
+    [Arguments]    ${expected_ticket_value}=${EMPTY}
+    ${ticket_value}=    Get Control Text Value    [NAME:cboTicketList]
+    Should Be Equal    ${ticket_value}    ${expected_ticket_value}
+    Run Keyword If    '${ticket_value}' == '${EMPTY}'    Verify Control Object Field Is Mandatory    [NAME:cboTicketList]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtAirCurrency]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtAirOriginalFare]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtAirNewTicketedPrice]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtAirPenaltyFee]
+    Verify Control Object Is Disabled    [NAME:ctxtAirSaving]
+    Verify Control Object Is Visible    [NAME:grpRefundDetails]
+    Verify Control Object Is Disabled    [NAME:ctxtRefundTotalFare]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtRefundTaxRefunded]
+    Verify Control Object Is Disabled    [NAME:ctxtRefundPenalty]
+    Verify Control Object Is Disabled    [NAME:ctxtRefundTotalforRefund]
+    [Teardown]    Take Screenshot
+
+Verify Air: Void and Re-issue General Remarks
+    #G Qualifier
+    Verify Specific Line Is Written In The PNR    PT/LOWER FARE FOUND
+    Verify Specific Line Is Written In The PNR    PT/ORIGINAL AIR FARE ${air_original_fare} / NEW AIR FARE ${air_new_ticketed_fare}
+    Verify Specific Line Is Written In The PNR    PT/PENALTY FEE ${air_penalty_fee} / SAVING AIR ${air_saving} ${air_currency}
+    Verify Specific Line Is Written In The PNR    PT/VOIDED TKT/RQ SAME SEAT/CHKD RULES/ISS NEW TKT
+    #X Qualifier
+    Verify Specific Line Is Written In The PNR    PT/TICKETNUMBER TO BE VOIDED ${air_ticket_number}
+    #Z Qualifier
+    Run Keyword If    "${gds_switch}" == "sabre"    Verify Specific Line Is Written In The PNR    Z‡*CONF*SUBJECT 35*
+    ...    ELSE IF    "${gds_switch}" == "amadeus"    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:35*
+    Verify Specific Line Is Written In The PNR    *RITOP**A NEW TICKET HAS BEEN ISSUED WITH A PRICE DROP*
+    Verify Specific Line Is Written In The PNR    *RITOP**OF ${air_saving} ${air_currency} BEFORE FEES. *
+    Verify Specific Line Is Written In The PNR    *RITOP**PLEASE ADJUST YOUR EXPENSE REPORT IF APPLICABLE.*    False    True
+    Comment    Verify Specific Line Is Written In The PNR    *7193*P5.F.200    #need to update for amadeus
+    Comment    Verify Specific Line Is Written In The PNR    *7311*0PT
+
+Verify Air: Void and Re-issue UI Validation
+    [Arguments]    ${expected_ticket_value}=${EMPTY}
+    ${ticket_value}=    Get Control Text Value    [NAME:cboTicketList]
+    Should Be Equal    ${ticket_value}    ${expected_ticket_value}
+    Run Keyword If    '${ticket_value}' == '${EMPTY}'    Verify Control Object Field Is Mandatory    [NAME:cboTicketList]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtAirCurrency]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtAirOriginalFare]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtAirNewTicketedPrice]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtAirPenaltyFee]
+    Verify Control Object Is Disabled    [NAME:ctxtAirSaving]
+    Verify Control Object Is Not Visible    [NAME:grpRefundDetails]
+    [Teardown]    Take Screenshot
+
+Verify Class Code Retained In PNR Wings Remarks
+    [Arguments]    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${class_code_wings remarks}    Set Variable If    "${gds_switch}" == "amadeus"    *7110*${class_code_value_${fare_tab_index}}    7110-${class_code_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    ${class_code_wings remarks}
+
+Verify Clear All Button Is Shown And Enabled
+    Verify Control Object Is Visible    [NAME:btnClear]
+    Verify Control Object Is Enabled    [NAME:btnClear]
+
+Verify Clear All Pop-up Is Shown
+    [Arguments]    ${option}=[NAME:NoBtn]    ${window_title}=${title_power_express}
+    Activate Power Express Window
+    Wait Until Control Object Is Enabled    ${btn_clearAll}    ${title_power_express}    true
+    Control Focus    ${title_power_express}    ${EMPTY}    ${btn_clearAll}
+    Control Click    ${title_power_express}    ${EMPTY}    ${btn_clearAll}
+    ${active_window} =    Win Get Title    [ACTIVE]    ${EMPTY}
+    ${is_clear_all_popup_present} =    Control Command    ${active_window}    ${EMPTY}    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    ${popup_error_msg} =    Control Get Text    ${active_window}    ${EMPTY}    [NAME:txtMessageTextBox]
+    Run Keyword If    ${is_clear_all_popup_present} == 1    Should Be Equal    You are about to reset the application and ignore any active PNR in the GDS.    ${popup_error_msg}
+    Click Control Button    ${option}    ${window_title}
+
+Verify Clear All Pop-up Will Not Display Quick Workflows
+    [Arguments]    ${option}=[NAME:NoBtn]    ${window_title}=${title_power_express}
+    Activate Power Express Window
+    Wait Until Control Object Is Enabled    ${btn_clearAll}    ${title_power_express}    true
+    Control Focus    ${title_power_express}    ${EMPTY}    ${btn_clearAll}
+    Control Click    ${title_power_express}    ${EMPTY}    ${btn_clearAll}
+    Sleep    2
+    ${active_window} =    Win Get Title    [ACTIVE]    ${EMPTY}
+    ${is_clear_all_popup_present} =    Control Command    ${active_window}    ${EMPTY}    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    ${popup_error_msg} =    Run Keyword If    ${is_clear_all_popup_present} == 1    Control Get Text    ${active_window}    ${EMPTY}    [NAME:txtMessageTextBox]
+    Should Be Equal    You are about to reset the application and ignore any active PNR in the GDS.    ${popup_error_msg}
+    Verify Control Object Is Not Visible    [NAME:NewPNRSameTravellerRadioButton]
+    Verify Control Object Is Not Visible    [NAME:NewPNRSameContactRadioButton]
+    Verify Control Object Is Not Visible    [NAME:SameBookingNewTravellerRadioButton]
+    Verify Control Object Is Not Visible    [NAME:ClearAllRadioButton]
+    Click Control Button    ${option}    ${window_title}
+
+Verify Default Price Tracking Options
+    Verify Control Object Is Visible    [NAME:rdoAirVoidAndReIssue]
+    Verify Control Object Is Visible    [NAME:rdoRefundAndReIssue]
+    Verify Control Object Is Visible    [NAME:rdoAirNoAction]
+    Verify Control Object Is Visible    [NAME:rdoHotelCancelAndRebook]
+    Verify Control Object Is Visible    [NAME:rdoHotelNoAction]
+    Verify Control Object Is Not Visible    [NAME:grpTicketList]
+    Verify Control Object Is Not Visible    [NAME:grpPriceTrackingAirDetails]
+    Verify Control Object Is Not Visible    [NAME:grpRefundDetails]
+    Verify Control Object Is Not Visible    [NAME:grpNoActionCode]
+    Verify Control Object Is Not Visible    [NAME:grpPriceTrackingHotelDetails]
+    Verify Control Object Is Enabled    [NAME:btnClear]
+    Verify Control Object Is Enabled    [NAME:btnLoadPNR]
+
+Verify Hotel Cancel and Re-book Calculation
+    [Arguments]    ${city_stay}    ${currency}    ${original_rate}    ${new_rate}    ${expected_hotel_saving}
+    Set Hotel City Of Stay    ${city_stay}
+    Set Currency For Hotel    ${currency}
+    Set Hotel Original Rate    ${original_rate}
+    Set Hotel New Rate    ${new_rate}
+    Verify Hotel Saving Calculation    ${expected_hotel_saving}
+    [Teardown]    Take Screenshot
+
+Verify Hotel: Cancel and Re-book General Remarks
+    Run Keyword If    "${gds_switch}" == "sabre"    Verify Specific Line Is Written In The PNR    Z‡*CONF*SUBJECT 36*
+    ...    ELSE IF    "${gds_switch}" == "amadeus"    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:36*
+    Run Keyword If    "${gds_switch}" == "sabre"    Verify Specific Line Is Written In The PNR    PT/ORIGINAL HOTEL FARE ${hotel_original_rate} / NEW HOTEL FARE ${hotel_new_ticketed_price}
+    Run Keyword If    "${gds_switch}" == "sabre"    Verify Specific Line Is Written In The PNR    PT/PENALTY FEE ${hotel_penalty_fee} / SAVING HOTEL ${hotel_saving} ${hotel_currency}
+    Run Keyword If    "${gds_switch}" == "amadeus"    Verify Multiple Remarks Are Written In The PNR    RIR *RITOP**YOUR HOTEL IN ${hotel_city} HAS BEEN REBOOKED*    RIR *RITOP**WITH A PRICE DROP OF ${hotel_saving} ${hotel_currency} BEFORE FEES. *    RIR *RITOP**NUMBER. *    RIR *RITOP**ORIGINAL RESERVATION*
+    Run Keyword If    "${gds_switch}" == "amadeus"    Verify Specific Line Is Written In The PNR    *RITOP**PLEASE NOTE YOUR RESERVATION HAS A NEW CONFIRMATION*    \    true
+    Run Keyword If    "${gds_switch}" == "amadeus"    Verify Specific Line Is Written In The PNR    RIR *RITOP**THE NEW RATE MAY NOT HAVE THE SAME AMENITIES AS THE*    \    true
+
+Verify Hotel: Cancel and Re-book UI Validation
+    Verify Control Object Field Is Mandatory    [NAME:ctxtHotelCityOfStay]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtHotelOriginalRate]
+    Verify Control Object Field Is Mandatory    [NAME:ctxtHotelNewRate]
+    Verify Control Object Is Not Visible    [NAME:ctxtHotelPenalty]
+    Verify Control Object Is Disabled    [NAME:ctxtHotelSaving]
+    [Teardown]    Take Screenshot
+
+Verify Hotel: No Action General Remarks
+    [Documentation]    The value for ${hotel_action_code} is came from Get Hotel: NO Action Details keyword
+    #G Qualifier
+    Verify Specific Line Is Written In The PNR    PT/LOWER FARE FOUND
+    #Y Qualifier
+    ${hotel_action_code}    Get Substring    ${hotel_no_action_value}    \    2
+    ${hnon_qualifier_remark}    Set Variable If    "${hotel_action_code}" == "XX"    HNON ${hotel_property_id} ${hotel_rate_code_value} ${hotel_action_code} ${hotel_no_action_free_text.upper()}    HNON ${hotel_property_id} ${hotel_rate_code_value} ${hotel_action_code}
+    Verify Specific Line Is Written In The PNR    ${hnon_qualifier_remark}
+
+Verify Hotel: No Action UI Validation
+    [Arguments]    ${expected_ticket_value}
+    ${ticket_value}=    Get Control Text Value    [NAME:cboTicketList]
+    Should Be Equal    ${ticket_value}    ${expected_ticket_value}
+    Run Keyword If    '${ticket_value}' == '${EMPTY}'    Verify Control Object Field Is Mandatory    [NAME:cboTicketList]
+    Verify Control Object Field Is Mandatory    [NAME:ccboNoActionCode]
+    Verify Control Object Is Visible    [NAME:ctxtHotelRateCode]
+    Set Control Text Value    [NAME:ccboNoActionCode]    XX | Free Flow / Limit the use of this reason code
+    send    {TAB}
+    Verify Control Object Is Visible    [NAME:ctxtNoActionFreeText]
+    Set Control Text Value    [NAME:ccboNoActionCode]    NT | Savings Under Threshold
+    send    {TAB}
+    Verify Control Object Is Not Visible    [NAME:ctxtNoActionFreeText]
+    [Teardown]    Take Screenshot
+
+Verify New, Amend, Send Itin And Cancel Buttons Are Shown And Disabled
+    Verify Control Object Is Disabled    [NAME:btnAmendPNR]
+    Verify Control Object Is Disabled    [NAME:btnCancelPNR]
+    Verify Control Object Is Disabled    [NAME:btnSendItinerary]
+    Verify Control Object Is Disabled    [NAME:btnSendPNR]
+    Verify Control Object Is Not Visible    [NAME:btnQuickAmend]
+
+Verify No Action Ticket List Is Prepopulated For Single Ticket
+    [Arguments]    ${expected_ticket_value}
+    ${ticket_list_field}    Determine Multiple Object Name Based On Active Tab    cboTicketList    False
+    ${actual_ticket_value}    Get Control Text Value    ${ticket_list_field}
+    Verify Text Contains Expected Value    ${actual_ticket_value}    ${expected_ticket_value}
+    [Teardown]    Take Screenshot
+
+Verify Non Price Tracking Team Is Selected
+    Verify Price Tracking Button Is Not Shown
+    Verify New, Amend, Send Itin And Cancel Buttons Are Shown And Disabled
+    Verify Quick Amend Is Not Visible
+    Verify Select Client Droplist Is Blank
+    [Teardown]    Take Screenshot
+
+Verify Other Panels Are Disabled
+    Verify Control Object Is Disabled    [NAME:Client Info]
+    Verify Control Object Is Disabled    [NAME:txtClient Info]
+    Verify Control Object Is Disabled    [NAME:Air Fare]
+    Verify Control Object Is Disabled    [NAME:txtAir Fare]
+    Verify Control Object Is Disabled    [NAME:Delivery]
+    Verify Control Object Is Disabled    [NAME:txtDelivery]
+
+Verify Price Tracking Back Office Remarks Are Written
+    [Arguments]    ${price_tracking_type}    ${type_of_booking}
+    Run Keyword If    "${gds_switch}" == "galileo"    Retrieve PNR Details From Travelport    ${current_pnr}
+    ...    ELSE IF    "${gds_switch}" == "sabre"    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    ...    ELSE IF    "${gds_switch}" == "amadeus"    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Comment    ${back_office_remark}    Set Variable If    "${price_tracking_type}" == "Air" and "${gds_switch}" == "galileo" or "${gds_switch}" == "amadeus"    *7193*P5:F:    "${price_tracking_type}" == "Air" and "${gds_switch}" == "sabre"    *7193*P5.F.
+    ...    "${price_tracking_type}" == "Hotel" and "${gds_switch}" == "galileo" or "${gds_switch}" == "amadeus"    *3193*P5:F:    "${price_tracking_type}" == "Hotel" and "${gds_switch}" == "sabre"    *3193*P5.F.
+    Comment    Verify Specific Line Is Written In The PNR    ${back_office_remark}
+
+Verify Price Tracking Button Is Disabled
+    Verify Control Object Is Visible    [NAME:btnPriceTracking]
+    Verify Control Object Is Disabled    [NAME:btnPriceTracking]
+
+Verify Price Tracking Button Is Enabled
+    Verify Control Object Is Visible    [NAME:btnPriceTracking]
+    Verify Control Object Is Enabled    [NAME:btnPriceTracking]
+    [Teardown]    Take Screenshot
+
+Verify Price Tracking Button Is Not Shown
+    Verify Control Object Is Not Visible    [NAME:btnPriceTracking]
+    [Teardown]    Take Screenshot
+
+Verify Price Tracking Controls Present
+    Click Control Button    [NAME:rdoAirVoidAndReIssue]
+    Verify Control Object Is Visible    [NAME:grpPriceTrackingAirDetails]
+    Click Control Button    [NAME:rdoRefundAndReIssue]
+    Verify Control Object Is Visible    [NAME:grpPriceTrackingAirDetails]
+    Verify Control Object Is Visible    [NAME:grpRefundDetails]
+    Click Control Button    [NAME:rdoAirNoAction]
+    Verify Control Object Is Visible    [NAME:grpNoActionCode]
+    Click Control Button    [NAME:rdoHotelCancelAndRebook]
+    Verify Control Object Is Visible    [NAME:grpPriceTrackingHotelDetails]
+    Click Control Button    [NAME:rdoHotelNoAction]
+    Verify Control Object Is Visible    [NAME:grpNoActionCode]
+    Verify Control Object Is Visible    [NAME:chkRemoveFromFuturePriceTracking]
+
+Verify Price Tracking Generic Remarks Are Written
+    [Arguments]    ${price_tracking_type}    ${backoffice}=Wings
+    Run Keyword If    "${price_tracking_type}" == "Air: Refund and Re-issue"    Verify Air: Refund and Re-issue General Remarks
+    ...    ELSE IF    "${price_tracking_type}" == "Air: Void and Re-issue"    Verify Air: Void and Re-issue General Remarks
+    ...    ELSE IF    "${price_tracking_type}" == "Air: No Action"    Verify Air: No Action General Remarks
+    Run Keyword If    "${price_tracking_type}" == "Hotel: Cancel and Re-book"    Verify Hotel: Cancel and Re-book General Remarks
+    ...    ELSE IF    "${price_tracking_type}" == "Hotel: No Action"    Verify Hotel: No Action General Remarks
+    Run Keyword If    "${price_tracking_type}" == "Air: Void and Re-issue" and "${backoffice}" == "Wings"    Verify Specific Line Is Written In The PNR    *7311*0PT
+    Run Keyword If    "${price_tracking_type}" == "Air: Refund and Re-issue" and "${backoffice}" == "Wings"    Verify Specific Line Is Written In The PNR    *7311*0PT
+
+Verify Price Tracking Handling Fee Remarks Is Written
+    [Arguments]    ${price_tracking_type}    ${backoffice}=${EMPTY}
+    [Documentation]    ${price_tracking_type} =
+    ...    Value shoud be either "Air" or "Hotel"
+    ${handling_fee_remark}    Set Variable If    "${price_tracking_type}" == "Air" and "${gds_switch}" == "galileo" or "${gds_switch}" == "amadeus"    *7193*P5:F:    "${price_tracking_type}" == "Air" and "${gds_switch}" == "sabre"    *7193*P5.F.    "${price_tracking_type}" == "Hotel" and "${gds_switch}" == "galileo" or "${gds_switch}" == "amadeus"
+    ...    *3193*P5:F:    "${price_tracking_type}" == "Hotel" and "${gds_switch}" == "sabre"    *3193*P5.F.
+    Run Keyword If    "${backoffice}" == "Wings"    Verify Specific Line Is Written In The PNR    ${handling_fee_remark}
+
+Verify Price Tracking Itinerary Remarks Are Written
+    [Arguments]    ${price_tracking_process_option}
+    Verify Specific Line Is Written In The PNR    CONF*TN YOUR FLIGHT HAS BEEN UPDATED WITH SAVINGS *
+    Verify Specific Line Is Written In The PNR    *RITOP**A NEW TICKET HAS BEEN ISSUED WITH A PRICE DROP*
+    ${pt_type} =    Fetch From Left    ${price_tracking_process_option}    :
+    Run Keyword If    "${pt_type}" == "Air"    Verify Specific Line Is Written In The PNR    *RITOP**OF ${saving for ${price_tracking_process_option}} ${air_currency} BEFORE FEES. *
+    ...    ELSE    Verify Specific Line Is Written In The PNR    *RITOP**OF ${saving for ${price_tracking_process_option}} ${hotel_currency} BEFORE FEES. *
+    Verify Specific Line Is Written In The PNR    *RITOP**REFUND WILL BE REQUESTED FOR THE ORIGINAL *
+    Verify Specific Line Is Written In The PNR    *RITOP**TICKET AMOUNT. *
+    Verify Specific Line Is Written In The PNR    *RITOP**AFTER FEES YOU SHOULD SEE A NET SAVING VS. THE *
+    Verify Specific Line Is Written In The PNR    *RITOP**ORIGINAL TOTAL FARE BASED ON THE SETTING *
+    Verify Specific Line Is Written In The PNR    *RITOP**SELECTED BY YOUR ORGANIZATION.*
+    Run Keyword If    "${gds_switch}" == "amadeus"    Verify Specific Line Is Written In The PNR    *RITOP**PLEASE DO NOT EXPENSE THE ORIGINAL TICKET AMOUNT.*    \    true
+    ...    ELSE    Verify Specific Line Is Written In The PNR    *RITOP**PLEASE DO NOT EXPENSE THE ORIGINAL TICKET AMOUNT.*
+
+Verify Price Tracking Team Is Selected
+    Verify Price Tracking Button Is Disabled
+    Verify Clear All Button Is Shown And Enabled
+    Verify Select Client Droplist Is Blank
+
+Verify Price Tracking Y Remarks Is Written In The PNR
+    [Arguments]    ${price_tracking_process}
+    Verify Specific Line Is Written In The PNR    Y‡0017015621256 1 DENLAX Y T PUB L,U USD692
+    Verify Specific Line Is Written In The PNR    G‡PT/LOWER FARE FOUND
+
+Verify Refund Details Calculation
+    [Arguments]    ${tax_to_refund}    ${expected_total_refund}
+    ${refund_total_fare}=    Get Control Text Value    [NAME:ctxtRefundTotalFare]
+    ${price_original_fare}=    Get Control Text Value    [NAME:ctxtAirOriginalFare]
+    Should Be Equal    ${refund_total_fare}    ${price_original_fare}
+    ${refund_penalty}=    Get Control Text Value    [NAME:ctxtRefundPenalty]
+    ${price_penalty_fee}=    Get Control Text Value    [NAME:ctxtAirPenaltyFee]
+    Should Be Equal    ${refund_penalty}    ${price_penalty_fee}
+    Set Tax To Refund    ${tax_to_refund}
+    ${total_refund}=    Get Control Text Value    [NAME:ctxtRefundTotalforRefund]
+    Should Be Equal    ${total_refund}    ${expected_total_refund}
+    [Teardown]    Take Screenshot
+
+Verify Select Client Droplist Is Blank
+    ${select_client_value}=    Get Control Text Value    ${cbo_Client}
+    Should Be Equal    ${select_client_value}    ${EMPTY}
+
+Verify That Property ID Is PrePopulated
+    [Arguments]    ${expected_property_id_value}
+    ${property_id_field}    Determine Multiple Object Name Based On Active Tab    cboTicketList    False
+    ${actual_property_id_value}    Get Control Text Value    ${property_id_field}
+    Verify Text Contains Expected Value    ${actual_property_id_value}    ${expected_property_id_value}
+
+Verify Class Code Value Defaults To Previous Value
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${class_field}    Determine Multiple Object Name Based On Active Tab    ccboClass
+    ${class_code_value}    Get Control Text Value    ${class_field}
+    ${class_code}    Fetch From Left    ${class_code_value}    ${SPACE}-
+    Run Keyword And Continue On Failure    Should Be Equal    ${class_code}    ${class_code_value_${fare_tab_index}}
+    [Teardown]    Take Screenshot
+
+Verify Ticket Queue Item Setup At Country Level Is In The List
+    [Arguments]    @{queue_items}
+    @{delivery_method}    Get Value From Dropdown List    [NAME:ccboDeliveryMethod]
+    Run Keyword And Continue On Failure    List Should Contain Sub List    ${delivery_method}    ${queue_items}
+
+Verify Handling Fee Remark Is Written
+    [Arguments]    ${price_traking_option}    ${handling_fee_amount}
+    [Documentation]    Accepts "Air" or "Hotel" as argument
+    ${price_traking_option}    Convert To Lowercase    ${price_traking_option}
+    ${price_traking_option_remark}    Set Variable If    "${price_traking_option}" == "air" and "${gds_switch}" == "amadeus"    *7193*P5:F:${handling_fee_amount}    "${price_traking_option}" == "hotel" and "${gds_switch}" == "amadeus"    *3193*P5:F:${handling_fee_amount}    "${price_traking_option}" == "air" and "${gds_switch}" == "sabre"
+    ...    *7193*P5.F.${handling_fee_amount}    "${price_traking_option}" == "hotel" and "${gds_switch}" == "sabre"    *3193*P5.F.${handling_fee_amount}
+    Verify Specific Line Is Written In The PNR    ${price_traking_option_remark}
+
+Verify Handling Fee Remark Is Not Written
+    [Arguments]    ${price_traking_option}    ${handling_fee_amount}
+    [Documentation]    Accepts "Air" or "Hotel" as argument
+    ${price_traking_option}    Convert To Lowercase    ${price_traking_option}
+    ${price_traking_option_remark}    Set Variable If    "${price_traking_option}" == "air" and "${gds_switch}" == "amadeus"    *7193*P5.F.${handling_fee_amount}    "${price_traking_option}" == "hotel" and "${gds_switch}" == "amadeus"    *3193*P5.F.${handling_fee_amount}    "${price_traking_option}" == "air" and "${gds_switch}" == "sabre"
+    ...    *7193*P5.F.${handling_fee_amount}    "${price_traking_option}" == "hotel" and "${gds_switch}" == "sabre"    *3193*P5.F.${handling_fee_amount}
+    Verify Specific Line Is Not Written In The PNR    ${price_traking_option_remark}
+
+Verify Air Fare, Client Info And Delivery Panel Is Disabled For Air
+    Verify Control Object Is Disabled    [NAME:Client Info]
+    Verify Control Object Is Disabled    [NAME:Air Fare]
+    Verify Control Object Is Disabled    [NAME:Delivery]
+
+Verify Other Panels Are Disabled For Hotel Cancel And Rebook
+    Verify Control Object Is Disabled    [NAME:Client Info]
+    Verify Control Object Is Disabled    [NAME:Air Fare]
+
+Verify Hotel Saving Calculation
+    [Arguments]    ${expected_hotel_saving}
+    ${hotel_saving_value}=    Get Control Text Value    [NAME:ctxtHotelSaving]
+    Should Be Equal As Numbers    ${hotel_saving_value}    ${expected_hotel_saving}
+
+Verify Price Tracking Skip Air Remark Is Written
+    [Arguments]    ${skip_air_remark}
+    Verify Specific Line Is Written In The PNR    ${skip_air_remark}
+
+Verify Price Tracking Skip Hotel Remark Is Written
+    [Arguments]    ${skip_hotel_remark}
+    Verify Specific Line Is Written In The PNR    ${skip_hotel_remark}
+
+Verify Client Info Panel Is Disabled
+    Verify Control Object Is Disabled    [NAME:Client Info]
+
+Verify Not Known at Time of Booking is Unticked
+    ${is_checked}    Get Checkbox Status    [NAME:chkNotKnown]
+    Run Keyword If    "${is_checked}"=="True"    FAIL    Check Box Should be Unticked
+
+Verify Hotel Rate Code Field is Mandatory
+    Verify Control Object Field Is Mandatory    [NAME:ctxtHotelRateCode]
+
+Verify That OP Remarks Are Not Written
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${description}
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTO
+    Verify Specific Line Is Not Written In The PNR    OP ${pcc}\/${current_date}\/${queue_number}C${queue_category}\/${description}    \    true
+
+Verify Savings Code Remarks Are Written
+    [Arguments]    ${segment_number}    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    *7306*${missed_code_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    *7305*${realised_code_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    *7110*${class_code_value_${fare_tab_index}}/${segment_number}
+
+Verify Original Fare Default Value
+    Verify Control Object Text Value Is Correct    [NAME:ctxtAirOriginalFare]    ${charged_fare_amount}
+    [Teardown]    Take Screenshot
+
+Verify Remove From Future Price Tracking Checkbox Is Removed
+    Verify Control Object Is Not Visible    [NAME:chkRemoveFromFuturePriceTracking]

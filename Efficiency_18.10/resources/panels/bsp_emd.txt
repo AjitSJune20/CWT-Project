@@ -1,0 +1,420 @@
+*** Settings ***
+Documentation     This resource file covers all reusable actions for Recap Panel related test cases
+Resource          ../common/core.txt
+
+*** Keywords ***
+Click BSP/EMD Button
+    Click Control Button    [NAME:btnBspEmd]
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Wait Until Progress Info is Completed
+    Wait Until Control Object Is Visible    [NAME:btnSendPNR]    ${title_power_express}
+    Take Screenshot
+
+Click Mask Credit Card
+    Click Control Button    [NAME:cmdMaskCard]
+
+Get Airline Code Value
+    ${airline_code}    Get Control Text Value    [NAME:AirlineCodeTextbox]
+    Set Test Variable    ${airline_code}
+
+Get BSP/EMD Field Values
+    Get Passenger ID
+    Get Airline Code Value
+    Get Ticket Number
+    Get Form Of Payment Type
+    Get Vendor Type
+    Get Credit Card Number
+    Get Expiry Month
+    Get Expiry Year
+    Get Selling Fare
+    Get Nett Cost
+    Get Tax Amount 1
+    Get Tax Code 1
+    Get Tax Amount 2
+    Get Tax Code 2
+    Get Commission Percentage
+    Get Commission Amount
+    Get Merchant Fee
+    Get Transaction Fee
+    Get Total Selling Fare
+    Get Reference Fare
+    Get Low Fare
+    Get Missed Saving Code
+    Get Realized Saving Code
+    Get Class Code
+    Get Lowest Fare Carrier Code
+    Get Destination
+    Get Route Code Value    1    False
+    Take Screenshot
+
+Get Class Code
+    ${class_code}    Get Control Text Value    [NAME:ClassCodeComboBox]
+    ${class_code}    Fetch From Left    ${class_code}    ${SPACE}-
+    Set Test Variable    ${class_code}
+
+Get Commission Amount
+    ${commission_amount}    Get Control Text Value    [NAME:CommissionAmountTextbox]
+    Set Test Variable    ${commission_amount}
+
+Get Commission Percentage
+    ${commission_percentage}    Get Control Text Value    [NAME:CommissionTextbox]
+    Set Test Variable    ${commission_percentage}
+
+Get Credit Card Number
+    ${credit_card_number}    Get Control Text Value    [NAME:CardNumberTextbox]
+    Set Test Variable    ${credit_card_number}
+
+Get Destination
+    ${destination}    Get Control Text Value    [NAME:DestinationTextbox]
+    Set Test Variable    ${destination}
+
+Get Exchange Ticket Number Value
+    ${exchange_ticket_numbers}    Create List
+    Set Test Variable    ${temp_item}    null
+    ${default_text}    Get Control Text Value    [NAME:ExchangeTicketComboBox]
+    Set Control Text Value    [NAME:TicketNumberComboBox]    ${EMPTY}
+    Send    {TAB}
+    : FOR    ${index}    IN RANGE    1    999
+    \    Click Control Button    [NAME:ExchangeTicketComboBox]
+    \    Sleep    1
+    \    Send    {DOWN}
+    \    Sleep    1
+    \    ${item}    Get Control Text Value    [NAME:ExchangeTicketComboBox]
+    \    Exit For Loop If    "${item.strip()}"== "${temp_item.strip()}"
+    \    Append To List    ${exchange_ticket_numbers}    ${item.strip()}
+    \    ${temp_item}    Set Variable    ${item.strip()}
+    Run Keyword If    "${default_text}" == "${EMPTY}"    Run Keywords    Click Control Button    [NAME:ExchangeTicketComboBox]    ${title_power_express}
+    ...    AND    Send    {CTRLDOWN}A{CTRLUP}
+    ...    AND    Sleep    1
+    ...    AND    Send    {BACKSPACE}
+    ...    ELSE    Set Control Text Value    [NAME:TicketNumberComboBox]    ${default_text}
+    Sleep    1
+    Send    {TAB}
+    Set Test Variable    ${exchange_ticket_numbers}
+    Utilities.Take Screenshot
+
+Get Expiry Month
+    ${expiry_month}    Get Control Text Value    [NAME:MonthExpiryComboBox]
+    Set Test Variable    ${expiry_month}
+
+Get Expiry Year
+    ${expiry_year}    Get Control Text Value    [NAME:YearExpiryComboBox]
+    Set Test Variable    ${expiry_year}
+
+Get Form Of Payment Type
+    ${fop_type}    Get Control Text Value    [NAME:FopComboBox]
+    Set Test Variable    ${fop_type}
+
+Get Low Fare
+    ${object}    Determine Multiple Object Name Based On Active Tab    LowFareTextBox,LowFareTextbox    False
+    ${low_fare}    Get Control Text Value    ${object}
+    Set Test Variable    ${low_fare}
+
+Get Lowest Fare Carrier Code
+    ${lfcc}    Get Control Text Value    [NAME:LowestCarrierCodeTextbox]
+    Set Test Variable    ${lfcc}
+
+Get Merchant Fee
+    ${is_visible}    Determine Control Object Is Visible On Active Tab    MerchantFeeTextbox    False
+    ${merchant_fee}    Run Keyword If    "${is_visible.upper()}" == "TRUE"    Get Control Text Value    [NAME:MerchantFeeTextbox]
+    ...    ELSE    Set Variable    0
+    Set Test Variable    ${merchant_fee}
+
+Get Missed Saving Code
+    ${missed_saving_code}    Get Control Text Value    [NAME:MissedSavingCodeComboBox]
+    ${missed_saving_code}    Fetch From Left    ${missed_saving_code}    ${SPACE}-
+    Set Test Variable    ${missed_saving_code}
+
+Get Nett Cost
+    ${nett_cost}    Get Control Text Value    [NAME:NettCostTextbox]
+    Set Test Variable    ${nett_cost}
+
+Get Passenger ID
+    ${passenger_id}    Get Control Text Value    [NAME:PassengerIdTextbox]
+    Set Test Variable    ${passenger_id}
+
+Get Realized Saving Code
+    ${realized_saving_code}    Get Control Text Value    [NAME:RealizedSavingCodeComboBox]
+    ${realized_saving_code}    Fetch From Left    ${realized_saving_code}    ${SPACE}-
+    Set Test Variable    ${realized_saving_code}
+
+Get Reference Fare
+    ${ref_fare}    Get Control Text Value    [NAME:ReferenceFareTextbox]
+    Set Test Variable    ${ref_fare}
+
+Get Selling Fare
+    ${selling_fare}    Get Control Text Value    [NAME:SellingFareTextbox]
+    ${selling_fare}    Convert to Float    ${selling_fare}
+    Set Test Variable    ${selling_fare}
+
+Get Tax Amount 1
+    ${tax_amount_1}    Get Control Text Value    [NAME:Tax1Textbox]
+    ${tax_amount_1}    Convert to Float    ${tax_amount_1}
+    Set Test Variable    ${tax_amount_1}
+
+Get Tax Amount 2
+    ${tax_amount_2}    Get Control Text Value    [NAME:Tax2Textbox]
+    ${tax_amount_2}    Convert to Float    ${tax_amount_2}
+    Set Test Variable    ${tax_amount_2}
+
+Get Tax Code 1
+    ${tax_code_1}    Get Control Text Value    [NAME:Tax1TaxCodeTextbox]
+    Set Test Variable    ${tax_code_1}
+
+Get Tax Code 2
+    ${tax_code_2}    Get Control Text Value    [NAME:Tax2TaxCodeTextbox]
+    Set Test Variable    ${tax_code_2}
+
+Get Ticket Number
+    ${ticket_number}    Get Control Text Value    [NAME:TicketNumberComboBox]
+    Set Test Variable    ${ticket_number}
+
+Get Ticket Number Value
+    ${ticket_numbers}    Create List
+    Set Test Variable    ${temp_item}    null
+    ${default_text}    Get Control Text Value    [NAME:TicketNumberComboBox]
+    Set Control Text Value    [NAME:TicketNumberComboBox]    ${EMPTY}
+    Send    {TAB}
+    : FOR    ${index}    IN RANGE    1    999
+    \    Click Control Button    [NAME:TicketNumberComboBox]
+    \    Sleep    1
+    \    Send    {DOWN}
+    \    Sleep    3
+    \    ${item}    Get Control Text Value    [NAME:TicketNumberComboBox]
+    \    Exit For Loop If    "${item.strip()}"== "${temp_item.strip()}"
+    \    Append To List    ${ticket_numbers}    ${item.strip()}
+    \    ${temp_item}    Set Variable    ${item.strip()}
+    Set Control Text Value    [NAME:TicketNumberComboBox]    ${default_text}
+    Send    {TAB}
+    Set Test Variable    ${ticket_numbers}
+    Take Screenshot
+
+Get Total Selling Fare
+    ${total_selling_fare}    Get Control Text Value    [NAME:TotalSellingFareTextbox]
+    Set Test Variable    ${total_selling_fare}
+
+Get Transaction Fee
+    ${transaction_fee}    Get Control Text Value    [NAME:TransactionFeeTextbox]
+    ${transaction_fee}    Convert to Float    ${transaction_fee}
+    Set Test Variable    ${transaction_fee}
+
+Get Vendor Type
+    ${vendor_type}    Get Control Text Value    [NAME:FopVendorComboBox]
+    Set Test Variable    ${vendor_type}
+
+Populate Air MI With Default Values
+    Set Reference Fare    1000.00
+    Set Low Fare    100.00
+    Select Missed Saving Code    Default
+    Select Realized Saving Code    Default
+    Select Class Code    Default
+    Set Lowest Fare Carrier Code    SQ
+    Set Destination    MNL
+    Take Screenshot
+
+Select Class Code
+    [Arguments]    ${class_code}
+    Run Keyword If    "${class_code.upper()}" == "DEFAULT"    Run Keywords    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:ClassCodeComboBox]
+    ...    AND    Send    {DOWN}
+    ...    ELSE    Select Value From Dropdown List    [NAME:ClassCodeComboBox]    ${class_code}
+    Take Screenshot
+
+Select Exchange Ticket Number
+    [Arguments]    ${exchange_ticket_number}
+    Select Value From Dropdown List    [NAME:ExchangeTicketComboBox]    ${exchange_ticket_number}
+    Take Screenshot
+
+Select Form Of Payment Type
+    [Arguments]    ${fop_type}
+    Select Value From Dropdown List    [NAME:FopComboBox]    ${fop_type}
+    Take Screenshot
+
+Select Missed Saving Code
+    [Arguments]    ${missed_saving_code}
+    Run Keyword If    "${missed_saving_code.upper()}" == "DEFAULT"    Run Keywords    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:ccboMissed_1]
+    ...    AND    Send    {DOWN}
+    ...    ELSE    Select Value From Dropdown List    [NAME:ccboMissed_1]    ${missed_saving_code}
+    Take Screenshot
+
+Select Month
+    [Arguments]    ${expiry_month}
+    Set Control Text Value    [NAME:MonthExpiryComboBox]    ${expiry_month}
+    Send    {TAB}
+    Take Screenshot
+
+Select Realized Saving Code
+    [Arguments]    ${realised_saving_code}
+    Run Keyword If    "${realised_saving_code.upper()}" == "DEFAULT"    Run Keywords    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:RealizedSavingCodeComboBox]
+    ...    AND    Send    {DOWN}
+    ...    ELSE    Select Value From Dropdown List    [NAME:RealizedSavingCodeComboBox]    ${realised_saving_code}
+    Take Screenshot
+
+Select Route Code
+    [Arguments]    ${route_code}
+    Select Value From Dropdown List    [NAME:RouteCodeComboBox]    ${route_code}
+    Take Screenshot
+
+Select Ticket Number
+    [Arguments]    ${ticket_number}
+    Set Control Text Value    [NAME:TicketNumberComboBox]    ${EMPTY}
+    Sleep    1
+    Send    {UP}
+    Sleep    1
+    Send    {TAB}
+    Sleep    1
+    Comment    Revisit Select Value from dropdown List
+    Select Value From Dropdown List    [NAME:TicketNumberComboBox]    ${ticket_number}
+    Take Screenshot
+
+Select Vendor Type
+    [Arguments]    ${vendor_type}
+    Select Value From Dropdown List    [NAME:FopVendorComboBox]    ${vendor_type}
+    Take Screenshot
+
+Select Year
+    [Arguments]    ${expiry_year}
+    Set Control Text Value    [NAME:YearExpiryComboBox]    ${expiry_year}
+    Send    {TAB}
+    Take Screenshot
+
+Set Commission Percentage
+    [Arguments]    ${commission_percentage_value}
+    Comment    Run Keyword If    "${commission_percentage_value}" == "${EMPTY}"    Run Keywords    Click Control Button    [NAME:CommissionTextbox]    ${title_power_express}
+    ...    AND    Send    {HOME}
+    ...    AND    Send    {SHIFTDOWN}{END}{SHIFTUP}
+    ...    AND    Sleep    1
+    ...    AND    Send    {BACKSPACE}
+    ...    ELSE    Set Control Text Value    [NAME:CommissionTextbox]    ${commission_percentage_value}
+    Set Control Text Value    [NAME:CommissionTextbox]    ${commission_percentage_value}
+    Send    {TAB}
+    Take Screenshot
+
+Set Credit Card Number
+    [Arguments]    ${credit_card_number}
+    Set Control Text Value    [NAME:CardNumberTextbox]    ${credit_card_number}
+    Send    {TAB}
+    Take Screenshot
+
+Set Destination
+    [Arguments]    @{destination}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DestinationTextbox,DestinationTextBox    False
+    Set Control Text Value    ${object}    ${destination[0]}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DestinationLineTextBox    False
+    Set Control Text Value    ${object}    ${destination[1]}
+    Send    {TAB}
+    Take Screenshot
+
+Set Exchange Ticket Number
+    [Arguments]    ${exchange_ticket_number}
+    Set Control Text Value    [NAME:ExchangeTicketComboBox]    ${exchange_ticket_number}
+    Send    {TAB}
+    Click Control Button    [NAME:ExchangeTicketComboBox]
+    Send    {TAB}
+    Take Screenshot
+
+Set Form Of Payment Type
+    [Arguments]    ${fop_type_value}
+    Set Control Text Value    [NAME:ccboCardType]    ${fop_type_value}
+    Click Control Button    [NAME:ccboCardType]
+    Sleep    1
+    Send    {ENTER}
+    Sleep    1
+    Comment    Send    {TAB}
+
+Set Low Fare
+    [Arguments]    ${low_fare}
+    ${object}    Determine Multiple Object Name Based On Active Tab    LowFareTextBox,LowFareTextbox    False
+    Set Control Text Value    ${object}    ${low_fare}
+
+Set Lowest Fare Carrier Code
+    [Arguments]    ${lfcc}
+    Set Control Text Value    [NAME:LowestCarrierCodeTextbox]    ${lfcc}
+    Send    {TAB}
+    Take Screenshot
+
+Set Merchant Fee
+    [Arguments]    ${merchant_fee_value}
+    Set Control Text Value    [NAME:MerchantFeeTextbox]    ${merchant_fee_value}
+    Send    {TAB}
+    Take Screenshot
+
+Set Passenger ID
+    [Arguments]    ${passenger_id}
+    Comment    Set Control Text Value    [NAME:PassengerIdTextbox]    ${passenger_id}
+    Comment    Send    {TAB}
+    Comment    Take Screenshot
+    ${object}    Determine Multiple Object Name Based On Active Tab    PassengerIdTextbox,PassengerIdTextBox    FALSE
+    Log    ${object}
+    Set Control Text Value    ${object}    ${passenger_id}
+    Send    {TAB}
+    Take Screenshot
+    Set Suite Variable    ${passenger_id}
+    Comment    ${object_is_visible} =    Run Keyword And Return Status    Verify Control Object Is Visible    [NAME:PassengerIdTextbox]
+    Comment    ${object_id} =    Set Variable If    '${object_is_visible}'=='true'    [NAME:PassengerIdTextbox]    ${EMPTY}
+    Comment    ${object_is_visible} =    Run Keyword And Return Status    Verify Control Object Is Visible    [NAME:PassengerIdTextBox]
+    Comment    ${object_id} =    Set Variable If    '${object_is_visible}'=='true'    [NAME:PassengerIdTextBox]    ${EMPTY}
+    Comment    Should Not Be Equal    ${object_id}    ${EMPTY}
+    Comment    Set Control Text Value    ${object_id}    ${passenger_id}
+    Comment    Send    {TAB}
+    Comment    Take Screenshot
+
+Set Reference Fare
+    [Arguments]    ${ref_fare}
+    Set Control Text Value    [NAME:ReferenceFareTextbox]    ${ref_fare}
+    Send    {TAB}
+    Take Screenshot
+
+Set Selling Fare
+    [Arguments]    ${selling_fare_value}
+    Set Control Text Value    [NAME:SellingFareTextbox]    ${selling_fare_value}
+    Send    {TAB}
+    Take Screenshot
+
+Set Tax Amount 1
+    [Arguments]    ${tax_amount_value}
+    Set Control Text Value    [NAME:Tax1Textbox]    ${tax_amount_value}
+    Send    {TAB}
+    Take Screenshot
+
+Set Tax Amount 2
+    [Arguments]    ${tax_amount_value}
+    Set Control Text Value    [NAME:Tax2Textbox]    ${tax_amount_value}
+    Send    {TAB}
+    Take Screenshot
+
+Set Tax Code 1
+    [Arguments]    ${tax_code_value}
+    Set Control Text Value    [NAME:Tax1TaxCodeTextbox]    ${tax_code_value}
+    Send    {TAB}
+    Take Screenshot
+
+Set Tax Code 2
+    [Arguments]    ${tax_code_value}
+    Set Control Text Value    [NAME:Tax2TaxCodeTextbox]    ${tax_code_value}
+    Send    {TAB}
+    Take Screenshot
+
+Set Ticket Number
+    [Arguments]    ${ticket_number}
+    Set Control Text Value    [NAME:TicketNumberComboBox]    ${ticket_number}
+    Send    {TAB}
+    Click Control Button    [NAME:TicketNumberComboBox]
+    Send    {ENTER}{TAB}
+    Take Screenshot
+    Comment    Select Dropdown Value    [NAME:TicketNumberComboBox]    ${ticket_number}
+    Comment    Take Screenshot
+
+Set Transaction Fee Value
+    [Arguments]    ${transaction_fee_value}
+    Set Control Text Value    [NAME:TransactionFeeTextbox]    ${transaction_fee_value}
+    Send    {TAB}
+    Take Screenshot
+
+Set Vendor Type
+    [Arguments]    ${vendor_type_value}
+    Set Control Text Value    [NAME:FopVendorComboBox]    ${vendor_type_value}
+    Click Control Button    [NAME:FopVendorComboBox]
+    Sleep    1
+    Send    {ENTER}
+    Sleep    1
+    Take Screenshot

@@ -1,0 +1,805 @@
+{
+  "CaseInfo": {
+    "CaseNumber": "AmendAPTest2",
+    "Workflow": "Amend",
+    "RecordLocator": "UAV33I",
+    "APIntegration": "MLP1",
+    "Travelers": {
+      "isCaseTraveler": "true",
+      "isCaseArranger": "true",
+      "isCaseSponsor": "false",
+      "TravelerGDSLookUpResponseType": {
+        "ResponseMsgList": {
+          "ResponseMessage": [
+            {
+              "message": "SUCCESS"
+            }
+          ],
+          "responseCode": "10000",
+          "dateTime": "2019-04-02T19:00:18-0700"
+        },
+				  "Traveler": {
+					"Client": {
+					  "ClientTop": {
+						"Address": null,
+						"Any": null,
+						"guid": "A:19732",
+						"departmentCode": null,
+						"name": "FR Amadeus 1 - SyEx",
+						"AnyAttr": null
+					  },
+					  "ClientSub": [
+						{
+						  "clientMasterCode": null,
+						  "Address": null,
+						  "Any": null,
+						  "guid": "A:19734",
+						  "departmentCode": null,
+						  "name": "FR - Amadeus Sub2",
+						  "AnyAttr": null
+						}
+					  ],
+					  "Any": null
+					},
+					"TravelerType": {
+					  "guid": "A:145BD",
+					  "name": null,
+					  "type": "FR - General",
+					  "typeCode": null,
+					  "AnyAttr": null
+					},
+					"ClientTopTravelerType": null,
+					"BaseTravelerType": null,
+					"TravelerExternalIds": null,
+					"Item": {
+					  "Person": {
+						"Name": {
+						  "namePrefix": "Mr",
+						  "firstName": "PIERRE",
+						  "middleName": null,
+						  "lastName": "NORMANDIE",
+						  "nameSuffix": null,
+						  "preferredName": null,
+						  "localLanguageLastName": null,
+						  "localLanguageFirstName": null,
+						  "AnyAttr": null
+						},
+						"Citizenships": {
+						  "Citizenship": [
+							{
+							  "country": "FR",
+							  "errorGroupIdRef": null,
+							  "AnyAttr": null
+							}
+						  ],
+						  "Any": null
+						},
+						"CountryOfResidency": null,
+						"Languages": {
+						  "Language": [
+							{
+							  "languageCode": "fr_FR",
+							  "preferredSpecified": false,
+							  "AnyAttr": null
+							}
+						  ],
+						  "Any": null
+						},
+						"Any": null,
+						"gender": "Male",
+						"birthDate": "1982-06-20",
+						"passengerType": "Adult",
+						"AnyAttr": null
+					  },
+					  "Preferences": {
+						"PersonalPreferences": {
+						  "PrivacyOptions": [
+							{
+							  "type": "Data Protection Act",
+							  "clientDpsOption": "TravelerPreference",
+							  "clientInformationServiceOptionSpecified": false,
+							  "lastDecisionDate": null,
+							  "acceptanceFlagSpecified": false,
+							  "errorGroupIdRef": null,
+							  "AnyAttr": null
+							}
+						  ],
+						  "PersonRemark": null,
+						  "Any": null
+						},
+						"AirPreferences": {
+						  "Seat": {
+							"deck": "No Preference",
+							"location": "No Preference",
+							"side": "No Preference",
+							"position": "No Preference",
+							"facingDirection": null,
+							"type": "Aisle",
+							"sippCode": null,
+							"remark": null,
+							"AnyAttr": null
+						  },
+						  "Meals": [
+							{
+							  "remark": null,
+							  "mealCode": "NPML",
+							  "mealFrequency": null,
+							  "AnyAttr": null
+							}
+						  ],
+						  "AirSpecialRequest": null,
+						  "Any": null,
+						  "smokingPreference": "Non Smoking",
+						  "eTicketFlag": true,
+						  "eTicketFlagSpecified": true,
+						  "homeAirport": null,
+						  "homeCity": null,
+						  "remark": null,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						},
+						"CarPreferences": {
+						  "Any": null,
+						  "class": "Intermediate",
+						  "type": "Car",
+						  "airConditioningFlag": true,
+						  "airConditioningFlagSpecified": true,
+						  "automaticTransmissionFlag": true,
+						  "automaticTransmissionFlagSpecified": true,
+						  "smokingPreference": null,
+						  "remark": null,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						},
+						"HotelPreferences": {
+						  "Any": null,
+						  "roomType": "No Preference",
+						  "bedType": "No Preference",
+						  "propertyClass": null,
+						  "smokingPreference": "Non Smoking",
+						  "remark": null,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						},
+						"RailPreferences": {
+						  "Seat": {
+							"deck": null,
+							"location": null,
+							"side": null,
+							"position": null,
+							"facingDirection": "No Preference",
+							"type": "Aisle",
+							"sippCode": null,
+							"remark": null,
+							"AnyAttr": null
+						  },
+						  "Meals": null,
+						  "Any": null,
+						  "homeStation": null,
+						  "smokingPreference": "No Preference",
+						  "remark": null,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						},
+						"Any": null
+					  },
+					  "PersonalCarList": null,
+					  "ContactInfo": {
+						"Addresses": null,
+						"EmailAddresses": [
+						  {
+							"type": "Work",
+							"emailAddress": "pnormandie@carlsonwagonlit.Fr",
+							"receiveEInvoice": false,
+							"receiveEInvoiceSpecified": true,
+							"receiveEItinerary": true,
+							"receiveEItinerarySpecified": true,
+							"errorGroupIdRef": null,
+							"AnyAttr": null
+						  }
+						],
+						"Telephones": [
+						  {
+							"usage": "Mobile",
+							"deviceType": "Voice",
+							"country": "FR",
+							"countryAccessCode": null,
+							"areaCode": null,
+							"phoneNumber": "33-635577098",
+							"stdFmtPhoneNumber": "33-635577098",
+							"extension": null,
+							"preferred": false,
+							"preferredSpecified": true,
+							"errorGroupIdRef": null,
+							"AnyAttr": null
+						  }
+						],
+						"MobileDevices": null,
+						"EmergencyContacts": {
+						  "Refused": false,
+						  "RefusedSpecified": true,
+						  "EmergencyContact": [
+							{
+							  "Telephone": null,
+							  "EmailAddress": null,
+							  "Any": null,
+							  "name": null,
+							  "relationship": null,
+							  "countryCode": null,
+							  "errorGroupIdRef": null,
+							  "AnyAttr": null
+							}
+						  ]
+						},
+						"Any": null
+					  },
+					  "CreditCards": null,
+					  "TravelDocuments": {
+						"Visas": null,
+						"Passports": {
+						  "Passport": [
+							{
+							  "number": "11616189",
+							  "issuingCountry": "FR",
+							  "nameOnDocument": null,
+							  "effectiveDate": null,
+							  "expireDate": "2021-03-03",
+							  "dateOfIssue": null,
+							  "issueLocation": null,
+							  "placeOfIssue": null,
+							  "placeOfIssueCountry": null,
+							  "primarySpecified": false,
+							  "errorGroupIdRef": null,
+							  "AnyAttr": null
+							},
+							{
+							  "number": "3616199",
+							  "issuingCountry": "ES",
+							  "nameOnDocument": null,
+							  "effectiveDate": null,
+							  "expireDate": "2019-07-15",
+							  "dateOfIssue": null,
+							  "issueLocation": null,
+							  "placeOfIssue": null,
+							  "placeOfIssueCountry": null,
+							  "primarySpecified": false,
+							  "errorGroupIdRef": null,
+							  "AnyAttr": null
+							},
+							{
+							  "number": "0998690",
+							  "issuingCountry": "FR",
+							  "nameOnDocument": null,
+							  "effectiveDate": null,
+							  "expireDate": "2020-04-20",
+							  "dateOfIssue": null,
+							  "issueLocation": null,
+							  "placeOfIssue": null,
+							  "placeOfIssueCountry": null,
+							  "primarySpecified": false,
+							  "errorGroupIdRef": null,
+							  "AnyAttr": null
+							}
+						  ],
+						  "hasTravelerPassport": true,
+						  "hasTravelerPassportSpecified": true
+						},
+						"NationalIds": [
+						  {
+							"Item": null,
+							"number": "4838285",
+							"country": "FR",
+							"stateProvince": null,
+							"dateOfIssue": null,
+							"placeOfIssue": null,
+							"expireDate": "2022-09-22",
+							"primarySpecified": false,
+							"errorGroupIdRef": null,
+							"AnyAttr": null
+						  },
+						  {
+							"Item": null,
+							"number": "78269198",
+							"country": "AU",
+							"stateProvince": null,
+							"dateOfIssue": null,
+							"placeOfIssue": null,
+							"expireDate": "2020-08-24",
+							"primarySpecified": false,
+							"errorGroupIdRef": null,
+							"AnyAttr": null
+						  }
+						],
+						"DriverLicenses": null,
+						"Vaccinations": null,
+						"Redress": null,
+						"KnownTraveler": null,
+						"Any": null
+					  },
+					  "DiscountCards": null,
+					  "Memberships": null,
+					  "Relationships": null,
+					  "ReportingFields": [
+						{
+						  "Any": null,
+						  "name": "DepartmentName",
+						  "value": "DEV TEAM",
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						}
+					  ],
+					  "CounselorComments": null,
+					  "ETicketFormOfIdList": null,
+					  "Any": null,
+					  "isVerified": false,
+					  "isVerifiedSpecified": true,
+					  "errorGroupIdRef": null,
+					  "AnyAttr": null
+					},
+					"GDSList": [
+					  {
+						"ClientGDSInfo": [
+						  {
+							"TravelerGDSInfo": [
+							  {
+								"TempClientSub": null,
+								"TempClientTopTravelerType": null,
+								"TempBaseTravelerType": null,
+								"gdsProfileId": "",
+								"travelerRecordLocator": null,
+								"globalIndexId": "FXLVKSE21WZFZ370",
+								"idGeneratedBySvs": true,
+								"idGeneratedBySvsSpecified": true,
+								"isGDSProfileTemp": false,
+								"isGDSProfileTempSpecified": true,
+								"pnrBuilderId": null,
+								"pnrBuilderName": null
+							  }
+							],
+							"lineDefName": "Amadeus",
+							"companyProfileName": "SYEXFR2",
+							"psuedoCityOfficeId": "PARWL221B",
+							"clientRecordLocator": null,
+							"useExternalIdFlag": false,
+							"useExternalIdFlagSpecified": true
+						  }
+						],
+						"name": "AMADEUS"
+					  }
+					],
+					"Any": null,
+					"guid": "A:6396802",
+					"pin": "11930508",
+					"activationDate": "2012-04-20",
+					"expirationDate": "2200-01-31",
+					"scheduledPurgeDate": null,
+					"status": "Active",
+					"changeVersion": "18",
+					"isArranger": false,
+					"isArrangerSpecified": true,
+					"isAuthorizer": false,
+					"isAuthorizerSpecified": true,
+					"AnyAttr": null
+				  }
+				}
+			  },
+			  {
+				"isCaseTraveler": "false",
+				"isCaseArranger": "false",
+				"isCaseSponsor": "true",
+				"TravelerGDSLookUpResponseType": {
+				  "ResponseMsgList": {
+					"ResponseMessage": [
+					  {
+						"message": "SUCCESS"
+					  }
+					],
+					"responseCode": "10000",
+					"dateTime": "2019-04-02T19:00:18-0700"
+				  },
+				  "Traveler": {
+					"Client": {
+					  "ClientTop": {
+						"Address": null,
+						"Any": null,
+						"guid": "A:19732",
+						"departmentCode": null,
+						"name": "FR Amadeus 1 - SyEx",
+						"AnyAttr": null
+					  },
+					  "ClientSub": [
+						{
+						  "clientMasterCode": null,
+						  "Address": null,
+						  "Any": null,
+						  "guid": "A:19734",
+						  "departmentCode": null,
+						  "name": "FR - Amadeus Sub2",
+						  "AnyAttr": null
+						}
+					  ],
+					  "Any": null
+					},
+					"TravelerType": {
+					  "guid": "A:143C9",
+					  "name": null,
+					  "type": "VIP",
+					  "typeCode": null,
+					  "AnyAttr": null
+					},
+					"ClientTopTravelerType": null,
+					"BaseTravelerType": null,
+					"TravelerExternalIds": null,
+					"Item": {
+					  "Person": {
+						"Name": {
+						  "namePrefix": "Mrs",
+						  "firstName": "ISABELLE",
+						  "middleName": null,
+						  "lastName": "NORMANDIE",
+						  "nameSuffix": null,
+						  "preferredName": null,
+						  "localLanguageLastName": null,
+						  "localLanguageFirstName": null,
+						  "AnyAttr": null
+						},
+						"Citizenships": {
+						  "Citizenship": [
+							{
+							  "country": "FR",
+							  "errorGroupIdRef": null,
+							  "AnyAttr": null
+							}
+						  ],
+						  "Any": null
+						},
+						"CountryOfResidency": {
+						  "country": "FR",
+						  "AnyAttr": null
+						},
+						"Languages": {
+						  "Language": [
+							{
+							  "languageCode": "fr_FR",
+							  "preferredSpecified": false,
+							  "AnyAttr": null
+							}
+						  ],
+						  "Any": null
+						},
+						"Any": null,
+						"gender": "Female",
+						"birthDate": "1995-05-31",
+						"passengerType": "Adult",
+						"AnyAttr": null
+					  },
+					  "Preferences": {
+						"PersonalPreferences": {
+						  "PrivacyOptions": [
+							{
+							  "type": "Data Protection Act",
+							  "clientDpsOption": "TravelerPreference",
+							  "clientInformationServiceOptionSpecified": false,
+							  "lastDecisionDate": null,
+							  "acceptanceFlagSpecified": false,
+							  "errorGroupIdRef": null,
+							  "AnyAttr": null
+							}
+						  ],
+						  "PersonRemark": null,
+						  "Any": null
+						},
+						"AirPreferences": {
+						  "Seat": {
+							"deck": "No Preference",
+							"location": "No Preference",
+							"side": "No Preference",
+							"position": "No Preference",
+							"facingDirection": null,
+							"type": "Aisle",
+							"sippCode": null,
+							"remark": null,
+							"AnyAttr": null
+						  },
+						  "Meals": [
+							{
+							  "remark": null,
+							  "mealCode": "NPML",
+							  "mealFrequency": null,
+							  "AnyAttr": null
+							}
+						  ],
+						  "AirSpecialRequest": null,
+						  "Any": null,
+						  "smokingPreference": "Non Smoking",
+						  "eTicketFlag": true,
+						  "eTicketFlagSpecified": true,
+						  "homeAirport": null,
+						  "homeCity": null,
+						  "remark": null,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						},
+						"CarPreferences": {
+						  "Any": null,
+						  "class": "Intermediate",
+						  "type": "Car",
+						  "airConditioningFlag": true,
+						  "airConditioningFlagSpecified": true,
+						  "automaticTransmissionFlag": true,
+						  "automaticTransmissionFlagSpecified": true,
+						  "smokingPreference": null,
+						  "remark": null,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						},
+						"HotelPreferences": {
+						  "Any": null,
+						  "roomType": "No Preference",
+						  "bedType": "No Preference",
+						  "propertyClass": null,
+						  "smokingPreference": "Non Smoking",
+						  "remark": null,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						},
+						"RailPreferences": {
+						  "Seat": {
+							"deck": null,
+							"location": null,
+							"side": null,
+							"position": null,
+							"facingDirection": "No Preference",
+							"type": "Aisle",
+							"sippCode": null,
+							"remark": null,
+							"AnyAttr": null
+						  },
+						  "Meals": null,
+						  "Any": null,
+						  "homeStation": null,
+						  "smokingPreference": "Non Smoking",
+						  "remark": null,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						},
+						"Any": null
+					  },
+					  "PersonalCarList": null,
+					  "ContactInfo": {
+						"Addresses": null,
+						"EmailAddresses": [
+						  {
+							"type": "Work",
+							"emailAddress": "gmontelimard@carlsonwagonlit.fr",
+							"receiveEInvoice": false,
+							"receiveEInvoiceSpecified": true,
+							"receiveEItinerary": false,
+							"receiveEItinerarySpecified": true,
+							"errorGroupIdRef": null,
+							"AnyAttr": null
+						  }
+						],
+						"Telephones": [
+						  {
+							"usage": "Mobile",
+							"deviceType": "Voice",
+							"country": "FR",
+							"countryAccessCode": null,
+							"areaCode": null,
+							"phoneNumber": "33-635577098",
+							"stdFmtPhoneNumber": "33-635577098",
+							"extension": null,
+							"preferred": true,
+							"preferredSpecified": true,
+							"errorGroupIdRef": null,
+							"AnyAttr": null
+						  },
+						  {
+							"usage": "Work",
+							"deviceType": "Voice",
+							"country": "FR",
+							"countryAccessCode": null,
+							"areaCode": null,
+							"phoneNumber": "33-6-35577098",
+							"stdFmtPhoneNumber": "33-635577098",
+							"extension": null,
+							"preferred": false,
+							"preferredSpecified": true,
+							"errorGroupIdRef": null,
+							"AnyAttr": null
+						  }
+						],
+						"MobileDevices": null,
+						"EmergencyContacts": {
+						  "Refused": true,
+						  "RefusedSpecified": true,
+						  "EmergencyContact": [
+							{
+							  "Telephone": null,
+							  "EmailAddress": null,
+							  "Any": null,
+							  "name": null,
+							  "relationship": null,
+							  "countryCode": null,
+							  "errorGroupIdRef": null,
+							  "AnyAttr": null
+							}
+						  ]
+						},
+						"Any": null
+					  },
+					  "CreditCards": [
+						{
+						  "BillingAddress": null,
+						  "Any": null,
+						  "cardID": "21EC76BSE1",
+						  "vendorCode": "VI",
+						  "cardNumber": "4444333322221111",
+						  "expireDate": "2022-01-01",
+						  "description": "visa test",
+						  "nameOnCard": null,
+						  "preferredAir": true,
+						  "preferredAirSpecified": true,
+						  "preferredCar": true,
+						  "preferredCarSpecified": true,
+						  "preferredHotel": true,
+						  "preferredHotelSpecified": true,
+						  "preferredRail": true,
+						  "preferredRailSpecified": true,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						}
+					  ],
+					  "TravelDocuments": {
+						"Visas": null,
+						"Passports": {
+						  "Passport": [
+							{
+							  "number": "1234567890",
+							  "issuingCountry": "FR",
+							  "nameOnDocument": null,
+							  "effectiveDate": null,
+							  "expireDate": "2017-06-23",
+							  "dateOfIssue": null,
+							  "issueLocation": null,
+							  "placeOfIssue": null,
+							  "placeOfIssueCountry": "FR",
+							  "primarySpecified": false,
+							  "errorGroupIdRef": null,
+							  "AnyAttr": null
+							}
+						  ],
+						  "hasTravelerPassport": true,
+						  "hasTravelerPassportSpecified": true
+						},
+						"NationalIds": null,
+						"DriverLicenses": null,
+						"Vaccinations": null,
+						"Redress": null,
+						"KnownTraveler": null,
+						"Any": null
+					  },
+					  "DiscountCards": null,
+					  "Memberships": null,
+					  "Relationships": {
+						"Arrangers": [
+						  {
+							"guid": "A:6317A18",
+							"employeeId": null,
+							"firstName": "JOHN",
+							"lastName": "MARSEILLE",
+							"cwtTravelerId": "E211AWDIR4",
+							"pin": "11198764",
+							"primary": true,
+							"primarySpecified": true,
+							"receiveEInvoiceForTraveler": true,
+							"receiveEInvoiceForTravelerSpecified": true,
+							"receiveEItineraryForTraveler": true,
+							"receiveEItineraryForTravelerSpecified": true,
+							"email": "gmontelimard@carlsonwagonlit.fr",
+							"phoneNumber": "33-98765433",
+							"stdFmtPhoneNumber": "33-98765433",
+							"errorGroupIdRef": null,
+							"AnyAttr": null
+						  },
+						  {
+							"guid": "A:6316077",
+							"employeeId": null,
+							"firstName": "VICTOR",
+							"lastName": "MONTPELLIER",
+							"cwtTravelerId": "E21WETRJE0",
+							"pin": "11192747",
+							"primary": false,
+							"primarySpecified": true,
+							"receiveEInvoiceForTraveler": true,
+							"receiveEInvoiceForTravelerSpecified": true,
+							"receiveEItineraryForTraveler": true,
+							"receiveEItineraryForTravelerSpecified": true,
+							"email": "vmontpellier@carlsonwagonlit.fr",
+							"phoneNumber": "33-1-12345566",
+							"stdFmtPhoneNumber": "33-112345566",
+							"errorGroupIdRef": null,
+							"AnyAttr": null
+						  }
+						],
+						"Authorizers": null,
+						"Any": null
+					  },
+					  "ReportingFields": [
+						{
+						  "Any": null,
+						  "name": "DepartmentName",
+						  "value": "Sales",
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						}
+					  ],
+					  "CounselorComments": null,
+					  "ETicketFormOfIdList": null,
+					  "Any": null,
+					  "isVerified": false,
+					  "isVerifiedSpecified": true,
+					  "errorGroupIdRef": null,
+					  "AnyAttr": null
+					},
+					"GDSList": [
+					  {
+						"ClientGDSInfo": [
+						  {
+							"TravelerGDSInfo": [
+							  {
+								"TempClientSub": null,
+								"TempClientTopTravelerType": null,
+								"TempBaseTravelerType": null,
+								"gdsProfileId": "",
+								"travelerRecordLocator": "RB5R8W",
+								"globalIndexId": "FXLVKSE21C6D30V9",
+								"idGeneratedBySvs": false,
+								"idGeneratedBySvsSpecified": true,
+								"isGDSProfileTemp": false,
+								"isGDSProfileTempSpecified": true,
+								"pnrBuilderId": null,
+								"pnrBuilderName": null
+							  }
+							],
+							"lineDefName": "Amadeus",
+							"companyProfileName": "SYEXFR2",
+							"psuedoCityOfficeId": "PARWL221B",
+							"clientRecordLocator": "FXLVKS",
+							"useExternalIdFlag": false,
+							"useExternalIdFlagSpecified": true
+						  }
+						],
+						"name": "AMADEUS"
+					  }
+					],
+					"Any": null,
+					"guid": "A:63C1518",
+					"pin": "12329911",
+					"activationDate": "2012-05-31",
+					"expirationDate": "2200-01-31",
+					"scheduledPurgeDate": null,
+					"status": "Active",
+					"changeVersion": "58",
+					"isArranger": false,
+					"isArrangerSpecified": true,
+					"isAuthorizer": false,
+					"isAuthorizerSpecified": true,
+					"AnyAttr": null
+				  }
+				}
+			  }
+			],
+			"OneTimeContact": {
+			  "namePrefix": "Mr",
+			  "firstName": "Onetime",
+			  "lastName": "Contact",
+			  "phoneNumber": "35-2-3334455",
+			  "mobileNumber": "34-6789012",
+			  "email": "test.user@cwt.com"
+        }
+      }
+    }
+  }
+}

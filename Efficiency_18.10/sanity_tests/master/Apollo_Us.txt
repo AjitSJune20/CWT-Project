@@ -1,0 +1,91 @@
+*** Settings ***
+Force Tags        apollo    us
+Resource          ../../resources/common/global_resources.txt
+Resource          ../resource_sanity.txt
+
+*** Test Cases ***
+New Booking
+    Open Power Express And Retrieve Profile    ${version}    MASTER    U001RTM    en-US    rmartinez    US Seattle Apollo FSCE
+    Select GDS    Apollo
+    Create New Booking With One Way Flight Using Default Values    Eddie Bauer ¦ US-Eddie Bauer    DODLA    SWAPNA    DENLAX+UA    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    AX***********1101/D1120/CVV****
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    AX378759040601101/D1120/CVV****
+    Select Panel    Delivery
+    Sleep    5
+    Take Screenshot
+    Select Panel    Air Fare
+    Sleep    5
+    Take Screenshot
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Ticketing Line In Remarks
+    Verify TET Code Line In Remarks    U59-MUS
+    Verify SYEX GVS Line In Remarks    A/SYEXGV
+
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book Flight X Months From Now    LAXDEN+UA    01Y1    T:$B
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Amend Booking
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Ticketing Line In Remarks
+    Verify TET Code Line In Remarks    U59-MUS
+    Verify SYEX GVS Line In Remarks    A/SYEXGV
+
+Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Send Itinerary
+    Retrieve PNR Details from Travelport    ${current_pnr}
+    Verify TET Code Line In Remarks    U59-MUS
+
+Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Cancel Booking
+    Verify Requested Booking File Segments Is Cancelled
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify TET Code Line In Remarks    U59-MUS
+    Verify SYEX GVS Line In Remarks    A/SYEXGV
+
+*** Keywords ***
+Simultaneous Change Handling For Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book Flight X Months From Now    DENLAX    01Y1    T:$B
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+
+Simultaneous Change Handling For Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+
+Simultaneous Change Handling For Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR

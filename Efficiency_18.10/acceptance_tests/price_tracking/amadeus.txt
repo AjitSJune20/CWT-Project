@@ -1,0 +1,1552 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    amadeus
+Force Tags        amadeus
+Resource          price_tracking_verification.txt
+Resource          ../../resources/panels/price_tracking.txt
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../resources/common/utilities.txt
+Resource          ../database/database_verification.txt
+Resource          ../../resources/panels/pop_up.txt
+
+*** Test Cases ***
+[1A EMEA][PT] Verify That Correct Remarks Are Written For Air: Void, Refund and No Action
+    [Tags]    uk    us6527    us6370    us6252
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrTwo    CDGLHR/AAF
+    Click Finish PNR
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Panel    Delivery
+    Verify Ticket Queue Item Setup At Country Level Is In The List    No Ticket queue - Team    Amadeus TKXL - Team
+    Click Panel    Recap
+    Verify Overrides Or Skip Entries Default Value    ${EMPTY}
+    Verify Overrides Or Skip Entries Contains Values    Price Tracking: Skip Air    Price Tracking: Skip Hotel
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Click Finish PNR    Create Air: Void and Re-issue
+    Execute Simultaneous Change Handling    Create Air: Void and Re-issue
+    Verify Message Is Not Displayed In Summary    Sent to Back Office
+    Verify Message Is Not Displayed In Summary    Sending to Back Office Failed
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Air: Void and Re-issue
+    Verify Handling Fee Remark Is Written    Air    10.10
+    Verify Price Tracking Skip Air Remark Is Written    TKTSUSPEND
+    Verify Price Tracking Skip Hotel Remark Is Written    HOTELSUSPEND
+    Verify Duplicate Remarks Does Not Exists In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Refund and Re-issue Details    EUR    1750    1525    5    10    1234567890123
+    Get Air: Refund and Re-issue Details
+    Click Panel    Delivery
+    Verify Ticket Queue Item Setup At Country Level Is In The List    No Ticket queue - Team    Amadeus TKXL - Team
+    Click Panel    Recap
+    Verify Overrides Or Skip Entries Default Value    Price Tracking: Skip Air    1
+    Verify Overrides Or Skip Entries Default Value    Price Tracking: Skip Hotel    2
+    Click Finish PNR    Create Air: Refund and Re-issue
+    Execute Simultaneous Change Handling    Create Air: Refund and Re-issue
+    Verify Message Is Not Displayed In Summary    Sent to Back Office
+    Verify Message Is Not Displayed In Summary    Sending to Back Office Failed
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Air: Refund and Re-issue
+    Verify Handling Fee Remark Is Written    Air    10.10
+    Verify Duplicate Remarks Does Not Exists In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: No Action Details    1234567890123    TA | Airline Waiver code received – unable to change itinerary/ticket
+    Get Air: No Action Details
+    Verify Air Fare, Client Info And Delivery Panel Is Disabled For Air
+    Click Finish PNR    Create Air: No Action
+    Execute Simultaneous Change Handling    Create Air: No Action
+    Verify Message Is Not Displayed In Summary    Sent to Back Office
+    Verify Message Is Not Displayed In Summary    Sending to Back Office Failed
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Air: No Action
+    Verify Handling Fee Remark Is Not Written    Air    10.10
+    Verify Duplicate Remarks Does Not Exists In PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That Correct Remarks Are Written For Hotel: Cancel Rebook, No Action And Air: Void Again
+    [Tags]    US6301    uk    us6370    us6252
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrTwo    CDGLHR/AAF
+    Click Finish PNR
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Hotel: Cancel and Re-book Details    KUALA LUMPUR    USD    2345    345
+    Verify Hotel Saving Calculation    2000.00
+    Get Hotel: Cancel and Rebook details
+    Verify Other Panels Are Disabled For Hotel Cancel And Rebook
+    Click Panel    Recap
+    Verify Overrides Or Skip Entries Default Value    ${EMPTY}
+    Verify Overrides Or Skip Entries Contains Values    Price Tracking: Skip Air    Price Tracking: Skip Hotel
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Click Finish PNR    Create Hotel: Cancel and Rebook
+    Execute Simultaneous Change Handling    Create Hotel: Cancel and Rebook
+    Verify Message Is Displayed In Summary    Sending to Back Office Failed    #expected to fail if run in Classic
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Hotel: Cancel and Re-book
+    Verify Handling Fee Remark Is Written    Hotel    12.13
+    Verify Price Tracking Skip Air Remark Is Written    TKTSUSPEND
+    Verify Price Tracking Skip Hotel Remark Is Written    HOTELSUSPEND
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Hotel: No Action Details    BT | Client restricts change in the bedding type i.e. only allows King-Queens    12345    567890
+    Get Hotel: No Action Details
+    Comment    Click Remove From Future Price Track Checkbox    #US6941 - removal of Future Price Track Checkbox
+    Click Finish PNR    Create Hotel: No Action
+    Execute Simultaneous Change Handling    Create Hotel: No Action
+    Verify Message Is Not Displayed In Summary    Sent to Back Office
+    Verify Message Is Not Displayed In Summary    Sending to Back Office Failed
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Hotel: No Action
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR    Create Air: Void and Re-issue
+    Execute Simultaneous Change Handling    Create Air: Void and Re-issue
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Air: Void and Re-issue
+    Verify Handling Fee Remark Is Written    Air    10.10
+    Verify Handling Fee Remark Is Not Written    Hotel    12.13
+    Verify Duplicate Remarks Does Not Exists In PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA] [PT] [FI] Verify that Wings Remarks are not written in AGM PNR where only air segment is present
+    [Tags]    US6292    uk    us5962    us6640
+    [Timeout]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    FI Head Office Test Team
+    Select GDS    amadeus
+    Set Client And Traveler    Finland Sales ¦ FI-Power Tools Test Company    Navis    Debbie
+    Select Client Account    23683 ¦ TEST LOCAL CLIENT FINLAND ¦ FI-Power Tools Test Company
+    Click New Booking
+    Book Flight X Months From Now    HELJOE    SS1Y1    FXP    4
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Remove PNR Remark    RMG PCCLONWL2220
+    Enter GDS Command    RMG/OFCTEAM 1FI-001
+    Enter GDS Command    RMG/PCCHELMK2316
+    Enter GDS Command    RFCWTPTEST
+    Enter GDS Command    ER
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMG OFCTEAM 1FI-001
+    Verify Specific Line Is Written In The PNR    RMG PCCHELMK2316
+    Click Price Tracking Via Shortcut Key
+    Set Value In Pop Up    Price Track Title    YES
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR    Create Air: Void and Re-issue
+    Execute Simultaneous Change Handling    Create Air: Void and Re-issue
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Wings Remarks Are Not Written
+    Verify AGM Remarks for Domestic    ACEFEE/TT-6400/SP-8/PR-TFEEPTF/TRT-FEE/TRV-PTFEEFD
+    Verify AGM Remarks for Domestic    ACEFEE/TT-6500/SP-8/PR-RFEEPTF/TRT-FEE/TRV-PTFEEFD
+    Verify Specific Line Is Not Written In The PNR    RMG OFCTEAM 1FI-001
+    Verify Specific Line Is Not Written In The PNR    RMG PCCHELMK2316
+    Enter GDS Command    RMG/OFCTEAM 1FI-001
+    Enter GDS Command    RMG/PCCHELMK2316
+    Enter GDS Command    RFCWTPTEST
+    Enter GDS Command    ER
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Set Value In Pop Up    Price Track Title    YES
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMG OFCTEAM 1FI-001
+    Verify Specific Line Is Written In The PNR    RMG PCCHELMK2316
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Air: Refund and Re-issue Details    EUR    1750    1525    5    10    1234567890123
+    Get Air: Refund and Re-issue Details
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Create Air: Refund and Re-issue
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Second Price Track AGM Domestic Remarks    ACEFEE/TT-6401/SP-8/PR-TFEEPTF/TRT-FEE/TRV-PTFEEFD
+    Verify Second Price Track AGM Domestic Remarks    ACEFEE/TT-6501/SP-8/PR-RFEEPTF/TRT-FEE/TRV-PTFEEFD
+    Verify Specific Line Is Not Written In The PNR    RMG OFCTEAM 1FI-001
+    Verify Specific Line Is Not Written In The PNR    RMG PCCHELMK2316
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA] [PT] [FI] Verify that Wings Remarks are not written in AGM PNR where only hotel segment is present
+    [Tags]    US6292    uk    us5962
+    [Timeout]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    FI Head Office Test Team
+    Select GDS    amadeus
+    Set Client And Traveler    Finland Sales ¦ FI-Power Tools Test Company    Navis    Debbie
+    Select Client Account    23683 ¦ TEST LOCAL CLIENT FINLAND ¦ FI-Power Tools Test Company
+    Click New Booking
+    Book Flight X Months From Now    JOEHEL    SS1Y1    FXP    6
+    Add Y Remarks In The PNR
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Remove PNR Remark    RMG PCCLONWL2220
+    Enter GDS Command    RMG/OFCTEAM 1FI-001
+    Enter GDS Command    RMG/PCCHELMK2316
+    Enter GDS Command    RFCWTPTEST
+    Enter GDS Command    ER
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMG OFCTEAM 1FI-001
+    Verify Specific Line Is Written In The PNR    RMG PCCHELMK2316
+    Click Price Tracking Via Shortcut Key
+    Set Value In Pop Up    Price Track Title    YES
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Hotel: Cancel and Re-book Details    NEW MEXICO    USD    2345    345
+    Get Hotel: Cancel and Rebook details
+    Click Finish PNR    Create Hotel: Cancel and Rebook
+    Execute Simultaneous Change Handling    Create Hotel: Cancel and Rebook
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Wings Remarks Are Not Written
+    Verify AGM Remarks for International    ACEMSC/TT-6600/SP-8/PR-TFEEPTP/QT-1/UP-200.00
+    Verify Specific Line Is Not Written In The PNR    RMG OFCTEAM 1FI-001
+    Verify Specific Line Is Not Written In The PNR    RMG PCCHELMK2316
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    RMG/OFCTEAM 1FI-001
+    Enter GDS Command    RMG/PCCHELMK2316
+    Enter GDS Command    RFCWTPTEST
+    Enter GDS Command    ER
+    Click Price Tracking Via Shortcut Key
+    Set Value In Pop Up    Price Track Title    YES
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Hotel: No Action Details    AM | Changes in amenities includes multiple or single losses    12345    567890
+    Get Hotel: No Action Details
+    Click Finish PNR    Create Hotel: No Action
+    Execute Simultaneous Change Handling    Create Hotel: No Action
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify AGM Remarks for International    ACEMSC/TT-6600/SP-8/PR-TFEEPTP/QT-1/UP-200.00
+    Verify Specific Line Is Written In The PNR    RMG OFCTEAM 1FI-001
+    Verify Specific Line Is Written In The PNR    RMG PCCHELMK2316
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That *3311**Hnn*2HP Label Is Added Into The PNR For Online Booking When Hotel Action Is Cancel and Rebook
+    [Tags]    us6362    TRN    fr
+    [Timeout]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ US2837 KDS    AUTOONEFIVETWO    EMEATRVLRONE    CDGFRA/AAF
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    RM *3013**H01*ROH
+    Enter GDS Command    RM *3305**H01*XX
+    Enter GDS Command    RM *3311**H01*4HH
+    Enter GDS Command    RM *3311**H02*4HH
+    Enter GDS Command    RM *3318**H01*G
+    Enter GDS Command    RM *3224**H01*10
+    End And Retrieve PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel Cancel and Re-book Calculation    NEW MEXICO    USD    2345    345    2000.00
+    Click Finish PNR    Simultaneous Change to Verify *3311**Hnn*2HP Label is added when Hotel Action is Cancel and Rebook
+    Execute Simultaneous Change Handling    Simultaneous Change to Verify *3311**Hnn*2HP Label is added when Hotel Action is Cancel and Rebook
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H02*4HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311**H02*2HP
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That *3311**Hnn*2HP Label Is Added Into The PNR For Online Booking When Hotel Action Is No Action
+    [Tags]    us6362    TRN    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ US2837 KDS    AUTOONEFIVETWO    EMEATRVLRONE    CDGLHR/AAF
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    RM *3013**H01*ROH
+    Enter GDS Command    RM *3305**H01*XX
+    Enter GDS Command    RM *3311**H01*4HH
+    Enter GDS Command    RM *3318**H01*G
+    Enter GDS Command    RM *3224**H01*10
+    End And Retrieve PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Populate Hotel No Action    89991ABC    CD | Hotel Deposit Required    2222
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311**H01*2HP
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That *3311**Hnn*0HP Label Is Added Into The PNR For Offline Booking When Hotel Action Is Cancel And Rebook
+    [Tags]    us6362    TRN    fr    us6527    us6252
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOn    CDGLHR/AAF
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    RM *3013**H01*ROH
+    Enter GDS Command    RM *3305**H01*XX
+    Enter GDS Command    RM *3311**H01*0HH
+    Enter GDS Command    RM *3318**H01*G
+    Enter GDS Command    RM *3224**H01*10
+    End And Retrieve PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel Cancel and Re-book Calculation    Manila    USD    2345    345    2000.00
+    Click Panel    Delivery
+    Verify Ticket Queue Item Setup At Country Level Is In The List    Amadeus TKOK - Team
+    Click Finish PNR    Simultaneous Change to Verify *3311**Hnn*0HP is added when Hotel Action is Cancel and Rebook
+    Execute Simultaneous Change Handling    Simultaneous Change to Verify *3311**Hnn*0HP is added when Hotel Action is Cancel and Rebook
+    Verify Back Office Message Display
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That *3311**Hnn*0HP Label Is Added Into The PNR For Offline Booking When Hotel Action Is No Action
+    [Tags]    us6362    TRN    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOn    CDGLHR/AAF
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    RM *3013**H01*ROH
+    Enter GDS Command    RM *3305**H01*XX
+    Enter GDS Command    RM *3311**H01*0HH
+    Enter GDS Command    RM *3311**H02*0HH
+    Enter GDS Command    RM *3311**H03*0HH
+    Enter GDS Command    RM *3318**H01*G
+    Enter GDS Command    RM *3224**H01*10
+    End And Retrieve PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Populate Hotel No Action    87571    NS | YAPTA lower rate no longer available / property not availability    1111
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311**H03*0HP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That *3311**Hnn*0HP Label Is Not Added Into The PNR For Offline Booking Without Hotel Segment
+    [Tags]    us6362    TRN    fr    us6252
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOn    CDGLHR/AAF
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Not Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Not Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Not Written In The PNR    *3224**H01*10
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel Cancel and Re-book Calculation    Manila    USD    2345    345    2000.00
+    Click Finish PNR
+    Verify Back Office Message Display
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Not Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Not Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Not Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*0HP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That *3311**Hnn*2HP Label Is Not Added Into The PNR For Online Booking Without Hotel Segment
+    [Tags]    us6362    TRN    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ US2837 KDS    AUTOONEFIVETWO    EMEATRVLRONE    CDGLHR/AAF
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Not Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Not Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Not Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Populate Hotel No Action    89991ABC    NF | Rate is a frequent guest stay rate / traveler not a hotel program member    2222
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Not Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Not Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Not Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*2HP
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That *3311**Hnn*0HP Label Is Not Added Into The PNR For Offline Booking When Price Tracking Action Taken Is Air Void And Reissue
+    [Tags]    us6362    TRN    fr    us6527
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOn    CDGLHR/AAF
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    RM *3013**H01*ROH
+    Enter GDS Command    RM *3305**H01*XX
+    Enter GDS Command    RM *3311**H01*0HH
+    Enter GDS Command    RM *3318**H01*G
+    Enter GDS Command    RM *3224**H01*10
+    End And Retrieve PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    745    445    10    0575757272081
+    Click Panel    Delivery
+    Verify Ticket Queue Item Setup At Country Level Is In The List    Amadeus TKOK - Team
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*0HP
+    Click Clear All
+    [Teardown]
+
+[1A EMEA][PT] Verify That *3311**Hnn*0HP Label Is Not Added Into The PNR For Offline Booking When Price Tracking Action Taken Is Air Refund And Re-Issue
+    [Tags]    us6362    TRN    fr    us6370
+    Retrieve PNR    ${current_pnr}
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Air: Refund and Re-issue Details    EUR    845    575    5    25    0575757272081
+    Click Panel    Recap
+    Verify Overrides Or Skip Entries Contains Values    Price Tracking: Skip Air    Price Tracking: Skip Hotel
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*0HP
+    Verify Price Tracking Skip Air Remark Is Written    TKTSUSPEND
+    Verify Price Tracking Skip Hotel Remark Is Written    HOTELSUSPEND
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That *3311**Hnn*2HP Label Is Not Added Into The PNR For Online Booking When Action Taken Is Air No Action
+    [Tags]    us6362    TRN    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ US2837 KDS    AUTOONEFIVETWO    EMEATRVLRONE    LHRCDG/AAF
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    RM *3013**H01*ROH
+    Enter GDS Command    RM *3305**H01*XX
+    Enter GDS Command    RM *3311**H01*4HH
+    Enter GDS Command    RM *3318**H01*G
+    Enter GDS Command    RM *3224**H01*10
+    End And Retrieve PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: No Action
+    Populate Air: No Action Details    0575757272081    NQ | Original ticket priced with a pricing qualifier (XA, XP, XR)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3305**H01*XX
+    Verify Specific Line Is Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line is Not Written In The PNR    *3311**H01*2HP
+    Verify Specific Line Is Written In The PNR    *3311*3KD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT][UK] Verify That Default Remarks Are Written For Realised Missed Savings And Class Code
+    [Tags]    us6392    us6393    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrTwo    CDGLHR/AAF    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Get Class Code Value    Fare 1
+    Click Finish PNR
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Air Fare    Recap
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    XX - No Saving
+    Verify Missed Savings Code Default Value    L - Lowest Fare Accepted
+    Verify Class Code Value Defaults To Previous Value    Fare 1
+    Get Savings Code    Fare 1
+    Populate Air Fare Restrictions Using Default Values
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR    Create Air: Void and Re-issue With Realised Missed Savings And Class Code
+    Execute Simultaneous Change Handling    Create Air: Void and Re-issue With Realised Missed Savings And Class Code
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HC-XX LC-L
+    Verify Class Code Retained In PNR Wings Remarks    Fare 1
+    Verify Savings Code Remarks Are Written    S2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT][FI] Verify That FI Sales Channel Remark Is Updated When Air: Void And Re-issue Is Selected And Expected Remark Is Present
+    [Tags]    uk    US6618
+    [Timeout]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    FI Head Office Test Team
+    Select GDS    amadeus
+    Set Client And Traveler    Finland Sales ¦ FI-Power Tools Test Company    Hotari    Hanna
+    Select Client Account    23683 ¦ TEST LOCAL CLIENT FINLAND ¦ FI-Power Tools Test Company
+    Click New Booking
+    Book Flight X Months From Now    HELJOE    SS1Y1    FXP    4
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Enter GDS Command    RM*ACESCH-COH
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RM *ACESCH-COH
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Click Price Tracking Via Shortcut Key
+    Set Value In Pop Up    Price Track Title    YES
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR    Create Air: Void and Re-issue
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RM *ACESCH-S
+    Verify Specific Line Is Not Written In The PNR    RM *ACESCH-COH
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT][FI] Verify That FI Sales Channel Remark Is Updated When Hotel: Cancel And Rebook Is Selected And Expected Remark Is Present
+    [Tags]    uk    US6618
+    [Timeout]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    FI Head Office Test Team
+    Select GDS    amadeus
+    Set Client And Traveler    Finland Sales ¦ FI-Power Tools Test Company    Hotari    Hanna
+    Select Client Account    23683 ¦ TEST LOCAL CLIENT FINLAND ¦ FI-Power Tools Test Company
+    Click New Booking
+    Book Flight X Months From Now    HELJOE    SS1Y1    FXP    4
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Enter GDS Command    RM*ACESCH-GO
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RM *ACESCH-GO
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Click Price Tracking Via Shortcut Key
+    Set Value In Pop Up    Price Track Title    YES
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel Cancel and Re-book Calculation    Manila    USD    2345    345    2000.00
+    Click Finish PNR    Create Air: Void and Re-issue
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RM *ACESCH-S
+    Verify Specific Line Is Not Written In The PNR    RM *ACESCH-GO
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT][FI] Verify That FI Sales Channel Remark Is Not Updated Expected Remark Is Not Present
+    [Tags]    uk    US6618
+    [Timeout]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    FI Head Office Test Team
+    Select GDS    amadeus
+    Set Client And Traveler    Finland Sales ¦ FI-Power Tools Test Company    Hotari    Hanna
+    Select Client Account    23683 ¦ TEST LOCAL CLIENT FINLAND ¦ FI-Power Tools Test Company
+    Click New Booking
+    Book Flight X Months From Now    HELJOE    SS1Y1    FXP    4
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Enter GDS Command    RM*ACESCH-XYZ
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RM *ACESCH-XYZ
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Click Price Tracking Via Shortcut Key
+    Set Value In Pop Up    Price Track Title    YES
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR    Create Air: Void and Re-issue
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RM *ACESCH-XYZ
+    Verify Specific Line Is Not Written In The PNR    RM *ACESCH-S
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify that Client Info Panel is Disabled and Unable to End PNR Successfully when no FOP Selected for Hotel: Cancel and Rebook
+    [Documentation]    Service Option: Manadate FOP at End PNR
+    ...
+    ...    Value: Mandate with Onhold
+    [Tags]    US6646    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrTwo
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Click Create Shell
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    Client Info
+    Verify Not Known at Time of Booking is Unticked
+    Select Form Of Payment    ${EMPTY}
+    Click Panel    PriceTracking
+    Populate Hotel: Cancel and Re-book Details    Seattle    USD    2345    345
+    Verify Client Info Panel Is Disabled
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Click Panel    Recap
+    Verify Panel Is Red    Recap
+    Click Send To PNR
+    Sleep    15
+    Verify Error(Expected) In Status Strip Text    Update Aborted - Please validate all activity panels
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify that Client Info Panel is Disabled and Able to End PNR Successfully when no FOP Selected for Hotel: No Action
+    [Documentation]    Service Option: Manadate FOP at End PNR
+    ...
+    ...    Value: Mandate with Onhold
+    [Tags]    US6646    US6637    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrTwo
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Click Create Shell
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    Client Info
+    Verify Not Known at Time of Booking is Unticked
+    Select Form Of Payment    ${EMPTY}
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Verify Hotel Rate Code Field is Mandatory
+    Populate Hotel: No Action Details    BT | Client restricts change in the bedding type i.e. only allows King-Queens    12345    567890
+    Verify Client Info Panel Is Disabled
+    Click Panel    Recap
+    Verify Panel Is Green    Recap
+    Click Finish PNR
+    Verify PNR Is Successfully Created    \    ...
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify that Client Info Panel is Disabled and Able to End PNR Successfully when no FOP Selected for Air: No Action
+    [Documentation]    Service Option: Manadate FOP at End PNR
+    ...
+    ...    Value: Mandate with Onhold
+    [Tags]    US6646
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrTwo
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Click Create Shell
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    Client Info
+    Verify Not Known at Time of Booking is Unticked
+    Select Form Of Payment    ${EMPTY}
+    Click Panel    PriceTracking
+    Populate Air: No Action Details    1234567890123    TA | Airline Waiver code received – unable to change itinerary/ticket
+    Verify Client Info Panel Is Disabled
+    Click Panel    Recap
+    Verify Panel Is Green    Recap
+    Click Finish PNR
+    Verify PNR Is Successfully Created    \    ...
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A] Verify That Existing PCC From New Booking Is Written Upon Price Tracking Flow When AQUA PCC is Set-Up to Primary Team Level
+    [Tags]    uk    US6603
+    Open Power Express And Retrieve Profile    ${version}    TEST    U003WXR    en-GB    AutomationUK    UK QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub2    Hong    Shirleen
+    Select Client Account    717171 ¦ DC April test ¦ UK - Amadeus Sub2
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Enter GDS Command    XE13
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTRG    False
+    Verify Specific Line Is Written In The PNR    TEAM PCC-TST-002
+    Remove PNR Remark    TEAM PCC-TST-002
+    End And Retrieve PNR
+    Retrieve PNR Details From Amadeus    \    RTRG    False
+    Verify Specific Line Is Not Written In The PNR    TEAM PCC-TST-002
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    Client Info
+    Click Edit Form Of Payment
+    Select Card Type    VI
+    Set Card Number    4111111111111111
+    Set Expiry Date    01    20
+    Click Add Form Of Payment
+    Click Panel    Recap
+    Verify PCC Team Name in Recap    PCC-TST-002
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Retrieve PNR Again For Price Tracking in AQUA PCC Primary Set-up
+    Retrieve PNR Details From Amadeus    \    RTRG    False
+    Verify Specific Line Is Written In The PNR    TEAM PCC-TST-002
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A] Verify That Existing PCC From New Booking Is Written Upon Price Tracking Flow When AQUA PCC is Set-Up to SubUnit Level
+    [Tags]    uk    US6603
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    UK Amadeus 1 - SyEx ¦ US6133    EmeaTrvlrOne    AutoOneEight    CDGLHR/AAF
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTRG    False
+    Verify Specific Line Is Written In The PNR    TEAM PCC-TST-003
+    Remove PNR Remark    TEAM PCC-TST-003
+    End And Retrieve PNR
+    Retrieve PNR Details From Amadeus    \    RTRG    False
+    Verify Specific Line Is Not Written In The PNR    TEAM PCC-TST-003
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    Recap
+    Verify PCC Team Name in Recap    PCC-TST-003
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Retrieve PNR Again For Price Tracking in AQUA PCC SubUnit Set-up
+    Retrieve PNR Details From Amadeus    \    RTRG    False
+    Verify Specific Line Is Written In The PNR    TEAM PCC-TST-003
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A] Verify That AQUA PCC From Price Tracking Team Is Written In The PNR When No AQUA PCC is Set-Up to Team Or Subunit Level in NB
+    [Tags]    uk    US6603
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    ES QA Team Amadeus
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus UK 16 - Auto ¦ US4963    TESTTWO    DHEL    CDGLHR/AAF
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTRG    False
+    Verify Specific Line Is Not Written In The PNR    PARWL24CAPT
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Populate Air: Refund and Re-issue Details    EUR    1750    1525    5    10    1234567890123
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    Recap
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Retrieve PNR Again For Price Tracking in AQUA PCC No SubUnit Set-up
+    Retrieve PNR Details From Amadeus    \    RTRG    False
+    Verify Specific Line Is Not Written In The PNR    PARWL24CAPT
+    Comment    Handle Contact Tracking Service
+    Comment    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That PNR Are Not Queued To Aqua Follow Up Queue And CWT Itinerary Queue When Air And Hotel No: Action Is Selected
+    [Tags]    us6724    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 16 - Auto ¦ US2445    AutoSixteenTwo    OptimizeTrvlrNine    CDGLHR/AAF
+    Click Finish PNR
+    Remove OP Remarks And Queue    XE10    QXP/ALL
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Click Price Tracking
+    Populate Air: No Action Details    1234567890123    TA | Airline Waiver code received – unable to change itinerary/ticket
+    Get Air: No Action Details
+    Click Finish PNR    Create Air: No Action
+    Execute Simultaneous Change Handling    Create Air: No Action
+    Verify That OP Remarks Are Not Written    PARWL24CA    70    4    AQUA QUEUING
+    Verify That OP Remarks Are Not Written    PARWL210G    90    14    PNR ON HOLD SEE REM ARKS \
+    Verify Specific Line Is Not Written In The PNR    OP PARWL2877/24OCT/70C0/SEND ITINERARY    true    true
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Populate Hotel: No Action Details    BT | Client restricts change in the bedding type i.e. only allows King-Queens    12345    567890
+    Get Hotel: No Action Details
+    Click Finish PNR    Create Hotel: No Action
+    Execute Simultaneous Change Handling    Create Hotel: No Action
+    Verify That OP Remarks Are Not Written    PARWL24CA    70    4    AQUA QUEUING
+    Verify That OP Remarks Are Not Written    PARWL210G    90    14    PNR ON HOLD SEE REM ARKS \
+    Verify Specific Line Is Not Written In The PNR    OP PARWL2877/24OCT/70C0/SEND ITINERARY    true    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT] Verify That PNR Correctly Queued To Aqua And CWT Itinerary When Non No: Action Is Selected
+    [Tags]    us6724    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 16 - Auto ¦ US2445    AutoSixteenTwo    OptimizeTrvlrNine    CDGLHR/AAF
+    Click Finish PNR
+    Remove OP Remarks And Queue    XE10    QXP/ALL
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Click Price Tracking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Click Finish PNR    Simultaneous Change Air: Void
+    Execute Simultaneous Change Handling    Simultaneous Change Air: Void
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify OP Remark Is Written    PARWL24CA    70    4    AQUA QUEUING
+    Verify OP Remark Is Written    PARWL210G    90    14    PNR ON HOLD SEE REM ARKS \
+    Verify Specific Line Is Written In The PNR    OP PARWL2877/24OCT/70C0/SEND ITINERARY    \    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][PT][FR] Verify That Default Remarks Are Written For Realised Missed Savings And Class Code
+    [Tags]    fr    us6745
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Emulate PCC    PARWL210G
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOn    CDGLHR/AAF    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Air Savings Code    ABN - ABONNEMENT    DER - DEROGATION CLIENT    FC - Tarif Client Premiere
+    Click Finish PNR
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Air Fare
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    TNU - Tarif Normal Utilise
+    Verify Missed Savings Code Default Value    PDR - Pas de Refus
+    Populate Air Fare Restrictions Using Default Values
+    Get Savings Code    Fare 1
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR    Create Air: Void and Re-issue With Realised Missed Savings And Class Code For FR
+    Execute Simultaneous Change Handling    Create Air: Void and Re-issue With Realised Missed Savings And Class Code For FR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HC-TNU LC-PDR
+    Verify Savings Code Remarks Are Written    S2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][AB] Verify That Ticketing Queues Setup For Non-Primary Team Are Retrieved
+    [Tags]    uk    us6777
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    UK Amadeus 1 - SyEx ¦ No Ticketing Queues    AutoOneEighteen    TestOne    CDGLHR/AAF
+    Click Finish PNR
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Click Panel    Delivery
+    Verify Delivery Method Dropdown Values    E-Ticket - Team    Refund Q and \ AQUA QC    Refund Q without AQUA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A][PT] Verify That Remove From Future Price Tracking Check Box Is Removed And Remarks Are Not Written In The PNR
+    [Tags]    uk    us6941
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    AmadeusTest    Lucienne    CDGLHR/AAF
+    Click Finish PNR
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRY
+    Verify Specific Line Is Not Written In The PNR    RMY NTRK
+    Verify Specific Line Is Not Written In The PNR    RMY HOTELSUSPEND
+    Verify Specific Line Is Not Written In The PNR    RMY HOTELNTRK
+    Click Panel    PriceTracking
+    Verify Remove From Future Price Tracking Checkbox Is Removed
+    Populate Hotel: Cancel and Re-book Details    KUALA LUMPUR    USD    2345    345
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RMY NTRK
+    Verify Specific Line Is Not Written In The PNR    RMY HOTELSUSPEND
+    Verify Specific Line Is Not Written In The PNR    RMY HOTELNTRK
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RMY NTRK
+    Verify Specific Line Is Not Written In The PNR    RMY HOTELSUSPEND
+    Verify Specific Line Is Not Written In The PNR    RMY HOTELNTRK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A][PT] Verify That HOTELNTRK And NTRK Remarks Are Retain In The PNR
+    [Tags]    uk    us6941
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    AmadeusTest    Lucienne
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6
+    Enter GDS Command    RMY/NTRK
+    Enter GDS Command    RMY/HOTELNTRK
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Verify Remove From Future Price Tracking Checkbox Is Removed
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRY
+    Verify Specific Line Is Written In The PNR    RMY NTRK
+    Verify Specific Line Is Written In The PNR    RMY HOTELNTRK
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Click Panel    Recap
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify HOTELNTRK And NTRK Remarks Are Retain
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRY
+    Verify Specific Line Is Written In The PNR    RMY NTRK
+    Verify Specific Line Is Written In The PNR    RMY HOTELSUSPEND
+    Verify Specific Line Is Written In The PNR    RMY HOTELNTRK
+    Verify Specific Line Is Written In The PNR    RMY TKTSUSPEND
+
+[1A][PT Amend] Verify That HOTELNTRK And NTRK Remarks Are Retain In The PNR
+    [Tags]    uk    us6941
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Verify Remove From Future Price Tracking Checkbox Is Removed
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRY
+    Verify Specific Line Is Written In The PNR    RMY NTRK
+    Verify Specific Line Is Written In The PNR    RMY HOTELSUSPEND
+    Verify Specific Line Is Written In The PNR    RMY HOTELNTRK
+    Verify Specific Line Is Written In The PNR    RMY TKTSUSPEND
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Click Panel    Recap
+    Delete Override Or Skip Entries
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRY
+    Verify Specific Line Is Written In The PNR    RMY NTRK
+    Verify Specific Line Is not Written In The PNR    RMY HOTELSUSPEND
+    Verify Specific Line Is Written In The PNR    RMY HOTELNTRK
+    Verify Specific Line Is Written In The PNR    RMY TKTSUSPEND
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A NORAM][PT][CA] Verify That Realised Saving And BSP Routing Code Default Values And PT Remarks Are Written For Air: Void and Re-issue
+    [Tags]    ca    us6975    us6974
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Personal
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YYZYUL/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Air Fare Restrictions Using Default Values
+    Select BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Select Realised Saving Code Value    XX - No Saving
+    Get Fare Details For Noram    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap    Air Fare
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Void and Re-issue
+    Verify Original Fare Default Value
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Panel    Air Fare
+    Verify BSP Routing Code Value    Canada and St. Pierre et Miquelon
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Verify Missed Savings Code Field Is Disabled
+    Select BSP Routing Code Value    USA incl. all US Territories and Possessions
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 1
+    Click Panel    Recap
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Ticketing Remark Is Written For CA    02    S2    Fare 1    True
+    Verify Price Tracking Generic Remarks Are Written    Air: Void and Re-issue    Matrix
+    Verify Price Tracking Skip Hotel Remark Is Written    HOTELSUSPEND
+    Verify Matrix Lines Are Written For CA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A NORAM][PT][CA] Verify That Missed Saving And BSP Routing Code Default Values And PT remarks are written for Air: Refund And Re-issue
+    [Tags]    ca    us6975    us6974
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Business
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YYZYUL/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Air Fare Restrictions Using Default Values
+    Set Low Fare Field    500
+    Select Missed Saving Code Value    A - Accepted
+    Select BSP Routing Code Value    Australia/New Zealand/Islands of the Pacific incl. Hawaii excl. Guam
+    Get Fare Details For Noram    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Refund and Re-issue
+    Verify Original Fare Default Value
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Verify BSP Routing Code Value    Australia/New Zealand/Islands of the Pacific incl. Hawaii excl. Guam
+    Enter GDS Command    TTE/ALL    XE2
+    Book Flight X Months From Now    YYZYUL/AAC    SS1B1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap    Air Fare
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Refund and Re-issue
+    Verify Original Fare Default Value
+    Populate Air: Refund and Re-issue Details    EUR    1900    1525    5    10    1234567890123
+    Get Air: Refund and Re-issue Details
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Verify Missed Savings Code Field Is Disabled
+    Select BSP Routing Code Value    Africa
+    Populate Air Fare Restrictions Using Default Values
+    Get Fare Details For Noram    Fare 1
+    Click Panel    Recap
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Ticketing Remark Is Written For CA    51    S2    Fare 1    True
+    Verify Price Tracking Generic Remarks Are Written    Air: Refund and Re-issue    Matrix
+    Verify Price Tracking Skip Air Remark Is Written    TKTSUSPEND
+    Verify Matrix Lines Are Written For CA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A NORAM][PT][CA] Verify That Missed Saving And BSP Routing Code Default Values And PT remarks are written for Air: No Action
+    [Tags]    ca    us6975    us6974
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Business
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YYZYUL/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Air Fare Restrictions Using Default Values
+    Set Low Fare Field    500
+    Select Missed Saving Code Value    A - Accepted
+    Select BSP Routing Code Value    Australia/New Zealand/Islands of the Pacific incl. Hawaii excl. Guam
+    Get Fare Details For Noram    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap    Air Fare
+    Click Panel    PriceTracking
+    Populate Air: No Action Details    1234567890123    TA | Airline Waiver code received – unable to change itinerary/ticket
+    Get Air: No Action Details
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Ticketing Remark Is Written For CA    81    S2    Fare 1    \    True
+    Verify Price Tracking Generic Remarks Are Written    Air: No Action
+    Verify Matrix Lines Are Written For CA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Create New Booking Traveller With Arranger With Issue Ticket
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AUTOArranger    TestArr
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ US2837 KDS    AUTOONEFIVETWO    EMEATRVLRONE
+    Click New Booking
+    Book Flight X Months From Now    CDGFRA/AAF    SS1Y1    FXP    4
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Get Traveller Tab Details    Contact Principal
+    Get Traveller Tab Details    Voyageur
+    Click Finish PNR
+    Issue Ticket In Amadeus Training
+    Click Clear All
+
+Verify Values of Droplist
+    [Arguments]    ${drop_list_name}    @{expected_text_values}
+    ${actual_drop_list_values}    Get Dropdown Values    ${drop_list_name}
+    Run Keyword And Continue On Failure    List Should Contain Sub List    ${actual_drop_list_values}    ${expected_text_values}
+
+Populate Hotel No Action
+    [Arguments]    ${property_id}    ${no_action}    ${hotel_rate_code}    ${no_action_freetext}=${EMPTY}
+    Set Control Text Value    [NAME:cboTicketList]    ${property_id}
+    Select No Action Value    ${no_action}
+    Set Control Text Value    [NAME:ctxtHotelRateCode]    ${hotel_rate_code}
+    Run Keyword If    "${no_action_freetext}" != "${EMPTY}"    Set Control Text Value    [NAME:ctxtNoActionFreeText]    ${no_action_freetext}
+
+Verify Hotel No Action Property ID Droplist
+    [Arguments]    @{expected_text_values}
+    Verify Values of Droplist    [NAME:cboTicketList]
+    Verify Control Object Is Visible    [NAME:ccboNoActionCode]
+    Verify Control Object Is Visible    [NAME:ctxtHotelRateCode]
+
+Verify Hotel No Action Property ID Droplist Accepts Alphanumeric Characters
+    [Arguments]    @{alphanumeric_chars}
+    : FOR    ${text}    IN    @{alphanumeric_chars}
+    \    Set Control Text Value    [NAME:cboTicketList]    ${text}
+    \    Sleep    1
+    \    Send    {TAB}
+    \    Verify Control Object Field Is Not Mandatory    [NAME:cboTicketList]
+    Set Control Text Value    [NAME:cboTicketList]    ${EMPTY}
+
+Update Price Track
+    Retrieve PNR    ${pt_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Refund and Re-issue
+    Set Control Text Value    [NAME:cboTicketList]    1234567890123
+    Populate Air: Refund and Re-issue Details    EUR    1750    1525    5    10
+    Click Panel    Recap
+    Click Finish PNR    Update Price Track
+
+Update Price Tracking For Void and Re-issue
+    Retrieve PNR    ${pt_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Void and Re-issue
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Click Panel    Recap
+    Click Finish PNR    Update Price Tracking For Void and Re-issue
+
+Update Price Tracking For Hotel
+    Retrieve PNR    ${pt_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel Cancel and Re-book Calculation    KUALA LUMPUR    USD    2345    345    2000.00
+    Click Panel    Recap
+    Sleep    120
+    Click Finish PNR    Update Price Tracking For Hotel
+
+Verify Wings Remarks Are Not Written
+    Verify Specific Remark Is Not Written In The PNR    RM *3311*0PT
+    Verify Specific Remark Is Not Written In The PNR    RM *3193*P5.F.
+
+Create Air: Void and Re-issue
+    Retrieve PNR    ${current_pnr}    \    True
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMG OFCTEAM 1FI-001
+    Verify Specific Line Is Written In The PNR    RMG PCCHELMK2316
+    Click Price Tracking Via Shortcut Key
+    Set Value In Pop Up    Price Track Title    YES
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR    Create Air: Void and Re-issue
+
+Create Air: Refund and Re-issue
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Air: Refund and Re-issue Details    EUR    1750    1525    5    10    1234567890123
+    Get Air: Refund and Re-issue Details
+    Click Finish PNR    Create Air: Refund and Re-issue
+
+Create Air: No Action
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Air: No Action Details    1234567890123    MX | Other – Free Text – Explain Reason
+    Get Air: No Action Details
+    Click Finish PNR    Create Air: No Action
+
+Create Hotel: Cancel and Rebook
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Hotel: Cancel and Re-book Details    NEW MEXICO    USD    2345    345
+    Verify Hotel Saving Calculation    2000.00
+    Get Hotel: Cancel and Rebook details
+    Click Panel    Recap
+    Verify Overrides Or Skip Entries Default Value    ${EMPTY}
+    Verify Overrides Or Skip Entries Contains Values    Price Tracking: Skip Air    Price Tracking: Skip Hotel
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Click Finish PNR    Create Hotel: Cancel and Rebook
+
+Create Hotel: No Action
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Hotel: No Action Details    87571    NS | Lower fare has expired, Lower class sold out, pricing at the original fare or higher    1111
+    Get Hotel: No Action Details
+    Click Remove From Future Price Track Checkbox
+    Click Finish PNR    Create Hotel: No Action
+
+Verify AGM Remarks for Domestic
+    [Arguments]    ${agm_domestic_remark}
+    Verify Specific Remark Is Written In The PNR    ${agm_domestic_remark}
+    [Teardown]
+
+Verify AGM Remarks for International
+    [Arguments]    ${agm_international_remark}
+    Verify Specific Remark Is Written In The PNR    ${agm_international_remark}
+
+Get Class Code From Air Fare Panel
+    [Arguments]    ${control_name}
+    ${class_code_full}    Get Control Text Value    [CLASS:WindowsForms10.COMBOBOX.app.0.10cf21e_r20_ad1; INSTANCE:12]
+    ${class_code}    Fetch From Left    ${class_code_full}    ${SPACE}-
+    Set Test Variable    ${class_code}
+    Set Test Variable    ${class_code_full}
+
+Create Air: Void and Re-issue With Realised Missed Savings And Class Code
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Air Fare
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    XX - No Saving
+    Verify Missed Savings Code Default Value    L - Lowest Fare Accepted
+    Verify Class Code Value Defaults To Previous Value    Fare 1
+    Get Savings Code    Fare 1
+    Populate Air Fare Restrictions Using Default Values
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR    Create Air: Void and Re-issue With Realised Missed Savings And Class Code
+
+Verify Second Price Track AGM Domestic Remarks
+    [Arguments]    ${agm_domestic_remark}
+    Verify Specific Remark Is Written In The PNR    ${agm_domestic_remark}
+
+Verify Second Price Track AGM International Remarks
+    [Arguments]    ${agm_international_remark}
+    Verify Specific Remark Is Written In The PNR    ${agm_international_remark}
+
+Verify PCC Team Name in Recap
+    [Arguments]    ${pcc_value}
+    Verify Control Object Text Value Is Correct    [NAME:ctxtTeamName]    ${pcc_value}
+
+Retrieve PNR Again For Price Tracking in AQUA PCC Primary Set-up
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    Client Info
+    Click Edit Form Of Payment
+    Select Card Type    VI
+    Set Card Number    4111111111111111
+    Set Expiry Date    01    20
+    Click Add Form Of Payment
+    Click Panel    Recap
+    Verify PCC Team Name in Recap    PCC-TST-002
+    Click Finish PNR
+
+Retrieve PNR Again For Price Tracking in AQUA PCC SubUnit Set-up
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    Client Info
+    Click Edit Form Of Payment
+    Select Card Type    VI
+    Set Card Number    4111111111111111
+    Set Expiry Date    01    20
+    Click Add Form Of Payment
+    Click Panel    Recap
+    Verify PCC Team Name in Recap    PCC-TST-002
+    Click Finish PNR
+
+Retrieve PNR Again For Price Tracking in AQUA PCC No SubUnit Set-up
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    Recap
+    Verify PCC Team Name in Recap    PARWL24CAPT
+    Click Finish PNR
+
+Simultaneous Change to Verify *3311**Hnn*2HP Label is added when Hotel Action is Cancel and Rebook
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel Cancel and Re-book Calculation    NEW MEXICO    USD    2345    345    2000.00
+    Click Finish PNR    Simultaneous Change to Verify *3311**Hnn*2HP Label is added when Hotel Action is Cancel and Rebook
+
+Simultaneous Change to Verify *3311**Hnn*0HP is added when Hotel Action is Cancel and Rebook
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel Cancel and Re-book Calculation    Manila    USD    2345    345    2000.00
+    Click Panel    Delivery
+    Verify Ticket Queue Item Setup At Country Level Is In The List    Amadeus TKOK - Team
+    Click Finish PNR    Simultaneous Change to Verify *3311**Hnn*0HP is added when Hotel Action is Cancel and Rebook
+
+Create Air: Void and Re-issue With Realised Missed Savings And Class Code For FR
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Air Fare
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    TNU - Tarif Normal Utilise
+    Verify Missed Savings Code Default Value    PDR - Pas de Refus
+    Populate Air Fare Restrictions Using Default Values
+    Get Savings Code    Fare 1
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR
+
+Simultaneous Change Air: Void
+    Click Clear All
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 16 - Auto ¦ US2445    AutoSixteenTwo    OptimizeTrvlrNine    CDGLHR/AAF
+    Click Finish PNR
+    Remove OP Remarks And Queue    XE10    QXP/ALL
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}    \    True
+    Click Price Tracking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Click Finish PNR
+
+Verify Back Office Message Display
+    Set Test Variable    ${BT_value}    ${EMPTY}
+    Enter GDS Command    BT
+    Get Data From GDS Screen    ${BT_value}    True
+    ${match}    ${value}    Run Keyword And Ignore Error    Should Contain    ${BT_value}    OK
+    Run Keyword If    "${match}" == "PASS"    Verify Message Is Displayed In Summary    Sent to Back Office
+    Run Keyword If    "${match}" == "FAIL"    Verify Message Is Displayed In Summary    Sending to Back Office Failed
+
+Verify HOTELNTRK And NTRK Remarks Are Retain
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Verify Remove From Future Price Tracking Checkbox Is Removed
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRY
+    Verify Specific Line Is Written In The PNR    RMY NTRK
+    Verify Specific Line Is Written In The PNR    RMY HOTELNTRK
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Click Panel    Recap
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Click Finish PNR

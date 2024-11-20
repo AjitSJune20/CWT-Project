@@ -1,0 +1,129 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Resource          ../database/database_verification.txt
+Resource          ../air_fare/air_fare_verification.txt
+Resource          ../apis_sfpd/apis_sfpd_verification.txt
+Resource          ../cust_refs/cust_refs_verification.txt
+
+*** Keywords ***
+Verify Air Segment Is Retained
+    [Arguments]    ${air_segment}
+    ${air_segment}    Replace String    ${city_route_${fare_tab_index}}    -    ${EMPTY}
+    Verify Specific Line Is Written In The PNR    ${air_segment}
+
+Verify Arranger Remains The Same After Clear All Same Booking New Traveller
+    Wait Until Control Object Is Visible    ${contact_details_group_header}
+    Verify Control Object Text Value Is Correct    ${contact_last_name}    ${arranger_lastname}
+    Verify Control Object Text Value Is Correct    ${contact_first_name}    ${arranger_firstname}
+    Verify Checkbox Is Ticked    ${checkbox_arranger}
+    Verify Checkbox Is Unticked    ${checkbox_traveller}
+    [Teardown]    Take Screenshot
+
+Verify Color Of "Booking File Created Successfully!" Message Is Green
+    ${hex_color}    Get Pixel Color Left    [NAME:lblEndMessage]
+    Should Be Equal    ${hex_color}    006400
+    [Teardown]    Take Screenshot
+
+Verify Color Of "Booking File Updated Successfully!" Message Is Green
+    ${hex_color}    Get Pixel Color Left    [NAME:lblEndMessage]
+    Should Be Equal    ${hex_color}    006400
+    [Teardown]    Take Screenshot
+
+Verify Color Of "Failed queue placement(s).." Error Is Red
+    ${hex_color}    Get Pixel Color Left    [NAME:lblEndErrorMessage]
+    Should Be Equal    ${hex_color}    FF0000    msg="Failed queue placement(s).." Error should be in Red text
+    [Teardown]    Take Screenshot
+
+Verify Message Is Displayed In Summary
+    [Arguments]    ${expected_message}
+    Wait Until Control Object Is Visible    [NAME:lvwSummary]
+    ${summary_texts} =    Get Summary Texts
+    List Should Contain Value    ${summary_texts}    ${expected_message}
+    [Teardown]    Take Screenshot
+
+Verify Message Is Not Displayed In Summary
+    [Arguments]    ${expected_message}
+    Wait Until Control Object Is Visible    [NAME:lvwSummary]
+    ${summary_texts} =    Get Summary Texts
+    List Should Not Contain Value    ${summary_texts}    ${expected_message}
+    [Teardown]    Take Screenshot
+
+Verify PNR Is Successfully Cancelled
+    ${pnr}    Get Control Text Value    [NAME:ctxtLocator]    ${title_power_express}
+    ${message}    Get Control Text Value    [NAME:lblEndMessage]    ${title_power_express}
+    Should Match RegExp    ${pnr}    \\w{6}
+    Should Be Equal As Strings    ${message}    Requested Booking File Segments Cancelled!
+    [Teardown]    Take Screenshot
+
+Verify PNR Is Successfully Created
+    [Arguments]    ${should_match}=true    ${expected_message}=${EMPTY}
+    ${pnr}    Get Control Text Value    [NAME:ctxtLocator]    ${title_power_express}
+    ${message}    Get Control Text Value    [NAME:lblEndMessage]    ${title_power_express}
+    Run Keyword And Continue On Failure    Should Match RegExp    ${pnr}    ^[A-z0-9][A-z0-9][A-z0-9][A-z0-9][A-z0-9][A-z0-9]$
+    Run Keyword And Continue On Failure    Run Keyword If    "${should_match.lower()}" == "true"    Should Match    ${message}    Booking File Created Successfully!
+    ...    ELSE    Should Contain    ${message}    ${expected_message}
+    [Teardown]    Take Screenshot
+
+Verify PNR Is Successfully Updated
+    ${pnr}    Get Control Text Value    [NAME:ctxtLocator]    ${title_power_express}
+    ${message}    Get Control Text Value    [NAME:lblEndMessage]    ${title_power_express}
+    Run Keyword And Continue On Failure    Should Match RegExp    ${pnr}    \\w{6}
+    Run Keyword And Continue On Failure    Should Match    ${message}    Booking File Updated Successfully!
+
+Verify Existing Bookings Tab Is Displayed
+    Activate Power Express Window
+    Click Tab In Top Left    Existing Bookings
+    Verify Control Object Is Visible    [NAME:ExistingBookings]
+    [Teardown]    Take Screenshot
+
+Get Traveller Tab Details
+    [Arguments]    ${tab_name}
+    [Timeout]
+    Click Tab In Contact Details    ${tab_name}
+    ${lastname} =    Get Control Text Current Value    [NAME:CtxtLastName]
+    ${firstname} =    Get Control Text Current Value    [NAME:CtxtFirstName]
+    ${PCC} =    Get Control Text Current Value    [NAME:CcboProfile]
+    ${clientaccount} =    Get Control Text Current Value    [NAME:ccboAccountNumber]
+    ${trip_type_exists} =    Control Command    ${title_power_express}    ${EMPTY}    [NAME:ccboTripType]    IsVisible    ${EMPTY}
+    ${triptype} =    Run Keyword If    ${trip_type_exists} == 1    Get Control Text Value    ${cbo_onetime_trip_type}
+    Run Keyword If    ${trip_type_exists} == 1    Set Test Variable    ${${tab_name}_triptype}    ${triptype}
+    Set Test Variable    ${${tab_name}_lastname}    ${lastname}
+    Set Test Variable    ${${tab_name}_firstname}    ${firstname}
+    Set Test Variable    ${${tab_name}_PCC}    ${PCC}
+    Set Test Variable    ${${tab_name}_clientaccount}    ${clientaccount}
+
+Verify That Traveller Tab Details Are Retained
+    [Arguments]    ${tab_name}    ${profile_PCC}=${${tab_name}_PCC}
+    ${retained_lastname} =    Get Last Name From Contact Tab    ${tab_name}
+    ${retained_firstname} =    Get First Name From Contact Tab    ${tab_name}
+    ${retained_PCC} =    Get PCC/CompanyProfile/TravellerProfile From Contact Tab    ${tab_name}
+    ${retained_clientaccount} =    Get Client Account Number From Contact Tab    ${tab_name}
+    ${trip_type_exists} =    Control Command    ${title_power_express}    ${EMPTY}    [NAME:ccboTripType]    IsVisible    ${EMPTY}
+    ${retained_triptype} =    Run Keyword If    ${trip_type_exists} == 1    Get Control Text Value    ${cbo_onetime_trip_type}
+    Run Keyword If    ${trip_type_exists} == 1    Should Be Equal    ${retained_triptype}    ${${tab_name}_triptype}
+    Run Keyword If    "${profile_PCC}" != "${EMPTY}"    Should Be Equal    ${retained_PCC}    ${${tab_name}_PCC}
+    Should Be Equal    ${retained_lastname}    ${${tab_name}_lastname}
+    Should Be Equal    ${retained_firstname}    ${${tab_name}_firstname}
+    Comment    Should Be Equal    ${retained_PCC}    ${${tab_name}_PCC}
+    Should Be Equal    ${retained_clientaccount}    ${${tab_name}_clientaccount}
+
+Verify That Traveller's Client Sub Unit Is Retained
+    [Arguments]    ${sub-unit}
+    Verify Control Object Text Value Is Correct    [NAME:ccboCompany]    ${sub-unit}
+
+Verify That PNR Type Option Is Displayed
+    Verify Control Object Is Visible    [NAME:lblTypeOfBooking]
+    Verify Control Object Is Visible    [NAME:rbKDS]
+    Verify Control Object Is Visible    [NAME:rbClassic]
+
+Verify Perflog And AppUsage For New Booking Same Traveller
+    [Arguments]    ${row_result}=1    ${expected_row_number}=0
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.ClearAll.NewBookingSameTraveler
+    Verify Application Usage Additional Information Was Logged    New Booking - Same Traveler    ${row_result}    ${expected_row_number}
+    Run Keyword If    "${GDS_switch.upper()}" == "AMADEUS"    Verify Entry Is Not Present In Perf Log File    RRP
+    ...    ELSE IF    "${GDS_switch.upper()}" == "SABRE"    Verify Entry Is Not Present In Perf Log File    ECAPD,XI
+    ...    ELSE IF    "${GDS_switch.upper()}" == "GALILEO"    Verify Entry Is Not Present In Perf Log File    REALL
+    ...    ELSE IF    "${GDS_switch.upper()}" == "APOLLO"    Verify Entry Is Not Present In Perf Log File    REALL
+
+Verify CTI Clear All Message Is Visible
+    Verify Control Object Is Visible    [NAME:lblClearAllMessage]

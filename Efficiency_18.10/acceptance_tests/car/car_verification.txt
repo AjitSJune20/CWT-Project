@@ -1,0 +1,32 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verify Car Identifier Appended To Car Segment Is Correct
+    [Arguments]    ${location}    ${pickup_date}    ${car_identifier}
+    ${car_identifier}    Regexp Escape    ${car_identifier}
+    Run Keyword If    "${gds_switch}" == "amadeus"    Get Clipboard Data Amadeus
+    ${pnr_details_amadeus}    Run Keyword If    "${gds_switch}" == "amadeus"    Flatten String    ${data_clipboard}
+    ${pnr_details_galileo}    Run Keyword If    "${gds_switch}" == "galileo"    Replace String    ${pnr_details}    ${\n}${SPACE * 4}    ${EMPTY}
+    ${pnr_details_sabre}    Run Keyword If    "${gds_switch}" == "sabre"    Replace String    ${pnr_details}    ${SPACE}${\n}    ${EMPTY}
+    ${pnr_details_sabre}    Run Keyword If    "${gds_switch}" == "sabre"    Replace String Using Regexp    ${pnr_details_sabre}    ${SPACE}\\d{1}${SPACE}    ${\n}
+    ${pnr_details}    Set Variable If    "${gds_switch}" == "galileo"    ${pnr_details_galileo}    "${gds_switch}" == "sabre"    ${pnr_details_sabre}    "${gds_switch}" == "amadeus"
+    ...    ${pnr_details_amadeus}
+    Set Test Variable    ${pnr_details}
+    Run Keyword If    "${gds_switch}" == "galileo" or "${gds_switch}" == "amadeus"    Verify Specific Line Is Written In The PNR    ${location} ${pickup_date}.*${car_identifier}    true    true
+    Run Keyword If    "${gds_switch}" == "sabre"    Verify Specific Line Is Written In The PNR    ${pickup_date}.+${location}.+${car_identifier}    true    true
+
+Verify Car Identifier Appended To Deleted Car Segment Is No Longer Displayed
+    [Arguments]    ${location}    ${pickup_date}    ${car_identifier}
+    ${pnr_details}    Run Keyword If    "${gds_switch}" == "galileo"    Replace String    ${pnr_details}    ${\n}${SPACE * 4}    ${EMPTY}
+    Verify Specific Line Is Not Written In The PNR    ${location} ${pickup_date}
+    Verify Specific Line Is Not Written In The PNR    ${car_identifier}
+
+Verify Car Information
+    [Arguments]    ${expected_charged_fare}    ${expected_currency}    ${expected_rate_type}
+    ${actual_charged_fare} =    Get Control Text Value    [NAME:ctxtChargedFare]    ${title_power_express}
+    ${actual_currency} =    Get Control Text Value    [NAME:txtCurrency]    ${title_power_express}
+    ${actual_rate_type} =    Get Control Text Value    [NAME:cbRateType]    ${title_power_express}
+    Run Keyword If    '${expected_charged_fare}' != '${EMPTY}'    Run Keyword And Continue On Failure    Should Be Equal    ${expected_charged_fare}    ${actual_charged_fare}
+    Run Keyword If    '${expected_currency}' != '${EMPTY}'    Run Keyword And Continue On Failure    Should Be Equal    ${expected_currency}    ${actual_currency}
+    Run Keyword If    '${expected_rate_type}' != '${EMPTY}'    Run Keyword And Continue On Failure    Should Be Equal    ${expected_rate_type}    ${actual_rate_type}

@@ -1,0 +1,179 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../../resources/common/global_resources.txt
+Resource          ../resource_sanity.txt
+
+*** Test Cases ***
+New Booking
+    Comment    EMEA SCRIPT
+    Open Power Express And Retrieve Profile    ${version}    EMEA    U001NCB    en-GB    ${EMPTY}    EMEA QA Test Team
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values For Galileo    UK Galileo test Client ¦ Test SubUnit1    MANSON    JOHN    MANAMS*KL    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Panel    Delivery
+    Sleep    4
+    Take Screenshot
+    Select Panel    Air Fare
+    Sleep    4
+    Take Screenshot
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Select Form Of Payment    VI************1111/D1221
+    Select Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************1111/D1221
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4111111111111111/D1221
+    Enter GDS Command    T.TAU/18FEB
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify TET Code Line In Remarks    *0653*MUSS
+    Verify Specific Line Is Written In The PNR    HF*MERCHANT FEES-
+    Verify Specific Line Is Written In The PNR    BF-GBP.*:HC-C1 LC-A6 CL-YC DEST-AMS TK-ET INV-*    true
+    Verify SYEX GVS Line In Remarks    HA*SYEXGVS
+    Comment    Comment    MASTER SCRIPT
+    Comment    Open Power Express And Retrieve Profile    ${version}    MASTER    U001NCB    en-GB    ${EMPTY}
+    ...    EMEA QA Test Team
+    Comment    Select GDS    Galileo
+    Comment    Create New Booking With One Way Flight Using Default Values For Galileo    UK Galileo test Client ¦ Test SubUnit1    MANSON    JOHN    MANAMS*KL    ${EMPTY}
+    ...    Air Fare
+    Comment    Populate Fare Tab With Default Values    Fare 1
+    Comment    Select Panel    Delivery
+    Comment    Sleep    4
+    Comment    Take Screenshot
+    Comment    Select Panel    Air Fare
+    Comment    Sleep    4
+    Comment    Take Screenshot
+    Comment    Click Panel    Client Info
+    Comment    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Comment    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************1111/D1221
+    Comment    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4111111111111111/D1221
+    Comment    Enter GDS Command    T.TAU/18FEB
+    Comment    Click Finish PNR
+    Comment    Retrieve PNR Details From Galileo    ${current_pnr}
+    Comment    Verify TET Code Line In Remarks    *0653*MUSS
+    Comment    Verify Specific Line Is Written In The PNR    HF*MERCHANT FEES-
+    Comment    Verify Specific Line Is Written In The PNR    BF-GBP.*:HC-C1 LC-A6 CL-YC DEST-AMS TK-ET INV-*    true
+    Comment    Verify SYEX GVS Line In Remarks    HA*SYEXGVS
+    Comment    Comment    AUTO SCRIPT
+    Comment    Open Power Express And Retrieve Profile Master    ${version}    AUTO    U001NCB    en-GB    nbautistafr
+    ...    UK QA Team Galileo
+    Comment    Select GDS    Galileo
+    Comment    Create New Booking With One Way Flight Using Default Values For Galileo    UK Galileo 1 - SyEx ¦ UK - Galileo Sub1    MANSON    JADE    MANAMS*KL    717171 ¦ DC April test ¦ UK - Galileo Sub1
+    ...    Air Fare
+    Comment    Populate Fare Tab With Default Values    Fare 1
+    Comment    Select Panel    Delivery
+    Comment    Sleep    4
+    Comment    Take Screenshot
+    Comment    Select Panel    Air Fare
+    Comment    Sleep    4
+    Comment    Take Screenshot
+    Comment    Click Panel    Client Info
+    Comment    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Comment    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************1111/D1221
+    Comment    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4111111111111111/D1221
+    Comment    Click Finish PNR
+    Comment    Retrieve PNR Details From Galileo    ${current_pnr}
+    Comment    Verify TET Code Line In Remarks    *0653*MUSS
+
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    AMSMAN*KL    01Y1    FQS3:NR    7
+    Enter GDS Command    FQS2:NR    FQS4:NR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Galileo
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify TET Code Line In Remarks    *0653*MUSS
+    Comment    Verify Specific Line Is Written In The PNR    HF*MERCHANT FEES-
+    Comment    Verify Specific Line Is Written In The PNR    BF-EUR.*:HC-C1 LC-A6 CL-YC DEST-MAN TK-ET INV-*    true
+    Comment    Verify SYEX GVS Line In Remarks    HA*SYEXGVS
+
+Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Send Itinerary For Galileo
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify TET Code Line In Remarks    *0653*MUSS
+
+Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Cancel Booking For Galileo
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify TET Code Line In Remarks    *0653*MUSS
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Create New Booking With One Way Flight Using Default Values For Galileo
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Run Keyword If    "${client_account}" != "${EMPTY}"    Select Client Account    ${client_account}
+    Click New Booking
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now For Galileo    ${city_pair}    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Book One Way Flight X Months From Now For Galileo
+    [Arguments]    ${city_pair}    ${number_of_month}
+    ${seat_select_command}    Set Variable If    '${GDS_switch}' == 'amadeus'    SS1Y1    01Y1
+    ${store_fare_command}    Set Variable If    '${GDS_switch}' == 'sabre'    WPRQ    '${GDS_switch}' == 'amadeus'    FXP    '${GDS_switch}' == 'apollo'
+    ...    T:$B    '${GDS_switch}' == 'galileo'    FQ:NR
+    Book Flight X Months From Now    ${city_pair}    ${seat_select_command}    ${store_fare_command}    ${number_of_month}
+
+Amend Booking For Galileo
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    AMSMAN*KL    01Y1    FQS3:NR    7
+    Enter GDS Command    FQS2:NR    FQS4:NR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+
+Send Itinerary For Galileo
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+
+Cancel Booking For Galileo
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+
+Open Power Express And Retrieve Profile Master
+    [Arguments]    ${version}    ${syex_env}    ${username}    ${locale}    ${user_profile}    ${team}=${EMPTY}
+    Close Power Express
+    Launch Power Express    ${version}    ${syex_env}    ${username}
+    Comment    Set User Settings    ${locale}
+    Set Suite Variable    ${locale}
+    Run Keyword If    '${syex_env.lower()}' == 'auto'    Select Profile    ${user_profile}
+    Run Keyword If    "${team}" != "${EMPTY}"    Select Team    ${team}
+    Set Suite Variable    ${current_pnr}    ${EMPTY}
+    Set Suite Variable    ${pcc}    ${EMPTY}
+
+Open Power Express And Retrieve Profile Master 2
+    [Arguments]    ${version}    ${syex_env}    ${username}    ${user_profile}    ${locale}    ${user_profile}
+    ...    ${team}=${EMPTY}
+    Close Power Express
+    Launch Power Express    ${version}    ${syex_env}    ${username}
+    Comment    Set User Settings    ${locale}
+    Set Suite Variable    ${locale}
+    Run Keyword Unless    '${syex_env.lower()}' == 'pilot'    Select Profile    ${user_profile}
+    Run Keyword If    "${team}" != "${EMPTY}"    Select Team    ${team}
+    Set Suite Variable    ${current_pnr}    ${EMPTY}
+    Set Suite Variable    ${pcc}    ${EMPTY}

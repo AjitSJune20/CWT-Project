@@ -1,0 +1,481 @@
+*** Settings ***
+Suite Setup
+Force Tags
+Resource          ../../../../../resources/panels/client_info.txt
+Resource          ../../other_services_verification.txt
+Resource          ../../../../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          ../../other_services_request_control.txt
+Resource          ../../other_services_ui_verification.txt
+Resource          ../../other_services_charges_control.txt
+Resource          ../../other_services_remarks_verification.txt
+Resource          ../../other_services.txt
+
+*** Test Cases ***
+[IN NB] Create Hotel Prepaid Exchange Order
+    [Tags]    not_ready
+    Create PNR With Passive, Active, Car And Hotel Segments
+    Click Other Services
+    Select Product And Vendor    Hotel pre paid- INTL    Royal Orchid Bangalore
+    Get Air Segment Dropdown Values    1
+    Get Hotel Segment Dropdown Values    0
+    Select Hotel Segment In Request    ${specific_hotel_segment}
+    Populate Request When Product Is Hotel Prepaid-Intl Or Hotel Prepaid-Dom    ${specific_hotel_segment}    01/05/2020    10/05/2020    HKD \ \ \ Hong Kong Dollar    5500    ${specific_air_segment}
+    ...    Deluxe    2    Credit Card    1234567890    HKG    Marco Polo Hotel HKG1747.94, 3rd Canton Rd, Tsim Sha Tsui, Hong Kong +852 2113 0088
+    ...    3rd Canton Rd, Tsim Sha Tsui, Hong Kong    true    371449635398431    CORP    AX    12
+    ...    2028    HKG    1234    Hong Kong    85221130088    Internal Remarks
+    ...    Cancel By    2    Days
+    Get Request Field Values    Hotel Prepaid-Intl    new
+    Get Air Segment
+    Get Cancel By
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    546    34    45    Hotel pre paid- INTL    gsa    ChargesPO1
+    Get Charges Field Values    R1
+    Calculate Merchant Fee In Charges For Remarks
+    Calculate VAT In Charges For Remarks
+    Calculate VAT For Merchant Fee In Charges For Remarks
+    Generate Remarks Data For Specific Charges Row For CC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R2
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R2
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Mice Domestic    JTB TRAVELS PVT LTD    889.989    12.56    8.456    Mice Domestic
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R3
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R3
+    Click Save In Associated Charges
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+
+[IN CEO] Verify That Passive, Accounting, And Associated Itinerary Lines Are Removed When Exchange Order Of Hotel Prepaid Is Cancelled
+    [Tags]    not_ready
+    Click Other Services
+    Cancel Exchange Order    ${eo_number}
+    Click Other Services
+    Verify Exchange Order Is Cancelled In EO Grid    ${eo_number}
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For CC Are Not Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For CC Are Not Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For CC Are Not Written In The PNR    R3
+    Verify Itinerary Remarks Lines From PNR    False
+
+[IN NB] Create Car Exchange Order
+    [Tags]    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Get Current Car Segments
+    Select Product And Vendor    Car Intl    AAR BEE & COMPANY
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields When Product Is Car DOM    14/03/2022    10/25/50    16/03/2022    12/25/50    ${passive_segments[0]}    INR \ \ \ Indian Rupee
+    ...    70    Airport    Terminal 1    Office    South Avenue, Boulevard of Isla, 2411    Europcar
+    ...    CF321234    Toyota Camry    Sedan    "Concord booking" x15    Credit Card    cancel by
+    ...    XXXXXXXXXXXX1111    CORP    VI    18    Hrs
+    Get Request Field Values    Car Intl    amend_eo_1
+    Get Cancel By
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    546    34    45    Hotel pre paid- INTL    gsa    ChargesPO1
+    Get Charges Field Values    R1
+    Calculate Merchant Fee In Charges For Remarks
+    Calculate VAT In Charges For Remarks
+    Calculate VAT For Merchant Fee In Charges For Remarks
+    Generate Remarks Data For Specific Charges Row For CC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R2
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R2
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Mice Domestic    JTB TRAVELS PVT LTD    889.989    12.56    8.456    Mice Domestic
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R3
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R3
+    Click Save In Associated Charges
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+
+[IN CEO] Verify That Passive, Accounting, And Associated Itinerary Lines Are Removed When Exchange Order Of Car Is Cancelled
+    [Tags]    not_ready
+    Click Other Services
+    Cancel Exchange Order    ${eo_number}
+    Click Other Services
+    Verify Exchange Order Is Cancelled In EO Grid    ${eo_number}
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For CC Are Not Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For CC Are Not Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For CC Are Not Written In The PNR    R3
+    Verify Itinerary Remarks Lines From PNR    False
+
+[IN NB] Create Merchant Fee Exhange Order
+    [Tags]    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Merchant fee    CREDIT CARD CHARGES
+    # Request Tab
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    Merchant fee    new
+    # Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    546    34    45    Hotel pre paid- INTL    gsa    ChargesPO1
+    Get Charges Field Values    R1
+    Calculate Merchant Fee In Charges For Remarks
+    Calculate VAT In Charges For Remarks
+    Calculate VAT For Merchant Fee In Charges For Remarks
+    Generate Remarks Data For Specific Charges Row For CC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R2
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R2
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Mice Domestic    JTB TRAVELS PVT LTD    889.989    12.56    8.456    Mice Domestic
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R3
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R3
+    Click Save In Associated Charges
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+
+[IN CEO] Verify That Passive, Accounting, And Associated Itinerary Lines Are Removed When Exchange Order Of Merchant Fee Is Cancelled
+    [Tags]    not_ready
+    Generate Date For Passive Segment
+    Click Other Services
+    Cancel Exchange Order    ${eo_number}
+    Click Other Services
+    Verify Exchange Order Is Cancelled In EO Grid    ${eo_number}
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For CC Are Not Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For CC Are Not Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For CC Are Not Written In The PNR    R3
+    Verify Itinerary Remarks Are Not Written For Non Air Other Services
+    Verify Passive Segment Is Not Written In The PNR When Product Is Non-Air Other Services    Merchant Fee
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Create PNR With Passive, Active, Car And Hotel Segments
+    [Arguments]    ${country}=IN
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC ${country} OS AUTOMATION    BEAR    ${country}OTHERS
+    Click New Booking
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    SINJFK/AJL    6
+    Book Passive Flight X Months From Now    LAXSIN    AA    6    2
+    Book Passive Flight X Months From Now    SINHKG    3K    6    6
+    Book Passive Car Segment X Months From Now    HKG    7    4    7    4    1
+    Book Active Hotel X Months From Now    LON    423    8    2    8    4
+    ...    checkindate_identifier1    checkoutdate_identifier2
+    Book Passive Hotel Segment X Months From Now    HKG    Marco Polo Hotel HKG1747.94, 3rd Canton Rd, Tsim Sha Tsui, Hong Kong +852 2113 0088    9    5    9    6
+    ...    checkindate_identifier2    checkoutdate_identifier3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+
+Verify Passive Segment Does Not Exist In The PNR
+    [Arguments]    ${product}    ${city}={EMPTY}
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTX
+    Run Keyword If    "${product.lower()}"=="tour intl"    Verify Passive Segment Is Not Written In The PNR When Product Is Tour Intl
+    Run Keyword If    "${product.lower()}"=="meet & greet"    Verify Passive Segment Is Not Written When Product Is Meet and Greet    ${product}    ${city_name}
+    Run Keyword If    "${product.lower()}"=="despatch" or "${product.lower()}"=="ets call charges" or "${product.lower()}"=="ferry" or "${product.lower()}"=="merchant fee" or "${product.lower()}"=="mice domestic" or "${product.lower()}"=="mice international" or "${product.lower()}"=="oths handling fee" or "${product.lower()}"=="rebate" or "${product.lower()}"=="tour domestic" or "${product.lower()}"=="transaction fee-air only" or "${product.lower()}"=="vat"    Verify Passive Segment Is Not Written In The PNR When Product Is Non-Air Other Services    ${product}
+    Run Keyword If    "${product.lower()}"=="visa fee" or "${product.lower()}"=="visa dd" or "${product.lower()}"=="visa handling fee"    Verify Passive Segment Is Not Written In The PNR When Product Is Visa Fee, Visa DD Or Visa Handling    ${product}
+    Run Keyword If    "${product.lower()}"=="insurance"    Verify Passive Segment Is Not Written In The PNR When Product Is Insurance
+
+Verify India Associated Itinerary Remarks Are Removed When EO Is Cancelled
+    [Arguments]    ${eo_number}
+    : FOR    ${rir}    IN    ${previous_rir_${eo_number}}
+    \    Verify Specific Remark Is Not Written In The PNR    ${rir}
+
+Get Written Car and Hotel Associated Itinerary Remarks From PNR
+    @{car_hotel_rir}    Create List
+    Run Keyword If    "${cancel_by_status.lower()}"=="true"and"${special_rate_no_cancellation_status.lower()}"=="false"and"${others_status.lower()}"=="false"    Append To List    RIR CANCEL BY ${cancel_by_value} ${cancel_by_uom.upper()} PRIOR TO ARRIVAL OR PENALTY APPLIED/S${selected_segment}
+    Run Keyword If    "${cancel_by_status.lower()}"=="false"and"${special_rate_no_cancellation_status.lower()}"=="true"and"${others_status.lower()}"=="false"    Append To List    RIR NO CANCELLATION. ENTIRE AMOUNT WILL BE/S${selected_segment}
+    Run Keyword If    "${cancel_by_status.lower()}"=="false"and"${special_rate_no_cancellation_status.lower()}"=="true"and"${others_status.lower()}"=="false"    Append To List    RIR FORFEITED IN CASE OF NO SHOW/S${selected_segment}
+    Run Keyword If    "${cancel_by_status.lower()}"=="false"and"${special_rate_no_cancellation_status.lower()}"=="false"and"${others_status.lower()}"=="true"    Append To List    RIR CANCELLATION POLICY: ${others_text.upper()}/S${selected_segment}
+    Set Suite Variable    ${previous_rir_${eo_number}}    @{car_hotel_rir}
+
+Get Written Non-Air Product Associated Itinerary Remarks From PNR
+    @{non-air}    Create List    RIR ${details1.upper()}/S${segment_number.strip()}
+    Run Keyword If    "${details2}"!="${EMPTY}"    Append To List    ${non-air}    RIR ${details2.upper()}/S${segment_number.strip()}
+    Run Keyword If    "${details3}"!="${EMPTY}"    Append To List    ${non-air}    RIR ${details3.upper()}/S${segment_number.strip()}
+    Set Suite Variable    ${previous_rir_${eo_number}}    ${non-air}
+
+Get Written Tour Associated Itinerary Remarks From PNR
+    @{tour}    Create List    RIR ${package_name.upper()}/S${segment_number.strip()}    RIR START:${start_date_code.upper()} END:${end_date_code.upper()}/S${segment_number.strip()}
+    Set Suite Variable    ${previous_rir_${eo_number}}    ${tour}
+
+Verify That Exchange Order Cannot Be Amended
+    [Arguments]    ${eo_number}=${exchange_order}
+    Click Button In Eo Grid    ${exchange_order}    IN    Amend
+    Wait Until Control Object Is Visible    [CLASS:Static; INSTANCE:1]    Amend Exchange Order
+    Get Control Text Value    [CLASS:Static; INSTANCE:1]    Amend Exchange Order
+    Run Keyword And Continue On Failure    Should Be Equal    ${control_text_object}    Record cannot be Amended
+    Click Control Button    [CLASS:Button; INSTANCE:1]    Amend Exchange Order
+Verify That Exchange Order Cannot Be Amended
+    [Arguments]    ${eo_number}=${exchange_order}
+    Click Button In Eo Grid    ${exchange_order}    IN    Amend
+    Wait Until Control Object Is Visible    [CLASS:Static; INSTANCE:1]    Amend Exchange Order
+    Get Control Text Value    [CLASS:Static; INSTANCE:1]    Amend Exchange Order
+    Run Keyword And Continue On Failure    Should Be Equal    ${control_text_object}    Record cannot be Amended
+    Click Control Button    [CLASS:Button; INSTANCE:1]    Amend Exchange Order
+
+Verify That Exchange Order Cannot Be Cancelled
+    [Arguments]    ${eo_number}=${exchange_order}
+    Click Button In Eo Grid    ${exchange_order}    IN    Cancel
+    Wait Until Control Object Is Visible    [CLASS:Static; INSTANCE:1]    Exchange Order Cancel
+    Get Control Text Value    [CLASS:Static; INSTANCE:1]    Exchange Order Cancel
+    Run Keyword And Continue On Failure    Should Be Equal    ${control_text_object}    Exchange Order is already cancelled.
+    Click Control Button    [CLASS:Button; INSTANCE:1]    Exchange Order Cancel
+
+Cancel Exchange Order
+    [Arguments]    ${eo_number}    ${cancel_eo}=yes    ${country}=IN
+    Click Cancel Button In EO Grid    ${eo_number}    ${country}    ${cancel_eo}
+    Run Keyword If    ${is_eo_cancelled}    Log    EO Number "${eo_number}" is already cancelled.    WARN
+    Run Keyword If    "${cancel_eo.lower()}" == "yes" and "${is_eo_cancelled}" == "False"    Verify Exchange Order Is Successfully Cancel    ${eo_number}
+    [Teardown]    Take Screenshot
+
+Verify Exchange Order Is Cancelled In EO Grid
+    [Arguments]    ${eo_number}
+    Wait Until Control Object Is Visible    [NAME:EoGrid]    ${title_power_express}
+    ${actual_list_value}    Get Row Values In EO Grid    ${eo_number}
+    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_list_value}    Cancelled    Current row is not in Cancel status
+    [Teardown]    Take Screenshot
+
+Verify Exchange Order Is Successfully Cancel
+    [Arguments]    ${eo_number}
+    Wait Until Control Object Is Visible    [NAME:lblEndMessage]
+    ${post_eo_messages}    Get Control Text Value    [NAME:lblEndMessage]    ${title_power_express}
+    Verify Text Contains Expected Value    ${post_eo_messages}    Exchange Order Cancelled    multi_line_search_flag=true
+    Verify Text Contains Expected Value    ${post_eo_messages}    Exchange Order Number: ${eo_number}    multi_line_search_flag=true
+    [Teardown]    Take Screenshot
+
+Verify Associated Charges Accounting Lines For CC Are Not Written In The PNR
+    [Arguments]    ${row_id}    ${x_times}=0
+    ${product_code}    Get From List    ${assoc_charges_row${row_id}}    0
+    ${current_vendor_code}    Get From List    ${assoc_charges_row${row_id}}    1
+    ${assoc_charges_gross_sell}    Get From List    ${assoc_charges_row${row_id}}    2
+    ${assoc_charges_commission}    Get From List    ${assoc_charges_row${row_id}}    3
+    ${gst}    Get From List    ${assoc_charges_row${row_id}}    4
+    ${assoc_charges_remarks_gst_value}    Get From List    ${assoc_charges_row${row_id}}    5
+    ${ot1}    Get From List    ${assoc_charges_row${row_id}}    6
+    ${assoc_charges_remarks_ff99_ot1_value}    Get From List    ${assoc_charges_row${row_id}}    7
+    ${ot2}    Get From List    ${assoc_charges_row${row_id}}    8
+    ${assoc_charges_remarks_ff99_ot2_value}    Get From List    ${assoc_charges_row${row_id}}    9
+    ${assoc_charges_fop_type}    Get From List    ${assoc_charges_row${row_id}}    10
+    ${assoc_charges_cc_type}    Get From List    ${assoc_charges_row${row_id}}    11
+    ${assoc_charges_card_number}    Get From List    ${assoc_charges_row${row_id}}    12
+    ${assoc_charges_expiry_month}    Get From List    ${assoc_charges_row${row_id}}    13
+    ${split_year}    Get From List    ${assoc_charges_row${row_id}}    14
+    ${assoc_charges_vatgst_amount}    Get From List    ${assoc_charges_row${row_id}}    15
+    ${assoc_charges_merchant_fee}    Get From List    ${assoc_charges_row${row_id}}    16
+    ${assoc_charges_total_selling_price}    Get From List    ${assoc_charges_row${row_id}}    17
+    ${assoc_charges_merchant_gst}    Get From List    ${assoc_charges_row${row_id}}    18
+    ${assoc_charges_merchant_ot1}    Get From List    ${assoc_charges_row${row_id}}    19
+    ${assoc_charges_merchant_gst_value}    Get From List    ${assoc_charges_row${row_id}}    20
+    ${assoc_charges_merchant_ot1_calvalue}    Get From List    ${assoc_charges_row${row_id}}    21
+    ${assoc_charges_merchant_ot2_calvalue}    Get From List    ${assoc_charges_row${row_id}}    22
+    ${assoc_charges_vat_total_calvalue}    Get From List    ${assoc_charges_row${row_id}}    23
+    ${assoc_charges_other_related_no}    Get From List    ${assoc_charges_row${row_id}}    24
+    ${assoc_charges_vendor_ref_no}    Get From List    ${assoc_charges_row${row_id}}    25
+    Run Keyword If    "${assoc_charges_cc_type}"=="VI" or "${assoc_charges_cc_type}"=="CA"    Set Suite Variable    ${assoc_charges_cc_type_code}    CX4
+    ...    ELSE IF    "${assoc_charges_cc_type}"=="AX"    Set Suite Variable    ${assoc_charges_cc_type_code}    CX2
+    ${assoc_charges_card_number}    Get Substring    ${assoc_charges_card_number}    -4
+    ${assoc_charges_gross_sell}    Round Apac    ${assoc_charges_gross_sell}    IN
+    ${assoc_charges_commission}    Round Apac    ${assoc_charges_commission}    IN
+    ${assoc_charges_vat_total_calvalue}    Round Apac    ${assoc_charges_vat_total_calvalue}    IN
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC${product_code}/V${current_vendor_code}/TK${eo_number}/PX1
+    Run Keyword If    "${assoc_charges_other_related_no}"!="${EMPTY}" or "${assoc_charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark For PO and GSA Is Not Written In The PNR
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${assoc_charges_gross_sell}/SF${assoc_charges_gross_sell}/C${assoc_charges_commission}/F${assoc_charges_cc_type_code}
+    Verify Specific Remark Is Not Written In The PNR    RM \\*MSX\\/CCN${assoc_charges_cc_type}([A-Z0-9]+)${assoc_charges_card_number}EXP${assoc_charges_expiry_month}${split_year}\\/D${assoc_charges_gross_sell}    true
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF99-${gst}P${assoc_charges_remarks_gst_value}*${ot1}P${assoc_charges_remarks_ff99_ot1_value}*${ot2}P${assoc_charges_remarks_ff99_ot2_value}/FF34-AB/FF35-OTH
+    Verify Specific Remark Is Written X Times In The PNR    RM *MSX/FF36-M/FF47-#CWT    ${x_times}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF ${product_name.upper()}
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC87/V00800011/TK${eo_number}/PX1
+    Run Keyword If    "${assoc_charges_other_related_no}"!="${EMPTY}" or "${assoc_charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark For PO and GSA Is Not Written In The PNR
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${assoc_charges_vatgst_amount}/SF${assoc_charges_vatgst_amount}/C0/F${assoc_charges_cc_type_code}
+    Verify Specific Remark Is Not Written In The PNR    RM \\*MSX\\/CCN${assoc_charges_cc_type}([A-Z0-9]+)${assoc_charges_card_number}EXP${assoc_charges_expiry_month}${split_year}\\/D${assoc_charges_vatgst_amount}    true
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF34-AB/FF35-OTH/FF36-M/FF47-#CWT
+    Verify Vat Is Not Written In The PNR
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC40/V00800004/TK${eo_number}/PX1
+    Run Keyword If    "${assoc_charges_other_related_no}"!="${EMPTY}" or "${assoc_charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark For PO and GSA Is Not Written In The PNR
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${assoc_charges_merchant_fee}/SF${assoc_charges_merchant_fee}/C${assoc_charges_merchant_fee}/F${assoc_charges_cc_type_code}
+    Verify Specific Remark Is Not Written In The PNR    RM \\*MSX\\/CCN${assoc_charges_cc_type}([A-Z0-9]+)${assoc_charges_card_number}EXP${assoc_charges_expiry_month}${split_year}\\/D${assoc_charges_merchant_fee}    true
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF99-${assoc_charges_merchant_gst}P${assoc_charges_merchant_gst_value}*${assoc_charges_merchant_ot1}P${assoc_charges_merchant_ot1_calvalue}*${assoc_charges_merchant_ot2}P${assoc_charges_merchant_ot2_calvalue}/FF34-AB/FF35-OTH
+    Verify Specific Remark Is Written X Times In The PNR    RM *MSX/FF36-M/FF47-#CWT    ${x_times}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF MERCHANT FEE
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC87/V00800011/TK${eo_number}/PX1
+    Run Keyword If    "${assoc_charges_other_related_no}"!="${EMPTY}"or "${assoc_charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark For PO and GSA Is Not Written In The PNR
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${assoc_charges_vat_for_merchfee_calvalue}/SF${assoc_charges_vat_for_merchfee_calvalue}/C0/F${assoc_charges_cc_type_code}
+    Verify Specific Remark Is Not Written In The PNR    RM \\*MSX\\/CCN${assoc_charges_cc_type}([A-Z0-9]+)${assoc_charges_card_number}EXP${assoc_charges_expiry_month}${split_year}\\/D${assoc_charges_vat_for_merchfee_calvalue}    true
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF34-AB/FF35-OTH/FF36-M/FF47-#CWT
+    Verify Vat Is Not Written In The PNR
+
+Verify Charges Accounting Lines For CC Are Not Written In The PNR
+    [Arguments]    ${row_id}    ${x_times}=0
+    ${product_code}    Get From List    ${charges_row${row_id}}    0
+    ${vendor_code}    Get From List    ${charges_row${row_id}}    1
+    ${charges_gross_sell}    Get From List    ${charges_row${row_id}}    2
+    ${charges_commission}    Get From List    ${charges_row${row_id}}    3
+    ${gst}    Get From List    ${charges_row${row_id}}    4
+    ${charges_remarks_gst_value}    Get From List    ${charges_row${row_id}}    5
+    ${ot1}    Get From List    ${charges_row${row_id}}    6
+    ${charges_remarks_ff99_ot1_value}    Get From List    ${charges_row${row_id}}    7
+    ${ot2}    Get From List    ${charges_row${row_id}}    8
+    ${charges_remarks_ff99_ot2_value}    Get From List    ${charges_row${row_id}}    9
+    ${charges_fop_type}    Get From List    ${charges_row${row_id}}    10
+    ${charges_cc_type}    Get From List    ${charges_row${row_id}}    11
+    ${charges_card_number}    Get From List    ${charges_row${row_id}}    12
+    ${charges_expiry_month}    Get From List    ${charges_row${row_id}}    13
+    ${split_year}    Get From List    ${charges_row${row_id}}    14
+    ${charges_vatgst_amount}    Get From List    ${charges_row${row_id}}    15
+    ${charges_merchant_fee}    Get From List    ${charges_row${row_id}}    16
+    ${charges_total_selling_price}    Get From List    ${charges_row${row_id}}    17
+    ${charges_merchant_gst}    Get From List    ${charges_row${row_id}}    18
+    ${charges_merchant_ot1}    Get From List    ${charges_row${row_id}}    19
+    ${charges_merchant_gst_value}    Get From List    ${charges_row${row_id}}    20
+    ${charges_merchant_ot1_calvalue}    Get From List    ${charges_row${row_id}}    21
+    ${charges_merchant_ot2_calvalue}    Get From List    ${charges_row${row_id}}    22
+    ${charges_vat_total_calvalue}    Get From List    ${charges_row${row_id}}    23
+    ${charges_other_related_no}    Get From List    ${charges_row${row_id}}    24
+    ${charges_vendor_ref_no}    Get From List    ${charges_row${row_id}}    25
+    Run Keyword If    "${charges_cc_type}"=="VI" or "${charges_cc_type}"=="CA"    Set Suite Variable    ${charges_cc_type_code}    CX4
+    ...    ELSE IF    "${charges_cc_type}"=="AX"    Set Suite Variable    ${charges_cc_type_code}    CX2
+    ${charges_card_number}    Get Substring    ${charges_card_number}    -4
+    ${charges_gross_sell}    Round Apac    ${charges_gross_sell}    IN
+    ${charges_commission}    Round Apac    ${charges_commission}    IN
+    ${charges_vat_total_calvalue}    Round Apac    ${charges_vat_total_calvalue}    IN
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC${product_code}/V${vendor_code}/TK${eo_number}/PX1
+    Run Keyword If    "${charges_other_related_no}"!="${EMPTY}" or "${charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark For Charges PO and GSA Is Not Written In The PNR
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${charges_gross_sell}/SF${charges_gross_sell}/C${charges_commission}/F${charges_cc_type_code}
+    Verify Specific Remark Is Not Written In The PNR    RM \\*MSX\\/CCN${charges_cc_type}([A-Z0-9]+)${charges_card_number}EXP${charges_expiry_month}${split_year}\\/D${charges_gross_sell}    true
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF99-${gst}P${charges_remarks_gst_value}*${ot1}P${charges_remarks_ff99_ot1_value}*${ot2}P${charges_remarks_ff99_ot2_value}/FF34-AB/FF35-OTH
+    Verify Specific Remark Is Written X Times In The PNR    RM *MSX/FF36-M/FF47-#CWT    ${x_times}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF ${product_name.upper()}
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC87/V00800011/TK${eo_number}/PX1
+    Run Keyword If    "${charges_other_related_no}"!="${EMPTY}" or "${charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark For Charges PO and GSA Is Not Written In The PNR
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${charges_vatgst_amount}/SF${charges_vatgst_amount}/C0/F${charges_cc_type_code}
+    Verify Specific Remark Is Not Written In The PNR    RM \\*MSX\\/CCN${charges_cc_type}([A-Z0-9]+)${charges_card_number}EXP${charges_expiry_month}${split_year}\\/D${charges_vatgst_amount}    true
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF34-AB/FF35-OTH/FF36-M/FF47-#CWT
+    Verify Vat Is Not Written In The PNR
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC40/V00800004/TK${eo_number}/PX1
+    Run Keyword If    "${charges_other_related_no}"!="${EMPTY}" or "${charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark For Charges PO and GSA Is Not Written In The PNR
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${charges_merchant_fee}/SF${charges_merchant_fee}/C${charges_merchant_fee}/F${charges_cc_type_code}
+    Verify Specific Remark Is Not Written In The PNR    RM \\*MSX\\/CCN${charges_cc_type}([A-Z0-9]+)${charges_card_number}EXP${charges_expiry_month}${split_year}\\/D${charges_merchant_fee}    true
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF99-${charges_merchant_gst}P${charges_merchant_gst_value}*${charges_merchant_ot1}P${charges_merchant_ot1_calvalue}*${charges_merchant_ot2}P${charges_merchant_ot2_calvalue}/FF34-AB/FF35-OTH
+    Verify Specific Remark Is Written X Times In The PNR    RM *MSX/FF36-M/FF47-#CWT    ${x_times}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF MERCHANT FEE
+    Verify Specific Remark Is Not Written In The PNR    RM *MS/PC87/V00800011/TK${eo_number}/PX1
+    Run Keyword If    "${charges_other_related_no}"!="${EMPTY}" or "${charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark For Charges PO and GSA Is Not Written In The PNR
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${charges_vat_for_merchfee_calvalue}/SF${charges_vat_for_merchfee_calvalue}/C0/F${charges_cc_type_code}
+    Verify Specific Remark Is Not Written In The PNR    RM \\*MSX\\/CCN${charges_cc_type}([A-Z0-9]+)${charges_card_number}EXP${charges_expiry_month}${split_year}\\/D${charges_vat_for_merchfee_calvalue}    true
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF34-AB/FF35-OTH/FF36-M/FF47-#CWT
+    Verify Vat Is Not Written In The PNR
+
+Verify Specific Remark For Charges PO and GSA Is Not Written In The PNR
+    Run Keyword If    "${charges_other_related_no}"!="${EMPTY}" and "${charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/PO${charges_other_related_no.upper()}/GSA${charges_vendor_ref_no.upper()}
+    ...    ELSE IF    "${charges_other_related_no}"=="${EMPTY}" and "${charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/GSA${charges_vendor_ref_no.upper()}
+    ...    ELSE IF    "${charges_other_related_no}"!="${EMPTY}"and "${charges_vendor_ref_no}"== "${EMPTY}"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/PO${charges_other_related_no.upper()}
+
+Verify Specific Remark For PO and GSA Is Not Written In The PNR
+    Run Keyword If    "${assoc_charges_other_related_no}"!="${EMPTY}" and "${assoc_charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/PO${assoc_charges_other_related_no.upper()}/GSA${assoc_charges_vendor_ref_no.upper()}
+    ...    ELSE IF    "${assoc_charges_other_related_no}"=="${EMPTY}" and "${assoc_charges_vendor_ref_no}"!="${EMPTY}"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/GSA${assoc_charges_vendor_ref_no.upper()}
+    ...    ELSE IF    "${assoc_charges_other_related_no}"!="${EMPTY}" and "${assoc_charges_vendor_ref_no}"== "${EMPTY}"    Verify Specific Remark Is Not Written In The PNR    RM *MSX/PO${assoc_charges_other_related_no.upper()}
+
+Verify Vat Is Not Written In The PNR
+    ${lines}    Get Lines Containing String    ${pnr_details}    RM *MSX/FF VAT
+    ${vat_lines}    Split To Lines    ${lines}
+    : FOR    ${vat_line}    IN    @{vat_lines}
+    \    Run Keyword And Continue On Failure    Should Not Be Equal    ${vat_line}    RM *MSX/FF VAT    "RM *MSX/FF VAT" contains in the PNR
+
+Verify Itinerary Remarks Are Not Written For Non Air Other Services
+    [Documentation]    This Keyword can be used For The Below Non-Air Other Services
+    ...    * Despatch
+    ...    * Ets Call Charges
+    ...    * Ferry
+    ...    * Merchant fee
+    ...    * Mice Domestic
+    ...    * MICE international
+    ...    * Oths handling Fee
+    ...    * Rebate
+    ...    * Tour Domestic
+    ...    * Transaction Fee-Air only
+    ...    * VAT
+    Get Passive Segment Number    ${date}
+    Run Keyword If    "${details1}"!="${EMPTY}"    Verify Specific Line Is Not Written In The PNR    RIR ${details1.upper()}/S${segment_number.strip()}    false    false    true
+    Run Keyword If    "${details2}"!="${EMPTY}"    Verify Specific Line Is Not Written In The PNR    RIR ${details2.upper()}/S${segment_number.strip()}    false    false    true
+    Run Keyword If    "${details3}"!="${EMPTY}"    Verify Specific Line Is Not Written In The PNR    RIR ${details3.upper()}/S${segment_number.strip()}    false    false    true
+
+Verify Itinerary Remarks Lines From PNR
+    [Arguments]    ${is_written}=True
+    [Documentation]    Pass one of three cancellation policies to verify RIR Line
+    ...
+    ...
+    ...    | ${selected_segement} = Selected Segment line number
+    ...    | ${car_segement} = Needs to be retrieved from PNR lines prior to calling this keyword if verification is for car segment.
+    ...    | ${hotel_segement} = Needs to be retrieved from PNR lines prior to calling this keyword if verification is for hotel segment.
+    ...    | ${cancel_by} & ${others} - Should be retrieved prior to calling this Keyword
+    ...
+    ...    Note: It is required to run Get Cancellation Policy And Get <segment name> Segment Keywords to get the values
+    Log    ${car_segment_flag}
+    Log    ${hotel_segment_flag}
+    Log    ${car_segment_number}
+    Run Keyword If    ${car_segment_flag}==1    Set Test Variable    ${selected_segment}    ${car_segment_number}
+    Run Keyword If    ${hotel_segment_flag}==1    Set Test Variable    ${selected_segment}    ${hotel_segment_number}
+    ${cancel_by_value}=    Set Variable If    "${cancel_by_status.lower()}"=="true"and"${special_rate_no_cancellation_status.lower()}"=="false"and"${others_status.lower()}"=="false"    ${cancel_by[1]}
+    ${cancel_by_uom}=    Set Variable If    "${cancel_by_status.lower()}"=="true"and"${special_rate_no_cancellation_status.lower()}"=="false"and"${others_status.lower()}"=="false"    ${cancel_by[2]}
+    ${others_text}=    Set Variable If    "${cancel_by_status.lower()}"=="false"and"${special_rate_no_cancellation_status.lower()}"=="false"and"${others_status.lower()}"=="true"    ${others[1]}
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Run Keyword If    "${cancel_by_status.lower()}"=="true"and"${special_rate_no_cancellation_status.lower()}"=="false"and"${others_status.lower()}"=="false" and "${is_written}"=="true"    Verify Specific Line Is Written In The PNR    RIR CANCEL BY ${cancel_by_value} ${cancel_by_uom.upper()} PRIOR TO ARRIVAL OR PENALTY APPLIED/S${selected_segment}
+    Run Keyword If    "${cancel_by_status.lower()}"=="false"and"${special_rate_no_cancellation_status.lower()}"=="true"and"${others_status.lower()}"=="false" and "${is_written}"=="true"    Verify Specific Line Is Written In The PNR    RIR FORFEITED IN CASE OF NO SHOW/S${selected_segment}
+    Run Keyword If    "${cancel_by_status.lower()}"=="false"and"${special_rate_no_cancellation_status.lower()}"=="true"and"${others_status.lower()}"=="false" and "${is_written}"=="true"    Verify Specific Line Is Written In The PNR    RIR NO CANCELLATION. ENTIRE AMOUNT WILL BE/S${selected_segment}
+    Run Keyword If    "${cancel_by_status.lower()}"=="false"and"${special_rate_no_cancellation_status.lower()}"=="false"and"${others_status.lower()}"=="true" and "${is_written}"=="true"    Verify Specific Line Is Written In The PNR    RIR CANCELLATION POLICY: ${others_text.upper()}/S${selected_segment}
+    Run Keyword If    "${cancel_by_status.lower()}"=="true"and"${special_rate_no_cancellation_status.lower()}"=="false"and"${others_status.lower()}"=="false" and "${is_written}"=="false"    Verify Specific Line Is Not Written In The PNR    RIR CANCEL BY ${cancel_by_value} ${cancel_by_uom.upper()} PRIOR TO ARRIVAL OR PENALTY APPLIED/S${selected_segment}
+    Run Keyword If    "${cancel_by_status.lower()}"=="false"and"${special_rate_no_cancellation_status.lower()}"=="true"and"${others_status.lower()}"=="false" and "${is_written}"=="false"    Verify Specific Line Is Not Written In The PNR    RIR FORFEITED IN CASE OF NO SHOW/S${selected_segment}
+    Run Keyword If    "${cancel_by_status.lower()}"=="false"and"${special_rate_no_cancellation_status.lower()}"=="true"and"${others_status.lower()}"=="false" and "${is_written}"=="false"    Verify Specific Line Is Not Written In The PNR    RIR NO CANCELLATION. ENTIRE AMOUNT WILL BE/S${selected_segment}
+    Run Keyword If    "${cancel_by_status.lower()}"=="false"and"${special_rate_no_cancellation_status.lower()}"=="false"and"${others_status.lower()}"=="true" and "${is_written}"=="false"    Verify Specific Line Is Not Written In The PNR    RIR CANCELLATION POLICY: ${others_text.upper()}/S${selected_segment}
+
+Verify That Exchange Order Cannot Be Cancelled
+    [Arguments]    ${eo_number}=${exchange_order}
+    Click Button In Eo Grid    ${exchange_order}    IN    Cancel
+    Wait Until Control Object Is Visible    [CLASS:Static; INSTANCE:1]    Exchange Order Cancel
+    Get Control Text Value    [CLASS:Static; INSTANCE:1]    Exchange Order Cancel
+    Run Keyword And Continue On Failure    Should Be Equal    ${control_text_object}    Exchange Order is already cancelled.
+    Click Control Button    [CLASS:Button; INSTANCE:1]    Exchange Order Cancel
+Verify Passive Segment Is Not Written In The PNR When Product Is Non-Air Other Services
+    [Arguments]    ${product}
+    ${type_code}    Set Variable If    "${product.lower()}"=="ferry"    SEA    OTH
+    ${type_code}    Set Variable If    "${product.lower()}"=="tour domestic"    TOR    OTH
+    Get Vendor
+    Get Vendor Code For India    ${product}    ${vendor}
+    ${date_of_application}    Generate Date X Months From Now    0    180    %d/%b/%Y
+    #Convert Date Of Application To GDS Format
+    ${date_of_application_split}    Split String    ${date_of_application}    /
+    ${day}    Get From List    ${date_of_application_split}    0
+    ${month}    Get From List    ${date_of_application_split}    1
+    ${month}    Convert To Uppercase    ${month}
+    ${date_of_application}    Convert To String    ${day.strip()}${month.strip()}
+    Set Suite Variable    ${date}    ${date_of_application}
+    Set Variable    ${vendor.upper()}
+    Set Suite Variable    ${vendor}    ${vendor.upper().strip()}
+    Verify Specific Line Is Not Written In The PNR    MIS 1A HK1 BLR ${date_of_application}-TYP-${type_code}/SUC-${current_vendor_code}/SUN-${vendor.strip()}/STS-HK/TK-${eo_number}    false    true    true
+    Set Suite Variable    ${last_known_passive_segment}    MIS 1A HK1 BLR ${date_of_application}-TYP-${type_code}/SUC-${current_vendor_code}/SUN-${vendor.strip()}/STS-HK/TK-${eo_number}
+
+Generate Date For Passive Segment
+    ${date_of_application}    Generate Date X Months From Now    0    180    %d/%b/%Y
+    ${date}    Convert Date To Gds Format    ${date_of_application}    %d/%b/%Y
+    Set Suite Variable    ${date}

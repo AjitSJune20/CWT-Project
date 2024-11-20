@@ -1,0 +1,71 @@
+﻿*** Settings ***
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Move Profile Is Successful On Click New Booking - Update PNR
+    [Tags]    us4928    apollo
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4619 SU01    AUTOSEVENTEENFIVE    TRAVELERONE
+    Click New Booking
+    Update PNR for EN or GB
+    Retrieve PNR Details From Travelport
+    Book One Way Flight X Months From Now    DENLAX+AA    7
+    Enter GDS Command    RMU:US4928RMKS01
+    Enter GDS Command    RMU:US4928RMKS02
+    Enter GDS Command    RMU:US4928RMKS03
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    XXXB/202-555-1212 MEETING DEPARTMENT
+    Verify Specific Line Is Written In The PNR    M/TESTING MEETING BAR MOVE FOR EXPRESS
+    Verify Specific Line Is Written In The PNR    U20-MEETING TEST UDID
+    Verify Specific Line Is Written In The PNR    US4619RMKS01
+    Verify Specific Line Is Written In The PNR    US4928 MODIFIED RMKS 01
+    Verify Specific Line Is Written In The PNR    US4928RMKS02
+    Verify Specific Line Is Written In The PNR    US4928RMKS03
+    Verify Specific Line Is Not Written In The PNR    US4928RMKS01
+    [Teardown]
+
+[AB] Verify That Move Profile Is Successful On Read Booking - Finish PNR On Amend Booking
+    [Tags]    us4928    apollo
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    US4928RMKS02
+    Verify Specific Line Is Written In The PNR    US4928RMKS03
+    Verify Specific Line Is Written In The PNR    XXXB/202-555-1212 MEETING DEPARTMENT
+    Verify Specific Line Is Written In The PNR    M/TESTING MEETING BAR MOVE FOR EXPRESS
+    Verify Specific Line Is Written In The PNR    U20-MEETING TEST UDID
+    Verify Specific Line Is Written In The PNR    US4619RMKS01
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking For Apollo Move Profile Success If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    XXXB/202-555-1212 MEETING DEPARTMENT
+    Verify Specific Line Is Written In The PNR    M/TESTING MEETING BAR MOVE FOR EXPRESS
+    Verify Specific Line Is Written In The PNR    U20-MEETING TEST UDID
+    Verify Specific Line Is Written In The PNR    US4619RMKS01
+    Verify Specific Line Is Written In The PNR    XXXB/202-555-5757 ACCOUNTING DEPARTMENT
+    Verify Specific Line Is Written In The PNR    M/TESTING OTHER TEXT MOVE FOR EXPRESS
+    Verify Specific Line Is Written In The PNR    U20-MEETING OTHER TEST UDID
+    Verify Specific Line Is Written In The PNR    US4619RMKS04
+    Verify Specific Line Is Written In The PNR    US4928 MODIFIED RMKS 02
+    Verify Specific Line Is Written In The PNR    US4928RMKS03
+    Verify Specific Line Is Not Written In The PNR    US4928RMKS02
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Apollo Move Profile Success
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    XXXB/202-555-1212 MEETING DEPARTMENT
+    Verify Specific Line Is Written In The PNR    M/TESTING MEETING BAR MOVE FOR EXPRESS
+    Verify Specific Line Is Written In The PNR    U20-MEETING TEST UDID
+    Verify Specific Line Is Written In The PNR    US4619RMKS01
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

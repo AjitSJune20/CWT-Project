@@ -1,0 +1,56 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../air_fare_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Alternate Fare Tab Details Is Written In The PNR
+    [Tags]    legacy    us437    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre Legacy - Auto ¦ Air Fare    AutoLegacy    NoramTrvlrOne    LAXCDG¥AF    ${EMPTY}    AIR FARE
+    Get Single Flight Details    LAXCDG
+    Click Panel    Air Fare
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Verify Alternate Fare Details Field    Alternate Fare 1
+    Set Alternate Fare Amount    100
+    Set Alternate Fare Fare Basis    M
+    Set Alternate Fare Details    NEW ALTERNATE FARE TAB DETAILS
+    Click Fare Tab    Fare 1
+    Select Missed Saving Code Value    T - Flight Time Declined
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    OFFER*ROUTING LOS ANGELES PARIS
+    Verify Specific Line Is Written In The PNR    OFFER*AIRLINE AF FARE BASIS M
+    Verify Specific Line Is Written In The PNR    OFFER*TOTAL FARE 100.00
+    Verify Specific Line Is Written In The PNR    OFFER*DETAILS NEW ALTERNATE FARE TAB DETAILS
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Alternate Fare Tab Details Box Match With GDS Remarks
+    [Tags]    us437    legacy    emea    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    D33H
+    Create New Booking With One Way Flight Using Default Values    Sabre FR Legacy - Auto ¦ US423 LDT for Multiple fares    AutoLegacy    NoramTrvlrEleven    LAXCDG¥AF    ${EMPTY}    AIR FARE
+    ...    DELIVERY
+    Click Panel    DELIVERY
+    Populate Delivery Panel With Specific Delivery Method    ETKT AIR
+    Get Single Flight Details    LAXCDG
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Verify Alternate Fare Details    Alternate Fare 1
+    Verify Default Fare Class
+    Set Alternate Fare Amount    100
+    Set Alternate Fare Details With New Line Details    THIS TEST
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    COMPAGNIE AF
+    Verify Specific Line Is Written In The PNR    TARIF TOTAL 100.00
+    Verify Specific Line Is Written In The PNR    THIS TEST
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***

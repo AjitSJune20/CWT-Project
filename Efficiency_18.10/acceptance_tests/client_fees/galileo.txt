@@ -1,0 +1,40 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          client_fees_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That Client Fees Tab Is Not Displayed For Client With No Configured Fee
+    [Tags]    uat    emea    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo Legacy - Auto ¦ US455    AutoLegacy    EmeaTrvlrOneZero
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    CDGLHR/AF    01Y1    FQ    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Fees
+    Click Panel    Client Fees
+    Select Fee From Dropdown    Test    Apply Bundled Fee
+    Click Finish PNR
+    Click Clear All
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    AUTOFIFTEENUK    EMEAUATUKTWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    CDGLHR/AF    01Y1    FQ:NR    6    5
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Client Fees
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Client Fees Shows Dropdown Content Contains Correct Fees Item
+    [Tags]    emea    uk    uat    sandboxpilot    not_ready
+    Open Power Express And Retrieve Profile    ${version}    sandboxpilot    U003WXR    en-GB    AutomationUK    UK Head Office Test Team
+    Select GDS    Galileo
+    Set Client And Traveler    UK STAFF TEST ¦ AUTO UK-STAFF TEST    Automason    Yuri
+    Select Client Account Value    717171 ¦ VAT CHANGES TESTING. ¦ AUTO UK-STAFF TEST
+    Click New Booking
+    Click Panel    Client Fees
+    Verify Client Fee Dropdown Contains Correct Items    Bookingcom hotel fee    No Bookingcom hotel booked    Booking com hotel booked
+    [Teardown]    Run Keywords    Click Clear All
+    ...    AND    Emulate PCC    46T
+
+*** Keywords ***

@@ -1,0 +1,155 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../client_info_verification.txt
+
+*** Test Cases ***
+[NB] Verify That PNR Will Not Be Updated With Selected FOP Upon Dropdown Change With Success/Failure Status Message
+    [Tags]    US4072
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4072    AutoSeventeenTwo    NoramTvlrTwo
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT/VI************0002/D1221-US4072 PORTRAIT
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Not Written In The PNR    FOP:-VIXXXXXXXXXXXX0002/D1221
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD    01Y1    T:$B    8
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *T
+    Verify Specific Line Is Written In The PNR    FOP:-VIXXXXXXXXXXXX0002/D1221
+
+[AB] Verify That PNR Will Not Be Updated With Selected FOP Upon Dropdown Change With Success/Failure Status Message
+    [Tags]    US4072
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Update FOP button Is Not Displayed
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Written In The PNR    VIXXXXXXXXXXXX0002/D1221
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Written In The PNR    VI4111111111111111/D1221
+    Select Form Of Payment    VI************1111/D1221
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Written In The PNR    VI4111111111111111/D1221
+    Select Form Of Payment    ${empty}
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Not Written In The PNR    VI4111111111111111/D1221
+    Select Form Of Payment    PORTRAIT/VI************0002/D1221-US4072 PORTRAIT
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Written In The PNR    VI4000000000000002/D1221
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Apollo FOP Update If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *T
+    Verify Specific Line Is Written In The PNR    VIXXXXXXXXXXXX0002/D1221
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Manual Credit Card With Same Last 4 Digits Is Written In The K Remarks
+    [Tags]    us4363    us3353    DE6241
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4363    Auto    Name
+    Click New Booking
+    Click Panel    Client Info
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO SECOND/VI************1111/D1226    BTA AUTO SECOND/VI4211111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1226-AUTO VI SECOND    PORTRAIT/VI4000000000000002/D1226-AUTO VI SECOND
+    Manually Set Value In Form Of Payment    VI    4000000000000002    12/26
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD+UA    01Y1    T:$B
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    VI************0002/D1226
+    Click Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4000000000000002/D1226
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify FOP Line in Remarks    FOP-VI4XXXXXXXXXXX0002/D1226
+    Verify Specific Line Is Written In The PNR    K/FOP MANUALLY ENTERED CARD
+    Verify Specific Line Is Not Written In The PNR    K/FOP PORTRAIT CARD
+    Verify Specific Line Is Not Written In The PNR    K/FOP BTA
+
+[AB] Verify That Manual Credit Card With Same Last 4 Digits Is Displayed By Default And Portrait Credit Card With Same Last 4 Digits Is Written In The K Remarks
+    [Tags]    us4363    us3353    de6096    de6241
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    GDS/VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO SECOND/VI************1111/D1226    BTA AUTO SECOND/VI4211111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1226-AUTO VI SECOND    PORTRAIT/VI4000000000000002/D1226-AUTO VI SECOND
+    Select Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI SECOND
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI SECOND
+    Click Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4000000000000002/D1226
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Default FOP Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify FOP Line in Remarks    FOP-VI4XXXXXXXXXXX0002/D1226
+    Verify Specific Line Is Written In The PNR    K/FOP PORTRAIT CARD
+    Verify Specific Line Is Not Written In The PNR    K/FOP MANUALLY ENTERED CARD
+    Verify Specific Line Is Not Written In The PNR    K/FOP BTA
+
+[AB] Verify That Portrait Credit Card With Same Last 4 Digits Is Displayed By Default
+    [Tags]    us4363
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI SECOND
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow For Apollo FOP Update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Update FOP button Is Not Displayed
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Written In The PNR    VIXXXXXXXXXXXX0002/D1217
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Written In The PNR    VI4111111111111111/D1221
+    Select Form Of Payment    CWTBTA/AX***********8435/D1217
+    Verify Failed Form Of Payment Update Message
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Written In The PNR    VI4111111111111111/D1221
+    Select Form Of Payment    ${empty}
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Not Written In The PNR    VI4111111111111111/D1221
+    Select Form Of Payment    PORTRAIT/VI************0002/D1217-US4072 PORTRAIT
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Written In The PNR    VI4000000000000002/D1217
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking Workflow For Default FOP Verification
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    GDS/VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    BTA AUTO SECOND/VI************1111/D1226    BTA AUTO SECOND/VI4211111111111111/D1226
+    Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab    PORTRAIT/VI************0002/D1226-AUTO VI SECOND    PORTRAIT/VI4000000000000002/D1226-AUTO VI SECOND
+    Select Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI SECOND
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    PORTRAIT/VI************0002/D1226-AUTO VI SECOND
+    Click Panel    Recap
+    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************0002/D1226
+    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4000000000000002/D1226
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR

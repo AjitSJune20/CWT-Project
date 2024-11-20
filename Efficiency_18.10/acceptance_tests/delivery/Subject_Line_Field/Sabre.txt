@@ -1,0 +1,125 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    sabre
+Force Tags        sabre    US6510
+Resource          ../delivery_verification.txt
+
+*** Test Cases ***
+[1S NORAM][NB][en-US]Verify That No Dynamic Subject Line Are Available To Choose From When SO: Itinerary - Enable Subject Line Has Value No
+    [Tags]    US6510
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 16 - Auto ¦ US3204    AutoSixteenTwo    NoramTrvlrNine    MSPORD‡UA    ${EMPTY}    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Verify That Subject Line Dropdown is Not Visible
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S NORAM][NB][AB][en-US] Verify That Dynamic Subject Line Are Available To Select And Retained In Amend When SO: Itinerary - Enable Subject Line Has Value Yes
+    [Tags]    US6510
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4929    Patel    Vivek
+    Set Telephone    1-1-1
+    Click New Booking
+    Book One Way Flight X Months From Now    MSPORD/UA    6
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible
+    Set Subject Line Value    ALTERNATIVE OFFER PROPOSED
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify Subject Line Option Is Retain Same    ALTERNATIVE OFFER PROPOSED
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S NORAM][NB][en-US] Verify That Dynamic Subject Lines Field Is Mandatory When SO: Itinerary - Enable Subject Line Has Value Mandatory
+    [Tags]    US6510
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ US4693 1S Character translations    MANUAL    KAITLIN
+    Select Client Account Value    100 ¦ TESTING ¦ 1S US4693 Character translations
+    Click New Booking
+    Book One Way Flight X Months From Now    MSPORD‡UA    6
+    Update PNR for EN or GB
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    A - Alternate Airport Declined    Fully Flexible
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Verify That Subject Line Dropdown Is Visible, Empty And Mandatory
+    Set Subject Line Value    WAITING LIST CONFIRMED
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    Z‡*CONF*SUBJECT 16*
+
+[1S NORAM][AB][en-US] Verify That Dynamic Subject Lines Field Is Mandatory When SO: Itinerary -Enable Subject Line Has Value Mandatory
+    [Tags]    US6510
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible, Empty And Mandatory
+    Set Subject Line Value    YOUR E-TICKET IS NOW UPDATED
+    Click Finish PNR    Handling of simultaneous change for mandatory
+    Execute Simultaneous Change Handling    Handling of simultaneous change for mandatory
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    Z‡*CONF*SUBJECT 23*
+    [Teardown]
+
+[1S NORAM][SI][en-US] Verify That Dynamic Subject Lines Field Is Mandatory When SO: Itinerary -Enable Subject Line Has Value Mandatory
+    [Tags]    US6510
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible, Empty And Mandatory
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Set Subject Line Value    SUBSCRIPTION CARD CONFIRMED
+    Click Finish PNR    Send Itinerary Subject Line
+    Execute Simultaneous Change Handling    Send Itinerary Subject Line
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    Z‡*CONF*SUBJECT 12*
+    Verify Specific Line Is Written In The PNR Only Once    Z‡*CONF*SUBJECT
+    [Teardown]
+
+[1S NORAM][QA][en-US] Verify That Dynamic Subject Lines Field Is Mandatory When SO: Itinerary -Enable Subject Line Has Value Mandatory
+    [Tags]    US6510
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Verify That Subject Line Dropdown Is Visible, Empty And Mandatory
+    Set Subject Line Value    SUBSCRIPTION CARD CONFIRMED
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    Z‡*CONF*SUBJECT 12*
+    Verify Specific Line Is Written In The PNR Only Once    Z‡*CONF*SUBJECT
+    [Teardown]
+
+[1S NORAM][CB][en-US] Verify That Dynamic Subject Lines Field Is Mandatory When SO: Itinerary -Enable Subject Line Has Value Mandatory
+    [Tags]    US6510
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Delivery
+    Verify Subject Line Field Is Not Mandatory
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RMZ CONF*SUBJECT:12*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Handling of simultaneous change for mandatory
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible, Empty And Mandatory
+    Set Subject Line Value    YOUR E-TICKET IS NOW UPDATED
+    Click Finish PNR

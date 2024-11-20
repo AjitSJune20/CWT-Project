@@ -1,0 +1,171 @@
+*** Settings ***
+Force Tags        sabre    noram
+Resource          ../policy_check_verification.txt
+Resource          ../../business_rules/business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Policy Advise Is Shown For Policy Name Air Cabin
+    [Tags]    us4629    us6978
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4072    AutoSeventeenTwo    NoramTvlrThree
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    LHRFRA    01J1    WPRQ    8
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    US4072 Test    True
+    Verify Policy Advice Is Displayed    Air Advance Purchase    Requires approval prior to ticketing    Your trip must be purchased minimum 365 days before departure    True
+    Populate All Panels (Except Given Panels If Any)    Policy Check    Air Fare
+    Click Panel    Air Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Click Panel    Policy Check
+    Select Policy Status    Business Class out of policy    AA - Awaiting Approval
+    Select Policy Status    Requires approval prior to ticketing    AA - Awaiting Approval
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *J‡
+    Verify Specific Line Is Written In The PNR    J‡PCHK-AAP516-AA-AIR ADVANCE PURCHASE
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Written In The PNR    ‡POLICY WARNING
+    Verify Specific Line Is Written In The PNR    ‡REASON REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Written In The PNR    ‡ADVICE YOUR TRIP MUST BE PURCHASED MINIMUM 365 DAYS BEFORE
+    Verify Specific Line Is Written In The PNR    ‡ADVICE DEPARTURE
+
+[QA] Verify That Policy Advise Is Shown For Policy Name Air Cabin
+    [Tags]    us4629    us6978
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    US4072 Test    True
+    Verify Policy Advice Is Displayed    Air Advance Purchase    Requires approval prior to ticketing    Your trip must be purchased minimum 365 days before departure    True
+    Populate Delivery Panel Without On Hold Reason
+    Click Panel    Policy Check
+    Select Policy Status    Business Class out of policy    TA - Traveller Booker Advised
+    Select Policy Status    Requires approval prior to ticketing    TA - Traveller Booker Advised
+    Click Finish PNR    Quick Amend
+    Execute Simultaneous Change Handling    Quick Amend
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *J‡
+    Verify Specific Line Is Written In The PNR    J‡PCHK-AAP516-TA-AIR ADVANCE PURCHASE
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Written In The PNR    ‡POLICY WARNING
+    Verify Specific Line Is Written In The PNR    ‡REASON REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Written In The PNR    ‡ADVICE YOUR TRIP MUST BE PURCHASED MINIMUM 365 DAYS BEFORE
+    Verify Specific Line Is Written In The PNR    ‡ADVICE DEPARTURE
+
+[AB] Verify That Policy Advise Is Shown For Policy Name Air Cabin
+    [Tags]    us4629    us6978
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI    PQD-ALL
+    Book Flight X Months From Now    FRALHR    01J1    WPRQ‡S1    8    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    US4072 Test    True
+    Verify Out of Policy Is Shown    Air Cabin    Business Class out of policy
+    Verify Policy Advice Is Displayed    Air Advance Purchase    Requires approval prior to ticketing    Your trip must be purchased minimum 365 days before departure    True
+    Click Panel    Air Fare
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *J‡
+    Verify Specific Line Is Written In The PNR    J‡PCHK-AAP516-TA-AIR ADVANCE PURCHASE
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Written In The PNR    ‡POLICY WARNING
+    Verify Specific Line Is Written In The PNR    ‡REASON REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Written In The PNR    ‡ADVICE YOUR TRIP MUST BE PURCHASED MINIMUM 365 DAYS BEFORE
+    Verify Specific Line Is Written In The PNR    ‡ADVICE DEPARTURE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB][US] Verify Policy Check Is Not Displayed When Within Air Advanced Booking Threshold
+    [Tags]    19.3    us6978    us
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Drummers    Bunda    James
+    Select Client Account    U1SOE ¦ SOE CFA ¦ Drummers
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    DENLAX‡UA    01Y1    WPRQ    6
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Name Is Not Displayed    Air Advance Purchase
+    Click Panel    Cust Refs
+    Set CDR Value    Matrix DP Code    D101
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *J‡
+    Verify Specific Line Is Not Written In The PNR    J‡PCHK-AAP516-AA-AIR ADVANCE PURCHASE
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Written In The PNR    ‡POLICY WARNING
+    Verify Specific Line Is Not Written In The PNR    ‡REASON REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Not Written In The PNR    ‡ADVICE YOUR TRIP MUST BE PURCHASED MINIMUM 365 DAYS BEFORE
+    Verify Specific Line Is Not Written In The PNR    ‡ADVICE DEPARTURE
+    [Teardown]    Click Clear All
+
+[AB][US] Verify Policy Check Is Not Displayed When Within Air Advanced Booking Threshold During Amend Booking
+    [Tags]    us    19.3    us6978
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Name Is Not Displayed    Air Advance Purchase
+    Click Panel    Cust Refs
+    Set CDR Value    Matrix DP Code    D101
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR    Amend Booking Without Air Advanced Purchase
+    Execute Simultaneous Change Handling    Amend Booking Without Air Advanced Purchase
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *J‡
+    Verify Specific Line Is Not Written In The PNR    J‡PCHK-AAP516-AA-AIR ADVANCE PURCHASE
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Written In The PNR    ‡POLICY WARNING
+    Verify Specific Line Is Not Written In The PNR    ‡REASON REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Not Written In The PNR    ‡ADVICE YOUR TRIP MUST BE PURCHASED MINIMUM 365 DAYS BEFORE
+    Verify Specific Line Is Not Written In The PNR    ‡ADVICE DEPARTURE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    US4072 Test    True
+    Populate Delivery Panel Without On Hold Reason
+    Click Panel    Policy Check
+    Select Policy Status    Business Class out of policy    TA - Traveller Booker Advised
+    Select Policy Status    Requires approval prior to ticketing    AA - Awaiting Approval
+    Click Finish PNR
+
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI    PQD-ALL
+    Book Flight X Months From Now    FRALHR    01J1    WPRQ‡S1    8    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    US4072 Test    True
+    Verify Out of Policy Is Shown    Air Cabin    Business Class out of policy
+    Click Panel    Air Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Policy Check
+    Click Finish PNR
+
+Amend Booking Without Air Advanced Purchase
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Name Is Not Displayed    Air Advance Purchase
+    Click Panel    Cust Refs
+    Set CDR Value    Matrix DP Code    D101
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR

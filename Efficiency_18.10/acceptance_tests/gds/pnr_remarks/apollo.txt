@@ -1,0 +1,157 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../gds_verification.txt
+
+*** Test Cases ***
+[NB US] Verify That US Agent Backoffice Identifier Is Written In The PNR
+    [Tags]    us4163
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With One Way Flight Using Default Values    Apollo 15 - Auto ¦ US2657    AutoFifteenTwelve    OptimizeTrvlrTen    MSPORD+UA
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    G*CN/9900
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB US] Verify That Default Fare Itinerary Remarks Are Written After The Last Routing Item When All Fare Tabs Have Default Fare Restriction Value
+    [Tags]    US3339
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 15 - Auto ¦ US2657    AutoFifteenTwelve    OptimizeTrvlrTen
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXDFW+AA    01Y1    T:$B/S1    5    0
+    Book Flight X Months From Now    DFWORD+UA    01Y1    T:$B/S2    5    6
+    Book Flight X Months From Now    ORDLAX+UA    01Y1    T:$B/S3    5    12
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Populate Fare Tab With Default Values    Fare 2    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Populate Fare Tab With Default Values    Fare 3    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    ROUTING : LOS ANGELES DALLAS
+    Verify Specific Line Is Written In The PNR    ROUTING : DALLAS CHICAGO
+    Verify Specific Line Is Written In The PNR    ROUTING : CHICAGO LOS ANGELES
+    Verify Specific Line Is Written In The PNR Only Once    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE
+    Verify Specific Line Is Written In The PNR Only Once    INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.
+    Verify Specific Line Is Written In The PNR Only Once    FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+
+[AB US] Verify That Default Fare Itinerary Remarks Are Written After The Last Routing Item When All Fare Tabs Have Default Fare Restriction Value
+    [Tags]    US3339
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Populate Fare Tab With Default Values    Fare 2    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Populate Fare Tab With Default Values    Fare 3    \    true
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Where All Fare Tabs Have Default Fare Restriction
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    ROUTING : LOS ANGELES DALLAS
+    Verify Specific Line Is Written In The PNR    ROUTING : DALLAS CHICAGO
+    Verify Specific Line Is Written In The PNR    ROUTING : CHICAGO LOS ANGELES
+    Verify Specific Line Is Written In The PNR Only Once    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE
+    Verify Specific Line Is Written In The PNR Only Once    INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.
+    Verify Specific Line Is Written In The PNR Only Once    FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    [Teardown]
+
+[AB US] Verify That Itinerary Remarks Are Written Per Routing Whem There's a Mixed Air Fare Restriction
+    [Tags]    US3339    de6721
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    Fare 2
+    Select Fare Restriction    NON FLEXIBLE
+    Click Fare Tab    Fare 3
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking With Mixed Fare Restriction
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    ROUTING : LOS ANGELES DALLAS
+    Verify Specific Line is Written in the PNR    CHANGE OF RESERVATION : SCHEDULE CHANGE PERMITTED FREE OF CHARGE
+    Verify Specific Line is Written in the PNR    CANCELLATION : FULL REFUND
+    Verify Specific Line is Written in the PNR    VALID ON : AA
+    Verify Specific Line is Written in the PNR    ROUTING : DALLAS CHICAGO
+    Verify Specific Line is Written in the PNR    CHANGE OF RESERVATION : NOT PERMITTED
+    Verify Specific Line is Written in the PNR    CANCELLATION : NOT PERMITTED
+    Verify Specific Line is Written in the PNR    VALID ON : UA ONLY
+    Verify Specific Line Is Written In The PNR    ROUTING : CHICAGO LOS ANGELES
+    Verify Specific Line Is Written In The PNR Only Once    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE
+    Verify Specific Line Is Written In The PNR Only Once    INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.
+    Verify Specific Line Is Written In The PNR Only Once    FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    [Teardown]
+
+[CB US] Verify That Itinerary Remarks Are Not Written During Cancellation
+    [Tags]    US3339
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Cancel Booking For Mixed Fare Restriction
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    ROUTING : LOS ANGELES DALLAS
+    Verify Specific Line Is Not Written In The PNR    CHANGE OF RESERVATION : SCHEDULE CHANGE PERMITTED FREE OF CHARGE
+    Verify Specific Line Is Not Written In The PNR    CANCELLATION : FULL REFUND
+    Verify Specific Line Is Not Written In The PNR    VALID ON : AA
+    Verify Specific Line Is Not Written In The PNR    ROUTING : DALLAS CHICAGO
+    Verify Specific Line Is Not Written In The PNR    CHANGE OF RESERVATION : NOT PERMITTED
+    Verify Specific Line Is Not Written In The PNR    CANCELLATION : NOT PERMITTED
+    Verify Specific Line Is Not Written In The PNR    VALID ON : UA ONLY
+    Verify Specific Line Is Not Written In The PNR    ROUTING : CHICAGO LOS ANGELES
+    Verify Specific Line Is Not Written In The PNR    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE
+    Verify Specific Line Is Not Written In The PNR    INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.
+    Verify Specific Line Is Not Written In The PNR    FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Where All Fare Tabs Have Default Fare Restriction
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Verify Fare Restriction Default Text Value    FARES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE.${\n}${\n}CHANGES MAY BE SUBJECT TO A PENALTY OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF TICKET.
+    Populate Fare Tab With Default Values    Fare 2    \    true
+    Verify Fare Restriction Default Text Value    FARES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE.${\n}${\n}CHANGES MAY BE SUBJECT TO A PENALTY OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF TICKET.
+    Populate Fare Tab With Default Values    Fare 3    \    true
+    Verify Fare Restriction Default Text Value    FARES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE.${\n}${\n}CHANGES MAY BE SUBJECT TO A PENALTY OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF TICKET.
+    Click Finish PNR
+
+Amend Booking With Mixed Fare Restriction
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    \    true
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    Fare 2
+    Select Fare Restriction    NON FLEXIBLE
+    Click Fare Tab    Fare 3
+    Select Fare Restriction    Default
+    Verify Fare Restriction Default Text Value    FARES MAY BE SUBJECT TO PENALTIES OR FARE INCREASE.${\n}${\n}CHANGES MAY BE SUBJECT TO A PENALTY OR FARE INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.${\n}${\n}FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF TICKET.
+    Click Finish PNR
+
+Cancel Booking For Mixed Fare Restriction
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR

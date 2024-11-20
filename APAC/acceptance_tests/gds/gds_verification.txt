@@ -1,0 +1,501 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.robot
+
+*** Keyword ***
+Get All Ticketing Instructions Remarks From PQ
+    ${ticketing_instruction_remarks}    Fetch From Right    ${pnr_details}    ***** TICKETING INSTRUCTIONS *****
+    @{ticketing_instructions_lines}    Split To Lines    ${ticketing_instruction_remarks}
+    ${LIST_ticket_instruction}    Create List
+    : FOR    ${ticketing_instruction}    IN    @{ticketing_instructions_lines}
+    \    ${ticketing_instruction}    Fetch From Right    ${ticketing_instruction}    T‡
+    \    ${ticketing_instruction}    Replace String    ${ticketing_instruction}    ‡    ${EMPTY}
+    \    ${ticketing_instruction}    Strip String    ${ticketing_instruction}    right
+    \    ${is_contain_md}    Run Keyword And Return Status    Should Contain Any    ${ticketing_instruction}    MD«    END OF SCROLL
+    \    ...    NOTHING TO SCROLL
+    \    Run Keyword If    "${is_contain_md}" != "True" and "${ticketing_instruction}" != "${EMPTY}"    Append To List    ${LIST_ticket_instruction}    ${ticketing_instruction}
+    Log List    ${LIST_ticket_instruction}
+    [Return]    ${LIST_ticket_instruction}
+
+Get Ticketing Instructions X Fare
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${ticket_index}    Evaluate    ${fare_tab_index} + 1
+    Set Test Variable    ${is_pertaining_to_correct_ticket}    False
+    ${LIST_ticketing_instructions}    Get All Ticketing Instructions Remarks From PQ
+    ${LIST_actual_ticketing_instructions}    Create List
+    : FOR    ${ticketing_instruction}    IN    @{LIST_ticketing_instructions}
+    \    ${is_ticket_found}    Run Keyword And Return Status    Should Match Regexp    ${ticketing_instruction}    TICKET ${fare_tab_index} ETKT
+    \    Run Keyword If    ${is_ticket_found}    Set Test Variable    ${is_pertaining_to_correct_ticket}    True
+    \    Continue For Loop If    "${is_pertaining_to_correct_ticket}" != "True"
+    \    ${is_contain_next_ticket}    Run Keyword And Return Status    Should Match Regexp    ${ticketing_instruction}    TICKET ${ticket_index} ETKT
+    \    Exit For Loop If    ${is_contain_next_ticket}
+    \    Run Keyword If    "${ticketing_instruction}" != "${EMPTY}"    Append To List    ${LIST_actual_ticketing_instructions}    ${ticketing_instruction}
+    Set Test Variable    ${LIST_ticketing_instructions_${fare_tab_index}}    ${LIST_actual_ticketing_instructions}
+
+Handle Alternate Fare Booking Class If It Exceeds GDS Line Limit
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${length1}    Get Length    ${total_fare_alt_${fare_tab_index}}
+    ${length2}    Get Length    ${fare_class_offer_alt_${fare_tab_index}}
+    ${length3}    Get Length    ${fare_class_offer_text_alt_${fare_tab_index}}
+    ${total_length}    Evaluate    ${length1}+${length2}
+    ${total_length}    Evaluate    ${length1}+${length3}
+    ${already_modified}    Run Keyword And Return Status    Should Contain    ${fare_class_offer_alt_${fare_tab_index}}    \\s*\\n?\\s*
+    ${already_modified2}    Run Keyword And Return Status    Should Contain    ${fare_class_offer_text_alt_${fare_tab_index}}    \\s*\\n?\\s*
+    ${modified_fare_class_offer_alt}    Replace String    ${fare_class_offer_alt_${fare_tab_index}}    ${SPACE}    \\s*\\n?\\s*
+    ${modified_fare_class_offer_txt_alt}    Replace String    ${fare_class_offer_text_alt_${fare_tab_index}}    ${SPACE}    \\s*\\n?\\s*
+    Run Keyword If    ${total_length} >= 37 and ${already_modified} == False    Set Test Variable    ${fare_class_offer_alt_${fare_tab_index}}    ${modified_fare_class_offer_alt}
+    Run Keyword If    ${total_length} >= 37 and ${already_modified2} == False    Set Test Variable    ${fare_class_offer_text_alt_${fare_tab_index}}    ${modified_fare_class_offer_txt_alt}
+
+Handle Routing If It Exceeds GDS Line Limit
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${is_alternate_tab}    Run Keyword And Return Status    Should Contain    ${fare_tab.lower()}    alternate
+    ${fare_tab_index}    Set Variable If    ${is_alternate_tab}==True    alt_${fare_tab_index}    ${fare_tab_index}
+    ${modified_routing}    Replace String    ${city_names_with_dash_${fare_tab_index}}    +    .*\\n?.*
+    ${length}    Get Length    ${city_names_${fare_tab_index}}
+    Run Keyword If    ${length} >= 40    Set Test Variable    ${city_names_${fare_tab_index}}    ${modified_routing}
+
+Verify "Issue To Be Confirmed At The Latest" Line Is Not Written
+    Verify Specific Line Is Not Written In The PNR    RIR \\*TLXL\\*EMISSION A CONFIRMER AU PLUS TARD LE \\*\\d{2}\\/\\d{2}\\/\\d{4}\\*    true
+
+Verify "Issue To Be Confirmed At The Latest" Line Is Written
+    ${ticketing_date_4digit_year}    Get Lines Using Regexp    ${pnr_details}    RIR \\*TLXL\\*EMISSION A CONFIRMER AU PLUS TARD LE \\*\\d{2}\\/\\d{2}\\/\\d{4}\\*
+    ${ticketing_date_4digit_year_line_count}    Get Line Count    ${ticketing_date_4digit_year}
+    Run Keyword If    ${ticketing_date_4digit_year_line_count} == 1    Verify Specific Line Is Written In The PNR    RIR \\*TLXL\\*EMISSION A CONFIRMER AU PLUS TARD LE \\*\\d{2}\\/\\d{2}\\/\\d{4}\\*    true
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR \\*TLXL\\*EMISSION A CONFIRMER AU PLUS TARD LE \\*\\d{2}\\/\\d{2}\\/\\d{2}\\*    true
+
+Verify "Tickets Will Be Issued On" Line Is Written
+    ${ticketing_text_line}    Set Variable If    '${locale}' == 'fr-FR'    VOS BILLETS SERONT EMIS LE    YOUR TICKETS WILL BE ISSUED ON
+    ${ticketing_date_4digit_year}    Get Lines Using Regexp    ${pnr_details}    RIR \\*TLIS\\*${ticketing_text_line} \\*\\d{2}\\/\\d{2}\\/\\d{4}\\*
+    ${ticketing_date_4digit_year_line_count}    Get Line Count    ${ticketing_date_4digit_year}
+    Run Keyword If    ${ticketing_date_4digit_year_line_count} == 1    Verify Specific Line Is Written In The PNR    RIR \\*TLIS\\*${ticketing_text_line} \\*\\d{2}\\/\\d{2}\\/\\d{4}\\*    true
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR \\*TLIS\\*${ticketing_text_line} \\*\\d{2}\\/\\d{2}\\/\\d{2}\\*    true
+
+Verify Air Savings Remarks Are Written
+    [Arguments]    ${segment_number}    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    RM *7302*${high_fare_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *7303*${low_fare_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *7305*${realised_code_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *7306*${missed_code_value_${fare_tab_index}}/${segment_number}
+
+Verify Air Trip Information Remarks Are Written
+    [Arguments]    ${segment_number}    ${fare_tab}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    RM *7110*${class_code_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *7105*${point_of_${fare_tab_index}}/${segment_number}
+
+Verify Alternate Fare Remarks Are Not Written
+    [Arguments]    ${fare_tab}    ${offline_module}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Handle Routing If It Exceeds GDS Line Limit    ${fare_tab}
+    Verify Specific Line Is Not Written In The PNR    RMF AF-${total_fare_alt_${fare_tab_index}}: ROUTING: ${city_route_alt_${fare_tab_index}}
+    Verify Specific Line Is Not Written In The PNR    RMF AF-${total_fare_alt_${fare_tab_index}}: AIRLINE: ${airline_offer_alt_${fare_tab_index}}*FB:${fare_basis_alt_${fare_tab_index}}
+    Run Keyword If    "${offline_module}" == "${EMPTY}"    Verify Specific Line Is Not Written In The PNR    RMF AF\\-${total_fare_alt_${fare_tab_index}}\\: BOOKING CLASS\\: ${fare_class_offer_text_alt_${fare_tab_index}}    true
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RMF AF\\-${total_fare_alt_${fare_tab_index}}\\: BOOKING CLASS\\: ${fare_class_offer_alt_${fare_tab_index}}    true
+    Verify Specific Line Is Not Written In The PNR    RMF AF\\-${total_fare_alt_${fare_tab_index}}\\: ROUTE\\: ${city_names_alt_${fare_tab_index}}    true
+    @{fare_offer_details}    Split To Lines    ${details_offer_alt_${fare_tab_index}}
+    : FOR    ${details_offer_element}    IN    @{fare_offer_details}
+    \    Verify Specific Line Is Not Written In The PNR    RMF AF-${total_fare_alt_${fare_tab_index}}: S: ${details_offer_element}
+
+Verify Alternate Fare Remarks Are Written
+    [Arguments]    ${fare_tab}    ${offline_module}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Handle Routing If It Exceeds GDS Line Limit    ${fare_tab}
+    Handle Alternate Fare Booking Class If It Exceeds GDS Line Limit    ${fare_tab}
+    Verify Specific Line Is Written In The PNR    RMF AF-${total_fare_alt_${fare_tab_index}}: ROUTING: ${city_route_alt_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    RMF AF-${total_fare_alt_${fare_tab_index}}: AIRLINE: ${airline_offer_alt_${fare_tab_index}}*FB:${fare_basis_alt_${fare_tab_index}}
+    Run Keyword If    "${offline_module}" == "${EMPTY}" and "${locale}" == "fr-FR"    Verify Specific Line Is Written In The PNR    RMF AF\\-${total_fare_alt_${fare_tab_index}}\\: BOOKING CLASS\\: ${fare_class_offer_text_alt_${fare_tab_index}}    true
+    ...    ELSE    Verify Specific Line Is Written In The PNR    RMF AF\\-${total_fare_alt_${fare_tab_index}}\\: BOOKING CLASS\\: ${fare_class_offer_alt_${fare_tab_index}}    true
+    Verify Specific Line Is Written In The PNR    RMF AF\\-${total_fare_alt_${fare_tab_index}}\\: ROUTE\\: ${city_names_alt_${fare_tab_index}}    true
+    @{fare_offer_details}    Split To Lines    ${details_offer_alt_${fare_tab_index}}
+    : FOR    ${details_offer_element}    IN    @{fare_offer_details}
+    \    Verify Specific Line Is Written In The PNR    RMF AF-${total_fare_alt_${fare_tab_index}}: S: ${details_offer_element}
+
+Verify CDR Remarks Are Written
+    [Arguments]    @{cdr_value}
+    : FOR    ${cdr_remark}    IN    @{cdr_value}
+    \    Verify Specific Line Is Written In The PNR    ${cdr_remark}
+
+Verify CH Line Is Lower Than FOP Line
+    [Arguments]    ${string_to_search}
+    ${ch_line_number} =    Get Line Number In PNR Remarks    ${string_to_search}
+    ${is_not_equal} =    Should Not Be Equal As Strings    ${ch_line_number}    1    Both values are the same
+    [Teardown]    Take Screenshot
+
+Verify Duplicate Remarks
+    [Arguments]    ${gds}
+    Comment    ${log_for_duplicate_checking} =    Set Variable    ${pnr_details}
+    Comment    ${log_for_duplicate_checking} =    Replace String Using Regexp    ${log_for_duplicate_checking}    .+[0-9]\\s    ${EMPTY}
+    Comment    ${are_there_duplicate_remarks} =    Are There Duplicate Remarks    ${log_for_duplicate_checking}    ${gds}
+    Comment    Run Keyword And Continue On Failure    Should Be True    ${are_there_duplicate_remarks} == False    msg=Duplicate remarks found
+    Verify No Duplicate Remarks Exists    ${pnr_details}
+
+Verify FOP Is Added In Resa Rail
+    [Arguments]    ${rail_fop}
+    Activate Amadeus Selling Platform
+    Enter GDS Command    R/RT${resa_rail_pnr}
+    Retrieve PNR Details From Amadeus    ${EMPTY}    R/RTP    FALSE
+    Should Contain    ${pnr_details}    ${rail_fop}
+
+Verify FULLCXL line In Remarks
+    [Arguments]    ${cancel_remarks}
+    Verify Text Contains Expected Value    ${pnr_details}    ${cancel_remarks}
+
+Verify Fare Details Command Is Only Sent Once
+    [Arguments]    ${file_name}    ${command}
+    ${log_file}    Get Log File    ${file_name}
+    Comment    Verify Text Contains Expected Value X Times Only    ${log_file}    ${command}    1
+    ${line_containing_command}    Get Lines Containing String    ${log_file}    ${command}
+    ${expected_command_line_count}    Get Line Count    ${line_containing_command}
+    Should Be True    ${expected_command_line_count} < 2    Line count should be less than 2
+
+Verify Fare Remarks Are Written
+    [Arguments]    ${segment_number}    ${fare_tab}=Fare 1    ${invoice}=0    ${include_fare_restriction}=True
+    Get Base Fare From Amadeus    ${segment_number}    ${fare_tab}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:H-${high_fare_${fare_tab_index}} C-${charged_fare_${fare_tab_index}} L-${low_fare_${fare_tab_index}} N-${charged_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:HC-${realised_code_value_${fare_tab_index}} LC-${missed_code_value_${fare_tab_index}} CL-${class_code_value_${fare_tab_index}} DEST-${point_of_${fare_tab_index}} TK-ET INV-${invoice}
+    Run Keyword If    "${locale}" == "fr-FR"    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:PCC-.* AG-.*    True
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:CHGS-${changes_value_${fare_tab_index}}    \    True
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:CANX-${cancellation_value_${fare_tab_index}}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:MIN-${min_stay_${fare_tab_index}.upper()}:MAX-${max_stay_${fare_tab_index}.upper()}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Run Keyword If    "${valid_on_${fare_tab_index}}" != "${EMPTY}" and "${locale}" == "fr-FR"    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:APP-${valid_on_${fare_tab_index}.upper()}:RERTE-AUTORISE
+    Run Keyword If    "${include_fare_restriction}" == "True"    Run Keyword If    "${valid_on_${fare_tab_index}}" != "${EMPTY}" and "${locale}" == "en-GB"    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:APP-${valid_on_${fare_tab_index}.upper()}:RERTE-PERMITTED
+
+Verify Generic Remarks Are Written
+    [Arguments]    ${first_name}    ${last_name}    ${passenger_traveller_guid}    ${backoffice_identifier}=${EMPTY}    ${aqua_cfa_queue}=${EMPTY}    ${loyalty_card_no}=${EMPTY}
+    Verify Specific Line Is Written In The PNR    RM *0102*0
+    Run Keyword If    "${backoffice_identifier}" != "${EMPTY}" and "${backoffice_identifier.lower()}" != "obt"    Verify Specific Line Is Written In The PNR    RM *0104*${backoffice_identifier}
+    ...    ELSE IF    "${backoffice_identifier.lower()}" == "obt"    Log    Not applicable for OBT
+    Verify Specific Line Is Written In The PNR    RM *0111*2020
+    Verify Specific Line Is Written In The PNR    RM *0112*${first_name.upper()} ${last_name.upper()}
+    Verify Specific Line Is Written In The PNR    RM *0702*AUTOMATION@CARLSONWAGONLIT.COM
+    Comment    Verify Specific Line Is Written In The PNR    RM *0650*${passenger_traveller_guid}
+    Run Keyword If    "${aqua_cfa_queue}" != "${EMPTY}"    Verify Specific Line Is Written In The PNR    RM *AQUA USE${aqua_cfa_queue}
+    Run Keyword If    "${loyalty_card_no}" != "${EMPTY}"    Verify Specific Line Is Written In The PNR    RMR 2C/FQTV-/NR-${loyalty_card_no}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RMR 2C/FQTV-/NR-
+
+Verify High Fare, Charged Fare And Low Fare Remarks Are Written
+    [Arguments]    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${air_fare_line} =    Set Variable If    '${GDS_switch}' == 'amadeus'    :H-${high_fare_${fare_tab_index}} C-${charged_fare_${fare_tab_index}} L-${low_fare_${fare_tab_index}}    '${GDS_switch}' == 'sabre' or '${GDS_switch}' == 'galileo'    H-${high_fare_${fare_tab_index}} C-${charged_fare_${fare_tab_index}} L-${low_fare_${fare_tab_index}}
+    Verify Text Contains Expected Value    ${pnr_details}    ${air_fare_line}
+
+Verify Itinerary Remarks Are Written
+    [Arguments]    ${fare_tab}=Fare 1    ${include_fare_restriction}=True
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Handle Routing If It Exceeds GDS Line Limit    ${fare_tab}
+    Verify Specific Line Is Written In The PNR    RIR \\<B\\>ROUTING\\: ${city_names_${fare_tab_index}}\\<\\/B\\>    true
+    Verify Specific Line Is Written In The PNR    RIR <B>TARIF APPLIQUE: ${grand_total_fare_with_currency_${fare_tab_index}.replace(" ", "")}</B>
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RIR MODIFICATION : ${changes_value_${fare_tab_index}}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RIR ANNULATION: ${cancellation_value_${fare_tab_index}}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RIR CONDITIONS TARIFAIRES:
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RIR VALIDITE MINIMUM : ${min_stay_${fare_tab_index}.upper()}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RIR VALIDITE MAXIMUM : ${max_stay_${fare_tab_index}.upper()}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Run Keyword If    "${valid_on_${fare_tab_index}}" != "${EMPTY}"    Verify Specific Line Is Written In The PNR    RIR VALABLE SUR : ${valid_on_${fare_tab_index}.upper()}
+
+Verify Itinerary Remarks Are Written For Galileo
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${currency}    Set Variable    ${currency_and_filed_fare_${fare_tab_index}[0:3]}
+    Verify Specific Line Is Written In The PNR    ROUTING : ${city_names_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HIGH FARE : ${currency}${high_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    CHARGED FARE : ${currency}${charged_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    LOWEST FARE : ${currency}${low_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    SAVINGS ACHIEVED VS HIGH FARE ${currency}
+    Verify Specific Line Is Written In The PNR    SAVINGS MISSED VS LOWEST FARE ${currency}
+    Verify Specific Line Is Written In The PNR    MAIN RESTRICTIONS:
+    Verify Specific Line Is Written In The PNR    CHANGE OF RESERVATION : ${changes_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    CANCELLATION : ${cancellation_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    REROUTING : ${reroute_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    VALID ON : ${valid_on_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    MINIMUM STAY : ${min_stay_value_${fare_tab_index}.upper()}
+    Verify Specific Line Is Written In The PNR    MAXIMUM STAY : ${max_stay_value_${fare_tab_index}.upper()}
+    Verify Specific Line Is Written In The PNR    HF*MERCHANT FEES-${fees_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HZ*LANGUAGE-${locale.upper()}
+    ${city_route}    Replace String    ${city_route_${fare_tab_index}}    -    ${SPACE}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:ROUTING-${city_route}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:HC-${realised_code_value_${fare_tab_index}} LC-${missed_code_value_${fare_tab_index}} CL-${class_code_value_${fare_tab_index}} DEST-${point_of_${fare_tab_index}} TK-ET INV-0
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:CHGS-${changes_value${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:CANX-${cancellation_value${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:REROUTE-${reroute_value${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:MINSTAY-${min_stay_value${fare_tab_index}.upper()}
+    Verify Specific Line Is Written In The PNR    HF*BF-${currency_and_filed_fare_${fare_tab_index}}:MAXSTAY-${max_stay_value${fare_tab_index}.upper()}
+
+Verify Multiple Remarks Are Written In The PNR
+    [Arguments]    @{expected_text}
+    : FOR    ${expected_remark}    IN    @{expected_text}
+    \    Verify Text Contains Expected Value    ${pnr_details}    ${expected_remark}    false
+
+Verify No Fare Details Command Is Sent
+    [Arguments]    ${file_name}    ${command}
+    ${log_file}    Get Log File    ${file_name}
+    Verify Text Does Not Contain Value    ${log_file}    ${command}
+
+Verify No Other Remark Is Written In The PNR
+    [Arguments]    ${remark}    ${max_occurence}
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    ${remark}    ${max_occurence}
+
+Verify OBT Remarks Do Not Exist In PNR
+    [Arguments]    ${obt_indicator}
+    Verify Specific Line Is Not Written In The PNR    *3311*${obt_indicator}
+    Verify Specific Line Is Not Written In The PNR    *1311*${obt_indicator}
+    Verify Specific Line Is Not Written In The PNR    *6311*${obt_indicator}
+    Verify Specific Line Is Not Written In The PNR    *7311*${obt_indicator}
+
+Verify OBT Remarks Exist In PNR
+    [Arguments]    ${obt_indicator}
+    Verify Specific Line Is Written In The PNR    *3311*${obt_indicator}
+    Verify Specific Line Is Written In The PNR    *1311*${obt_indicator}
+    Verify Specific Line Is Written In The PNR    *6311*${obt_indicator}
+    Verify Specific Line Is Written In The PNR    *7311*${obt_indicator}
+
+Verify OP Remark Is Written
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${description}
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTO
+    Comment    Verify Specific Line Is Written In The PNR    OP ${pcc}\/\d{2}\D{3}\/${queue_number}C${queue_category}\/${description}    true
+    Verify Specific Line Is Written In The PNR    OP ${pcc}\/${current_date}\/${queue_number}C${queue_category}\/${description}    true
+
+Verify Offer Remarks Are Not Written
+    [Arguments]    ${fare_tab}    ${proposition_no}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${proposition_no_index}    Fetch From Right    ${proposition_no}    ${SPACE}
+    ${proposition_no_index}    Set Variable If    "${proposition_no}" == "${EMPTY}"    ${fare_tab_index}    ${proposition_no_index}
+    Handle Routing If It Exceeds GDS Line Limit    ${fare_tab}
+    Verify Specific Line Is Not Written In The PNR    RIR *OFFER**<B>PROPOSITION NO ${proposition_no_index}</B>*
+    Verify Specific Line Is Not Written In The PNR    RIR \\*OFFER\\*\\*ROUTING\\: ${city_names_alt_${fare_tab_index}}\\*    true
+    Verify Specific Line Is Not Written In The PNR    RIR *OFFER**COMPAGNIE: ${airline_offer_alt_${fare_tab_index}}*
+    Verify Specific Line Is Not Written In The PNR    RIR *OFFER**BASE TARIFAIRE: ${fare_basis_alt_${fare_tab_index}}*
+    Verify Specific Line Is Not Written In The PNR    RIR *OFFER**TARIF TOTAL: ${total_fare_alt_${fare_tab_index}}*
+    @{fare_offer_details}    Split To Lines    ${details_offer_alt_${fare_tab_index}}
+    : FOR    ${element}    IN    @{fare_offer_details}
+    \    Verify Specific Line Is Not Written In The PNR    RIR *OFFER**DETAILS: ${element}*
+
+Verify Offer Remarks Are Written
+    [Arguments]    ${fare_tab}    ${proposition_no}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${proposition_no_index}    Fetch From Right    ${proposition_no}    ${SPACE}
+    ${proposition_no_index}    Set Variable If    "${proposition_no}" == "${EMPTY}"    ${fare_tab_index}    ${proposition_no_index}
+    Handle Routing If It Exceeds GDS Line Limit    ${fare_tab}
+    Run Keyword If    "${locale}" == "fr-FR"    Verify Specific Line Is Written In The PNR    RIR *OFFER**COMPAGNIE: ${airline_offer_alt_${fare_tab_index}}*
+    ...    ELSE IF    "${locale}" == "en-GB" and "${fare_basis_alt_${fare_tab_index}}" != "${EMPTY}"    Verify Specific Line Is Written In The PNR    RIR *OFFER**AIRLINE: ${airline_offer_alt_${fare_tab_index}} FARE BASIS: ${fare_basis_alt_${fare_tab_index}}*
+    Run Keyword If    "${locale}" == "fr-FR"    Verify Specific Line Is Written In The PNR    RIR *OFFER**<B>PROPOSITION NO ${proposition_no_index}</B>*
+    Run Keyword If    "${locale}" == "fr-FR" and "${fare_basis_alt_${fare_tab_index}}" != "${EMPTY}"    Verify Specific Line Is Written In The PNR    RIR *OFFER**BASE TARIFAIRE: ${fare_basis_alt_${fare_tab_index}}*
+    Run Keyword If    "${locale}" == "en-GB"    Verify Specific Line Is Written In The PNR    RIR *OFFER**CANCELLATION: ${cancellation_value_alt_${fare_tab_index}}*
+    Run Keyword If    "${locale}" == "en-GB"    Verify Specific Line Is Written In The PNR    RIR *OFFER**MINIMUM STAY: ${min_stay_alt_${fare_tab_index}.upper()}*
+    Run Keyword If    "${locale}" == "en-GB"    Verify Specific Line Is Written In The PNR    RIR *OFFER**MAXIMUM STAY: ${max_stay_alt_${fare_tab_index}.upper()}*
+    Verify Specific Line Is Written In The PNR    RIR \\*OFFER\\*\\*(TOTAL FARE|TARIF TOTAL): ${total_fare_alt_${fare_tab_index}}\\*    true
+    Verify Specific Line Is Written In The PNR    RIR \\*OFFER\\*\\*ROUTING\\: ${city_names_alt_${fare_tab_index}}\\*    true
+    @{fare_offer_details}    Split To Lines    ${details_offer_alt_${fare_tab_index}}
+    : FOR    ${element}    IN    @{fare_offer_details}
+    \    Verify Specific Line Is Written In The PNR    RIR *OFFER**DETAILS: ${element}*
+
+Verify Offer Remarks Are Written For Galileo
+    [Arguments]    ${fare_tab}    ${airline}=${EMPTY}    ${region}=APAC
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${total_fare}    Convert To Float    ${total_fare_alt_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*AF-${total_fare}: ROUTING: ${routing_value_alt_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*AF-${total_fare}: CHANGES: ${changes_value_alt_${fare_tab_index}}    \    true    true
+    Verify Specific Line Is Written In The PNR    HF*AF-${total_fare}: CANCELLATION: ${cancellation_value_alt_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*AF-${total_fare}: VALID ON: ${valid_on_value_alt_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*AF-${total_fare}: MIN:${min_stay_alt_${fare_tab_index}.upper()}/MAX:${max_stay_alt_${fare_tab_index}.upper()}
+    Verify Specific Line Is Written In The PNR    HF*AF-${total_fare}: RERTE: ${reroute_value_alt_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HF*AF-${total_fare}: ROUTE: ${city_names_alt_${fare_tab_index}}
+    @{fare_offer_details}    Split To Lines    ${details_offer_alt_${fare_tab_index}}
+    : FOR    ${element}    IN    @{fare_offer_details}
+    \    Verify Specific Line Is Written In The PNR    HF*AF-${total_fare}: S: ${element}
+
+Verify PNR Retrieve Command Is Only Sent Once
+    [Arguments]    ${file_name}    ${command}
+    ${log_file}    Get Log File    ${file_name}
+    ${escaped_command}    Regexp Escape    ${command}
+    Run Keyword If    "${GDS_switch.lower()}" == "sabre"    Verify Text Contains Expected Value    ${log_file}    \\*${current_pnr}.*(\n.*)*${escaped_command}    true
+    Comment    Verify Text Contains Expected Value X Times Only    ${logfile}    ${command}    1
+    ${line_containing_command}    Get Lines Containing String    ${log_file}    ${command}
+    ${expected_command_line_count}    Get Line Count    ${line_containing_command}
+    Should Be True    ${expected_command_line_count} < 2    Line count should be less than 2
+
+Verify PNR Retrieve Function Is Only Triggered Once
+    [Arguments]    ${file_name}    ${function_name}
+    ${logfile}    Get Log File    ${file_name}
+    Verify Text Contains Expected Value X Times Only    ${log_file}    ${function_name}    1
+
+Verify Queue Remark Is Not Written
+    [Arguments]    ${oid}    ${queue_number}    ${queue_category}
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RHQ
+    Verify Specific Line Is Not Written In The PNR    (QU|QA)/QE/${oid}/${queue_number}C${queue_category}    true
+
+Verify Queue Remark Is Written
+    [Arguments]    ${oid}    ${queue_number}    ${queue_category}    ${occurence}=${EMPTY}
+    Sleep    15
+    ${no_element_text}    Set Variable If    '${locale}' == 'fr-FR'    AUCUN ELEMENT TROUVE    NO ELEMENT FOUND
+    : FOR    ${INDEX}    IN RANGE    10
+    \    Retrieve PNR Details From Amadeus    ${current_pnr}    RHQ
+    \    ${is_no_element_found}    Run Keyword And Return Status    Should Contain    ${pnr_details}    ${no_element_text}
+    \    Exit For Loop If    ${is_no_element_found} == False
+    \    Sleep    10
+    ${queue_remark_lines}    Get Lines Using Regexp    ${pnr_details}    (QU|QA)/QE/${oid}/${queue_number}C${queue_category}
+    ${queue_remark_lines}    Remove Line Number    ${queue_remark_lines}
+    ${queue_remark_line_count}    Get Line Count    ${queue_remark_lines}
+    @{queue_remark_lines}    Run Keyword If    ${queue_remark_line_count} > 1    Split To Lines    ${queue_remark_lines}
+    ${is_identical} =    Run Keyword If    ${queue_remark_line_count} > 1    Run Keyword And Return Status    Verify List Values Are Identical    ${queue_remark_lines}
+    Run Keyword And Continue On Failure    Run Keyword If    ${queue_remark_line_count} > 1    Should Be True    ${is_identical} == True
+    Run Keyword If    "${occurence}" != "${EMPTY}"    Run Keyword And Continue On Failure    Should Be True    ${queue_remark_line_count} == ${occurence}    Queue remark occurence should be ${occurence}.
+    ${queue_remark_check}    Run Keyword And Return Status    Should Be True    ${queue_remark_line_count} == ${occurence}
+    Set Test Variable    ${queue_remark_check}
+
+Verify Rail Pricing Remarks Are Written
+    [Arguments]    ${tst_value}
+    ${tst_index}    Fetch From Right    ${tst_value}    ${SPACE}
+    @{pricing_conditions_details}    Split To Lines    ${pricing_conditions_text_${tst_index}}
+    : FOR    ${pricing_conditions_details_element}    IN    @{pricing_conditions_details}
+    \    ${length}    Get Length    ${pricing_conditions_details_element}
+    \    Run Keyword If    ${length} > 56    Verify Rail Remarks If It Exceeds GDS Line Limit    ${pricing_conditions_details_element}
+    \    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ${pricing_conditions_details_element}
+
+Verify Rail Remarks If It Exceeds GDS Line Limit
+    [Arguments]    ${rail_string}
+    ${first_string}    Get Substring    ${rail_string}    \    55
+    ${last_string}    Fetch From Right    ${rail_string}    ${first_string}
+    ${is_contain_space}    Run Keyword And Return Status    Should Contain    ${last_string}    ${SPACE}
+    ${excess_string}    Run Keyword If    ${is_contain_space} != True    Fetch From Right    ${rail_string}    ${SPACE}
+    ...    ELSE    Set Variable    ${last_string}
+    ${truncated_string}    Fetch From Left    ${rail_string}    ${excess_string}
+    Verify Specific Line Is Written In The PNR    RIR ${truncated_string}
+    Verify Specific Line Is Written In The PNR    ${truncated_string}
+
+Verify Rail Terms of Delivery Remarks Are Written
+    @{delivery_conditions_details}    Split To Lines    ${delivery_panel_text}
+    : FOR    ${delivery_conditions_details_element}    IN    @{delivery_conditions_details}
+    \    ${length}    Get Length    ${delivery_conditions_details_element}
+    \    Run Keyword If    ${length} > 56    Verify Rail Remarks If It Exceeds GDS Line Limit    ${delivery_conditions_details_element}
+    \    ...    ELSE    Verify Specific Line Is Written In The PNR    RIR ${delivery_conditions_details_element}
+
+Verify Retention Line Exists
+    [Arguments]    ${str_line}
+    Verify Text Contains Expected Value    ${pnr_details}    ${str_line}
+
+Verify SYEX GVS Line In Remarks
+    [Arguments]    ${expted_gvs_line}
+    Verify Text Contains Expected Value    ${pnr_details}    ${expted_gvs_line}
+
+Verify Shell PNR Remark Is Not Written
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    ${pnr_details}    ${shell_pnr_line}
+
+Verify Specific Line Is Not Written In The PNR
+    [Arguments]    ${expected_text}    ${reg_exp_flag}=false    ${multi_line_search_flag}=false    ${remove_spaces}=false    ${remove_gds_number}=false
+    Verify Text Does Not Contain Value    ${pnr_details}    ${expected_text}    ${reg_exp_flag}    ${multi_line_search_flag}    ${remove_gds_number}
+
+Verify Specific Line Is Written In The PNR
+    [Arguments]    ${expected_text}    ${reg_exp_flag}=false    ${multi_line_search_flag}=false    ${remove_spaces}=false
+    Verify Text Contains Expected Value    ${pnr_details}    ${expected_text}    ${reg_exp_flag}    ${multi_line_search_flag}    ${remove_spaces}
+
+Verify Specific Line Is Written In The PNR Only Once
+    [Arguments]    ${expected_text}
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    ${expected_text}    1
+    Verify Duplicate Remarks Does not Exists In PNR
+
+Verify TAW Line In Remarks
+    [Arguments]    ${expected_taw_line}
+    Verify Text Contains Expected Value    ${pnr_details}    ${expected_taw_line}
+
+Verify TET Code Line In Remarks
+    [Arguments]    ${expected_tet_code}
+    Verify Text Contains Expected Value    ${pnr_details}    ${expected_tet_code}
+
+Verify Ticketing Instructions Is Written In The PNR
+    [Arguments]    ${fare_tab}    ${segment_number}    ${fop}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fop_line}    Run Keyword If    "${fop.upper()}" == "INVOICE"    Set Variable    TFOP - INVAGT
+    ...    ELSE    Set Variable    TFOP - ${str_card_type}${str_card_number}/${str_exp_date}
+    ${LIST_exp_ticketing_instructions}    Create List    TICKET ${fare_tab_index} ETKT    VAL - A${validating_carrier_${fare_tab_index}}${SPACE * 4}SEGS - ${segment_number}${SPACE * 4}OPT - NA    SNAP ID - IGEC10${SPACE * 4}COMM - KP${airline_commission_percentage_${fare_tab_index}}${SPACE * 8}PTYPE - ADT    TICKET PRICE - ${selling_fare_${fare_tab_index}}    ADT-01 ${pq_fare_basis_${fare_tab_index}}
+    ...    TKT${fare_tab_index} TRAVCOM - EC-${missed_code_value_${fare_tab_index}}//LF-${low_fare_${fare_tab_index}}//RF-${high_fare_${fare_tab_index}}//    TX-${tax_amount_${fare_tab_index}}    CVW - NA${SPACE * 15}CONJ TKT - NA    ${fop_line}
+    Get Ticketing Instructions X Fare    ${fare_tab}
+    Log List    ${LIST_exp_ticketing_instructions}    #Expected Remarks
+    Log List    ${LIST_ticketing_instructions_${fare_tab_index}}    #Actual Remarks
+    Run Keyword And Continue On Failure    Lists Should Be Equal    ${LIST_exp_ticketing_instructions}    ${LIST_ticketing_instructions_${fare_tab_index}}
+
+Verify Ticketing Line In Remarks
+    ${actual_ticketing_line} =    Set Variable If    '${GDS_switch}' == 'amadeus'    TK${SPACE}    '${GDS_switch}' == 'apollo' or '${GDS_switch}' == 'galileo'    TKTG
+    ${actual_ticketing_line} =    Get Lines Containing String    ${pnr_details}    ${actual_ticketing_line}
+    Run Keyword If    '${GDS_switch}' == 'amadeus'    Run Keyword And Continue On Failure    Should Match Regexp    ${actual_ticketing_line}    .+TK OK
+    Run Keyword If    '${GDS_switch}' == 'apollo'    Run Keyword And Continue On Failure    Should Match Regexp    ${actual_ticketing_line}    TKTG-TAU
+    Run Keyword If    '${GDS_switch}' == 'galileo'    Run Keyword And Continue On Failure    Should Match Regexp    ${actual_ticketing_line}    TKTG-T
+
+Verify Ticketing Line Is Written
+    [Arguments]    ${booking_status}=${EMPTY}
+    ${separator}    Set Variable If    "${booking_status}" != "${EMPTY}"    \\-    ${SPACE * 10}
+    Run Keyword If    '${booking_status}' != 'Auto Ticket'    Verify Specific Line Is Written In The PNR    TK TL\\d{2}\\D{3}\\/${pcc}\\/Q.*${separator}${booking_status.upper()}    true
+    ...    ELSE    Verify Specific Line Is Written In The PNR    TK TL\\d{2}\\D{3}\\/1701\\/${pcc}\\/Q8C0\\-AUTO    true
+
+Verify Queue Minder Remark Is Present In PNR
+    [Arguments]    ${queue_category}=${EMPTY}    ${queue_number}=${EMPTY}    ${occurence}=${EMPTY}    ${pcc}=${EMPTY}
+    Run Keyword If    "${gds_switch}" == "galileo"    Retrieve PNR Details From Travelport    ${current_pnr}    *HQT
+    ...    ELSE IF    "${gds_switch}" == "sabre"    Retrieve PNR Details From Sabre Red    ${current_pnr}    *QH
+    ${queue_line}    Set Variable If    "${gds_switch}" == "galileo" and "${pcc}" == "${EMPTY}"    QUEUED TO Q${queue_number}    QUEUED TO Q${queue_number} \ ${pcc}
+    Run Keyword If    "${gds_switch}" == "galileo" and "${occurence}" == "${EMPTY}"    Verify Specific Line Is Written In The PNR    ${queue_line}
+    ...    ELSE IF    "${gds_switch}" == "galileo" and "${occurence}" != "${EMPTY}"    Verify Specific Line Is Written In The PNR X Times    ${queue_line}    ${occurence}
+    ${occurence}    Set Variable If    "${occurence}" == "${EMPTY}"    0    ${occurence}
+    Run Keyword If    "${gds_switch}" == "sabre" and "${occurence}" != "0"    Verify Specific Line Is Written In The PNR X Times    ${queue_category} ${queue_number}    ${occurence}
+    ...    ELSE IF    "${gds_switch}" == "sabre" "${occurence}" == "0"    Verify Specific Line Is Written In The PNR    ${queue_category} ${queue_number}.*PLACED    true
+
+Verify Specific Line Is Written In The PNR X Times
+    [Arguments]    ${expected_text}    ${occurence}    ${multi_line_flag}=False    ${reg_exp_flag}=False    ${remove_spaces}=False
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    ${expected_text}    ${occurence}    ${multi_line_flag}    ${reg_exp_flag}    ${remove_spaces}
+
+Verify Duplicate Remarks Does not Exists In PNR
+    Verify No Duplicate Remarks Exists    ${pnr_details}
+
+Verify Itinerary Remarks Are Written For UK
+    [Arguments]    ${fare_tab}=Fare 1    ${include_fare_restriction}=True
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Handle Routing If It Exceeds GDS Line Limit    ${fare_tab}
+    Verify Specific Line Is Written In The PNR    ROUTING : ${city_names_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    HIGH FARE : [A-Z]{3}${high_fare_${fare_tab_index}}    True
+    Verify Specific Line Is Written In The PNR    CHARGED FARE : [A-Z]{3}${charged_fare_${fare_tab_index}}    True
+    Verify Specific Line Is Written In The PNR    LOWEST FARE : [A-Z]{3}${low_fare_${fare_tab_index}}    True
+    Verify Specific Line Is Written In The PNR    SAVINGS ACHIEVED VS HIGH FARE
+    Verify Specific Line Is Written In The PNR    SAVINGS MISSED VS LOWEST FARE
+    Verify Specific Line Is Written In The PNR    MAIN RESTRICTIONS:
+    Verify Specific Line Is Written In The PNR    CHANGE OF RESERVATION : ${changes_value_${fare_tab_index}}    \    True
+    Verify Specific Line Is Written In The PNR    CANCELLATION : ${cancellation_value_${fare_tab_index}}
+    Run Keyword If    "${reroute_value_${fare_tab_index}}" != "${EMPTY}"    Verify Specific Line Is Written In The PNR    REROUTING : ${reroute_value_${fare_tab_index}}
+    Run Keyword If    "${valid_on_value_${fare_tab_index}}" != "${EMPTY}"    Verify Specific Line Is Written In The PNR    VALID ON : ${valid_on_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    MINIMUM STAY : ${min_stay_value_${fare_tab_index}.upper()}
+    Verify Specific Line Is Written In The PNR    MAXIMUM STAY : ${max_stay_value_${fare_tab_index}.upper()}
+
+Verify Itinerary Remarks Are Written For DK
+    [Arguments]    ${fare_tab}=Fare 1    ${include_fare_restriction}=True
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Handle Routing If It Exceeds GDS Line Limit    ${fare_tab}
+    Verify Specific Line Is Written In The PNR    RIR REJSERUTE: ${city_names_${fare_tab_index}}    true
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RIR AENDRING: ${changes_value_${fare_tab_index}}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RIR ANNULLERING: ${cancellation_value_${fare_tab_index}}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RIR MAIN RESTRICTIONS:
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RIR MINIMUM OPHOLD : ${min_stay_${fare_tab_index}.upper()}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RIR MAKSIMUM OPHOLD : ${max_stay_${fare_tab_index}.upper()}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Run Keyword If    "${valid_on_${fare_tab_index}}" != "${EMPTY}"    Verify Specific Line Is Written In The PNR    RIR FLYSELSKAB: ${valid_on_${fare_tab_index}.upper()}
+
+Verify Fare Remarks Are Written For DK
+    [Arguments]    ${segment_number}    ${fare_tab}=Fare 1    ${invoice}=0    ${include_fare_restriction}=True
+    Get Base Fare From Amadeus    ${segment_number}    ${fare_tab}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:H-${high_fare_${fare_tab_index}} C-${charged_fare_${fare_tab_index}} L-${low_fare_${fare_tab_index}} N-${charged_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:HC-${realised_code_value_${fare_tab_index}} LC-${missed_code_value_${fare_tab_index}} CL-${class_code_value_${fare_tab_index}} DEST-${point_of_${fare_tab_index}} TK-ET INV-${invoice}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:CHGS-${changes_value_${fare_tab_index}}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:CANX-${cancellation_value_${fare_tab_index}}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:MIN-${min_stay_${fare_tab_index}.upper()}:MAX-${max_stay_${fare_tab_index}.upper()}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Run Keyword If    "${valid_on_${fare_tab_index}}" != "${EMPTY}"    Verify Specific Line Is Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:APP-${valid_on_${fare_tab_index}.upper()}:RERTE-TILLADT
+
+Verify Ticketing Date Time Limit Is Written
+    [Arguments]    ${pcc}
+    ${ticketing_date}    Convert Date To Gds Format    ${ticketing_date}    %m/%d/%Y
+    Verify Specific Line Is Written In The PNR    TK TL${ticketing_date}/
+
+Verify Remarks Are Written In The PNR
+    [Arguments]    ${reg_exp_flag}=false    ${multi_line_search_flag}=false    @{expected_remark}
+    : FOR    ${expected_remark}    IN    @{expected_remark}
+    \    Verify Text Contains Expected Value    ${pnr_details}    ${expected_remark}    ${reg_exp_flag}    ${multi_line_search_flag}

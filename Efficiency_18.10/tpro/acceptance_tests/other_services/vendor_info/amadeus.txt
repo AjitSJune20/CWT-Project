@@ -1,0 +1,236 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../other_services_verification.txt
+Resource          ../../client_info/client_info_verification.txt
+
+*** Test Cases ***
+[SG][NB] Verify That Vendor Information Fields Are Displayed In Vendor Info Tab
+    [Tags]    US480    backlog    not_ready    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    u003jdc    en-GB    jcabela    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG    BEAR    SING
+    Click New Booking
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S2    6    3
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    Airline
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Populate Air Fare Savings Code    MC - Changed This Description as well    P - Passenger Declined Restricted Fare    CW - Business CWT Nett Fare
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Click Other Services
+    Click Vendor Info Tab
+    Verify Vendor Info Fields Are Visible
+    Verify Vendor Info Fields Are Enabled
+    Verify Vendor Info Fields Are Disabled
+    Click Finish PNR
+    [Teardown]
+
+[SG][AB] Verify That Vendor Information Fields Are Displayed In Vendor Info Tab
+    [Tags]    US480    backlog    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Tab With Default Values    1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking For Amend Booking For Verify That Vendor Information Fields Are Displayed In Vendor Info Tab For SG If Simultaneous Change Error Is Displayed
+    Comment    Click Other Services
+    Click Vendor Info Tab
+    Verify Vendor Info Fields Are Visible
+    Verify Vendor Info Fields Are Enabled
+    Verify Vendor Info Fields Are Disabled
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK][NB] Verify That Vendor Information Fields Are Displayed In Vendor Info Tab
+    [Tags]    US480    backlog    not_ready    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    u003jdc    en-GB    jcabela    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN HK    BEAR    HONG
+    Click New Booking
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S2    6    3
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    Airline
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Populate Air Fare Savings Code    MC - Changed This Description as well    P - Passenger Declined Restricted Fare    CW - Business CWT Nett Fare
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Click Other Services
+    Click Vendor Info Tab
+    Verify Vendor Info Fields Are Visible
+    Verify Vendor Info Fields Are Enabled
+    Verify Vendor Info Fields Are Disabled
+    Click Finish PNR
+    [Teardown]
+
+[HK][AB] Verify That Vendor Information Fields Are Displayed In Vendor Info Tab
+    [Tags]    US480    backlog    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Tab With Default Values    1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking For Amend Booking For Verify That Vendor Information Fields Are Displayed In Vendor Info Tab For HK If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Click Vendor Info Tab
+    Verify Vendor Info Fields Are Visible
+    Verify Vendor Info Fields Are Enabled
+    Verify Vendor Info Fields Are Disabled
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN][NB] Verify That Other Services Fields For Vendor Info Tab Are Displayed
+    [Tags]    us963    in    team_chiu
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    ${EMPTY}    APAC QA
+    ...    Amadeus
+    Create Shell PNR Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    Bajaj Allianz General Insurance Co Ltd-C/O Siemens
+    Click Continue In Other Svcs
+    #Populate All The Tabs
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    300    20    40    Charges    GSA    Po
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    COURIER CHARGES    100    10    20    Associated Charges
+    ...    GSA    PO
+    Click Save In Associated Charges
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Verify Prepopulated Default Value In Vendor Info tab
+    Verify Fields Are Optional In Vendor Tab
+    #UI Validations
+    Verify Range In Vendor Info Tab
+    Set Attention In Vendor Info Tab    qqqqqpowqxnreeeeeeurueiowwwwuuuuuuuuuuuuuwwwwwwwwwwndhfcbcvfredcxswqazmlopujnhytfvvcrdewqaszxcevefrtthgyuj;aj
+    Verify Error Icon For Attention In Vendor Info tab    Should not be more than 100 characters
+    Set Address In Vendor Info Tab    qqqqqpowqxnreeeeeeurueiowwwwuuuuuuuuuuuuuwwwwwwwwwwndhfcbcvfredcxswqazmlopujnhytfvvcrdewqaszxcevefrtthgyuj;aj
+    Verify Error Icon For Address In Vendor Info tab    Should not be more than 100 characters
+    Set City In Vendor Info Tab    qqqqqpowqxnreeeeeeurueiowwwwuuuuuuuuuuuuuwwwwwwwwwwndhfcbcvfredcxswqazmlopujnhytfvvcrdewqaszxcevefrtthgyuj;aj
+    Verify Error Icon For City In Vendor Info tab    Should not be more than 50 characters
+    Set Country In Vendor Info Tab    qqqqqpowqxnreeeeeeurueiowwwwuuuuuuuuuuuuuwwwwwwwwwwndhfcbcvfredcxswqazmlopujnhytfvvcrdewqaszxcevefrtthgyuj;aj
+    Verify Error Icon For Country In Vendor Info tab    Should not be more than 50 characters
+    Set CWT Email In Vendor Info Tab    qqqqqpowqxnreeeeeeurueiowwwwuuuuuuuuuuuuuwwwwwwwwwwndhfcbcvfredcxswqazmlopujnhytfvvcrdewqaszxcevefrtthgyuj;aj
+    Verify Error Icon For Email In Vendor Info tab    Should not be more than 100 characters
+    Set CWT Phone In Vendor Info Tab    qqqqqpowqxnreeeeeeurueiowwwwuuuuuuuuuuuuuwwwwwwwwwwndhfcbcvfredcxswqazmlopujnhytfvvcrdewqaszxcevefrtthgyuj;aj
+    Verify Error Icon For Phone In Vendor Info tab    Should not be more than 100 characters
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    Verify Range In Vendor Info Tab
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R1
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R1
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Fax    Fax-123    True
+    Click Add In Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R2
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R2
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Email    XYZ@ABC.com    False
+    Click Add In Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R3
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R3
+    Get Fields From Vendor Info Tab    R1
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+
+[IN][AB OS] Verify That Other Services Fields For Vendor Info Tab Saved Are Prepopulated On Amend EO
+    [Tags]    team_chiu    in    us963
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Populate All The Tabs
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    300    20    40    Charges    GSA    Po
+    Click Add In Associated Charges
+    # Associated Charges
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    COURIER CHARGES    100    10    20    Associated Charges
+    ...    GSA    PO
+    Click Save In Associated Charges
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Get Number Of Records In Vendor Info Tab
+    Comment    Verify Fields Are Optional In Vendor Tab
+    Display Existing Grid Details In Vendor Info Tab
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    Get Number Of Records In Vendor Info Tab
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R1
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R1
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Fax    Fax-123    True
+    Click Add In Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R2
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R2
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Email    XYZ@ABC.com    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    R1
+    Generate Data For Specific Row In Vendor Info Tab    R3
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R3
+    # Amend EO Verification
+    Generate Data From Vendor Info Tab For Amend Eo Verification    R1
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    #Validations Of PrePopulated Data
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    Vendor Info
+    Verify Amended Record Is Present In Vendor Info Tab    R1
+
+*** Keywords ***
+Amend Booking For Verify That Vendor Information Fields Are Displayed In Vendor Info Tab For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Tab With Default Values    1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Vendor Information Fields Are Displayed If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Click Vendor Info Tab
+    Verify Vendor Info Fields Are Visible
+    Verify Vendor Info Fields Are Enabled
+    Verify Vendor Info Fields Are Disabled
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+Amend Booking For Verify That Vendor Information Fields Are Displayed In Vendor Info Tab For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Tab With Default Values    1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Vendor Information Fields Are Displayed If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Click Vendor Info Tab
+    Verify Vendor Info Fields Are Visible
+    Verify Vendor Info Fields Are Enabled
+    Verify Vendor Info Fields Are Disabled
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

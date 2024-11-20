@@ -1,0 +1,48 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Add Remarks In Exchange Order
+    [Arguments]    @{free_text_remark}
+    Activate Power Express Window
+    : FOR    ${item}    IN    @{free_text_remark}
+    \    Click Control Button    [NAME:EoAddFreeText]
+    \    Send    ${item}
+    \    Send Keys    {TAB}
+
+Add Remarks In Itinerary
+    [Arguments]    @{free_text_remark}
+    Activate Power Express Window
+    : FOR    ${item}    IN    @{free_text_remark}
+    \    Click Control Button    [NAME:IoAddFreeText]
+    \    Send    ${item}
+    \    Send Keys    {TAB}
+
+Click EO Add Button
+    Click Control Button    [NAME:EoAddButton]
+
+Get All Original Data From EO Grid
+    [Documentation]    This Keyword is used to get the original data/remarks from the left exchange order grid. Reusing this keyword in later script will modify(If the Left grid has been modified due to some reason) the variable storing the remarks and result in failure of script.
+    @{all_eo_remarks_list}    Get All Cell Values In Data Grid Table    [NAME:FromEoDataGridView]
+    Set Test Variable    ${all_eo_remarks_list}
+    [Return]    ${all_eo_remarks_list}
+
+Get All Original Data From IO Grid
+    [Documentation]    This Keyword is used to get the original data/remarks from the left Itinerary order grid. Reusing this keyword in later script will modify the variable storing the remarks(If the Left grid has been modified due to some reason) and result in failure of script.
+    @{all_io_remarks_list}    Get All Cell Values In Data Grid Table    [NAME:FromIoDataGridView]
+    Set Test Variable    ${all_io_remarks_list}
+    [Return]    ${all_io_remarks_list}
+
+Get Items In Selected Itinerary List Of Remarks Tab
+    @{get_values}    Get All Cell Values In Data Grid Pane    [NAME:ToIoDataGridView]
+    Lists Should Be Equal    ${selected_multiple_io_rmk_list}    ${get_values}
+
+Select Exchange Order Remarks
+    [Arguments]    @{exchange_order_remarks}
+    Wait Until Control Object Is Enabled    [NAME:EoAddButton]
+    Run Keyword And Continue On Failure    Select Remarks From Eo Grid    @{exchange_order_remarks}
+    Take Screenshot
+
+Select Itinerary Remarks
+    [Arguments]    @{itinerary_remarks}
+    Run Keyword And Continue On Failure    Select Remarks From Io Grid    @{itinerary_remarks}

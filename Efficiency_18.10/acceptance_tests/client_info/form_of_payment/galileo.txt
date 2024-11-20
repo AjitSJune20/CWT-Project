@@ -1,0 +1,153 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../client_info_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That PNR Will Not Be Updated With Selected FOP Upon Dropdown Change With Success/Failure Status Message
+    [Tags]    us4072
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo 16 - Auto ¦ US4072    AutoSeventeenTwo    EmeaTvlrOne
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Not Written In The PNR    Invoice
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    CDGLHR    01Y1    FQ    8
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}    *FOP
+    Verify Specific Line Is Written In The PNR    INVOICE
+
+[AB UK] Verify That PNR Will Not Be Updated With Selected FOP Upon Dropdown Change With Success/Failure Status Message
+    [Tags]    us4072
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Update FOP button Is Not Displayed
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    INVOICE
+    Select Form Of Payment    CWT BTA/AX***********0326/D1211
+    Verify Failed Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    INVOICE
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    VIXXXXXXXXXXXX1111/D1221
+    Select Form Of Payment    PORTRAIT/VI************0002/D1216-US4072 PORTRAIT
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    VIXXXXXXXXXXXX0002/D1216
+    Select Form Of Payment    NonRef
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    NONREF
+    Select Form Of Payment    Invoice
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    INVOICE
+    Select Form Of Payment    ${EMPTY}
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    NO FOP DATA EXISTS
+    Select Form Of Payment    Cash
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    -S
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    VI************1111/D1221
+    Verify No Form Of Payment Update Message Was Displayed
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    -S
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Galileo FOP Update
+    Retrieve PNR Details From Galileo    ${current_pnr}    *FOP
+    Verify Specific Line Is Written In The PNR    VIXXXXXXXXXXXX1111/D1221
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Traveller's And Not Contact's Credit Cards Are Available As Form of Payment When Contact Is Searched First
+    [Tags]    uat    emea    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Contact    John
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Traveller    John
+    Click Tab In Contact Details    Traveller/Contact
+    Untick Traveller Checkbox
+    Click New Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    ${EMPTY}
+    Verify Form Of Payment Is Shown In FOP Droplist    PORTRAIT/VI************0002/D1125-TRAVELLERCARD1    PORTRAIT/VI************0002/D0625-TRAVELLERCARD2
+    Verify Form Of Payment Is Not Shown In FOP Droplist    PORTRAIT/VI************0002/D0325-CONTACTCARD1    PORTRAIT/VI************0002/D0725-CONTACTCARD2
+    Verify Form Of Payment Is Shown In Alternate FOP Tab    PORTRAIT/VI************0002/D1125-TRAVELLERCARD1
+    Verify Form Of Payment Is Shown In Alternate FOP Tab    PORTRAIT/VI************0002/D0625-TRAVELLERCARD2
+    Verify Form Of Payment Is Not Shown In Alternate FOP Tab    PORTRAIT/VI************0002/D0325-CONTACTCARD1
+    Verify Form Of Payment Is Not Shown In Alternate FOP Tab    PORTRAIT/VI************0002/D0725-CONTACTCARD2
+    [Teardown]    Click Clear All
+
+[NB UK] Verify That Traveller's And Not Contact's Credit Cards Are Available As Form of Payment When Traveller Is Searched First
+    [Tags]    uat    emea    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Traveller    John
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Contact    John
+    Untick Traveller Checkbox
+    Tick Contact Checkbox
+    Click New Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    ${EMPTY}
+    Verify Form Of Payment Is Shown In FOP Droplist    PORTRAIT/VI************0002/D1125-TRAVELLERCARD1    PORTRAIT/VI************0002/D0625-TRAVELLERCARD2
+    Verify Form Of Payment Is Not Shown In FOP Droplist    PORTRAIT/VI************0002/D0325-CONTACTCARD1    PORTRAIT/VI************0002/D0725-CONTACTCARD2
+    Verify Form Of Payment Is Shown In Alternate FOP Tab    PORTRAIT/VI************0002/D1125-TRAVELLERCARD1
+    Verify Form Of Payment Is Shown In Alternate FOP Tab    PORTRAIT/VI************0002/D0625-TRAVELLERCARD2
+    Verify Form Of Payment Is Not Shown In Alternate FOP Tab    PORTRAIT/VI************0002/D0325-CONTACTCARD1
+    Verify Form Of Payment Is Not Shown In Alternate FOP Tab    PORTRAIT/VI************0002/D0725-CONTACTCARD2
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Amend Booking Workflow For Galileo FOP Update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Update FOP button Is Not Displayed
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    INVOICE
+    Select Form Of Payment    CWT BTA/AX***********0326/D1211
+    Verify Failed Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    INVOICE
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    VIXXXXXXXXXXXX1111/D1221
+    Select Form Of Payment    PORTRAIT/VI************0002/D1216-US4072 PORTRAIT
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    VIXXXXXXXXXXXX0002/D1216
+    Select Form Of Payment    NonRef
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    NONREF
+    Select Form Of Payment    Invoice
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    INVOICE
+    Select Form Of Payment    ${EMPTY}
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    NO FOP DATA EXISTS
+    Select Form Of Payment    Cash
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    -S
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    VI************1111/D1221
+    Verify No Form Of Payment Update Message Was Displayed
+    Retrieve PNR Details From Galileo    \    *FOP
+    Verify Specific Line Is Written In The PNR    -S
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

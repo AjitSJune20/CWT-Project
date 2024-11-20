@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        multipax_pnr_remarks

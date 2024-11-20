@@ -1,0 +1,2213 @@
+*** Settings ***
+Suite Setup
+Force Tags
+Resource          ../../../../../resources/panels/client_info.txt
+Resource          ../../other_services_verification.txt
+Resource          ../../../../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          ../../other_services_request_control.txt
+Resource          ../../other_services_ui_verification.txt
+Resource          ../../other_services_charges_control.txt
+Resource          ../../other_services_remarks_verification.txt
+Resource          ../../other_services.txt
+
+*** Test Cases ***
+[IN NB OS] Verify That Request Tab And Fields Are Displayed When Product Is Meet & Greet
+    [Tags]    us602    us920    in    team_chiu
+    Open Power Express And Retrieve Profile    ${version}    test    U003JDC    en-GB    jcabela    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product    Meet & Greet
+    Select Vendor    ROYAL SERVICES
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    Verify Fields Are Displayed In Request When Product Is Meet And Greet
+    Verify Fields Are Mandatory In Request When Product Is Meet And Greet
+    Verify Request Fields Are Optional In Request When Product Is Meet And Greet
+    Verify Default Values Of Fields In Request
+    #UI Validations In Request Tab ForProduct Meet & Greet Product
+    Verify Fields Are Displayed In Request When Product Is Meet And Greet
+    Verify Fields Are Mandatory In Request When Product Is Meet And Greet
+    Verify Request Fields Are Optional In Request When Product Is Meet And Greet
+    Verify Default Values Of Fields In Request
+    #Validations With Incorrect Data
+    Populate Request Fields When Product Is Meet And Greet    QWE    asffaaajhdhhhhhhhhhhhhhhhyyyyyyyyyyyyy121111111111!@#$%^&*()11111111222222222777777777777uuuuuuuuu8666666666666666337777777iyu46ttr    asffaaajhdhhhhhhhhhhhhhhhyyyyyyyyyyyyy121111111111!@#$%^&*()11111111222222222777777777777uuuuuuuuu8666666666666666337777777iyu46ttr    21/02/2019/10/30/30
+    Verify Mandatory Field Color For Incorrect Data Entered    [NAME:CityComboBox]
+    Verify Error Icon For Locations Field In Request Tab For Product Meet & Greet    Should not be more than 100 characters
+    Verify Error Icon For Internal Remarks Field In Request Tab For Product Meet & Greet    Should not be more than 100 characters
+    #Validations With Correct Data
+    Populate Request Fields When Product Is Meet And Greet    NYC    Cooney Island YMCA    Location Drop before 10pm    21/02/2019/10/30/30
+    Get Request Field values    Meet & Greet
+    Get Vendor
+    Generate Data When Product Is Meet & Greet    Meet & Greet    new
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    500    49    50    ${product}    ChargesGSA1    ChargesPO1
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    VAT    SERVICE TAX    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Verify Passive Segment Is Written In The PNR    Meet & Greet    New York
+    [Teardown]
+
+[IN][OS] Verify That Other Services Fields In Request Tab Saved Are Prepopulated On Amend EO For Meet And Greet Product And Passive Segments Are Written In PNR
+    [Tags]    us602    us920    in    team_chiu
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Generate Data When Product Is Meet & Greet    Meet & Greet    amend_1
+    Verify Field Values In Request On Amend When Product Is Meet & Greet    new    amend_1
+    Populate Request Fields When Product Is Meet And Greet    NYC    Cooney Island YMCA    Location Drop before 10pm    21/02/2019/10/30/30
+    Generate Data When Product Is Meet & Greet    Meet & Greet    amend_2
+    Click Finish PNR    \    5    Other Svcs
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Generate Data When Product Is Meet & Greet    Meet & Greet    amend_2
+    Verify Field Values In Request On Amend When Product Is Meet & Greet    amend_2    amend_1
+    Click Finish PNR    \    5    Other Svcs
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Accounting Remarks Are Written When Product Is Visa Fee
+    [Tags]    in    us605    team_chiu    for_update    for_jona
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Set Test Variable    ${gds_switch}    amadeus
+    Comment    Set Test Variable    ${current_pnr}    W9MUJX
+    Open Power Express And Retrieve Profile    ${version}    test    U003JDC    en-GB    jcabela    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Client Info
+    ...    Recap
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Recap
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Visa fee    VFS CHARGES
+    Verify Active Tab    Request
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Verify Fields Are Displayed In Request    Visa fee
+    Verify Field Default Values In Request    Visa fee
+    Verify Fields Are Optional In Request    Visa fee
+    Verify Fields Are Mandatory In Request    Visa fee
+    Populate Request When Product Is Visa    Visa fee    Passport    United States    Renewal    25/Dec/2019    Internal Remarks
+    Get Request Field Values    Visa fee    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    ChargesGSA2    ${EMPTY}
+    Get Charges Field Values    new
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab - Grid Record 1
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Transaction Charges    VENUS TRAVELS    50.556    10    5.05    Transaction Charges
+    ...    Assoc-OSGSA2    ${EMPTY}
+    Get Associated Charges Field Values    R1
+    Generate Remarks Data For Specific Associated Charge Row    R1
+    Click Save In Associated Charges
+    Verify Record Is Displayed In Associated Charges Grid    R1
+    #Associated Charges Tab - Grid Record 2
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Merchant fee    CREDIT CARD CHARGES    45    15.67    8.456    Merchant fee
+    ...    ${EMPTY}    Assoc-PO3
+    Get Associated Charges Field Values    R2
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Verify Record Is Displayed In Associated Charges Grid    R2
+    Get Grid Data In Associated Charges For Validation    new_final_grid_records
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Add Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R1
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R1
+    #Add Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Fax    Fax-123    True
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R2
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R2
+    #Add Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Email    XYZ@ABC.com    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R3
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R3
+    Generate Data From Vendor Info Tab For Amend Eo Verification    new    #include grid in data generation
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    #Remarks Verification
+    Verify Passive Segment Is Written In The PNR    Visa fee
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment And Accounting Remarks Are Written When Product Is Visa Fee
+    [Documentation]    Run Keyword And Ignore Error | Cancel PNR Thru GDS Native | ${current_pnr}
+    [Tags]    in    us605    team_chiu    for_update    for_jona
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Set Test Variable    ${gds_switch}    amadeus
+    Comment    Set Test Variable    ${current_pnr}    W9MUJX
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab
+    Get Request Field Values    Visa fee    amend_1
+    Verify Request Fields Default to Correct Values Upon Amend EO    Visa fee    new    amend_1
+    Populate Request When Product Is Visa    Visa fee    Visa    Japan    Transit Visa    20/Oct/2019    Internal Remarks 123
+    ...    Double    6    Months    Normal
+    Get Request Field Values    Visa fee    amend_2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend_1
+    Verify Field Values In Charges On Amend EO    new    amend_1
+    Populate Charges Fields Details    500    30.55    20.12    ${product}    ${EMPTY}    Charges PO
+    Get Charges Field Values    amend_2
+    Generate Remarks Data For Specific Charges Row BTC    amend_2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend_1
+    Verify Grid Is Displayed In Associated Charges    new_final_grid_records    amend_1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    VAT    SERVICE TAX    10.45    4.98    6    VAT
+    ...    ${EMPTY}    ${EMPTY}
+    Get Associated Charges Field Values    R3
+    Generate Remarks Data For Specific Associated Charge Row    R3
+    Click Save In Associated Charges
+    Verify Record Is Displayed In Associated Charges Grid    R3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab
+    Generate Data From Vendor Info Tab For Amend Eo Verification    amend_1    #incorporate in Get keyword
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend_1
+    Populate Fields For Vendor Info Tab    Attention2 XX    Address2 XX    Gurgaon    India XX    email@cwt.com    9432542
+    Click Finish PNR    \    5    Other Svcs
+    #Remarks Verification
+    Verify Passive Segment Is Not Written In The PNR    Visa fee
+    Verify Passive Segment Is Written In The PNR    Visa fee
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    amend_2
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R3
+    [Teardown]
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Accounting Remarks Are Written When Product Is Visa DD
+    [Tags]    in    team_chiu    us605    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    test    U003JDC    en-GB    jcabela    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Client Info
+    ...    Recap
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Visa DD    HDFC VISA FEE
+    Verify Active Tab    Request
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    Verify Fields Are Displayed In Request    Visa DD
+    Verify Field Default Values In Request    Visa DD
+    Verify Fields Are Optional In Request    Visa DD
+    Verify Fields Are Mandatory In Request    Visa DD
+    Populate Request When Product Is Visa    Visa DD    Visa    India    Tourist Visa    25/Oct/2019    Internal Remarks
+    ...    Single    2    Days    Urgent
+    Get Request Field Values    Visa DD    new
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    500    10    16    ${product}    GS    PO
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Verify Passive Segment Is Written In The PNR    Visa DD
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment And Accounting Remarks Are Written When Product Is Visa DD
+    [Tags]    in    us605    team_chiu    valid_fail
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Visa DD    amend_1
+    Verify Request Fields Default to Correct Values Upon Amend EO    Visa DD    new    amend_1
+    Populate Request When Product Is Visa    Visa DD    Passport    Turkey    Lost and Damaged    05/Nov/2019    Internal Remarks XX
+    ...    \    \    Months    Normal
+    Get Request Field Values    Visa DD    amend_2
+    Click Finish PNR    \    5    Other Svcs
+    Verify Passive Segment Is Written In The PNR    Visa DD
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Visa DD    amend_3
+    Verify Request Fields Default to Correct Values Upon Amend EO    Visa DD    amend_2    amend_3
+    Click Finish PNR    \    5    Other Svcs
+    Verify Passive Segment Is Written In The PNR    Visa DD
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Accounting Remarks Are Written When Product Is Visa Handling Fee
+    [Tags]    in    us605    team_chiu
+    Open Power Express And Retrieve Profile    ${version}    test    U003JDC    en-GB    jcabela    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Client Info
+    ...    Recap
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1225
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Visa handling Fee    VISA DD IN HAND-NEW
+    Verify Active Tab    Request
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    Verify Fields Are Displayed In Request    Visa handling Fee
+    Verify Field Default Values In Request    Visa handling Fee
+    Verify Fields Are Optional In Request    Visa handling Fee
+    Verify Fields Are Mandatory In Request    Visa handling Fee
+    Populate Request When Product Is Visa    Visa handling Fee    Visa    Venezuela    Work Visa    25/Sep/2019    Internal Remarks 456
+    ...    Multiple    1    Years    Urgent    No    123456
+    ...    12
+    Get Request Field Values    Visa handling Fee    new
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    500    10    30    ${product}    TestChargesGSA1    TestChargesPO1
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Verify Passive Segment Is Written In The PNR    Visa handling Fee
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment And Accounting Remarks Are Written When Product Is Visa Handling Fee
+    [Tags]    in    us605    team_chiu
+    Click Other Services
+    Wait Until Exchange Order Grid Is Displayed
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Visa Handling Fee    amend_1
+    Verify Request Fields Default to Correct Values Upon Amend EO    Visa Handling Fee    new    amend_1
+    Populate Request When Product Is Visa    Visa Handling Fee    Passport    Vietnam    Fresh    25/Jul/2020    Internal Remarks 123
+    ...    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    Yes    0987654
+    ...    25
+    Get Request Field Values    Visa Handling Fee    amend_2
+    Click Finish PNR    \    5    Other Svcs
+    Verify Passive Segment Is Written In The PNR    Visa Handling Fee
+    Click Other Services
+    Wait Until Exchange Order Grid Is Displayed
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Visa Handling Fee    amend_3
+    Verify Request Fields Default to Correct Values Upon Amend EO    Visa Handling Fee    amend_2    amend_3
+    Click Finish PNR    \    5    Other Svcs
+    Verify Passive Segment Is Written In The PNR    Visa Handling Fee
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment, Accounting Lines And Itenerary Remarks Are Written In The PNR When Product Is Tour Intl
+    [Tags]    us603    in    team_chiu    us922
+    Open Power Express And Retrieve Profile    ${version}    test    U038PXR    en-GB    U038PXR    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product    Tour Intl
+    Select Vendor    TOUR INTERNATIONAL (TRANCPORT CONTROL ACCOUNT)
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    Verify Fields Are Displayed In Request    ${product}
+    Verify Fields Are Mandatory In Request    ${product}
+    Verify Fields Are Optional In Request    ${product}
+    Verify Field Default Values In Request When Product Is Tour Intl
+    ##Request
+    Populate Request Fields When Product Is Tour Intl    DEL    Package Name    Details    Internal Remarks    01/01/2019    30/01/2019
+    Get Request Field Values    tour intl    newrequest
+    ##Charges
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    ChargesGSA1    ChargesPO1
+    Get Charges Field Values    newcharges
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    ##AssocCharges
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Tour Intl    TOUR INTERNATIONAL (TRANCPORT CONTROL ACCOUNT)    889.989    12.56    8.456    Tour Intl
+    ...    Assoc-RNPO1    Assoc-OSGSA1
+    Get Associated Charges Field Values    newAssoc
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    ui
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    newVendor
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Verify Passive Segment Is Written In The PNR    tour intl
+    Verify Itinerary Remarks Are Written In The PNR    tour intl
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+
+[IN AOS]Verify That Tabs Default To The Correct Values Upon Amend EO And Passive Segment, Accounting Lines And Itinerary Remarks Are Written In The PNR When Product Is Tour Intl
+    [Tags]    us922    in    team_chiu
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    tour intl    amendrequest
+    Verify Request Fields Default to Correct Values Upon Amend EO    tour intl    newrequest    amendrequest
+    Populate Request Fields When Product Is Tour Intl    DEL    Package Name    Details    Internal Remarks    06/06/2019    30/06/2019
+    Get Request Field Values    tour intl    amendrequest
+    ##ChargesAmend
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amendcharges
+    Verify Field Values In Charges On Amend EO    newcharges    amendcharges
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amendcharges1
+    Generate Remarks Data For Specific Charges Row BTC    R3
+    #Associated Charges Amend
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amendAssoc1
+    Verify Grid Is Displayed In Associated Charges    newAssoc    amendAssoc1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Generate Remarks Data For Specific Associated Charge Row    R4
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    assocAmendgrid1
+    #Vendor Amend1
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amendVendor
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    newVendor    amendVendor
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    Get Number Of Records In Vendor Info Tab
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amendVendor2
+    # Amend EO Verification
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Passive Segment Is Written In The PNR    tour intl
+    Verify Itinerary Remarks Are Written In The PNR    tour intl
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R3
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R4
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    tour intl    amend2
+    Verify Request Fields Default to Correct Values Upon Amend EO    tour intl    amend1    amend2
+    ##ChargesAmend1
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amendcharges2
+    Verify Field Values In Charges On Amend EO    amendcharges1    amendcharges2
+    #Associated Charges Amend2
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    assocAmendgrid2
+    Verify Grid Is Displayed In Associated Charges    assocAmendgrid1    assocAmendgrid2
+    #Vendor Amend2
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    FinalAmendVendor
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amendVendor2    FinalAmendVendor
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Passive Segment Is Written In The PNR    tour intl
+    Verify Itinerary Remarks Are Written In The PNR    tour intl
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Car Intl
+    [Tags]    us609    in    us923    team_chiu    for_update
+    Open Power Express And Retrieve Profile    ${version}    test    U003JDC    en-GB    jcabela    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1225
+    Click Panel    Recap
+    Book Passive Car Segment X Months From Now    HND    6    13    6    14    1
+    Book Active Car Segment X Month From Now    JFK    6    25
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Car Intl    AUTOEUROPE
+    Verify Active Tab    Request
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    Get Current Car Segments
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Car Intl
+    Verify Field Default Values In Request    Car Intl
+    Verify Fields Are Optional In Request    Car Intl
+    Verify Fields Are Mandatory In Request    Car Intl
+    Populate Request Fields When Product Is Car DOM    14/03/2019    10/25/50    16/03/2019    12/25/50    ${passive_segments[0]}    INR \ \ \ Indian Rupee
+    ...    70    Airport    Terminal 1    Office    South Avenue, Boulevard of Isla, 2411    Europcar
+    ...    CF321234    Toyota Camry    Sedan    "Concord booking" x15    Credit Card    cancel by
+    ...    XXXXXXXXXXXX1111    CORP    VI    18    Hrs
+    Get Request Field Values    Car Intl    amend_eo_1
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Car Intl    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab
+    Verify Prepopulated Default Value In Vendor Info tab
+    Verify Fields Are Optional In Vendor Tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R1
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R1
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Fax    Fax-123    True
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R2
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R2
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Email    XYZ@ABC.com    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    R3
+    Verify Record Is Displayed In Grid For Vendor Info Tab    R3
+    #Amend EO Data For Vendor
+    Generate Data From Vendor Info Tab For Amend Eo Verification    R1
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Verify Exchange Order Format    3
+    Verify Itinerary Remarks Lines From PNR
+    [Teardown]
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Car Intl
+    [Documentation]    PreReq:
+    ...    | ${current_pnr}
+    ...    | ${eo_number}
+    ...    | Field Values with identifier amend_eo_1 from previous test
+    [Tags]    us609    us923    in    team_chiu    for_update
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Car Intl    amend_eo_2
+    Verify Request Fields Default to Correct Values Upon Amend EO    Car Intl    amend_eo_1    amend_eo_2
+    Select Cancellation Policy    No Cancellation
+    Get Cancellation Policy
+    Click Finish PNR    \    5    Other Svcs
+    Verify Exchange Order Number Is Retained After Amend EO
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Verify Exchange Order Format    3
+    Comment    Verify Previous Itinerary Remarks Line Is Removed From PNR
+    Verify Itinerary Remarks Lines From PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Select Cancellation Policy    Others    \    \    Kamusta po
+    Get Request Field Values    Car Intl    amend_eo_3
+    Click Finish PNR    \    5    Other Svcs
+    Verify Exchange Order Number Is Retained After Amend EO
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Verify Exchange Order Format    3
+    Verify Itinerary Remarks Lines From PNR
+    [Teardown]
+
+[IN AB OS] Verify That Request Tab And Fields Default To Correct Values Upon Amend EO When Product Is Car Dom And FOP is Cash
+    [Documentation]    | ${current_pnr} | With existing EO
+    [Tags]    in    us923    team_chiu    for_update
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Set Test Variable    ${gds_switch}    amadeus
+    Comment    Set Test Variable    ${current_pnr}    VLAKKK
+    Get Current Car Segments
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Request Tab And Fields Default To Correct Values Upon Amend EO When Product Is Car Dom And FOP is Cash
+    Click Other Services
+    Wait Until Exchange Order Grid Is Displayed
+    Select Product And Vendor    Car DOM    AVIS
+    Verify Active Tab    Request
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    Get Current Car Segments
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Car Dom
+    Verify Field Default Values In Request    Car Dom
+    Verify Fields Are Optional In Request    Car Dom
+    Verify Fields Are Mandatory In Request    Car Dom
+    Populate Request Fields When Product Is Car DOM    16/03/2019    10/25/50    17/03/2019    12/25/50    ${active_segments[0]}    INR \ \ \ Indian Rupee
+    ...    70    Airport    Terminal 1    Office    South Avenue, Boulevard of Isla, 2411    Europcar
+    ...    CF321234    Toyota Camry    Sedan    "Concord booking" x15    Deposit    cancel by
+    ...    \    \    \    3    Hrs
+    Get Request Field Values    Car Dom    amend_eo_4
+    #Charges
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400.25    12.56    8.456    Car DOM    Vendor Reference No    Other Reference No
+    #Associated Charges
+    Click Tab In Other Services Panel    Associated Charges    #${passive_segments[0]}
+    Populate Associated Charges Fields    Car DOM    AVIS    400.25    12.56    8.456    Car DOM
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Verify Exchange Order Format    3
+    Verify Itinerary Remarks Lines From PNR
+    Click Clear All
+
+[IN AOS] Verify That Request Tab And Fields Default To Correct Values Upon Amend EO When Product Is Car Dom and FOP is Cash
+    [Documentation]    PreReq:
+    ...    | ${current_pnr}
+    ...    | ${eo_number}
+    ...    | Field Values with identifier amend_eo_1 from previous test
+    [Tags]    in    us923    team_chiu    for_update
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Set Test Variable    ${gds_switch}    amadeus
+    Comment    Set Test Variable    ${current_pnr}    VLAKKK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Active Car Segment X Month From Now    JFK    6    18
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Request Tab And Fields Default To Correct Values Upon Amend EO When Product Is Car Dom and FOP is Cash
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Car Dom    amend_eo_5
+    Verify Request Fields Default to Correct Values Upon Amend EO    Car Dom    amend_eo_4    amend_eo_5
+    Populate Request Fields When Product Is Car DOM    18/03/2019    10/25/50    20/03/2019    12/25/50    ${active_segments[0]}    INR \ \ \ Indian Rupee
+    ...    70    Airport    Terminal 1    Office    South Avenue, Boulevard of Isla, 2411    Europcar
+    ...    CF321234    Toyota Camry    Sedan    "Concord booking" x15    Deposit    No Cancellation
+    Get Request Field Values    Car Dom    amend_eo_6
+    Get Cancellation Policy
+    Click Finish PNR    \    5    Other Svcs
+    Verify Exchange Order Number Is Retained After Amend EO
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Verify Exchange Order Format    3
+    Verify Itinerary Remarks Lines From PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Car Dom    amend_eo_7
+    Verify Request Fields Default to Correct Values Upon Amend EO    Car Dom    amend_eo_6    amend_eo_7
+    Select Cancellation Policy    Others    \    \    Other Services
+    Click Finish PNR    \    5    Other Svcs
+    Verify Exchange Order Number Is Retained After Amend EO
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Verify Exchange Order Format    3
+    Verify Itinerary Remarks Lines From PNR
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That Error Message Is Displayed When PNR Has No Car Segment And Product Is Car Intl Or Car Dom
+    [Tags]    us609    in    team_chiu
+    Open Power Express And Retrieve Profile    ${version}    test    U003JDC    en-GB    jcabela    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINMNL/APR    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    Delete Air Segment    2
+    Click Panel    Recap
+    Book Active Hotel X Months From Now    LON    423    6    2    6    4
+    ...    checkindate_identifier1    checkoutdate_identifier2
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Car Intl    AUTOEUROPE
+    Verify Error Message Is Displayed
+    Click Ok In Error Message
+    Verify Other Services Tabs Are Not Displayed
+    Click Clear All
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That Request Tab And Fields Are Displayed When Product Is Hotel Prepaid Intl And FOP Is Credit Card
+    [Tags]    us601    in    team_chiu    for_update
+    Open Power Express And Retrieve Profile    ${version}    test    u007wxp    en-GB    ${EMPTY}    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1225
+    Click Panel    Recap
+    Book Passive Flight X Months From Now    LAXSIN    AA    6    2
+    Book Passive Flight X Months From Now    SINHKG    3K    6    6
+    Book Passive Car Segment X Months From Now    HKG    6    3    6    3    1
+    Book Active Hotel X Months From Now    LON    423    6    2    6    4
+    ...    checkindate_identifier1    checkoutdate_identifier2
+    Book Passive Hotel Segment X Months From Now    HKG    Marco Polo Hotel HKG1747.94, 3rd Canton Rd, Tsim Sha Tsui, Hong Kong +852 2113 0088    6    5    6    6
+    ...    checkindate_identifier2    checkoutdate_identifier3
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Hotel pre paid- INTL    Royal Orchid Bangalore
+    Click Continue In Other Svcs
+    Verify Active Tab    Request
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Hotel Prepaid Intl
+    Verify Field Default Values In Request    Hotel Prepaid Intl
+    Verify Fields Are Optional In Request    Hotel Prepaid Intl
+    Verify Fields Are Mandatory In Request    Hotel Prepaid Intl
+    Verify Guarantee By Is Correct    Credit Card
+    Verify Air Segments Are Retrieved Correctly And Displayed In Dropdown
+    Verify Hotel Segments Are Retrieved Correctly And Displayed In Dropdown
+    Get Air Segment Dropdown Values    1
+    Get Hotel Segment Dropdown Values    0
+    Select Hotel Segment In Request    ${specific_hotel_segment}
+    Verify Fields Are Pre-populated After Selecting A Hotel Segment    checkindate_identifier1    checkoutdate_identifier2    GBP \ \ \ Great British Pound    425    1    LON
+    ...    JUMEIRAH CARLTON TOWER
+    Populate Request When Product Is Hotel Prepaid-Intl Or Hotel Prepaid-Dom    ${specific_hotel_segment}    01/05/2020    10/05/2020    HKD \ \ \ Hong Kong Dollar    5500    ${specific_air_segment}
+    ...    Deluxe    2    Credit Card    1234567890    HKG    Marco Polo Hotel HKG1747.94, 3rd Canton Rd, Tsim Sha Tsui, Hong Kong +852 2113 0088
+    ...    3rd Canton Rd, Tsim Sha Tsui, Hong Kong    true    371449635398431    CORP    AX    12
+    ...    2028    HKG    1234    Hong Kong    85221130088    Internal Remarks
+    ...    Cancel By    2    Days
+    Get Request Field Values    Hotel Prepaid-Intl    new
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    546    34    45    ${product}    gsa    ChargesPO1
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Verify Exchange Order Format    3
+    Retrieve PNR Details From Amadeus
+    Verify Itinerary Remarks Lines From PNR
+    Click Clear All
+
+[IN AB AOS] Verify That Request Tab And Fields Default To The Correct Values Upon Amend EO When Product Is Hotel Prepaid Intl
+    [Tags]    us601    in    team_chiu    for_update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    JFKLAX/AAA    SS1Y1    FXP/S2    5    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Recap
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Request Tab And Fields Default To The Correct Values Upon Amend EO When Product Is Hotel Prepaid Intl
+    Click Other Services
+    Wait Until Exchange Order Grid Is Displayed
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Hotel Prepaid-Intl    amend_1
+    Verify Request Fields Default to Correct Values Upon Amend EO    Hotel Prepaid-Intl    new    amend_1
+    Get Air Segment Dropdown Values    2
+    Get Hotel Segment Dropdown Values    1
+    Populate Request When Product Is Hotel Prepaid-Intl Or Hotel Prepaid-Dom    ${specific_hotel_segment}    15/06/2020    20/06/2020    USD \ \ \ US Dollar    6600    ${specific_air_segment}
+    ...    Moderate    4    Credit Card    098765432    JFK    John F Kennedy Hotel
+    ...    John F Kennedy Hotel Address    true    371449635398431    PER(F.)    VI    01
+    ...    2025    JFK    0192    John F Kennedy    78320456    Internal Remarks XX
+    ...    Special Rate, No Cancellation
+    Get Request Field Values    Hotel Prepaid-Intl    amend_2
+    Click Finish PNR    \    5    Other Svcs
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Hotel Prepaid-Intl    amend_3
+    Verify Request Fields Default to Correct Values Upon Amend EO    Hotel Prepaid-Intl    amend_2    amend_3
+    Click Finish PNR    \    5    Other Svcs
+    Click Clear All
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN OS] Verify That Request Tab And Fields Are Displayed When Product Is Hotel Prepaid Dom And FOP Is Cash
+    [Tags]    us601    in    team_chiu    for_update
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Hotel Prepaid-Dom    DOUBLE TREE
+    Click Continue In Other Svcs
+    Verify Active Tab    Request
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    Verify Fields Are Displayed In Request    Hotel Prepaid Dom
+    Verify Fields Are Optional In Request    Hotel Prepaid Dom
+    Verify Fields Are Mandatory In Request    Hotel Prepaid Dom
+    Verify Guarantee By Is Correct    ${EMPTY}
+    Verify Air Segments Are Retrieved Correctly And Displayed In Dropdown
+    Verify Hotel Segments Are Retrieved Correctly And Displayed In Dropdown
+    Get Air Segment Dropdown Values    3
+    Get Hotel Segment Dropdown Values    1
+    Select Hotel Segment In Request    ${specific_hotel_segment}
+    Verify Fields Are Pre-populated After Selecting A Hotel Segment    checkindate_identifier    checkoutdate_identifier    GBP \ \ \ Great British Pound    425    1    LON
+    ...    JUMEIRAH CARLTON TOWER
+    Populate Request When Product Is Hotel Prepaid-Intl Or Hotel Prepaid-Dom    ${specific_hotel_segment}    01/05/2020    10/05/2020    HKD \ \ \ Hong Kong Dollar    5500    ${specific_air_segment}
+    ...    Deluxe    2    Credit Card    1234567890    HKG    Marco Polo Gateway Hotel HKG1747.94 / 3 Canton Rd, Tsim Sha Tsui, Hong Kong +852 2113 0088
+    ...    3 Canton Rd, Tsim Sha Tsui, Hong Kong    true    371449635398431    CORP    AX    12
+    ...    2028    HKG    1234    Hong Kong    85221130088    Internal Remarks
+    ...    Cancel By    2    Days
+    Get Request Field Values    Hotel Prepaid Dom    new
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    ChargesGSA1    ChargesPO1
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Tour Intl    TOUR INTERNATIONAL (TRANCPORT CONTROL ACCOUNT)    889.989    12.56    8.456    Tour Intl
+    ...    Assoc-RNPO1    Assoc-OSGSA1
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+
+[IN AOS] Verify That Request Tab And Fields Default To The Correct Values Upon Amend EO When Product Is Hotel Prepaid Dom
+    [Tags]    us601    in    team_chiu    for_update
+    Click Other Services
+    Wait Until Exchange Order Grid Is Displayed
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Hotel Prepaid Dom    amend_1
+    Verify Request Fields Default to Correct Values Upon Amend EO    Hotel Prepaid Dom    new    amend_1
+    Get Air Segment Dropdown Values    2
+    Get Hotel Segment Dropdown Values    2
+    Populate Request When Product Is Hotel Prepaid-Intl Or Hotel Prepaid-Dom    ${specific_hotel_segment}    15/06/2020    20/06/2020    USD \ \ \ US Dollar    6600    ${specific_air_segment}
+    ...    Moderate    4    Credit Card    098765432    JFK    John F Kennedy Hotel
+    ...    John F Kennedy Hotel Address    true    371449635398431    PER(F.)    VI    01
+    ...    2025    JFK    0192    John F Kennedy    78320456    Internal Remarks XX
+    ...    Others    ${EMPTY}    ${EMPTY}    OthersText
+    Get Request Field Values    Hotel Prepaid Dom    amend_2
+    Click Finish PNR    \    5    Other Svcs
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field Values    Hotel Prepaid Dom    amend_3
+    Verify Request Fields Default to Correct Values Upon Amend EO    Hotel Prepaid Dom    amend_2    amend_3
+    Click Finish PNR    \    5    Other Svcs
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That Error Message Is Displayed When PNR Has No Hotel Segment And Product Is Any Hotel Prepaid
+    [Tags]    in    us601    team_chiu    for_update
+    Open Power Express And Retrieve Profile    ${version}    test    U003JDC    en-GB    jcabela    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINMNL/APR    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    Delete Air Segment    2
+    Click Panel    Recap
+    Book Passive Car Segment X Months From Now    HKG    6    3
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Hotel pre paid- INTL    Royal Orchid Bangalore
+    Verify Error Message Is Displayed
+    Click Ok In Error Message
+    Verify Other Services Tabs Are Not Displayed
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is Despatch
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Despatch    Blue Dart Express
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Despatch
+    Verify Fields Are Optional In Request    Despatch
+    Verify Fields Are Mandatory In Request    Despatch
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    Despatch    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Despatch
+    Get Vendor Code For India    Despatch    DILIP JADHAV
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    UI
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Despatch
+    Verify Itinerary Remarks Are Written In The PNR    Despatch
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Despatch
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    Despatch    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    Despatch    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    Despatch    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Despatch
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is Ets Call Charges
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    ETS Call charges    ETS CALL CHARGES
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    ETS Call charges
+    Verify Fields Are Optional In Request    ETS Call charges
+    Verify Fields Are Mandatory In Request    ETS Call charges
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    ETS Call charges    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    ETS Call charges    ETS CALL CHARGES    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    ETS Call charges
+    Get Vendor Code For India    ETS Call charges    ETS CALL CHARGES
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    UI
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    ETS Call charges
+    Verify Itinerary Remarks Are Written In The PNR    ETS Call charges
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Ets Call Charge
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    ETS Call charges    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    ETS Call charges    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    ETS Call charges    ETS CALL CHARGES    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    ETS Call charges    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    ETS Call charges
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is Ferry
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Ferry    SALTOURS INTERNATIONAL
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Ferry
+    Verify Fields Are Optional In Request    Ferry
+    Verify Fields Are Mandatory In Request    Ferry
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    Despatch    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Ferry    SALTOURS INTERNATIONAL    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Ferry
+    Get Vendor Code For India    Ferry    SALTOURS INTERNATIONAL
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    UI
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Ferry
+    Verify Itinerary Remarks Are Written In The PNR    Ferry
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Ferry
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    Despatch    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    Despatch    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Ferry    SALTOURS INTERNATIONAL    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    Ferry    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Ferry
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is Merchant Fee
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Merchant fee    CREDIT CARD CHARGES
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Merchant fee
+    Verify Fields Are Optional In Request    Merchant fee
+    Verify Fields Are Mandatory In Request    Merchant fee
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    Merchant fee    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Merchant fee    CREDIT CARD CHARGES    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Merchant fee
+    Get Vendor Code For India    Merchant fee    CREDIT CARD CHARGES
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    UI
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Merchant fee
+    Verify Itinerary Remarks Are Written In The PNR    Merchant fee
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Merchant Fee
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    Merchant fee    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    Merchant fee    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Merchant fee    CREDIT CARD CHARGES    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    Merchant fee    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Merchant fee
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is Mice Domestic
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Mice Domestic    JTB TRAVELS PVT LTD
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Mice Domestic
+    Verify Fields Are Optional In Request    Mice Domestic
+    Verify Fields Are Mandatory In Request    Mice Domestic
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    Mice Domestic    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Mice Domestic    JTB TRAVELS PVT LTD    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Despatch
+    Get Vendor Code For India    Mice Domestic    JTB TRAVELS PVT LTD
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    UI
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Mice Domestic
+    Verify Itinerary Remarks Are Written In The PNR    Mice Domestic
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Mice Domestic
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    Mice Domestic    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    Mice Domestic    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Mice Domestic    JTB TRAVELS PVT LTD    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    Mice Domestic    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Mice Domestic
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is Mice International
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    MICE international    JTB TRAVELS PVT LTD
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    MICE international
+    Verify Fields Are Optional In Request    MICE international
+    Verify Fields Are Mandatory In Request    MICE international
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    Despatch    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    MICE international    JTB TRAVELS PVT LTD    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    MICE international
+    Get Vendor Code For India    MICE international    JTB TRAVELS PVT LTD
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    UI
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    MICE international
+    Verify Itinerary Remarks Are Written In The PNR    MICE international
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Mice International
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    MICE international    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    MICE international    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    MICE international    JTB TRAVELS PVT LTD    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    MICE international    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    MICE international
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is Oths Handling Fee
+    [Tags]    us866    us989    in    us893    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Oths handling Fee    ACCOR
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Oths handling Fee
+    Verify Fields Are Optional In Request    Oths handling Fee
+    Verify Fields Are Mandatory In Request    Oths handling Fee
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    Oths handling Fee    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Oths handling Fee    ACCOR    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Oths handling Fee
+    Get Vendor Code For India    Oths handling Fee    ACCOR
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    UI
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Oths handling Fee
+    Verify Itinerary Remarks Are Written In The PNR    Oths handling Fee
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Oths Handling Fee
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    Oths handling Fee    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    Oths handling Fee    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Oths handling Fee    ACCOR    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    Oths handling Fee    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Oths handling Fee
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is Rebate
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Rebate    REBATE (HANDLING)
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Rebate
+    Verify Fields Are Optional In Request    Rebate
+    Verify Fields Are Mandatory In Request    Rebate
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    Rebate    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Rebate    REBATE (HANDLING)    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Rebate
+    Get Vendor Code For India    Rebate    REBATE (HANDLING)
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    UI
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Rebate
+    Verify Itinerary Remarks Are Written In The PNR    Rebate
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Rebate
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    Rebate    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    Rebate    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Rebate    REBATE (HANDLING)    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    Rebate    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Rebate
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is Tour Domestic
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Tour Domestic    MAP INDIA TOUR
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Tour Domestic
+    Verify Fields Are Optional In Request    Tour Domestic
+    Verify Fields Are Mandatory In Request    Tour Domestic
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    Tour Domestic    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Tour Domestic    MAP INDIA TOUR    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Tour Domestic
+    Get Vendor Code For India    Tour Domestic    MAP INDIA TOUR
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    UI
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Tour Domestic
+    Verify Itinerary Remarks Are Written In The PNR    Tour Domestic
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Tour Domestic
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    Tour Domestic    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    Tour Domestic    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Tour Domestic    MAP INDIA TOUR    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    Tour Domestic    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Tour Domestic
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is Transaction Fee-Air Only
+    [Tags]    us866    us989    in    us893    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Transaction Fee-Air only    TRANSACTION FEE
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    Transaction Fee-Air only
+    Verify Fields Are Optional In Request    Transaction Fee-Air only
+    Verify Fields Are Mandatory In Request    Transaction Fee-Air only
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    Transaction Fee-Air only    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Transaction Fee-Air only    TRANSACTION FEE    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Transaction Fee-Air only
+    Get Vendor Code For India    Transaction Fee-Air only    TRANSACTION FEE
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    UI
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Transaction Fee-Air only
+    Verify Itinerary Remarks Are Written In The PNR    Transaction Fee-Air only
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is Transaction Fee-Air Only
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    Transaction Fee-Air only    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    Transaction Fee-Air only    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Transaction Fee-Air only    TRANSACTION FEE    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    Transaction Fee-Air only    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Transaction Fee-Air only
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+    [Teardown]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That New EO Is Created And Passive Segment And Itinerary Remarks Are Written In The PNR When Product Is VAT
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    \    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    SINJFK/AJL    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN    Recap
+    ...    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    VAT    SERVICE TAX
+    Verify Tabs Displayed In Other Services    Request    Charges    Associated Charges    Vendor Info
+    #Request Tab
+    Click Tab In Other Services Panel    Request
+    Verify Fields Are Displayed In Request    VAT
+    Verify Fields Are Optional In Request    VAT
+    Verify Fields Are Mandatory In Request    VAT
+    Populate Request Fields    Internal Remarks    Mandatory    Details2
+    Get Request Field values    VAT    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    VAT    SERVICE TAX    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    VAT
+    Get Vendor Code For India    VAT    SERVICE TAX
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    ui
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Amend EO Data For Vendor
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    VAT
+    Verify Itinerary Remarks Are Written In The PNR    VAT
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, Accounting And Itinerary Remarks Are Written When Product Is VAT
+    [Tags]    us866    us893    in    us989    us963    team_chiu
+    ...    valid_fail
+    [Setup]    Run Keyword And Ignore Error    Cancel PNR Thru GDS Native    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Get Request Field values    VAT    amend1
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    new    amend1
+    Populate Request Fields    IR    CWT    \    Details3
+    Get Request Field values    VAT    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    VAT    SERVICE TAX    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    #Correct Entries
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    Click Finish PNR    \    5    Other Svcs
+    #Finish PNR
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    VAT    amend3
+    Verify Field Values In Request On Amend EO When Product Is Non-Air Other Services    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    VAT
+    Verify Itinerary Remarks Are Written For Non Air Other Services
+
+[IN CS OS] Verify That New EO Is Created And Passive Segment And General Remarks Are Written When Product Is Insurance
+    [Tags]    us599    team_chiu    in
+    Open Power Express And Retrieve Profile    ${version}    test    U007wxp    en-GB    ${EMPTY}    APAC QA
+    ...    Amadeus
+    Create Shell PNR Using Default Values    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA    1254100001 ¦ ATLAS COPCO (I) LTD ¦ APAC SYN IN
+    Click Other Services
+    Select Product And Vendor    Insurance    Visa - Cash
+    #REQUEST TAB
+    Verify Fields Are Displayed In Request    Insurance
+    Verify Fields Are Optional In Request    Insurance
+    Verify Fields Are Mandatory In Request    Insurance
+    Verify Default Values Of Request Tab When Product Is Insurance
+    Populate Request Fields Values When Product Is Insurance    Detail1    Detail2    detail3    IR    786    waseem
+    ...    paseo    123456    pasha    male    11-Sep-1989    beacon
+    ...    chinoroces    manila    560078    manila    philipines    987654321
+    ...    single    26-Sep-2018    04-Jul-2019
+    Get Request Field Values    Insurance    new
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    Insurance    TestChargesGSA    TestChargesPO
+    Get Charges Field Values    new
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    #ASSOCIATED CHARGES TAB
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Insurance    Visa - Cash    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Insurance
+    Get Vendor Code For India    Insurance    Visa - Cash
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    new
+    #Data For Segment Verification
+    Get Product
+    Get Vendor
+    Get Vendor Code For India    ${product}    ${vendor}
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    ui
+    Verify Prepopulated Default Value In Vendor Info tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    new
+    #Fetching Data For Amend EO verification
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Insurance
+    Verify General Remarks Are Written Correctly    Insurance
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN AOS] Verify That Tabs Default To The Correct Values And Passive Segment, General Remarks Are Written When Product Is Insurance
+    [Tags]    us599    team_chiu    in
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Field Values
+    Get Request Field values    Insurance    amend1
+    Verify Field Values In Request On Amend Eo When Product Is Insurance    new    amend1
+    Populate Request Fields Values When Product Is Insurance    IR    CWT    \    Details3
+    Get Request Field values    Insurance    amend2
+    #Charges Tab
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend1
+    Verify Field Values In Charges On Amend EO    new    amend1
+    Populate Charges Fields Details    200    100    300    ${product}    ${EMPTY}    TestChargesPO
+    Get Charges Field Values    amend2
+    #Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend1
+    Verify Grid Is Displayed In Associated Charges    new    amend1
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Save In Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend2
+    #Data For Segment Verification
+    Get Product
+    Get Vendor
+    Get Vendor Code For India    ${product}    ${vendor}
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend1
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    new    amend1
+    Populate Fields For Vendor Info Tab    Attention2    Address2    Pune    India    Email2    09875123456
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab    amend2
+    # Amend EO Verification
+    Click Finish PNR    \    5    Other Svcs
+    Retrieve PNR Details From Amadeus
+    Verify Passive Segment Is Written In The PNR    Insurance
+    Verify General Remarks Are Written Correctly    Insurance
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    #Request Tab Verification For Amend EO
+    Get Request Field values    Insurance    amend3
+    Verify Field Values In Request On Amend Eo When Product Is Insurance    amend2    amend3
+    #Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Charges
+    Get Charges Field Values    amend3
+    Verify Field Values In Charges On Amend EO    amend2    amend3
+    #Associated Charges Tab Verification For Amend EO
+    Click Tab In Other Services Panel    Associated Charges
+    Get Grid Data In Associated Charges For Validation    amend3
+    Verify Grid Is Displayed In Associated Charges    amend2    amend3
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab    amend3
+    Verify Vendor Info Fields Default to Correct Values Upon Amend EO    amend2    amend3
+    Click Finish PNR    \    5    Other Svcs
+
+*** Keywords ***
+Amend Booking For Verify That Request Tab And Fields Default To The Correct Values Upon Amend EO When Product Is Hotel Prepaid Intl
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    JFKLAX/AAA    SS1Y1    FXP/S2    5    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Car Tab    ${EMPTY}    1
+    Populate Car Tab With Values    500    100    200    RF - RESTRICTED RATE ACCEPTED    L - Lowest rate accepted    0 - Referral
+    ...    No    ${EMPTY}    Manual    Associated Remarks
+    Click Finish PNR
+
+Amend Booking For Verify That Request Tab And Fields Default To Correct Values Upon Amend EO When Product Is Car Dom And FOP is Cash
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    JFKLAX/AAA    SS1Y1    FXP/S2    5    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Car Tab    ${EMPTY}    1
+    Populate Car Tab With Values    500    100    200    RF - RESTRICTED RATE ACCEPTED    L - Lowest rate accepted    0 - Referral
+    ...    No    ${EMPTY}    Manual    Associated Remarks
+    Click Finish PNR
+
+Verify Vendor Info Fields Default to Correct Values Upon Amend EO
+    [Arguments]    ${identifier1}    ${identifier2}
+    Log List    ${expected_list${identifier1}}
+    Log List    ${expected_list${identifier2}}
+    Run Keyword And Continue On Failure    Lists Should Be Equal    ${expected_list${identifier1}}    ${expected_list${identifier2}}
+
+Verify Passive Segment Is Not Written In The PNR
+    [Arguments]    ${product}
+    Run Keyword If    "${product.lower()}"=="visa fee" or "${product.lower()}"=="visa dd" or "${product.lower()}"=="visa handling fee"    Verify Passive Segment Is Not Written In The PNR When Product Is Visa Fee, Visa DD Or Visa Handling
+
+Verify Passive Segment Is Not Written In The PNR When Product Is Visa Fee, Visa DD Or Visa Handling
+    Comment    ${processing_type}    Run Keyword If    "${document}"=="Visa"    Set Variable If    "${processing_type}"=="Normal"    VIS
+    ...    VIU
+    ...    ELSE IF    "${document}"=="Passport"    Set Variable    OTH
+    Comment    Get Vendor Code For India    ${product}    ${vendor}
+    Comment    Convert Date To GDS Format For India    ${date_of_application}
+    Comment    Set Test Variable    ${date_of_application_wo_year}    ${date_dd_mmm}
+    Run Keyword If    "${document2}"=="Visa"    Run Keyword And Continue On Failure    Verify Specific Line Is Not Written In The PNR    ${passive_segment_visa}    false    true
+    ...    true
+    Run Keyword If    "${document2}"=="Passport"    Run Keyword And Continue On Failure    Verify Specific Line Is Not Written In The PNR    ${passive_segment_passport}    false    true
+    ...    true

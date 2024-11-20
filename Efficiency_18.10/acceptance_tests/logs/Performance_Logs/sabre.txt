@@ -1,0 +1,142 @@
+*** Settings ***
+Force Tags        emea    logs    sabre
+Resource          ../../../resources/common/global_resources.txt
+Resource          ../../../resources/common/utilities.txt
+Resource          performance_logs_verification.txt
+Library           ../../../resources/libraries/SyexPerfTestLibrary.py
+
+*** Test Cases ***
+[NB_US] Verify That The Correct GDS Is Written As Value To The Platform In The Performance Log
+    [Tags]    us    us6398    us6614
+    Delete Log File    SyExPerfLog
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-UA    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With Round Trip Air Flight Using Default Values    Sabre 16 - Auto ¦ US3700    AutoSixteenSeven    NoramTrvlrEleven    LAXLHR‡UA    01Y1    ${EMPTY}
+    ...    CDGORD‡UA    01Y1    WPRQ    Air Fare
+    Verify That TravellerGuid Is Added To The Performance Logs    A:4032128F
+    Click Panel    Air Fare
+    Populate Air Fare Savings Code Using Default Values
+    Delete Log File    SyExPerfLog
+    Click Finish PNR
+    Verify that the correct environment is written in the logs
+
+[AB_US] Verify That The Correct GDS Is Written As Value To The Platform In The Performance Log
+    [Tags]    us    us6398
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete All Segments
+    Enter GDS Command    PQD-ALL
+    Book Flight X Months From Now    BOSORD¥UA    01Y1    WPRQ¥S1    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click panel    Air Fare
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Untick All On Hold Reasons
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Verify that the correct GDS is written as value to the Platform in the Performance Logs
+    Verify that the correct environment is written in the logs
+    Delete Log File    SyExPerfLog
+
+[QA_US] Verify That The Correct GDS Is Written As Value To The Platform In The Performance Log
+    [Tags]    us    us6398
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Set Date Of Birth    12/12/01
+    Click Read Booking
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Quick Amend
+    Verify that the correct environment is written in the logs
+
+[SI_US] Verify That The Correct GDS Is Written As Value To The Platform In The Performance Log
+    [Tags]    us    us6398
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Send Itinerary Verify that the correct GDS is written as value to the Platform in the Performance Logs
+    Verify that the correct environment is written in the logs
+
+[CB_US] Verify That The Correct GDS Is Written As Value To The Platform In The Performance Log
+    [Tags]    us    us6398
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR
+    Verify that the correct environment is written in the logs
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB_US] Verify that last name and subunit are added as NameSearchCriteria and ClientSearchCriteria in the Portrait Service logs in Performance logs
+    [Tags]    us6381    us6614
+    Delete Log File    SyExPerfLog
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Guitarists    Alava    ${EMPTY}
+    Verify That NameSearchCriteria And ClientSearchCriteria Are Added To The Performance Logs For PortraitService    ALAVA    Sabre 1 - SyEx ¦ Guitarists
+    Verify That TravellerGuid Is Added To The Performance Logs    A:403C26EA
+    Delete Log File    SyExPerfLog
+    Click Clear All
+    Set Client    Sabre 1 - SyEx ¦ Guitarists
+    Search PIN Portrait    123
+    Verify That NameSearchCriteria And ClientSearchCriteria Are Added To The Performance Logs For PortraitService    123    Sabre 1 - SyEx ¦ Guitarists
+    Delete Log File    SyExPerfLog
+    Click Clear All
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Guitarists    Alava    ${EMPTY}
+    Verify That NameSearchCriteria And ClientSearchCriteria Are Added To The Performance Logs For PortraitService    ALAVA    Sabre 1 - SyEx ¦ Guitarists
+    Delete Log File    SyExPerfLog
+    Click Clear All
+    Search Employee Identifier    test123
+    Verify That NameSearchCriteria And ClientSearchCriteria Are Added To The Performance Logs For PortraitService    TEST123    Sabre 1 - SyEx ¦ Guitarists
+    Click Clear All
+
+*** Keywords ***
+Amend Booking Verify That The Correct GDS Is Written As Value To The Platform In The Performance Log
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete All Segments
+    Enter GDS Command    PQD-ALL
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click panel    Air Fare
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Untick All On Hold Reasons
+    Click Finish PNR    Amend Booking Verify that the correct GDS is written as value to the Platform in the Performance Logs
+
+Quick Amend
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Set Date Of Birth    12/12/01
+    Click Read Booking
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR    Quick Amend
+
+Send Itinerary Verify that the correct GDS is written as value to the Platform in the Performance Logs
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR    Send Itinerary Verify that the correct GDS is written as value to the Platform in the Performance Logs
+
+Amend Booking Verify that the correct GDS is written as value to the Platform in the Performance Logs
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete All Segments
+    Enter GDS Command    PQD-ALL
+    Book Flight X Months From Now    BOSORD¥UA    01Y1    WPRQ¥S1    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click panel    Air Fare
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Untick All On Hold Reasons
+    Click Finish PNR    Amend Booking Verify that the correct GDS is written as value to the Platform in the Performance Logs
+
+Search Employee Identifier
+    [Arguments]    ${emp_identifier}
+    Set Control Text Value    [NAME:ctxtEmployeeIdentifier]    ${emp_identifier}    ${title_power_express}
+    Click Search Portrait Profile

@@ -1,0 +1,3 @@
+*** Settings ***
+Force Tags        car
+Resource          ../../resources/panels/car.txt

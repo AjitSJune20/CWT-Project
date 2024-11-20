@@ -1,0 +1,267 @@
+*** Settings ***
+Force Tags        emea    amadeus
+Resource          ../delivery_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[NB] Verify that Subject Line Is Added In the PNR When SO Itinerary Product Is CWT Itinerary
+    [Tags]    us2012    fr
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne    LHRCDG/AAF    ${EMPTY}
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Verify That Subject Line Dropdown Is Visible
+    Set Subject Line Value    LISTE D ATTENTE CONFIRMEE
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:16*
+
+[AB] Verify That Subject Line Is Updated In The PNR When SO Itinerary Product Is CWT Itinerary
+    [Tags]    us2012    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible
+    Verify That Correct Subject Line is Selected    LISTE D ATTENTE CONFIRMEE
+    Set Subject Line Value    VOTRE BILLET ELECTRONIQUE EST A PRESENT MODIFIE
+    Click Finish PNR    Amend Amadeus Subject Line
+    Execute Simultaneous Change Handling    Amend Amadeus Subject Line
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:23*
+    Enter Command In Native GDS    IR    RT${current_pnr}    RMZ/CONF*SUBJECT:12*    RMZ/CONF*SUBJECT:1*    RFCWTPTEST    ER
+    ...    ER    RTRZ
+    [Teardown]
+
+[SI] Verify That Subject Line Is Updated In The PNR When SO Itinerary Product Is CWT Itinerary
+    [Tags]    us2012    fr
+    Retrieve Pnr    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible
+    Verify That Correct Subject Line is Selected    DOUBLE RESERVATIONS TROUVEES
+    Set Subject Line Value    ABONNEMENT CONFIRME
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Send Itinerary Subject Line
+    Execute Simultaneous Change Handling    Send Itinerary Subject Line
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:12*
+    Verify Specific Line Is Written In The PNR Only Once    RMZ CONF*SUBJECT:
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Delivery Panel Subject Line Must Not Be Shown When SO Itinerary - Enable Subject Line Is Set To NO For CWT Itinerary
+    [Tags]    us2012    de
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus DE 15 - Auto ¦ US2447    AutoSeventeenFive    PerfEight    LHRCDG/AAF    ${EMPTY}    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Amadeus TKOK
+    Verify That Subject Line Dropdown is Not Visible
+    Verify Itinerary Type Section Is Not Displayed
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:25*
+    Verify Specific Line Is Written In The PNR Only Once    RMZ CONF*SUBJECT:
+    Enter Command In Native GDS    RT${current_pnr}    RMZ/CONF*SUBJECT:1*    RFCWTPTEST    ER    ER    RTRZ
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Click Clear All With Options    Clear All
+    [Teardown]
+
+[SI] Verify That Correct Queue Minder Is Added When E-Ticket Is Used As Itinerary Type
+    [Documentation]    SO for TC with us5444:
+    ...
+    ...    Itinerary - Enable E-ticket = Yes
+    ...
+    ...    Itinerary Product = None
+    [Tags]    us5444    de
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Click Finish PNR
+    Verify Queue Remark Is Written    PARWL2877    70    0    1
+    Click Clear All With Options    Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Select E-Ticket Notification Radio Button
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Send Itinerary Selecting Confirmatio And E-Ticket As Itinerary Type
+    Verify Queue Remark Is Written    PARWL2877    71    0    1
+    Click Clear All With Options    Clear All
+
+[AB] Verify That Delivery Panel Subject Line Must Not Be Shown When SO Itinerary - Enable Subject Line Is Set To NO For CWT Itinerary
+    [Tags]    us2012    de
+    Retrieve Pnr    ${current_pnr}
+    Click Amend Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Verify That Subject Line Dropdown is Not Visible
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Amadeus Without Subject Line
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:1*
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:25*
+    Click Clear All With Options    Clear All
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA] [NB] Verify That Special Characters Are Accepted in Header and Ticket Text Fields
+    [Tags]    US1824    DE6996    fr
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ US2954    AutoFifteenTwo    EmeaTrvlrFour    LHRCDG/AAF    ${EMPTY}
+    Click Panel    Delivery
+    Set Header And Ticket Text Values    a#aa#    aaaaaa#aa#
+    Click Panel    Air Fare
+    Click Panel    Delivery
+    Verify Tooltip Text Is Correct Using Coords    927    538    En-tête incorrect
+    Verify Tooltip Text Is Correct Using Coords    927    608    Billet non valide
+    Set Header And Ticket Text Values    *    **
+    Click Panel    Air Fare
+    Click Panel    Delivery
+    Verify Tooltip Text Is Correct Using Coords    927    538    En-tête incorrect
+    Verify Tooltip Text Is Correct Using Coords    927    608    Billet non valide
+    Set Subject Line Value    LISTE D ATTENTE CONFIRMEE
+    Set Header And Ticket Text Values    Header @ ! ( ) % ? = $ + // . , : - _ /    Ticket @ ! ( ) % ? = $ + // . , : - _ /
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    RIR *RITOP**HEADER @ ! ( ) % ? = $ + // . , : - _ /
+    Verify Specific Line Is Written In The PNR    RIR *TICKET**TICKET @ ! ( ) % ? = $ + // . , : - _ /
+
+[1A EMEA] [AB] Verify That Special Characters Are Accepted in Header and Ticket Text Fields
+    [Tags]    US1824    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    IR
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Text Contains Expected Value    [NAME:txtHeader]    HEADER @ ! ( ) % ? = $ + // . , : - _ /
+    Verify Control Object Text Contains Expected Value    [NAME:txtTicket]    TICKET @ ! ( ) % ? = $ + // . , : - _ /
+    Set Header And Ticket Text Values    https://www.carlsonwagonlit.com\\    https://www.carlsonwagonlit.com\\
+    Click Panel    Air Fare
+    Click Panel    Delivery
+    Verify Tooltip Text Is Correct Using Coords    927    538    En-tête incorrect
+    Verify Tooltip Text Is Correct Using Coords    927    608    Billet non valide
+    Set Header And Ticket Text Values    https://www.carlsonwagonlit.com/content/cwt/global/en/home.html    https://www.carlsonwagonlit.com/content/cwt/global/en/home.html
+    Click Panel    Air Fare
+    Click Panel    Delivery
+    Set Header And Ticket Text Values    https://www.headertextfield.com.ph @,!--(-):%?__=$+.//-    @,!--(-):%?__=$+./- https://www.headertextfield.com.ph//
+    Set Subject Line Value    LISTE D ATTENTE CONFIRMEE
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Verify That Special Characters Are Accepted in Header and Ticket Text Fields For Amend Booking
+    Execute Simultaneous Change Handling    Verify That Special Characters Are Accepted in Header and Ticket Text Fields For Amend Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    RIR *RITOP**HTTPS://WWW.HEADERTEXTFIELD.COM.PH*
+    Verify Specific Line Is Written In The PNR    RIR *RITOP**@,!--(-):%?__=$+.//-*
+    Verify Specific Line Is Written In The PNR    RIR *TICKET**@,!--(-):%?__=$+./-*
+    Verify Specific Line Is Written In The PNR    RIR *TICKET**HTTPS://WWW.HEADERTEXTFIELD.COM.PH//*
+
+[1A EMEA] [SI] Verify That Special Characters Are Accepted in Header and Ticket Text Fields
+    [Tags]    US1824    fr
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    IR
+    Click Send Itinerary
+    Click Panel    Delivery
+    Set Header And Ticket Text Values    https://www.carlsonwagonlit.com\\    https://www.carlsonwagonlit.com\\
+    Click Panel    Recap
+    Click Panel    Delivery
+    Verify Tooltip Text Is Correct Using Coords    927    538    En-tête incorrect
+    Verify Tooltip Text Is Correct Using Coords    927    608    Billet non valide
+    Set Header And Ticket Text Values    123@ ,, !! -- ( )) :: ///-/- %% ?? __ == $ ++ .. /// PCT    456@@ ,, ! -- (( ) :: ///-/-%% ?? __ == $$ + . /// PCT
+    Set Subject Line Value    LISTE D ATTENTE CONFIRMEE
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Verify That Special Characters Are Accepted in Header and Ticket Text Fields For Send Itinerary
+    Execute Simultaneous Change Handling    Verify That Special Characters Are Accepted in Header and Ticket Text Fields For Send Itinerary
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR Only Once    RIR *RITOP**123@ ,, !! -- ( )) :: ///-/- %% ?? __ == $ ++ ..
+    Verify Specific Line Is Written In The PNR    ///*
+    Verify Specific Line Is Written In The PNR    RIR *RITOP**PCT*
+    Verify Specific Line Is Written In The PNR    RIR *TICKET**456@@ ,, ! -- (( ) :: ///-/-%% ?? __ == $$ + .
+    Verify Specific Line Is Written In The PNR    ///*
+    Verify Specific Line Is Written In The PNR    RIR *TICKET**PCT*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Amadeus Subject Line
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible
+    Verify That Correct Subject Line is Selected    LISTE D ATTENTE CONFIRMEE
+    Set Subject Line Value    VOTRE BILLET ELECTRONIQUE EST A PRESENT MODIFIE
+    Click Finish PNR    Amend Amadeus Subject Line
+
+Amend Amadeus Without Subject Line
+    Send Itinerary Special Characters    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Verify That Subject Line Dropdown is Not Visible
+    Click Finish PNR
+
+Send Itinerary Subject Line
+    Retrieve Pnr    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible
+    Verify That Correct Subject Line is Selected    DOUBLE RESERVATIONS TROUVEES
+    Set Subject Line Value    ABONNEMENT CONFIRME
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Send Itinerary Subject Line
+
+Verify That Special Characters Are Accepted in Header and Ticket Text Fields For Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    IR
+    Click Send Itinerary
+    Click Panel    Delivery
+    Set Header And Ticket Text Values    https://www.carlsonwagonlit.com\\    https://www.carlsonwagonlit.com\\
+    Click Panel    Recap
+    Click Panel    Delivery
+    Verify Tooltip Text Is Correct Using Coords    927    538    En-tête incorrect
+    Verify Tooltip Text Is Correct Using Coords    927    608    Billet non valide
+    Set Header And Ticket Text Values    123@ ,, !! -- ( )) :: ///-/- %% ?? __ == $ ++ .. /// PCT    456@@ ,, ! -- (( ) :: ///-/-%% ?? __ == $$ + . /// PCT
+    Set Subject Line Value    LISTE D ATTENTE CONFIRMEE
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Verify That Special Characters Are Accepted in Header and Ticket Text Fields For Send Itinerary
+
+Verify That Special Characters Are Accepted in Header and Ticket Text Fields For Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    IR
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Text Contains Expected Value    [NAME:txtHeader]    HEADER @ ! ( ) % ? = $ + // . , : - _ /
+    Verify Control Object Text Contains Expected Value    [NAME:txtTicket]    TICKET @ ! ( ) % ? = $ + // . , : - _ /
+    Set Header And Ticket Text Values    https://www.carlsonwagonlit.com\\    https://www.carlsonwagonlit.com\\
+    Click Panel    Air Fare
+    Click Panel    Delivery
+    Verify Tooltip Text Is Correct Using Coords    917    501    En-tête incorrect
+    Verify Tooltip Text Is Correct Using Coords    917    570    Billet non valide
+    Set Header And Ticket Text Values    https://www.carlsonwagonlit.com/content/cwt/global/en/home.html    https://www.carlsonwagonlit.com/content/cwt/global/en/home.html
+    Click Panel    Air Fare
+    Click Panel    Delivery
+    Set Header And Ticket Text Values    https://www.headertextfield.com.ph @,!--(-):%?__=$+.//-    @,!--(-):%?__=$+./- https://www.headertextfield.com.ph//
+    Set Subject Line Value    LISTE D ATTENTE CONFIRMEE
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Verify That Special Characters Are Accepted in Header and Ticket Text Fields For Amend Booking
+
+Send Itinerary Selecting Confirmatio And E-Ticket As Itinerary Type
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Click Finish PNR
+    Verify Queue Remark Is Written    PARWL2877    70    0    1
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Select E-Ticket Notification Radio Button
+    Click Finish PNR

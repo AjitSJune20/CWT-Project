@@ -1,0 +1,42 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../recap_verification.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Skip Remarks Are Written In The PNR
+    Open Power Express And Retrieve Profile    ${version}    TEST    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus UK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFour    CDGLHR/AAF    ${EMPTY}    Recap
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Skip Air Remark Is Written    TKTSUSPEND
+    Verify Skip Hotel Remark Is Written    HOTELSUSPEND
+    [Teardown]
+
+[AB] Verify That Skip Remarks Are Not Written In The PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Recap
+    Click Panel    Recap
+    Click Delete From Overrides Or Skip Entries
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    verify skip Hotel Remark Is Not Written    HOTELSUSPEND
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Skip Air Remark Is Written
+    [Arguments]    ${skip_air_remark}
+    Verify Specific Line Is Written In The PNR    ${skip_air_remark}
+
+Verify Skip Hotel Remark Is Written
+    [Arguments]    ${skip_hotel_remark}
+    Verify Specific Line Is Written In The PNR    ${skip_hotel_remark}
+
+verify skip Hotel Remark Is Not Written
+    [Arguments]    ${skip_hotel_remark}
+    Verify Specific Line Is Not Written In The PNR    ${skip_hotel_remark}

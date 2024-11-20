@@ -1,0 +1,3 @@
+*** Settings ***
+Force Tags        price_tracking
+Resource          ../../resources/panels/price_tracking.txt

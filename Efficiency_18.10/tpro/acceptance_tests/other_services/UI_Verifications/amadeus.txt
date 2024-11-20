@@ -1,0 +1,497 @@
+*** Settings ***
+Force Tags        form_of_payment
+Resource          ../../../../resources/common/global_resources.txt
+Resource          ../other_services_verification.txt
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../../../../resources/panels/other_svcs.txt
+Resource          ../../../../resources/api_resource/remarks_core.txt
+Resource          ../other_services_form_of_payment_control.txt
+Resource          ../other_services.txt
+
+*** Test Cases ***
+[HK][NB][OS] Verify That FOP Details Are Pre-populated When FOP is DC (WITHOUT GST)
+    [Documentation]    Coverage:    #Other Service (Non GST)    #24 EMERGENCY SERVICE FEE    #CWT    #Other Service (Visa Processing)    #VISA PROCESSING    #CWT VISA    #Other Service (Insurance)    #INSURANCE    #CWT
+    ...
+    ...    US875 FoP_Pre-population_when_CC_are_manually_entered_in_Client_Info_panel
+    ...
+    ...    US902 [SG] Display correct credit card vendors in exchange order FOP drop down list
+    [Tags]    us875    hk    us902
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC HK OS AUTOMATION    BEAR    HKOTHERS    SINMNL/ASQ    ${EMPTY}
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    DC    30569309025904    12/25
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    24 EMERGENCY SERVICE FEE    CWT
+    Verify FOP Details Are Correct    Credit Card (CC)    DC    ************5904    12    2025
+    Verify Card Vendor Types Are Correct    AX    DC    MC    CA    VI    TP
+    Unmask Credit Card Number
+    Verify FOP Details Are Correct    Credit Card (CC)    DC    XXXXXXXXXX5904    12    2025
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    135412345678911    09    2024
+    Click Finish PNR    panel=Other Svcs
+
+[HK][AB][OS] Verify That FOP Details Are Pre-populated When FOP is TP (VISA PROCESSING)
+    [Documentation]    Coverage:    #Other Service (Non GST)    #24 EMERGENCY SERVICE FEE    #CWT    #Other Service (Visa Processing)    #VISA PROCESSING    #CWT VISA    #Other Service (Insurance)    #INSURANCE    #CWT
+    ...
+    ...    US875 FoP_Pre-population_when_CC_are_manually_entered_in_Client_Info_panel
+    ...
+    ...    US902 [SG] Display correct credit card vendors in exchange order FOP drop down list
+    [Tags]    us875    hk    us902
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    TP    135412345678911    11/24
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    VISA PROCESSING    CWT VISA
+    Populate Visa Processing Panel Details    VISA VENDOR    VISA COUNTRY    Other    Single    Days    15
+    ...    Express    15    ${EMPTY}
+    Verify FOP Details Are Correct    Credit Card (CX)    TP    ************8911    11    2024
+    Verify Card Vendor Types Are Correct    AX    DC    MC    CA    VI    TP
+    Unmask Credit Card Number
+    Verify FOP Details Are Correct    Credit Card (CX)    TP    XXXXXXXXXXX8911    11    2024
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    378282246310005    11    2023
+    Click Finish PNR    panel=Other Svcs
+
+[HK][AB][OS][1st] Verify That FOP Details Are Pre-populated When FOP is AX (INSURANCE)
+    [Documentation]    Coverage:    #Other Service (Non GST)    #24 EMERGENCY SERVICE FEE    #CWT    #Other Service (Visa Processing)    #VISA PROCESSING    #CWT VISA    #Other Service (Insurance)    #INSURANCE    #CWT
+    ...
+    ...    US875 FoP_Pre-population_when_CC_are_manually_entered_in_Client_Info_panel
+    ...
+    ...    US902 [SG] Display correct credit card vendors in exchange order FOP drop down list
+    [Tags]    us875    hk    us902
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    10/23
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    INSURANCE    CWT
+    Verify FOP Details Are Correct    Credit Card (CC)    AX    ************0005    10    2023
+    Verify Card Vendor Types Are Correct    AX    DC    MC    CA    VI    TP
+    Unmask Credit Card Number
+    Verify FOP Details Are Correct    Credit Card (CC)    AX    XXXXXXXXXXX0005    10    2023
+    Select Form Of Payment (FOP)    Credit Card (CX)    TP    371449635398431    09    2022
+    Click Tab In Other Services Panel    Insurance
+    Select Plan Selected    Family Budget Plan
+    Click Finish PNR    panel=Other Svcs
+
+[HK][OS][2nd] Verify That FOP Details Are Pre-populated When FOP is AX (WITHOUT GST)
+    [Documentation]    Coverage:    #Other Service (Non GST)    #24 EMERGENCY SERVICE FEE    #CWT    #Other Service (Visa Processing)    #VISA PROCESSING    #CWT VISA    #Other Service (Insurance)    #INSURANCE    #CWT
+    ...
+    ...    US875 FoP_Pre-population_when_CC_are_manually_entered_in_Client_Info_panel
+    ...
+    ...    US902 [SG] Display correct credit card vendors in exchange order FOP drop down list
+    [Tags]    us875    hk    us902
+    Click Other Services
+    Select Product And Vendor    24 EMERGENCY SERVICE FEE    CWT
+    Verify FOP Details Are Correct    Credit Card (CC)    AX    ************0005    10    2023
+    Verify Card Vendor Types Are Correct    AX    DC    MC    CA    VI    TP
+    Unmask Credit Card Number
+    Verify FOP Details Are Correct    Credit Card (CC)    AX    XXXXXXXXXXX0005    10    2023
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    08    2020
+    Click Finish PNR    panel=Other Svcs
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG][NB][OS] Verify That FOP Details Are Pre-populated When FOP Is VI (GST)
+    [Documentation]    Coverage:    #GST    Despatch Charge    DESPATCH DEPARTMENT    #W/O GST    Air Penalty Fee    CARLSON WAGONLIT TRAVEL    #VISA COST    Visa Cost    VISA DEPARTMENT    #VISA HANDLING    Visa Handling Fee    Carlson Wagonlit GST
+    ...
+    ...    US875 FoP_Pre-population_when_CC_are_manually_entered_in_Client_Info_panel
+    ...
+    ...    US902 [SG] Display correct credit card vendors in exchange order FOP drop down list
+    [Tags]    us875    sg    us902
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SG OS AUTOMATION    BEAR    SGOTHERS    SINMNL/ASQ    ${EMPTY}
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    12/25
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Verify FOP Details Are Correct    Credit Card (CC)    VI    ************1111    12    2025
+    Verify Card Vendor Types Are Correct    AX    DC    MC    CA    VI    TP
+    ...    JC
+    Unmask Credit Card Number
+    Verify FOP Details Are Correct    Credit Card (CC)    VI    XXXXXXXXXXXX1111    12    2025
+    Select Form Of Payment (FOP)    Credit Card (CC)    DC    5424000000000010    12    2024
+    Click Finish PNR    panel=Other Svcs
+
+[SG][AB][OS] Verify That FOP Details Are Pre-populated When FOP is CA (WITHOUT GST)
+    [Documentation]    Coverage:    #GST    Despatch Charge    DESPATCH DEPARTMENT    #W/O GST    Air Penalty Fee    CARLSON WAGONLIT TRAVEL    #VISA COST    Visa Cost    VISA DEPARTMENT    #VISA HANDLING    Visa Handling Fee    Carlson Wagonlit GST
+    ...
+    ...    US875 FoP_Pre-population_when_CC_are_manually_entered_in_Client_Info_panel
+    ...
+    ...    US902 [SG] Display correct credit card vendors in exchange order FOP drop down list
+    [Tags]    us875    sg    us902
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    CA    5499830000000015    11/24
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Airline Penalty Fee    CARLSON WAGONLIT TRAVEL
+    Verify FOP Details Are Correct    Credit Card (CC)    CA    ************0015    11    2024
+    Verify Card Vendor Types Are Correct    AX    DC    MC    CA    VI    TP
+    ...    JC
+    Unmask Credit Card Number
+    Verify FOP Details Are Correct    Credit Card (CC)    CA    XXXXXXXXXXXX0015    11    2024
+    Select Form Of Payment (FOP)    Credit Card (CC)    DC    135412345678911    11    2023
+    Click Finish PNR    panel=Other Svcs
+
+[SG][AB][OS][1st] Verify That FOP Details Are Pre-populated When FOP is AX (VISA COST)
+    [Documentation]    Coverage:    #GST    Despatch Charge    DESPATCH DEPARTMENT    #W/O GST    Air Penalty Fee    CARLSON WAGONLIT TRAVEL    #VISA COST    Visa Cost    VISA DEPARTMENT    #VISA HANDLING    Visa Handling Fee    Carlson Wagonlit GST
+    ...
+    ...    US875 FoP_Pre-population_when_CC_are_manually_entered_in_Client_Info_panel
+    ...
+    ...    US902 [SG] Display correct credit card vendors in exchange order FOP drop down list
+    [Tags]    us875    sg    us902
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    10/23
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Visa Cost    VISA DEPARTMENT
+    Verify FOP Details Are Correct    Credit Card (CX)    AX    ************0005    10    2023
+    Verify Card Vendor Types Are Correct    AX    DC    MC    CA    VI    TP
+    ...    JC
+    Unmask Credit Card Number
+    Verify FOP Details Are Correct    Credit Card (CX)    AX    XXXXXXXXXXX0005    10    2023
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    09    2022
+    Populate Visa Processing Panel Details    VISA VENDOR    VISA COUNTRY    Other    Single    Day(s)    15
+    ...    Express    15    ${EMPTY}
+    Click Finish PNR    panel=Other Svcs
+
+[SG][OS][2nd] Verify That FOP Details Are Pre-populated When FOP Is AX (VISA HANDLING)
+    [Documentation]    Coverage:    #GST    Despatch Charge    DESPATCH DEPARTMENT    #W/O GST    Air Penalty Fee    CARLSON WAGONLIT TRAVEL    #VISA COST    Visa Cost    VISA DEPARTMENT    #VISA HANDLING    Visa Handling Fee    Carlson Wagonlit GST
+    ...
+    ...    US875 FoP_Pre-population_when_CC_are_manually_entered_in_Client_Info_panel
+    ...
+    ...    US902 [SG] Display correct credit card vendors in exchange order FOP drop down list
+    [Tags]    us875    sg    us902
+    Click Other Services
+    Select Product And Vendor    Visa Handling Fee    Carlson Wagonlit GST
+    Verify FOP Details Are Correct    Credit Card (CX)    AX    ************0005    10    2023
+    Verify Card Vendor Types Are Correct    AX    DC    MC    CA    VI    TP
+    ...    JC
+    Unmask Credit Card Number
+    Verify FOP Details Are Correct    Credit Card (CX)    AX    XXXXXXXXXXX0005    10    2023
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    09    2022
+    Populate Visa Processing Panel Details    VISA VENDOR    VISA COUNTRY    Other    Single    Day(s)    15
+    ...    Express    15    ${EMPTY}
+    Click Finish PNR    panel=Other Svcs
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG][NB][OS] Verify That FOP Details Are Pre-populated When FOP Is VI And Servicing Option Include JTB Client Is Not Defined
+    [Documentation]    Coverage:    #GST    Despatch Charge    DESPATCH DEPARTMENT    #W/O GST    Air Penalty Fee    CARLSON WAGONLIT TRAVEL    #VISA COST    Visa Cost    VISA DEPARTMENT    #VISA HANDLING    Visa Handling Fee    Carlson Wagonlit GST
+    ...
+    ...    US875 FoP_Pre-population_when_CC_are_manually_entered_in_Client_Info_panel
+    ...
+    ...    US902 [SG] Display correct credit card vendors in exchange order FOP drop down list
+    [Tags]    us875    sg    us902
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN SG    BEAR    LEN    SINMNL/ASQ    ${EMPTY}
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    12/25
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Verify FOP Details Are Correct    Credit Card (CC)    VI    ************1111    12    2025
+    Verify Card Vendor Types Are Correct    AX    DC    MC    CA    VI    TP
+    Unmask Credit Card Number
+    Verify FOP Details Are Correct    Credit Card (CC)    VI    XXXXXXXXXXXX1111    12    2025
+    Select Form Of Payment (FOP)    Credit Card (CC)    DC    5424000000000010    12    2024
+    Click Finish PNR    panel=Other Svcs
+
+[SG][NB][OS] Verify MCO/MPD Tab Behaves Correctly For AA Segment Booking Fee
+    [Tags]    sg    horton    us512
+    Create PNR Using Credit Card As FOP    SG
+    Click Other Services
+    Select Product And Vendor    AA SEGMENT BOOKING FEE    BANK SETTLEMENT PLAN
+    Click Tab In Other Services Panel    MCO/MPD
+    Tick Request MCO Checkbox
+    Populate Required MCO Info Fields    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3
+    Populate MCO Free Text Remark    Remarks
+    Populate Optional MCO Info Fields    Populating Issue In Exchange    a    b    c
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Tab In Other Services Panel    MI
+    Populate MI Fields    4444    4444    abc    bb
+    Select MI Realised Saving Code    RF - RESTRICTED FARE ACCEPTED
+    Select MI Missed Saving Code    I - PASSENGER BOOKED TOO LATE
+    Select MI Class Of Service    FC - First Class Corporate Fare
+    Click Tab In Other Services Panel    MCO/MPD
+    UnTick Request MCO Checkbox
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Tick Request MCO Checkbox
+    Populate Required MCO Info Fields    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3
+    Populate MCO Free Text Remark    Remarks
+    Populate Optional MCO Info Fields    Populating Issue In Exchange    a    b    c
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+
+[SG][AOS] Verify MCO/MPD Tab Retrieves All Values During Amend Process
+    [Tags]    sg    horton    us512
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000.00    USD
+    ...    44.00    3.00    Populating Issue In Exchange    a    b    c
+    Verify Remarks in MCO/MPD tab    Remarks
+    UnTick Request MCO Checkbox
+    Tick Request MCO Checkbox
+    Verify MCO Info Field Values    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000.00    USD
+    ...    44.00    3.00    Populating Issue In Exchange    a    b    c
+    Verify Remarks in MCO/MPD tab    Remarks
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Tab In Other Services Panel    MI
+    Populate MI Fields    4444    4444    abc    bb
+    Select MI Realised Saving Code    RF - RESTRICTED FARE ACCEPTED
+    Select MI Missed Saving Code    I - PASSENGER BOOKED TOO LATE
+    Select MI Class Of Service    FC - First Class Corporate Fare
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000.00    USD
+    ...    44.00    3.00    Populating Issue In Exchange    a    b    c
+    Verify Remarks in MCO/MPD tab    Remarks
+
+[SG][OS] Verify MCO/MPD Tab Behaves Correctly For BSP Ticket And MPD
+    [Tags]    sg    horton    us512
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    BSP Ticket And MPD    BANK SETTLEMENT PLAN
+    Click Tab In Other Services Panel    MCO/MPD
+    Tick Request MCO Checkbox
+    Populate Required MCO Info Fields    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3
+    Populate MCO Free Text Remark    Remarks_updated
+    Populate Optional MCO Info Fields    Populating Issue In Exchange    a    b    c
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Tab In Other Services Panel    MI
+    Populate MI Fields    4444    4444    abc    bb
+    Select MI Realised Saving Code    RF - RESTRICTED FARE ACCEPTED
+    Select MI Missed Saving Code    I - PASSENGER BOOKED TOO LATE
+    Select MI Class Of Service    FC - First Class Corporate Fare
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000.00    USD
+    ...    44.00    3.00    Populating Issue In Exchange    a    b    c
+    Verify Remarks in MCO/MPD tab    Remarks_updated
+    UnTick Request MCO Checkbox
+    Tick Request MCO Checkbox
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Tab In Other Services Panel    MI
+    Populate MI Fields    4444    4444    abc    bb
+    Select MI Realised Saving Code    RF - RESTRICTED FARE ACCEPTED
+    Select MI Missed Saving Code    I - PASSENGER BOOKED TOO LATE
+    Select MI Class Of Service    FC - First Class Corporate Fare
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000.00    USD
+    ...    44.00    3.00    Populating Issue In Exchange    a    b    c
+    Verify Remarks in MCO/MPD tab    Remarks_updated
+    UnTick Request MCO Checkbox
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK][NB][OS] Verify MCO/MPD Tab Behaves Correctly For BSP Air Ticket
+    [Tags]    hk    horton    us512
+    Create PNR Using Credit Card As FOP    HK
+    Click Other Services
+    Select Product And Vendor    BSP AIR TICKET    NORTHWEST AIRLINES
+    Click Tab In Other Services Panel    MCO/MPD
+    Tick Request MCO Checkbox
+    Populate Required MCO Info Fields    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3
+    Populate MCO Free Text Remark    Free Text Remarks
+    Populate Optional MCO Info Fields    d    a    b    c
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Tab In Other Services Panel    MI
+    Populate MI Fields    4444    4444    abc    bb
+    Select MI Realised Saving Code    RF - RESTRICTED FARE ACCEPTED
+    Select MI Missed Saving Code    I - PASSENGER BOOKED TOO LATE
+    Select MI Class Of Service    FC - First Class Corporate Fare
+    Click Tab In Other Services Panel    MCO/MPD
+    UnTick Request MCO Checkbox
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Tick Request MCO Checkbox
+    Populate Required MCO Info Fields    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3
+    Populate MCO Free Text Remark    Free Text Remarks
+    Populate Optional MCO Info Fields    d    a    b    c
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+
+[HK][AOS] Verify MCO/MPD Tab Retrieves All Values During Amend Process
+    [Tags]    hk    horton    us512
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3    d    a    b    c
+    Verify Remarks in MCO/MPD tab    Free Text Remarks
+    UnTick Request MCO Checkbox
+    Tick Request MCO Checkbox
+    Verify MCO Info Field Values    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3    d    a    b    c
+    Verify Remarks in MCO/MPD tab    Free Text Remarks
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Tab In Other Services Panel    MI
+    Populate MI Fields    4444    4444    abc    bb
+    Select MI Realised Saving Code    RF - RESTRICTED FARE ACCEPTED
+    Select MI Missed Saving Code    I - PASSENGER BOOKED TOO LATE
+    Select MI Class Of Service    FC - First Class Corporate Fare
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3    d    a    b    c
+    Verify Remarks in MCO/MPD tab    Free Text Remarks
+
+[HK][OS] Verify MCO/MPD Tab Behaves Correctly For Additional BSP Air
+    [Tags]    hk    horton    us512
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    ADDITIONAL BSP AIR    CONTINENTAL AIRLINES
+    Click Tab In Other Services Panel    MCO/MPD
+    Tick Request MCO Checkbox
+    Populate Required MCO Info Fields    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3
+    Populate MCO Free Text Remark    Remarks_50
+    Populate Optional MCO Info Fields    Test    a    b    c
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Tab In Other Services Panel    MI
+    Populate MI Fields    4444    4444    abc    bb
+    Select MI Realised Saving Code    RF - RESTRICTED FARE ACCEPTED
+    Select MI Missed Saving Code    I - PASSENGER BOOKED TOO LATE
+    Select MI Class Of Service    FC - First Class Corporate Fare
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3    Test    a    b    c
+    Verify Remarks in MCO/MPD tab    Remarks_50
+    UnTick Request MCO Checkbox
+    Tick Request MCO Checkbox
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Tab In Other Services Panel    MI
+    Populate MI Fields    4444    4444    abc    bb
+    Select MI Realised Saving Code    RF - RESTRICTED FARE ACCEPTED
+    Select MI Missed Saving Code    I - PASSENGER BOOKED TOO LATE
+    Select MI Class Of Service    FC - First Class Corporate Fare
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    jkfhjkwergwe    afsaggwerwer    erqwrsdafasf    Cash    1000    USD
+    ...    44    3    Test    a    b    c
+    Verify Remarks in MCO/MPD tab    Remarks_50
+    UnTick Request MCO Checkbox
+    Click Tab In Other Services Panel    Ticket Info
+    Populate Airline Code And Ticket Number    123    2222222222
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    4444444444
+    Tick Select All Segments
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    MCO/MPD
+    Verify MCO Info Field Values    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        contact_tracking_integration

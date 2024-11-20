@@ -1,0 +1,33 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Get BTA Description Value
+    ${bta_description}    Get Control Text Value    [NAME:BtaDescriptionTextBox]
+    Set Suite Variable    ${bta_description}
+    [Return]    ${bta_description}
+
+Get Date Value
+    Comment    ${additional_info_date}    Get Control Text Value    [NAME:dtpDate]
+    ${additional_info_date}    Get Control Edit Value    mskTextDate
+    Set Suite Variable    ${additional_info_date}
+    ${info_date_for_remarks}    Convert Date To Gds Format    ${additional_info_date}    %d/%m/%Y    true
+    Set Suite Variable    ${info_date_for_remarks}
+    [Return]    ${additional_info_date}
+
+Get Description From Additional Information
+    ${description}    Get Control Text Value    [NAME:DescriptionTextBox]
+    Set Suite Variable    ${description}
+    [Return]    ${description}
+
+Get Exchange Order Value
+    ${exchange_order}    Get Control Text Value    [NAME:ExhangeOrderNumberTextBox]
+    Set Suite Variable    ${exchange_order}
+    [Return]    ${exchange_order}
+
+Get Other Services Additional Information Details
+    Get Description From Additional Information
+    Get BTA Description Value
+    Get Date Value
+    Get Exchange Order Value
+    [Teardown]    Take Screenshot

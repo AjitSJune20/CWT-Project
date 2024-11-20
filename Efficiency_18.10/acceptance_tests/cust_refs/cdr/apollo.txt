@@ -1,0 +1,176 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../cust_refs_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Show All Client Defined References Checkbox Is Disabled By Default
+    [Tags]    us1434    valid_fail    de7376
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 15 - Auto ¦ US1434    AutoFifteenEight    NoramTrvlrThree
+    Click New Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Tick Checkbox    ${check_box_show_all_cdr}
+    Verify CDR Value Is Correct    Matrix DP Code    ${EMPTY}
+    Verify CDR Value Is Correct    Reason for Travel    ${EMPTY}
+    Verify CDR Value Is Correct    Dept Name    BRNDM
+    Set CDR Value    Matrix DP Code    Z150
+    Set CDR Value    Reason for Travel    GROUP EVENT
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Update PNR
+    Book Flight X Months From Now    LAXSFO+AA    01Y1    T:$BS1    5    1
+    Create Manual Ticketing Line For Apollo
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    Matrix DP Code    Z150
+    Verify CDR Value Is Correct    Reason for Travel    GROUP EVENT
+    Verify CDR Value Is Correct    Dept Name    BRNDM
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport
+    Verify Specific Line Is Written In The PNR    G*DP/Z150
+    Verify Specific Line Is Written In The PNR    U-11-GROUP EVENT
+    Verify Specific Line Is Written In The PNR    U-8-BRNDM
+
+[AB] Verify That Show All Client Defined References Checkbox Is Disabled By Default
+    [Tags]    us1434    valid_fail    de7376
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Verify CDR Fields Is Not Visible Upon Load In Amend Booking Flow
+    Tick Checkbox    ${check_box_show_all_cdr}
+    Verify CDR Value Is Correct    Matrix DP Code    Z150
+    Verify CDR Value Is Correct    Reason for Travel    GROUP EVENT
+    Verify CDR Value Is Correct    Dept Name    BRNDM
+    Set CDR Value    Dept Name    EXECO
+    Verify CDR Value Is Correct    Dept Name    EXECO
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Booking Worfklow For CDR If Simultaneous Change Error Is Displayed
+    Enter Specific Command On Native GDS    *R
+    Enter Specific Command On Native GDS    *R
+    Retrieve PNR Details From Travelport
+    Verify Specific Line Is Written In The PNR    G*DP/Z150
+    Verify Specific Line Is Written In The PNR    U-11-GROUP EVENT
+    Verify Specific Line Is Written In The PNR    U-8-EXECO
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB RB] Verify All Mandatory And Optional Mandatory Table Controlled CDR Fields
+    [Tags]    us506    legacy
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo Legacy - Auto ¦ US506    AutoLegacy    NoramTrvlrTwelve
+    Click New Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    BUS Unit Name    AAA.12
+    Set CDR Value    Cost Center    A-1*23
+    Set CDR Value    GRP CODE    GRP10
+    Set CDR Value    NSI Test SU Dept Code    A-12
+    Set CDR Value    T-NSI Div Name    A.AA/AA*AA
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Verify All Panels Are Green
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    MSPORD+AA    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    BUS Unit Name    AAA.12
+    Set CDR Value    Cost Center    A-1*23
+    Set CDR Value    GRP CODE    GRP10
+    Set CDR Value    NSI Test SU Dept Code    A-12
+    Set CDR Value    T-NSI Div Name    A.AA/AA*AA
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U-13-AAA.12
+    Verify Specific Line Is Written In The PNR    U-12-A-1*23
+    Verify Specific Line Is Written In The PNR    U-14-GRP10
+    Verify Specific Line Is Written In The PNR    U-18-A-12
+    Verify Specific Line Is Written In The PNR    U-17-A.AA/AA*AA
+
+[AB] Verify All Mandatory And Optional Mandatory Table Controlled CDR Fields
+    [Tags]    us506    legacy
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    BUS Unit Name    zzzzzzzzzzzz
+    Set CDR Value    Cost Center    zzzzzzzzzzzz
+    Set CDR Value    GRP CODE    zzzzzzzzzzzz
+    Set CDR Value    NSI Test SU Dept Code    zzzzzzzzzzzz
+    Set CDR Value    T-NSI Div Name    zzzzzzzzzzzz
+    Verify Red Error Icon Existing In Selected Panel    Cust Refs
+    Set CDR Value    BUS Unit Name    AAA.12
+    Set CDR Value    Cost Center    A-1*23
+    Set CDR Value    GRP CODE    GRP10
+    Set CDR Value    NSI Test SU Dept Code    A-12
+    Set CDR Value    T-NSI Div Name    A.AA/AA*AA
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Verify Red Error Icon Existing In Selected Panel    Cust Refs
+    Click Panel    Client Info
+    Verify All Panels Are Green
+    Click Finish PNR
+    Re-Execute Amend Booking Worfklow For CDR Verification If Simultaneous Change Error Is Displayed
+    Enter Specific Command On Native GDS    *R
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U-13-AAA.12
+    Verify Specific Line Is Written In The PNR    U-12-A-1*23
+    Verify Specific Line Is Written In The PNR    U-14-GRP10
+    Verify Specific Line Is Written In The PNR    U-18-A-12
+    Verify Specific Line Is Written In The PNR    U-17-A.AA/AA*AA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Worfklow For CDR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Verify CDR Fields Is Not Visible Upon Load In Amend Booking Flow
+    Tick Checkbox    ${check_box_show_all_cdr}
+    Verify CDR Value Is Correct    Matrix DP Code    Z150
+    Verify CDR Value Is Correct    Reason for Travel    GROUP EVENT
+    Verify CDR Value Is Correct    Dept Name    BRNDM
+    Set CDR Value    Dept Name    EXECO
+    Verify CDR Value Is Correct    Dept Name    EXECO
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+
+Amend Booking Worfklow For CDR Verification
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    BUS Unit Name    zzzzzzzzzzzz
+    Set CDR Value    Cost Center    zzzzzzzzzzzz
+    Set CDR Value    GRP CODE    zzzzzzzzzzzz
+    Set CDR Value    NSI Test SU Dept Code    zzzzzzzzzzzz
+    Set CDR Value    T-NSI Div Name    zzzzzzzzzzzz
+    Verify Red Error Icon Existing In Selected Panel    Cust Refs
+    Set CDR Value    BUS Unit Name    AAA.12
+    Set CDR Value    Cost Center    A-1*23
+    Set CDR Value    GRP CODE    GRP10
+    Set CDR Value    NSI Test SU Dept Code    A-12
+    Set CDR Value    T-NSI Div Name    A.AA/AA*AA
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Verify Red Error Icon Existing In Selected Panel    Cust Refs
+    Click Panel    Client Info
+    Verify All Panels Are Green
+    Click Finish PNR
+
+Create Manual Ticketing Line For Apollo
+    ${ticket_date} =    Subtract Days In Gds Format    ${departure_date}    1
+    Enter GDS Command    C:2T:TAU/${ticket_date}
+    [Teardown]    Take Screenshot

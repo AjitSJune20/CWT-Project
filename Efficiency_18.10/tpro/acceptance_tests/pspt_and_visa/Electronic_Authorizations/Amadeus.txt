@@ -1,0 +1,247 @@
+*** Settings ***
+Force Tags        apac    amadeus
+Resource          ../../../../resources/common/common_library.txt
+Resource          ../../../../resources/common/core.txt
+Resource          ../../air_fare/air_fare_verification.txt
+Resource          ../pspt_and_visa_verification.txt
+Resource          ../../../../acceptance_tests/complete/complete_verification.txt
+
+*** Test Cases ***
+[NB IN] Verify That For International Trip, Passport Details With US ESTA Are Captured And Written
+    [Tags]    us320    in    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION IN - US303    BEAR    INTHREEZEROTHREE
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Book Flight X Months From Now    NRTJFK/AAA    SS1Y1    FXP/S3    5    10
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Domestic Trip Checkbox Is Unticked
+    Delete Passport    1
+    Select Is Doc Valid    No    1
+    Tick Use Document
+    Tick Transit Checkbox    Japan
+    Tick Transit Checkbox    Singapore
+    Tick Transit Checkbox    United States
+    Click Check Visa Requirements
+    Verify ESTA Header In The Lower Right Section Is Displayed    Electronic Authorizations
+    Verify ESTA/ETA Warning Message Is Displayed    If the passenger is travelling under the visa waiver program they must submit and receive an Electronic authorization to travel.
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Address    Street    City    India    Alaska    1111
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written
+
+[AB IN] Verify That For International Trip, Passport Details With US ESTA Are Captured And Written
+    [Tags]    us320    in    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Travel Document Details Are Correct    Passport    Finland    1234567890    12/22/2020    ${EMPTY}
+    Verify Visa Requirement Per Country    Japan    Not Required    Business    Tick
+    Verify Visa Requirement Per Country    Singapore    Not Required    Business    Tick
+    Verify Visa Requirement Per Country    United States    Required    Business    Tick
+    Add And Select New Passport    2    Passport: Normal    Australia    1111111111    Yes
+    Click Check Visa Requirements
+    Verify ESTA Header In The Lower Right Section Is Displayed    Electronic Authorizations
+    Verify ESTA/ETA Warning Message Is Displayed    If the passenger is travelling under the visa waiver program they must submit and receive an Electronic authorization to travel.
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Address    Street    City    India    Alaska    1111
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Select Delivery Method    E-Ticket
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That For International Trip, Passport Details With US ESTA Are Captured And Written
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That For International Trip, Passport Details With AU ESTA Are Captured And Written
+    [Tags]    us320    hk    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION HK - US303    BEAR    HKTHREEZEROTHREE
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Book Flight X Months From Now    NRTSYD/AJL    SS1Y1    FXP/S2    5    5
+    Book Flight X Months From Now    SYDKUL/AMH    SS1Y1    FXP/S3    5    10
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Domestic Trip Checkbox Is Unticked
+    Delete Passport    2
+    Select Is Doc Valid    No
+    Tick Use Document
+    Tick Transit Checkbox    Japan
+    Tick Transit Checkbox    Australia
+    Tick Transit Checkbox    Malaysia
+    Click Check Visa Requirements
+    Verify ESTA Header In The Lower Right Section Is Displayed    Electronic Authorizations
+    Verify ESTA/ETA Warning Message Is Displayed    If the passenger is travelling under the visa waiver program they must submit and receive an Electronic authorization to travel.
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written
+
+[AB HK] Verify That For International Trip, Passport Details With AU ESTA Are Captured And Written
+    [Tags]    us320    hk    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Get Current Date For Hongkong Passport Expiry
+    Verify Travel Document Details Are Correct    Passport    Denmark    1234512345    12/22/2020    No    0
+    Verify Travel Document Details Are Correct    Passport    Austria    1111111111    12/15/2020    ${EMPTY}    1
+    Verify Travel Document Details Are Correct    Passport    Belgium    2323232323    12/29/2020    ${EMPTY}    2
+    Verify Travel Document Details Are Correct    Passport: Normal    Hong Kong    ${EMPTY}    ${hk_current_date}    ${EMPTY}    3
+    Tick Use Document    1
+    Select Is Doc Valid    No    1
+    Tick Transit Checkbox    Australia
+    Click Check Visa Requirements
+    Verify ESTA Header In The Lower Right Section Is Displayed    Electronic Authorizations
+    Verify ESTA/ETA Warning Message Is Displayed    If the passenger is travelling under the visa waiver program they must submit and receive an Electronic authorization to travel.
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That For International Trip, Passport Details With AU ESTA Are Captured And Written
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That For International Trip, Passport Details With CA ESTA Are Captured And Written
+    [Tags]    us320    sg    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION SG - US303    BEAR    SGTHREEZEROTHREE
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    NRTYVR/AAC    SS1Y1    FXP/S2    5    5
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Domestic Trip Checkbox Is Unticked
+    Select Is Doc Valid    Unable to confirm
+    Verify Travel Document Details Are Correct    Passport    Singapore    3333333333    12/15/2020    Unable to confirm
+    Click Check Visa Requirements
+    Verify ESTA Header In The Lower Right Section Is Displayed    Electronic Authorizations
+    Verify ESTA/ETA Warning Message Is Displayed    If the passenger is travelling under the visa waiver program they must submit and receive an Electronic authorization to travel.
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written
+
+[AB SG] Verify That For International Trip, Passport Details With CA AND AU ESTA Are Captured And Written
+    [Tags]    us320    sg    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Travel Document Details Are Correct    Passport    Singapore    3333333333    12/15/2020    Unable to confirm
+    Book Flight X Months From Now    YVRSYD/AAC    SS1Y1    FXP/S3    5    10
+    Click Read Booking
+    Select Is Doc Valid    Yes
+    Click Check Visa Requirements
+    Verify ESTA Header In The Lower Right Section Is Displayed    Electronic Authorizations
+    Verify ESTA/ETA Warning Message Is Displayed    If the passenger is travelling under the visa waiver program they must submit and receive an Electronic authorization to travel.
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That For International Trip, Passport Details With CA AND AU ESTA Are Captured And Written
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Visa Requirement Per Country
+    [Arguments]    ${country}    ${visa_required}    ${journey_type}    ${transit_tick}    # ${transit_ticked} Tick or Untick
+    ${row_number}    Get Field Index Using Country Name    ${country}
+    Run Keyword If    "${transit_tick.lower()}" == "tick"    Verify Checkbox Is Ticked    [NAME:cchkIsTransit${row_number}]
+    ...    ELSE    Verify Checkbox Is Unticked    [NAME:cchkIsTransit${row_number}]
+    Verify Control Object Text Value Is Correct    [NAME:ctxtCountries${row_number}]    ${country}
+    Verify Control Object Text Value Is Correct    [NAME:ccboVisa${row_number}]    ${visa_required}
+    Verify Control Object Text Value Is Correct    [NAME:ccboJourneyType${row_number}]    ${journey_type}
+
+Get Current Date For Hongkong Passport Expiry
+    ${hk_current_date}    SyexDateTimeLibrary.Get Current Date
+    Set Suite Variable    ${hk_current_date}
+
+Verify That For International Trip, Passport Details With US ESTA Are Captured And Written
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Travel Document Details Are Correct    Passport    Finland    1234567890    12/22/2020    ${EMPTY}
+    Verify Visa Requirement Per Country    Japan    Not Required    Business    Tick
+    Verify Visa Requirement Per Country    Singapore    Not Required    Business    Tick
+    Verify Visa Requirement Per Country    United States    Required    Business    Tick
+    Add And Select New Passport    2    Passport: Normal    Australia    1111111111    Yes
+    Click Check Visa Requirements
+    Verify ESTA Header In The Lower Right Section Is Displayed    Electronic Authorizations
+    Verify ESTA/ETA Warning Message Is Displayed    If the passenger is travelling under the visa waiver program they must submit and receive an Electronic authorization to travel.
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Address    Street    City    India    Alaska    1111
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Select Delivery Method    E-Ticket
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+
+Verify That For International Trip, Passport Details With AU ESTA Are Captured And Written
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Get Current Date For Hongkong Passport Expiry
+    Verify Travel Document Details Are Correct    Passport    Denmark    1234512345    12/22/2020    No    0
+    Verify Travel Document Details Are Correct    Passport    Austria    1111111111    12/15/2020    ${EMPTY}    1
+    Verify Travel Document Details Are Correct    Passport    Belgium    2323232323    12/29/2020    ${EMPTY}    2
+    Verify Travel Document Details Are Correct    Passport: Normal    Hong Kong    ${EMPTY}    ${hk_current_date}    ${EMPTY}    3
+    Tick Use Document    1
+    Select Is Doc Valid    No    1
+    Tick Transit Checkbox    Australia
+    Click Check Visa Requirements
+    Verify ESTA Header In The Lower Right Section Is Displayed    Electronic Authorizations
+    Verify ESTA/ETA Warning Message Is Displayed    If the passenger is travelling under the visa waiver program they must submit and receive an Electronic authorization to travel.
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+
+Verify That For International Trip, Passport Details With CA AND AU ESTA Are Captured And Written
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Travel Document Details Are Correct    Passport    Singapore    3333333333    12/15/2020    Unable to confirm
+    Book Flight X Months From Now    YVRSYD/AAC    SS1Y1    FXP/S3    5    10
+    Click Read Booking
+    Select Is Doc Valid    Yes
+    Click Check Visa Requirements
+    Verify ESTA Header In The Lower Right Section Is Displayed    Electronic Authorizations
+    Verify ESTA/ETA Warning Message Is Displayed    If the passenger is travelling under the visa waiver program they must submit and receive an Electronic authorization to travel.
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR

@@ -1,0 +1,148 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../resources/common/utilities.txt
+Resource          ../../resources/common/core.txt
+Resource          ../../resources/panels/client_info.txt
+Resource          ../gds/gds_verification.txt
+Resource          ../recap/recap_verification.txt
+
+*** Keywords ***
+Verify Contact Information In RCVD From Field Exists
+    [Arguments]    ${str_line}
+    Verify Specific Line Is Written In The PNR    ${str_line}
+
+Verify Create Shell Error Message
+    Verify Panel Is Red    Cust Refs
+    Sleep    2
+    Comment    ${errormatch} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/shell_pnr_error.png    ${similarity}    ${timeout}
+    Comment    ${errormatchfr} =    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/shell_pnr_error_fr.png    ${similarity}    ${timeout}
+    Comment    Run Keyword and Continue On Failure    Should Be True    "${errormatch}" == "True" or "${errormatchfr}" == "True"    "Update Aborted - Please validate all activity panels (Mise a jour interrompue - Veuillez valider tous les panneaux d'activite)" error message is displayed
+    ${expected_error_message} =    Set Variable If    "${locale}" == "fr-FR"    Mise à jour interrompue - Veuillez valider tous les panneaux d'activité    Update Aborted - Please validate all activity panels
+    ${actual_error_message} =    Get Status Strip Text
+    Should Be Equal As Strings    ${expected_error_message}    ${actual_error_message}
+    [Teardown]    Take Screenshot
+
+Verify Create Shell Is Visible And Enabled
+    Verify Control Object Is Visible    [NAME:btnShell]
+    [Teardown]    Take Screenshot
+
+Verify Default Form Of Payment
+    [Arguments]    ${expected_fop}
+    ${actual_fop} =    Get Form Of Payment Value
+    Verify Actual Value Matches Expected Value    ${actual_fop}    ${expected_fop}
+
+Verify FOP Line in Remarks
+    [Arguments]    ${expected_fop}
+    Verify Text Contains Expected Value    ${pnr_details}    ${expected_fop}
+
+Verify Failed Form Of Payment Update Message
+    Sleep    4
+    Activate Power Express Window
+    ${expected_failed_fop_message}    Set Variable If    '${locale}' == 'fr-FR'    La mise à jour de la forme de paiement a échoué    '${locale}' == 'de-DE'    Aktualisierung der FOP fehlgeschlagen    Form of Payment Update Failed
+    ${actual_failed_fop_message}    Get Status Strip Text
+    Run Keyword And Continue On Failure    Should Be Equal As Strings    ${expected_failed_fop_message}    ${actual_failed_fop_message}
+
+Verify Form Of Payment Is Not Shown In Alternate FOP Tab
+    [Arguments]    ${expected_fop}
+    : FOR    ${index}    IN RANGE    1    51
+    \    ${is_visible}    Control Command    ${title_power_express}    ${EMPTY}    [NAME:lblFOP${index}]    IsVisible
+    \    ...    ${EMPTY}
+    \    Exit For Loop If    ${is_visible} == 0
+    \    ${current_fop}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:lblFOP${index}]
+    \    Run Keyword If    "${current_fop}" == "${expected_fop}"    Run Keyword And Continue On Failure    FAIL    Form of Payment "${expected_fop}" is available in Alternate FOP tab.
+    \    Exit For Loop If    "${current_fop}" == "${expected_fop}"
+
+Verify Form Of Payment Is Not Shown In FOP Droplist
+    [Arguments]    @{expected_fop}
+    ${dropdown_values} =    Get Value From Dropdown List    ${combo_form_of_payment}
+    : FOR    ${dropdown_value}    IN    @{expected_fop}
+    \    List Should Not Contain Value    ${dropdown_values}    ${dropdown_value}
+    Log    Expected FOP: ${expected_fop}
+    Log    Actual FOP: ${dropdown_values}
+
+Verify Form Of Payment Is Shown In Alternate FOP Tab
+    [Arguments]    ${expected_fop}
+    : FOR    ${index}    IN RANGE    1    51
+    \    ${is_visible}    Control Command    ${title_power_express}    ${EMPTY}    [NAME:lblFOP${index}]    IsVisible
+    \    ...    ${EMPTY}
+    \    Run Keyword If    ${is_visible} == 0    Run Keyword And Continue On Failure    FAIL    Form of Payment "${expected_fop}" is not available in Alternate FOP tab.
+    \    Exit For Loop If    ${is_visible} == 0
+    \    ${current_fop}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:lblFOP${index}]
+    \    Exit For Loop If    "${current_fop}" == "${expected_fop}"
+
+Verify Form Of Payment Is Shown In FOP Droplist
+    [Arguments]    @{expected_fop}
+    ${dropdown_values} =    Get Dropdown Values    ${combo_form_of_payment}
+    : FOR    ${dropdown_value}    IN    @{expected_fop}
+    \    List Should Contain Value    ${dropdown_values}    ${dropdown_value}
+    Log    Expected FOP: ${expected_fop}
+    Log    Actual FOP: ${dropdown_values}
+
+Verify No Form Of Payment Update Message Was Displayed
+    Sleep    4
+    Activate Power Express Window
+    ${expected_sucessful_fop_message}    Set Variable If    '${locale}' == 'fr-FR'    La forme de paiement a été mise à jour    '${locale}' == 'de-DE'    Form of Payment aktualisiert    Form of Payment Updated
+    ${actual_successful_fop_message}    Get Status Strip Text
+    Run Keyword And Continue On Failure    Should Not Be Equal As Strings    ${expected_sucessful_fop_message}    ${actual_successful_fop_message}
+
+Verify Shell PNR Successfully Created
+    Verify Control Object Text Value Is Correct    ${label_end_message}    Booking File Created Successfully!
+    [Teardown]    Take Screenshot
+
+Verify Successful Form Of Payment Update Message
+    Sleep    4
+    Activate Power Express Window
+    ${expected_sucessful_fop_message}    Set Variable If    '${locale}' == 'fr-FR'    La forme de paiement a été mise à jour     '${locale}' == 'de-DE'    Form of Payment aktualisiert    Form of Payment Updated
+    ${actual_successful_fop_message}    Get Status Strip Text
+    ${actual_successful_fop_message}    Strip String    ${actual_successful_fop_message}
+    Run Keyword And Continue On Failure    Should Be Equal As Strings    ${expected_sucessful_fop_message}    ${actual_successful_fop_message}
+    [Teardown]    Take Screenshot
+
+Verify Unmasked Credit Card Has Correct Details In Alternate FOP Tab
+    [Arguments]    ${original_masked_cc}    ${expected_unmasked_cc}
+    : FOR    ${index}    IN RANGE    1    11
+    \    ${isVisible}    Control Command    Power Express    ${EMPTY}    [NAME:lblFOP${index}]    IsVisible
+    \    ...    ${EMPTY}
+    \    Run Keyword If    '${isVisible}' != '1'    Run Keyword And Continue On Failure    FAIL    Credit Card not found in Alternate FOP tab: ${original_masked_cc}
+    \    Exit For Loop If    '${isVisible}' != '1'
+    \    ${actual_fop_value}    Get Control Text Value    [NAME:lblFOP${index}]
+    \    Run Keyword If    '${actual_fop_value}' == '${original_masked_cc}'    Click Control Button    [NAME:cmdMaskCard${index}]
+    \    Run Keyword If    '${actual_fop_value}' == '${original_masked_cc}'    Verify Unable To Unmask Credit Card Status Message
+    \    Run Keyword If    '${actual_fop_value}' == '${original_masked_cc}'    Verify Control Object Text Value Is Correct    [NAME:lblFOP${index}]    ${expected_unmasked_cc}
+    \    Run Keyword If    '${actual_fop_value}' == '${original_masked_cc}'    Exit For Loop
+    [Teardown]    Take Screenshot
+
+Verify Update FOP button Is Not Displayed
+    Verify Control Object Is Not Visible    ${button_update_fop}
+    [Teardown]    Take Screenshot
+
+Verify Form Of Payment Card Is Masked On Client Info
+    Wait Until Control Object Is Visible    ${combo_form_of_payment}
+    ${fop_value}    Get Form Of Payment Value
+    ${status}    Run Keyword And Return Status    Should Contain    ${fop_value}    *
+    Run Keyword If    "${status}" == "True"    Log    Actual FOP: ${fop_value} is masked.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Actual FOP: ${fop_value} is unmasked.
+
+Verify Form Of Payment Card Is UnMasked On Client Info
+    ${fop_value}    Get Form Of Payment Value
+    ${status}    Run Keyword And Return Status    Should Contain    ${fop_value}    *
+    Run Keyword If    "${status}" == "False"    Log    Actual FOP: ${fop_value} is unmasked.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Actual FOP: ${fop_value} is masked.
+
+Verify Form Of Payment Card Selected Is Displayed On Client Info
+    [Arguments]    ${expected_fop}
+    ${fop_value}    Get Form Of Payment Value
+    Run Keyword If    "${fop_value}" == "${expected_fop}"    Log    FOP: ${fop_value} selected during new booking is displayed.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Expected FOP: ${expected_fop} is not the same FOP: ${fop_value} displayed.
+
+Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Verify Control Object Is Not Visible    [NAME:FopMerchantComboBox]
+
+Verify Unable To Unmask Credit Card Status Message
+    ${status}    Get Status Strip Text
+    Run Keyword And Continue On Failure    Should Not Be Equal As Strings    ${status.lower()}    unable to unmask credit card
+
+Verify FOP Is Written In The FP Line
+    Run Keyword If    "${str_card_type.upper()}" == "CASH" or "${str_card_type.upper()}" == "INVOICE"    Verify FOP Line in Remarks    FP CASH
+    ...    ELSE    Verify FOP Line in Remarks    FP CC${str_card_type}${str_card_number}/${str_exp_date}
+    Run Keyword If    "${str_card_type.upper()}" != "CASH" and "${str_card_type.upper()}" != "INVOICE"    Verify FOP Line in Remarks    FP CC${str_card_type}${str_card_number2}/${str_exp_date}

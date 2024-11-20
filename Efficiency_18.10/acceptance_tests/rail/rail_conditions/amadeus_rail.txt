@@ -1,0 +1,150 @@
+*** Settings ***
+Force Tags        amadeus_rail    emea
+Resource          ../../air_fare/air_fare_verification.txt
+Resource          ../rail_verification.txt
+
+*** Test Cases ***
+[NB] Verify Rail Display When Creating Rail Only With Multiple Rail Segments
+    Open Power Express And Retrieve Profile    ${version}    Test    U007KXR    fr-FR    kroxasfr    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Jump To Different PCC    PARWL210G
+    Create Shell PNR Without Retention Line    FR Amadeus 1 - SyEx ¦ FR - Rail LDT -1 or Travel Date    Moxom    Olivia
+    Create Round Trip Rail Booking Using Amadeus Rail Display Thru Web    PARWL210G    FRPLY    FRLPD    E-ticket    SNCF
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Rail
+    Click Panel    Rail
+    Verify E-Ticket Delivery Method
+    Populate E-Ticket Delivery Method Multiple Fare Quotes
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify General Rail Remarks
+    Verify E-ticket Rail Delivery Condition Itinerary Remarks
+    [Teardown]
+
+[AB] Verify Rail Display When Adding Car Segment
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Active Car Segment    CDG
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Rail
+    Click Panel    Rail
+    Verify E-Ticket Delivery Method
+    Populate E-Ticket Delivery Method Multiple Fare Quotes
+    Click Finish PNR    Amend Booking Add Car
+    Re-Execute Amend Booking Add Car If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify General Rail Remarks
+    Verify E-ticket Rail Delivery Condition Itinerary Remarks
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB] Verify That Rail Will Be Processed Correctly When Resa Rail Is Created
+    [Tags]    us4573    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    u007kxr    fr-FR    kroxasfr    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Jump To Different PCC    PARWL210G
+    Create Shell PNR Without Retention Line    FR Amadeus 1 - SyEx ¦ FR - Todays date    Moxom    David
+    Create Resa Rail Single TST    Moxom    David    Mr    18NOV1977    TKV    FRPARBEBMI
+    ...    BEBMIFRPAR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Rail
+    Click Panel    Rail
+    Verify Paper Ticket Delivery Method
+    Populate Paper Ticket Delivery Method Single Fare Quote
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify BOOKED BY RAIL DISPLAY Remark Is Not Written
+    Verify General Rail Remarks
+    Verify Paper Ticket Rail Delivery Condition Itinerary Remarks
+
+[AB] Verify That Rail Will Be Processed Correctly When Resa Rail Is Retained
+    [Tags]    us4573    resa_rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Rail
+    Click Panel    Rail
+    Verify Paper Ticket Delivery Method
+    Populate Paper Ticket Delivery Method Single Fare Quote
+    Click Finish PNR    Amend Booking Retain Resa Rail
+    Re-Execute Amend Booking Retain Resa Rail If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify BOOKED BY RAIL DISPLAY Remark Is Not Written
+    Verify General Rail Remarks
+    Verify Paper Ticket Rail Delivery Condition Itinerary Remarks
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+[NB] Verify That Rail Will Be Processed Correctly When Resa Rail Is Created With Air
+    [Tags]    resa_rail
+    Open Power Express And Retrieve Profile    ${version}    Test    u007kxr    fr-FR    kroxasfr    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Jump To Different PCC    PARWL210G
+    Create Shell PNR Without Retention Line    FR Amadeus - Mark ¦ OBT - KDS    Lasch    Steven
+    Create Resa Rail Single TST    Lasch    Steven    Mr    18NOV1977    TKD    FRLPDFRPLY
+    Book Segmented One Way Flight X Months From Now    BRUCDG    \    1
+    Book Segmented One Way Flight X Months From Now    CDGFRA    S4    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Rail
+    Click Panel    Rail
+    Verify Dematerialized Delivery Method
+    Populate Dematerialized Delivery Method Single Fare Quote
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RM BOOKED BY RAIL DISPLAY
+    Verify General Rail Remarks
+    Verify KDS Resa Rail Remarks
+    Verify Dematerialized Rail Delivery Condition Itinerary Remarks
+
+[AB] Verify That Rail Will Be Processed Correctly When Resa Rail Is Updated To Amadeus Rail
+    [Tags]    resa_rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Resa Rail Booking
+    Create One Way Rail Booking Using Amadeus Rail Display Thru Web    PARWL210G    FRLYS    FRPAR    E-billet    SNCF
+    Delete Air Segment    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Rail
+    Click Panel    Rail
+    Verify Dematerialized Delivery Method
+    Populate Dematerialized Delivery Method Single Fare Quote
+    Click Finish PNR
+    Re-Execute Amend Booking Update Amadeus Rail If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RM BOOKED BY RAIL DISPLAY
+    Verify General Rail Remarks
+    Verify KDS Amadeus Rail Display Remarks    S3
+    Verify Dematerialized Rail Delivery Condition Itinerary Remarks
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True    True
+
+*** Keywords ***
+Amend Booking Add Car
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Active Car Segment    CDG
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Rail
+    Click Panel    Rail
+    Verify E-Ticket Delivery Method
+    Populate E-Ticket Delivery Method Multiple Fare Quotes
+    Click Finish PNR    Amend Booking Add Car
+
+Amend Booking Retain Resa Rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Rail
+    Click Panel    Rail
+    Verify Paper Ticket Delivery Method
+    Populate Paper Ticket Delivery Method Single Fare Quote
+    Click Finish PNR    Amend Booking Retain Resa Rail
+
+Amend Booking Update Amadeus Rail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Resa Rail Booking
+    Delete Air Segment    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Rail
+    Click Panel    Rail
+    Verify Dematerialized Delivery Method
+    Populate Dematerialized Delivery Method Single Fare Quote
+    Click Finish PNR    Amend Booking Update Amadeus Rail

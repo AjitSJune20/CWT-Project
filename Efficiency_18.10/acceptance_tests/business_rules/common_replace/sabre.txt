@@ -1,0 +1,76 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB FR] Verify That Special Characters Are Replaced Upon Finish PNR
+    [Tags]    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    D33H
+    Set Client And Traveler    Sabre FR 15 - Auto ¦ US2447    AUTOFIFTEENTWELVE    OPTIMIZETRVLRONE
+    Click New Booking
+    Wait Until Progress Info is Completed
+    Book Flight X Months From Now    DENORD    01Y1    WPRQ    8
+    Click Read Booking
+    Wait Until Progress Info is Completed
+    Populate All Panels (Except Given Panels If Any)
+    Populate Delivery Panel With Default Values
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *R
+    Verify Email Line Is Written in the PNR    U*29-AUTOMATION**CARLSON.COM
+    Verify Specific Line Is Written In The PNR    CLIQUSER-TEST*EMAIL.COM
+    [Teardown]
+
+[AB FR] Verify That Cliquser Is Written To Another Remark Upon Finish PNR
+    [Tags]    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Sabre Red    \    *R
+    Verify Email Line Is Written in the PNR    U*29-AUTOMATION**CARLSON.COM
+    Verify Specific Line Is Written In The PNR    CLIQUSER-TEST*EMAIL.COM
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Click Finish PNR
+    Re-Execute Amend Workflow For Cliqusers If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *R
+    Verify Specific Line Is Written In The PNR    U*30-AUTOMATION**YAHOO.COM
+    Verify Specific Line Is Written In The PNR    U*31-TEST*EMAIL.COM
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Set Value In Pop Up
+    [Arguments]    ${pop_up_title}    ${pop_up_value}
+    Wait Until Window Exists    ${pop_up_title}
+    Win Activate    ${pop_up_title}
+    Set Control Text Value    ${edit_PopUpValueSearch}    ${pop_up_value}    ${pop_up_title}
+    Send    {ENTER}
+    [Teardown]    Take Screenshot
+
+Verify Email Line Is Written in the PNR
+    [Arguments]    ${PE_email}
+    ${pnr_details}    Replace String    ${pnr_details}    ${SPACE}    ${EMPTY}
+    ${pnr_details}    Replace String    ${pnr_details}    ${\n}    ${EMPTY}
+    Verify Text Contains Expected Value    ${pnr_details}    ${PE_email}
+
+Amend Workflow For Cliqusers
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Sabre Red    \    *R
+    Verify Email Line Is Written in the PNR    U*29-AUTOMATION**CARLSON.COM
+    Verify Specific Line Is Written In The PNR    CLIQUSER-TEST*EMAIL.COM
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Click Finish PNR
+
+Verify That Correct Invoice Remarks Is Written In PNR
+    [Arguments]    @{InvoiceRemarks}
+    Retrieve PNR Details From Sabre Red    \    *.    1
+    Verify Specific Line Is Written In The PNR    U*47-KAITLIN--TEST//CWT.COM
+    Verify Specific Line Is Written In The PNR    U*27-MANUAL.--.TEST//CWT.COM
+    Verify Specific Line Is Written In The PNR    U*28-KAITLIN-TEST//CWT.COM
+    Verify Specific Line Is Written In The PNR    U*27-MANUAL.--.TEST
+    Verify Specific Line Is Written In The PNR    CLIQUSERID-TEST56
+    Verify Specific Line Is Written In The PNR    UNITYPNR-AQUA-MANUAL.--.TEST

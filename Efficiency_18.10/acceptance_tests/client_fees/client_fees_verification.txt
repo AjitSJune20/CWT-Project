@@ -1,0 +1,17 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verify Client Fees Type Default Value
+    [Arguments]    ${expected_client_fee_type_default_value}
+    Wait Until Control Object Is Visible    ${combo_fee_type}
+    ${default_value}    Get Control Text Value    ${combo_fee_type}
+    Run Keyword And Continue On Failure    Should Match    ${default_value}    ${expected_client_fee_type_default_value}
+    [Teardown]    Take Screenshot
+
+Verify Client Fee Dropdown Contains Correct Items
+    [Arguments]    ${dropdown_name}    @{expected_dropdown_values}
+    ${actual_dropdown_items}    Get Value From Combobox    ${dropdown_name}
+    List Should Contain Sub List    ${actual_dropdown_items}    ${expected_dropdown_values}
+    Log    Expected: ${expected_dropdown_values}
+    Log    Actual: ${actual_dropdown_items}

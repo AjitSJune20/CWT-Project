@@ -1,0 +1,81 @@
+*** Settings ***
+Force Tags        apollo
+Resource          ../business_rules_verification.txt
+Resource          ../../../resources/panels/multi_pop_up.txt
+
+*** Test Cases ***
+[1V NB] Verify That Nested Inputs From Business Rules Popup Are Written Into The PNR (Popup Is Triggered At Update PNR)
+    [Tags]    us4115    not_ready    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4618    Auto    Maurice
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    GEID    ZZZZZ
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Verify Multi Popup Window Exists    Multi Popup Test Title
+    Set Multi Popup Textbox    1    Test1    Multi Popup Test Title
+    Verify Message Is Displayed    2    Message 2    Multi Popup Test Title
+    Set Multi Popup Textbox    2    Test2    Multi Popup Test Title
+    Set Multi Popup Textbox    3    Test 5    Multi Popup Test Title
+    Click Multi Popup OK Button    Multi Popup Test Title
+    Book One Way Flight X Months From Now    DENLAX+AA    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[1V AB] Verify That Nested Inputs From Business Rules Popup Are Written Into The PNR (Popup Is Triggered At Read Booking)
+    [Tags]    us4115    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Multi Popup Window Exists    Amend Multi-popup Test Title
+    Verify Message Is Displayed    1    Amend Message 1    Amend Multi-popup Test Title
+    Verify Message Is Displayed    2    Amend Message 2    Amend Multi-popup Test Title
+    Set Multi Popup Textbox    1    Test1    Amend Multi-popup Test Title
+    Set Multi Popup Textbox    2    Testing2    Amend Multi-popup Test Title
+    Verify Message Is Displayed    3    Amend Message 3    Amend Multi-popup Test Title
+    Set Multi Popup Textbox    2    Different2    Amend Multi-popup Test Title
+    Verify Message Is Displayed    4    Amend Message 4    Amend Multi-popup Test Title
+    Set Multi Popup Textbox    4    Answer4    Amend Multi-popup Test Title
+    Verify Message Is Displayed    5    Amend Message 5    Amend Multi-popup Test Title
+    Set Multi Popup Textbox    5    Any Answer    Amend Multi-popup Test Title
+    Click Multi Popup OK Button    Amend Multi-popup Test Title
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Value Is Correct    EMPLOYEEID    AAAA
+    Verify CDR Value Is Correct    GEID    ZZZZZ
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1V NB] Verify That Nested Inputs From Business Rules Popup Are Written Into The PNR (Triggered By Trip Type Condition and Update PNR Trigger)
+    [Tags]    not_ready    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4618    Auto    Maurice
+    Select Trip Type Value    Personal
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    GEID    ${EMPTY}
+    Verify CDR Value Is Correct    EMPLOYEEID    DYNA
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Update PNR
+    Verify Multi Popup Window Exists    Trip Type Window Title
+    Verify Message Is Displayed    1    Trip Type Message 1    Trip Type Window Title
+    Verify Message Is Displayed    2    Trip Type Message 2    Trip Type Window Title
+    Verify Message Is Displayed    3    Trip Type Message 3    Trip Type Window Title
+    Set Multi Popup Textbox    1    Test2    Trip Type Window Title
+    Set Multi Popup Textbox    2    Different2    Trip Type Window Title
+    Set Multi Popup Textbox    3    Test4    Trip Type Window Title
+    Click Multi Popup OK Button    Trip Type Window Title
+    Retrieve PNR Details From Travelport    ${current_pnr}    *PT
+    Verify Specific Line Is Written In The PNR    U88-TEST2
+    Verify Specific Line Is Written In The PNR    U98-DYNA
+    Click Clear All
+
+*** Keywords ***

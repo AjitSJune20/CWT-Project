@@ -1,0 +1,99 @@
+*** Settings ***
+Resource          ../../resources/common/utilities.txt
+Resource          ../../resources/common/core.txt
+
+*** Keywords ***
+Verify EB Remarks Are Written In PNR
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-FF34/EB
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-FF35/CBK
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-FF36/S
+
+Verify OBT Remarks Are Written In PNR
+    [Arguments]    ${fare_tab_value}    ${touch_level}=AA    ${booking_indicator}=AMA    ${booking_method}=S
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    ${ff34_remark}    Set Variable If    "${gds_switch}"=="galileo"    FREE TEXT-FF34/*${fare_tab_index}    X/-FF34/*${fare_tab_index}
+    ${ff35_remark}    Set Variable If    "${gds_switch}"=="galileo"    FREE TEXT-FF35/*${fare_tab_index}    X/-FF35/*${fare_tab_index}
+    ${ff36_remark}    Set Variable If    "${gds_switch}"=="galileo"    FREE TEXT-FF36/*${fare_tab_index}    X/-FF36/*${fare_tab_index}
+    Verify Text Contains Expected Value    ${pnr_details}    ${ff34_remark}/${touch_level}
+    Verify Text Contains Expected Value    ${pnr_details}    ${ff35_remark}/${booking_indicator}
+    Verify Text Contains Expected Value    ${pnr_details}    ${ff36_remark}/${booking_method}
+
+Verify OBT Remarks Are Not Written In PNR
+    [Arguments]    ${fare_tab_value}    ${touch_level}=AA    ${booking_indicator}=AMA    ${booking_method}=S
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    ${ff34_remark}    Set Variable If    "${gds_switch}"=="galileo"    FREE TEXT-FF34/*${fare_tab_index}    X/-FF34/*${fare_tab_index}
+    ${ff35_remark}    Set Variable If    "${gds_switch}"=="galileo"    FREE TEXT-FF35/*${fare_tab_index}    X/-FF35/*${fare_tab_index}
+    ${ff36_remark}    Set Variable If    "${gds_switch}"=="galileo"    FREE TEXT-FF36/*${fare_tab_index}    X/-FF36/*${fare_tab_index}
+    Verify Specific Remark Is Not Written In The PNR    ${ff34_remark}/${touch_level}
+    Verify Specific Remark Is Not Written In The PNR    ${ff35_remark}/${booking_indicator}
+    Verify Specific Remark Is Not Written In The PNR    ${ff36_remark}/${booking_method}
+
+Verify Touch Level Default Value
+    [Arguments]    ${expected_default_value}
+    Verify Control Object Text Value Is Correct    ${cbo_touch_level}    ${expected_default_value}
+    [Teardown]    Take Screenshot
+
+Verify Touch Level Dropdown Values
+    [Arguments]    @{level_values}
+    ${actual_touch_level_value} =    Get Value From Dropdown List    ${cbo_touch_level}
+    : FOR    ${touch_level_value}    IN    @{level_values}
+    \    Run Keyword And Return Status    List Should Contain Value    ${actual_touch_level_value}    ${touch_level_value}
+
+Verify Client Info Not Known Checkbox Is Unticked And Enabled
+    Verify Checkbox Is Unticked    [NAME:chkNotKnown]
+    Verify Control Object Is Enabled    [NAME:chkNotKnown]
+    [Teardown]    Take Screenshot
+
+Get Line Number Of Matrix Remark
+    [Arguments]    ${string_to_search}
+    Run Keyword If    "${GDS_switch}" == "galileo" or "${GDS_switch}" == "apollo"    Retrieve PNR Details From Travelport
+    ...    ELSE IF    "${GDS_switch}" == "sabre"    Retrieve PNR Details From Sabre Red
+    ...    ELSE IF    "${GDS_switch}" == "amadeus"    Retrieve PNR Details From Amadeus
+    Get Line Number In PNR Remarks    ${string_to_search}
+    [Return]    ${line_num}
+
+Update CTG Web Hotel Matrix Remark
+    [Arguments]    ${cn_remark}    ${add_cn_remark}    ${add_eb_remark}=${EMPTY}
+    Get Line Number Of Matrix Remark    ${cn_remark}
+    ${line_num}    Remove Leading and Ending Spaces    ${line_num}
+    ${line_num}    Remove String Using Regexp    ${line_num}    [^\\d]
+    Run Keyword If    "${GDS_switch}" == "galileo" or "${GDS_switch}" == "apollo"    Enter Command In Native GDS    C:${line_num}T-
+    ...    ELSE IF    "${GDS_switch}" == "sabre"    Enter Command In Native GDS    5${line_num}¤
+    ...    ELSE IF    "${GDS_switch}" == "amadeus"    Enter GDS Command    XE${line_num}
+    Enter GDS Command    ${add_cn_remark}    ${add_eb_remark}
+    End And Retrieve PNR
+    Take Screenshot
+
+Verify Touch Reason Is Visible
+    Verify Control Object Is Visible    [NAME:ccboTouchReason]
+
+Verify Notes Checkbox Is Visible
+    Verify Control Object Is Visible    [NAME:cchkTouchReasonNotes]
+
+Amend Booking For CTG Web Hotel Matrix Remark
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    DENLAX+UA    01Y1    T:$B    6
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    AM - Offline Handling
+    Verify Touch Level Dropdown Values    Online assisted by OSC    AM - Offline Handling    Online unassisted
+    Verify Touch Reason Is Visible
+    Verify Notes Checkbox Is Visible
+    Select Touch Level    Online assisted by OSC
+    Select Touch Reason    Air
+    Tick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Verify Notes Checkbox Is Checked
+    ${checkbox_status}    Get checkbox status    [NAME:cchkTouchReasonNotes]
+    Run Keyword If    '${checkbox_status}' == 'True'    Log    Notes Checkbox Already Ticked Upon Load
+    ...    ELSE    Log    Notes Checkbox Unchecked    WARN
+
+Verify Touch Reason Default Value
+    [Arguments]    ${touch_reason}
+    Verify Control Object Text Value Is Correct    [NAME:ccboTouchReason]    ${touch_reason}

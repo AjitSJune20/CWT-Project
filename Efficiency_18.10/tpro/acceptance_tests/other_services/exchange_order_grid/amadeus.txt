@@ -1,0 +1,216 @@
+*** Settings ***
+Force Tags        remarks
+Resource          ../other_services_verification.txt
+
+*** Test Cases ***
+[NB OS SG] Verify That Exchange Order Records Are Displayed And Searchable In The EO Grid
+    [Tags]    US478    US690
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SG OS AUTOMATION    BEAR    SGOTHERS    SINMNL/ASQ    ${EMPTY}
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    24 Hours Emergency Svcs    Carlson Wagonlit GST
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    True    P1    18    24 Hours Emergency Svcs    MS    021238
+    ...    ${EMPTY}    New
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Select Product And Vendor    Visa Cost    CIBT
+    Populate Visa Cost Tab
+    Populate Vendor Info Tab    JIlagan@Carlsonwagonlit.com
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P2    06    Visa Cost    VI    26010
+    ...    Email    New    SG
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Click Raise Cheque Button In EO Grid    ${eo_number}    SG
+    Verify Raise Cheque Display Message
+    Generate Data For Specific Product    False    P2    06    Visa Cost    VI    26010
+    ...    ${EMPTY}    Pending    True
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Click Amend EO    ${eo_number}
+    Verify Amend Is Not Allowed When EO Status Is Pending
+
+[AB OS SG] Verify That Exchange Order Records Are Displayed And Searchable In The EO Grid
+    [Tags]    US478    US690
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Select Product And Vendor    Despatch Charge    NATAS
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2025
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    True    P3    08    Despatch Charge    MS    010099
+    ...    ${EMPTY}    New
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Verify Exchange Order Record Is Displayed In The EO Grid    P3
+    Click Raise Cheque Button In EO Grid    ${eo_number}    SG
+    Verify Raise Cheque Display Message
+    Generate Data For Specific Product    False    P3    08    Despatch Charge    MS    010099
+    ...    ${EMPTY}    Pending    True
+    Verify Exchange Order Record Is Displayed In The EO Grid    P3
+    Click Amend EO    ${eo_number}
+    Verify Amend Is Not Allowed When EO Status Is Pending
+    Select Product And Vendor    CWT Refund Admin Fee    Carlson Wagonlit GST
+    Select Form Of Payment (FOP)    Credit Card (CC)    VI    4444333322221111    12    2025
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    True    P4    39    CWT Refund Admin Fee    MS    021238
+    ...    ${EMPTY}    New
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Verify Exchange Order Record Is Displayed In The EO Grid    P3
+    Verify Exchange Order Record Is Displayed In The EO Grid    P4
+
+[OS SG] Verify That Exchange Order Records Are Displayed And Searchable In The EO Grid
+    [Tags]    US478    US690
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Verify Exchange Order Record Is Displayed In The EO Grid    P3
+    Verify Exchange Order Record Is Displayed In The EO Grid    P4
+    Select Product And Vendor    Hotel - Local Booking Fee    Carlson Wagonlit GST
+    Set Description    Hotel Local Booking Fee
+    Select Form Of Payment (FOP)    Credit Card (CC)    VI    4444333322221111    12    2025
+    Populate Vendor Info Tab    JIlagan@Carlsonwagonlit.com
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P5    31    Hotel - Local Booking Fee    MS    021238
+    ...    Email    New    SG
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Verify Exchange Order Record Is Displayed In The EO Grid    P3
+    Verify Exchange Order Record Is Displayed In The EO Grid    P4
+    Verify Exchange Order Record Is Displayed In The EO Grid    P5
+    Click Raise Cheque Button In EO Grid    ${eo_number}    SG
+    Verify Raise Cheque Display Message
+    Generate Data For Specific Product    False    P5    31    Hotel - Local Booking Fee    MS    021238
+    ...    ${EMPTY}    Pending    True
+    Verify Exchange Order Record Is Displayed In The EO Grid    P5
+    Click Amend EO    ${eo_number}
+    Verify Amend Is Not Allowed When EO Status Is Pending
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB OS HK] Verify That Exchange Order Records Are Displayed And Searchable In The EO Grid
+    [Tags]    US478    US690
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC HK OS AUTOMATION    BEAR    HKOTHERS    MNLSIN    ${EMPTY}
+    Click Panel    Delivery
+    Set Ticketing Date X Months From Now    1
+    Click panel    Air Fare
+    Set Control Text Value    [NAME:ctxtCommissionPercent_1]    2
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    24 EMERGENCY SERVICE FEE    CWT
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    True    P1    18    24 EMERGENCY SERVICE FEE    MS    000001
+    ...    ${EMPTY}    New
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Select Product And Vendor    TOUR PACKAGE    CLUB MED
+    Populate Vendor Info Tab    JIlagan@Carlsonwagonlit.com
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P2    13    TOUR PACKAGE    MS    000284
+    ...    Email    New    HK
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Click Raise Cheque Button In EO Grid    ${eo_number}    HK
+    Verify Raise Cheque Display Message
+    Generate Data For Specific Product    False    P2    13    TOUR PACKAGE    MS    000284
+    ...    ${EMPTY}    Pending    True
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Click Amend EO    ${eo_number}
+    Verify Amend Is Not Allowed When EO Status Is Pending
+
+[AB OS HK] Verify That Exchange Order Records Are Displayed And Searchable In The EO Grid
+    [Tags]    US478    US690
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Select Product And Vendor    DISCOUNT    CWT
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2025
+    Click Tab In Other Services Panel    Ticket Type
+    Populate Ticket Type With Default Values    BSP (without File Fare)
+    Select Air Segment    2
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    True    P3    50    DISCOUNT    MS    000001
+    ...    ${EMPTY}    New
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Verify Exchange Order Record Is Displayed In The EO Grid    P3
+    Select Product And Vendor    CRUISE    FAE TRAVEL
+    Select Form Of Payment (FOP)    Credit Card (CC)    VI    4444333322221111    12    2025
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    True    P4    20    CRUISE    MS    000603
+    ...    ${EMPTY}    New
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Verify Exchange Order Record Is Displayed In The EO Grid    P3
+    Verify Exchange Order Record Is Displayed In The EO Grid    P4
+    Click Raise Cheque Button In EO Grid    ${eo_number}    HK
+    Verify Raise Cheque Display Message
+    Generate Data For Specific Product    False    P4    20    CRUISE    MS    000603
+    ...    ${EMPTY}    Pending    True
+    Verify Exchange Order Record Is Displayed In The EO Grid    P4
+    Click Amend EO    ${eo_number}
+    Verify Amend Is Not Allowed When EO Status Is Pending
+
+[OS HK] Verify That Exchange Order Records Are Displayed And Searchable In The EO Grid
+    [Tags]    US478    US690
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Verify Exchange Order Record Is Displayed In The EO Grid    P3
+    Verify Exchange Order Record Is Displayed In The EO Grid    P4
+    Select Product And Vendor    LOCAL EMERGENCY SVC    CWT
+    Set Description    Hotel Local Booking Fee
+    Select Form Of Payment (FOP)    Credit Card (CC)    VI    4444333322221111    12    2025
+    Populate Vendor Info Tab    JIlagan@Carlsonwagonlit.com
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P5    22    LOCAL EMERGENCY SVC    MS    000001
+    ...    Email    New    HK
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Verify Exchange Order Record Is Displayed In The EO Grid    P2
+    Verify Exchange Order Record Is Displayed In The EO Grid    P3
+    Verify Exchange Order Record Is Displayed In The EO Grid    P4
+    Verify Exchange Order Record Is Displayed In The EO Grid    P5
+    Click Raise Cheque Button In EO Grid    ${eo_number}    HK
+    Verify Raise Cheque Display Message
+    Generate Data For Specific Product    False    P5    22    LOCAL EMERGENCY SVC    MS    000001
+    ...    ${EMPTY}    Pending    True
+    Verify Exchange Order Record Is Displayed In The EO Grid    P5
+    Click Amend EO    ${eo_number}
+    Verify Amend Is Not Allowed When EO Status Is Pending
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

@@ -1,0 +1,84 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../complete_verification.txt
+Resource          ../../id_traveller/id_traveller_verification.txt
+Resource          ../../database/database_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Traveller Is Automatically Identified When New Booking, Same Traveller Is Selected With Separate Contact tab
+    [Tags]    US4966    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AUTOArranger    TestArr
+    Select Client Account    717171 ¦ CWT AQUA TEST ACCOUNT ¦ UAT CLASSIC
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ US2837 KDS    AutoTrvlr    TrvlWithArr
+    Select Client Account Value    717171 ¦ CWT AQUA TEST ACCOUNT ¦ US2837 KDS
+    Click New Booking
+    Book Flight X Months From Now    CDGFRA/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Get Traveller Tab Details    Contact Principal
+    Get Traveller Tab Details    Voyageur
+    Click Panel    Résumer
+    Click Finish PNR
+    Delete Current Specific Log File    SyExPerfLog
+    Click Clear All With Options    New Booking, Same Traveller
+    Verify That Traveller Tab Details Are Retained    Contact Principal
+    Verify That Traveller Tab Details Are Retained    Voyageur
+    Verify That Traveller's Client Sub Unit Is Retained    Amadeus FR 15 - Auto ¦ US2837 KDS
+    Verify That PNR Type Option Is Displayed
+    Verify Perflog And AppUsage For New Booking Same Traveller
+    Click New Booking
+    Book Flight X Months From Now    CDGFRA/AAF    SS1Y1    FXP    6
+    Click Read Booking
+
+[AB] Verify That Traveller Is Automatically Identified When New Booking, Same Traveller Is Selected With Separate Contact tab
+    [Tags]    US4966    fr
+    Retrieve PNR    ${current_pnr}
+    Set Test Variable    ${previous_pnr}    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Get Traveller Tab Details    Contact Principal
+    Get Traveller Tab Details    Voyageur
+    Click Panel    Air Fare
+    Click Panel    Résumer
+    Click Finish PNR    Amend Booking New Booking, Same Traveller With Separate Contact Tab
+    Execute Simultaneous Change Handling    Amend Booking New Booking, Same Traveller With Separate Contact Tab
+    Delete Current Specific Log File    SyExPerfLog
+    Click Clear All With Options    New Booking, Same Traveller
+    Verify That Traveller Tab Details Are Retained    Contact Principal
+    Verify That Traveller Tab Details Are Retained    Voyageur
+    Verify That Traveller's Client Sub Unit Is Retained    Amadeus FR 15 - Auto ¦ US2837 KDS
+    Verify That PNR Type Option Is Displayed
+    Verify Perflog And AppUsage For New Booking Same Traveller
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Verify That Traveller Tab Details Are Retained    Contact Principal
+    Verify That Traveller Tab Details Are Retained    Voyageur
+    Click Panel    Résumer
+    Click Finish PNR
+    Delete Current Specific Log File    SyExPerfLog
+    Click Clear All With Options    New Booking, Same Traveller
+    Verify That Traveller Tab Details Are Retained    Contact Principal
+    Verify That Traveller Tab Details Are Retained    Voyageur
+    Verify That Traveller's Client Sub Unit Is Retained    Amadeus FR 15 - Auto ¦ US2837 KDS
+    Verify That PNR Type Option Is Displayed
+    Verify Perflog And AppUsage For New Booking Same Traveller
+    [Teardown]    run keywords    Cancel PNR Thru GDS Native    ${previous_pnr}
+    ...    AND    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking New Booking, Same Traveller With Separate Contact Tab
+    Retrieve PNR    ${current_pnr}
+    Set Test Variable    ${previous_pnr}    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Get Traveller Tab Details    Contact Principal
+    Get Traveller Tab Details    Voyageur
+    Click Finish PNR    Amend Booking New Booking, Same Traveller With Separate Contact Tab

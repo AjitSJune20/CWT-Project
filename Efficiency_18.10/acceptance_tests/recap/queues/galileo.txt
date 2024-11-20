@@ -1,0 +1,65 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../recap_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That Itinerary Is Not Sent To Queue When Itinerary Product SO Is Set To None
+    [Tags]    us3878
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    galileo
+    Create New Booking With One Way Flight Using Default Values    Galileo 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrTwo    MSPORD/UA
+    Enter GDS Command    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}    *RB
+    Verify Specific Line Is Not Written In The PNR    Q70*SEND ITINERARY
+
+[SI UK] Verify That Itinerary Is Sent To Queue When Itinerary Product SO Is Set To None
+    [Tags]    us3878
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR
+    Re-Execute Send Itinerary If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Galileo    ${current_pnr}    *RB
+    Verify Specific Line Is Written In The PNR    Q70*SEND ITINERARY
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Queue Minder Category Code Is Displayed In Category Field
+    [Tags]    uk    uat    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Traveller    John
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRCDG/AF    01Y1    FQ:NR    6
+    Click Read Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Recap
+    Create Queue Minder    YW9    34    TZ    CANX ITIN IF STILL LIVE
+    Click Finish PNR
+
+[AB UK] Verify That Queue Minder Category Code Is Displayed In Category Field
+    [Tags]    uk    uat    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Recap
+    Verify Queue Minder Details are Correct    YW9    34    TZ    CANX ITIN IF STILL LIVE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Queue Minder Details are Correct
+    [Arguments]    ${queue_pcc}    ${queue_number}    ${queue_category}    ${queue_message}
+    ${actual_queue_date}    Get Control Text Value    [NAME:cdtpDate0]    ${title_power_express}
+    ${actual_queue_pcc}    Get Control Text Value    [NAME:ctxtPCC0]    ${title_power_express}
+    ${actual_queue_number}    Get Control Text Value    [NAME:ctxtQueue0]    ${title_power_express}
+    ${actual_queue_category}    Get Control Text Value    [NAME:ctxtCategory0]    ${title_power_express}
+    ${actual_queue_message}    Get Control Text Value    [NAME:ctxtMessage0]    ${title_power_express}
+    Verify Actual Value Matches Expected Value    ${actual_queue_date}    ${queue_date}
+    Verify Actual Value Matches Expected Value    ${actual_queue_pcc}    ${queue_pcc}
+    Verify Actual Value Matches Expected Value    ${actual_queue_number}    ${queue_number}
+    Verify Actual Value Matches Expected Value    ${actual_queue_category}    ${queue_category}
+    Verify Actual Value Matches Expected Value    ${actual_queue_message}    ${queue_message}
+    [Teardown]    Take Screenshot

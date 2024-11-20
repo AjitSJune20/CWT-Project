@@ -1,0 +1,199 @@
+*** Settings ***
+Suite Setup
+Force Tags        amadeus
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../other_services_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+Resource          ../other_services.txt
+
+*** Test Cases ***
+[SG NB] Verify That MI Data Is Retrieved Correctly In Other Services Panel For Consolidator Ticket
+    [Tags]    sg    us454    horton    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SG OS AUTOMATION    BEAR    SGOTHERS
+    Click New Booking
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP/S2    6    3
+    Click Panel    Cust Refs
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Consolidator Ticket    AMERICAN AIRLINES
+    Click Tab In Other Services Panel    MI
+    Verify MI Filed Fare Number Field Is Correct
+    Verify MI Realised Saving Codes In Dropdown Are Correct    SG
+    Verify MI Missed Saving Codes In Dropdown Are Correct    sg
+    Verify MI Class Of Services In Dropdown Are Correct
+    Verify MI PT And ET Selection Are Available
+    Verify MI Default Field Values    SG
+    Select MI Filed Fare Number    1
+    Populate MI Fields    1234    1234    MNL    PR
+    Select MI Type Of Ticket    PT
+    Select MI Realised Saving Code    XX - NO SAVING
+    Select MI Missed Saving Code    L - NO MISSED SAVING
+    Select MI Class Of Service    YF - Economy Class Full Fare
+    Get MI Fields Values
+    Click Clear All
+
+[SG OS] Verify That MI Data Is Retrieved Correctly In Other Services Panel For Low Cost Carrier - Client Card
+    [Tags]    sg    us454    horton    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    LOW COST CARRIER - CLIENT CARD    LOW COST CARRIER - CLIENT CARD
+    Click Tab In Other Services Panel    MI
+    Verify MI Filed Fare Number Field Is Correct
+    Verify MI Realised Saving Codes In Dropdown Are Correct    SG
+    Verify MI Missed Saving Codes In Dropdown Are Correct    sg
+    Verify MI Class Of Services In Dropdown Are Correct
+    Verify MI PT And ET Selection Are Available
+    Verify MI Default Field Values    SG
+    Select MI Filed Fare Number    1
+    Populate MI Fields    1234    1234    MNL    PR
+    Select MI Type Of Ticket    PT
+    Select MI Realised Saving Code    MC - MISCELLANEOUS
+    Select MI Missed Saving Code    M - MISCELLANEOUS
+    Select MI Class Of Service    FF - First Class Full Fare
+    Get MI Fields Values
+    Click Clear All
+
+[SG OS] Verify That MI Data Is Retrieved Correctly In Other Services Panel For BSP Ticket and MPD
+    [Tags]    sg    us454    horton    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    BSP Ticket And MPD    BANK SETTLEMENT PLAN
+    Click Tab In Other Services Panel    MI
+    Verify MI Filed Fare Number Field Is Correct
+    Verify MI Realised Saving Codes In Dropdown Are Correct    SG
+    Verify MI Missed Saving Codes In Dropdown Are Correct    sg
+    Verify MI Class Of Services In Dropdown Are Correct
+    Verify MI PT And ET Selection Are Available
+    Verify MI Default Field Values    SG
+    Select MI Filed Fare Number    1
+    Populate MI Fields    1234    1234    MNL    PR
+    Select MI Type Of Ticket    PT
+    Select MI Realised Saving Code    CR - INTELLIGENT TICKETING
+    Select MI Missed Saving Code    C - LOW COST CARRIER FARE DECLINED
+    Select MI Class Of Service    CC - Business Class Corporate Fare
+    Get MI Fields Values
+    Click Clear All
+
+[SG OS] Verify That MI Data Is Retrieved Correctly In Other Services Panel For AA Segment Booking Fee
+    [Tags]    sg    us454    horton    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    AA SEGMENT BOOKING FEE    BANK SETTLEMENT PLAN
+    Click Tab In Other Services Panel    MI
+    Verify MI Filed Fare Number Field Is Correct
+    Verify MI Realised Saving Codes In Dropdown Are Correct    SG
+    Verify MI Missed Saving Codes In Dropdown Are Correct    sg
+    Verify MI Class Of Services In Dropdown Are Correct
+    Verify MI PT And ET Selection Are Available
+    Verify MI Default Field Values    SG
+    Select MI Filed Fare Number    1
+    Populate MI Fields    1234    1234    MNL    PR
+    Select MI Type Of Ticket    PT
+    Select MI Realised Saving Code    UC - VALUE ADDED OFFER
+    Select MI Missed Saving Code    P - PASSENGER DECLINED RESTRICTED FARE
+    Select MI Class Of Service    YC - Economy Class Corporate Fare
+    Get MI Fields Values
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK NB] Verify That MI Data Is Retrieved Correctly In Other Services Panel For Consolidator Ticket
+    [Tags]    hk    us454    horton    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC HK OS AUTOMATION    BEAR    HKOTHERS
+    Click New Booking
+    Book Flight X Months From Now    SINMNL/ATR    SS1Y1    FXP/S2    6    15
+    Book Flight X Months From Now    MNLHKG/ATR    SS1Y1    FXP/S3    6    20
+    Book Flight X Months From Now    HKGSIN/ATR    SS1Y1    FXP/S4    6    25
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    CONSOLIDATOR TICKET    HONG KONG AIRLINES LIMITED
+    Click Tab In Other Services Panel    MI
+    Verify MI Filed Fare Number Field Is Correct
+    Verify MI Realised Saving Codes In Dropdown Are Correct    HK
+    Verify MI Missed Saving Codes In Dropdown Are Correct    hk
+    Verify MI Class Of Services In Dropdown Are Correct
+    Verify MI PT And ET Selection Are Available
+    Verify MI Default Field Values    SG
+    Select MI Filed Fare Number    1
+    Populate MI Fields    1234    1234    MNL    PR
+    Select MI Type Of Ticket    PT
+    Select MI Realised Saving Code    XX - NO SAVING
+    Select MI Missed Saving Code    L - NO MISSED SAVING
+    Select MI Class Of Service    YF - Economy Class Full Fare
+    Get MI Fields Values
+    Click Clear All
+
+[HK OS] Verify That MI Data Is Retrieved Correctly In Other Services Panel For Low Cost Carrier
+    [Tags]    hk    us454    horton    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Low Cost Carrier    TESTING VENDOR 1
+    Click Tab In Other Services Panel    MI
+    Verify MI Filed Fare Number Field Is Correct
+    Verify MI Realised Saving Codes In Dropdown Are Correct    HK
+    Verify MI Missed Saving Codes In Dropdown Are Correct    hk
+    Verify MI Class Of Services In Dropdown Are Correct
+    Verify MI PT And ET Selection Are Available
+    Verify MI Default Field Values    SG
+    Select MI Filed Fare Number    2
+    Populate MI Fields    1234    1234    HKG    PR
+    Select MI Type Of Ticket    PT
+    Select MI Realised Saving Code    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED
+    Select MI Missed Saving Code    X - POLICY WAIVED - EMERGENCY CONDITIONS
+    Select MI Class Of Service    FW - First Class CWT Negotiated Fare
+    Get MI Fields Values
+    Click Clear All
+
+[HK OS] Verify That MI Data Is Retrieved Correctly In Other Services Panel For BSP Air Ticket
+    [Tags]    hk    us454    horton    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    BSP AIR TICKET    KLM ROYAL DUTCH
+    Click Tab In Other Services Panel    MI
+    Verify MI Filed Fare Number Field Is Correct
+    Verify MI Realised Saving Codes In Dropdown Are Correct    HK
+    Verify MI Missed Saving Codes In Dropdown Are Correct    hk
+    Verify MI Class Of Services In Dropdown Are Correct
+    Verify MI PT And ET Selection Are Available
+    Verify MI Default Field Values    SG
+    Select MI Filed Fare Number    3
+    Populate MI Fields    1234    1234    SIN    PR
+    Select MI Type Of Ticket    PT
+    Select MI Realised Saving Code    EX - EXCHANGE
+    Select MI Missed Saving Code    I - PASSENGER BOOKED TOO LATE
+    Select MI Class Of Service    YD - Economy Class Discounted Fare
+    Get MI Fields Values
+    Click Clear All
+
+[HK OS] Verify That MI Data Is Retrieved Correctly In Other Services Panel For Additional BSP Air
+    [Tags]    hk    us454    horton    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    ADDITIONAL BSP AIR    THAI AIRWAYS INTERNATIONAL PUBLIC COMPANY LIMITED
+    Click Tab In Other Services Panel    MI
+    Verify MI Filed Fare Number Field Is Correct
+    Verify MI Realised Saving Codes In Dropdown Are Correct    HK
+    Verify MI Missed Saving Codes In Dropdown Are Correct    hk
+    Verify MI Class Of Services In Dropdown Are Correct
+    Verify MI PT And ET Selection Are Available
+    Verify MI Default Field Values    SG
+    Select MI Filed Fare Number    1
+    Populate MI Fields    1234    1234    MNL    PR
+    Select MI Type Of Ticket    PT
+    Select MI Realised Saving Code    LC - LOW COST CARRIER FARE ACCEPTED
+    Select MI Missed Saving Code    F - PASSENGER REQUESTED SPECIFIC CLASS
+    Select MI Class Of Service    CW - Business Class CWT Negotiated Fare
+    Get MI Fields Values
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

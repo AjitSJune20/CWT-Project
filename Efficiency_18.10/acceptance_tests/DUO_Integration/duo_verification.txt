@@ -1,0 +1,244 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../resources/common/utilities.txt
+Resource          ../gds/gds_verification.txt
+
+*** Keywords ***
+Verify Radio Button Is Selected
+    ${is_selected}    Run Keyword And Return Status    Get Radio Button Status    [NAME:radCreateNo]
+    Should Be True    ${is_selected}
+
+Remove SYEXGVS Line From PNR
+    Retrieve PNR Details    ${current_pnr}
+    ${line_no}    Run Keyword If    "${gds_switch.lower()}" == "amadeus"    Get Line Number In Amadeus PNR Remarks    SYEXGVS
+    ...    ELSE IF    "${gds_switch.lower()}" == "galileo"    Get Line Number In PNR Remarks    SYEXGVS
+    ...    ELSE IF    "${gds_switch.lower()}" == "sabre"    Get Line Number In PNR Remarks    SYEXGVS
+    Should Not Be Equal    ${line_no}    0    SyExGVS was not found in the PNR
+    Run Keyword If    ${line_no} >= 0 and "${gds_switch.lower()}" == "amadeus"    Enter GDS Command    XE${line_no}    RFCWTPTEST    ER
+    ...    ELSE IF    ${line_no} >= 0 and "${gds_switch.lower()}" == "galileo"    Enter GDS Command    NP.${line_no}@    R.CWTPTEST    ER
+    ...    ER
+    ...    ELSE IF    ${line_no} >= 0 and "${gds_switch.lower()}" == "sabre"    Enter GDS Command    5${line_no}¤    6cwtptest    ER
+    Take Screenshot
+    Click Clear All
+
+Create A Shell PNR With New Traveller
+    [Arguments]    ${client}    ${surname}    ${firstname}=${EMPTY}    ${city_pair}=${EMPTY}    ${client_account}=${EMPTY}    ${traveller_type}=${EMPTY}
+    ...    ${pfirstname}=${EMPTY}    ${plastname}=${EMPTY}    ${email_address}=${EMPTY}    ${country_code}=${EMPTY}    ${area_code}=${EMPTY}    ${phone_number}=${EMPTY}
+    ...    ${create_portrait_profile}=no    ${reason_for_skipping}=${EMPTY}    @{exclude_panels}
+    Click Control Button    [NAME:grpPortraitProfileInformation]
+    Search For Client    ${client}    ${client_search_filter}
+    Wait Until Control Object Is Visible    [NAME:ctxtPortraitTravellerLastName]
+    Click Control Button    [NAME:grpPortraitProfileInformation]
+    Click Search Portrait Profile
+    Click Create Traveller Profile
+    Populate Add New Traveller    ${traveller_type}    ${pfirstname}    ${plastname}    ${email_address}    ${country_code}    ${area_code}
+    ...    ${phone_number}    ${create_portrait_profile}    ${reason_for_skipping}
+    Select Client Account Value    ${client_account}
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+    Click Create Shell
+    Click Clear All
+
+Remove GUID Line From PNR
+    Retrieve PNR Details    ${current_pnr}
+    ${line_no}    Run Keyword If    "${gds_switch.lower()}" == "amadeus"    Get Line Number In Amadeus PNR Remarks    GUID/
+    ...    ELSE IF    "${gds_switch.lower()}" == "galileo"    Get Line Number In PNR Remarks    GUID/
+    ...    ELSE IF    "${gds_switch.lower()}" == "sabre"    Get Line Number In PNR Remarks    GUID/
+    Should Not Be Equal    ${line_no}    0    GUID was not found in the PNR
+    Run Keyword If    "${gds_switch.lower()}" == "amadeus"    Enter GDS Command    XE${line_no}    RFCWTPTEST    ER
+    ...    ELSE IF    "${gds_switch.lower()}" == "galileo"    Enter GDS Command    NP.${line_no}@    R.CWTPTEST    ER
+    ...    ER
+    ...    ELSE IF    "${gds_switch.lower()}" == "sabre"    Enter GDS Command    5${line_no}¤    6cwtptest    ER
+    Take Screenshot
+    Click Clear All
+
+Verify That Client Search Textbox Is Displayed Instead of Client Droplist
+    [Documentation]    Client Droplist should be replaced by Client Search textbox if Search of All CWT Clients SO is enabled.
+    Wait Until Progress Info Is Completed
+    Wait Until Control Object Is Visible    [NAME:btnSearchAll]
+    Verify Control Object Is Not Visible    [NAME:ccboCompany]
+    Verify Control Object Is Visible    [NAME:txtSearchAll]
+    Take Screenshot
+
+Search For Client
+    [Arguments]    ${search_criteria}    ${search_filter}=${EMPTY}
+    [Documentation]    Client search criteria should be 2 characters or more.
+    ...    Client search filter should be 2 characters or more, and specific i.e. will yield unique result.
+    Set Suite Variable    ${search_criteria}
+    Click Control Button    [NAME:txtSearchAll]
+    Set Control Text Value    [NAME:txtSearchAll]    ${search_criteria}
+    Click Control Button    [NAME:btnSearchAll]
+    Wait Until Control Object Is Visible    [NAME:lstSearchResults]
+    Take Screenshot
+    ${records_found} =    Get Control Text Value    [NAME:lblCount]
+    Run Keyword If    ${records_found}==1    Select Client From Search Result List
+    ...    ELSE    Filter Client Search Results    ${search_filter}
+    [Teardown]    Take Screenshot
+
+Filter Client Search Results
+    [Arguments]    ${filter}=${EMPTY}
+    Wait Until Control Object Is Visible    [NAME:txtFilterText]
+    Set Control Text Value    [NAME:txtFilterText]    ${filter}
+    ${filtered_records}=    Get Control Text Value    [NAME:lblCount]
+    Run Keyword If    ${filtered_records}>1    Log    Your filter for the search criteria still yielded multiple results. Please be more specific.    WARN
+    Select Client From Search Result List
+    [Teardown]    Take Screenshot
+
+Create New Booking By Searching For Client
+    [Arguments]    ${gds}    ${client}    ${lastname}    ${firstname}    ${city_pair}    ${client_account}=${EMPTY}
+    ...    ${client_search_filter}=${EMPTY}
+    Verify That Client Search Textbox Is Displayed Instead Of Client Droplist
+    Select GDS    ${gds}
+    Search For Client    ${client}    ${client_search_filter}
+    Wait Until Control Object Is Visible    [NAME:ctxtPortraitTravellerLastName]
+    Click Control Button    [NAME:grpPortraitProfileInformation]
+    Set Last Name    ${lastname}
+    Set First Name    ${firstname}
+    Click Search Portrait Profile
+    Click Profile Button
+    Wait Until Progress Info is Completed
+    Comment    Run Keyword If    ${handle_profile_popup} == True    Handle Profile Remarks Popup
+    Run Keyword If    "${client_account}" != "${EMPTY}"    Select Client Account Value    ${client_account}
+    Click New Booking
+    Run Keyword If    "${locale}" == "en-GB" or "${locale}" == "en-US"    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    ${city_pair}    6
+    Click Read Booking
+
+Create A Shell PNR By Searching For Client
+    [Arguments]    ${client}    ${lastname}    ${firstname}=${EMPTY}    ${client_search_filter}=${EMPTY}    ${city_pair}=${EMPTY}    ${client_account}=${EMPTY}
+    ...    ${traveller_type}=${EMPTY}    ${email_address}=${EMPTY}    ${country_code}=${EMPTY}    ${area_code}=${EMPTY}    ${phone_number}=${EMPTY}    ${create_portrait_profile}=no
+    ...    ${reason_for_skipping}=${EMPTY}    @{exclude_panels}
+    Verify That Client Search Textbox Is Displayed Instead Of Client Droplist
+    Search For Client    ${client}    ${client_search_filter}
+    Wait Until Control Object Is Visible    [NAME:ctxtPortraitTravellerLastName]
+    Click Control Button    [NAME:grpPortraitProfileInformation]
+    Set Last Name    ${lastname}
+    Set First Name    ${firstname}
+    Click Search Portrait Profile
+    Click Create Traveller Profile
+    Populate Add New Traveller    ${traveller_type}    ${firstname}    ${lastname}    ${email_address}    ${country_code}    ${area_code}
+    ...    ${phone_number}    ${reason_for_skipping}
+    Comment    Select Client Account Value    ${client_account}
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+    Click Create Shell
+    Click Clear All
+
+Select Client From Search Result List
+    Wait Until Control Object Is Visible    [NAME:lstSearchResults]
+    Activate Power Express Window
+    Send    {TAB}
+    Click Control Button    [NAME:btnSelect]
+    Wait Until Control Object Is Not Visible    [NAME:lstSearchResults]
+
+Verify That Error Icon And Message Is Displayed For No Matches Records For Search Client
+    Wait Until Keyword Succeeds    10    1    Object Exists    ${sikuli_image_path}\\invalid_icon_search_client.png    0.80    ${timeout}
+    ${invalid_icon_exists}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\invalid_icon_search_client.png    0.80    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    ${invalid_icon_exists}    Invalid icon is NOT displayed
+    Run Keyword If    ${invalid_icon_exists} == True    Hover Object    ${sikuli_image_path}\\invalid_icon_search_client.png    0.80    ${timeout}
+    ${invalid_amount_tool_tip_exists}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\no_records_found_search_client.png    0.80    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    ${invalid_amount_tool_tip_exists}    No Records found tooltip is NOT displayed
+    [Teardown]    Take Screenshot
+
+Verify Default And Mandatory Fields Of Fare Tabs
+    [Arguments]    ${tab_number}    ${realised_saving}    ${missed_saving}
+    Click Fare Tab    ${tab_number}
+    Verify Realised Savings Code Default Value    ${realised_saving}
+    Verify Missed Savings Code Default Value    ${missed_saving}
+    Verify High Fare, Low Fare, And Charge Fare Are Equal    ${tab_number}
+    Verify Air Fare Restriction Option Is Selected By Default    Default
+
+Verify High Fare, Low Fare, And Charge Fare Are Equal
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtChargedFare
+    ${charged_fare_amount}    Get Control Text Value    ${object_name}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    ${high_fare_amount}    Get Control Text Value    ${object_name}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtLowFare
+    ${low_fare_amount}    Get Control Text Value    ${object_name}
+    Verify Actual Value Matches Expected Value    ${high_fare_amount}    ${charged_fare_amount}
+    Verify Actual Value Matches Expected Value    ${low_fare_amount}    ${charged_fare_amount}
+    Log    test
+
+Verify Team ID In Contact Tracking Logs
+    [Arguments]    ${team_id}
+    ${ct_file}    Determine Log File Name and Path    SyExContactTrackingJSLog
+    ${ct_file_value}    OperatingSystem.Get File    ${ct_file}
+    Should Contain    ${ct_file_value}    "teamId" ParameterValue ="${team_id}"
+
+Verify On Hold Reasons for 24HSC Is Disabled and Checked
+    Verify On Hold Booking Reason Is Disabled    Awaiting Customer references
+    Verify On Hold Booking Reason Is Checked    Awaiting Customer references
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+
+Verify Fare Not Finalised Is Ticked
+    Tick Checkbox
+    Verify Checkbox Is Ticked    [NAME:cchkNotFinalised]
+
+Verify Not Known At Time of Booking Chekbox Is Ticked in Cust Ref Panel
+    Verify Checkbox Is Ticked    [NAME:cChkSkipValidation]
+
+Verify Not Known At Time of Booking Checkbox Is Ticked For FOP in Client Info Panel
+    Verify Checkbox Is Ticked    [NAME:chkNotKnown]
+
+Verify On Hold Reason For Non 24HSC Client Is Disabled And Checked
+    Verify On Hold Booking Reason Is Disabled    Awaiting Approval
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Verify On Hold Booking Reason Is Disabled    Awaiting Form of Payment
+    Verify On Hold Booking Reason Is Checked    Awaiting Form of Payment
+
+Verify On Hold Reasons Is Disabled
+    [Arguments]    @{on_hold_reasons}
+    : FOR    ${on_hold_reason}    IN    @{on_hold_reasons}
+    \    Run Keyword If    "${on_hold_reason}" == "Awaiting Customer References"    Verify Awaiting Customer Reference Is Disabled
+    \    ...    ELSE IF    "${on_hold_reason}" == "Awaiting Fare Details"    Verify Awaiting Customer Reference Is Disabled
+    \    ...    ELSE IF    "${on_hold_reason}" == "Awaiting Approval"    Verify Awaiting Approval Is Disabled
+    \    ...    ELSE IF    "${on_hold_reason}" == "Awaiting Form of Payment"    Verify Awaiting Form of Payment Is Disabled
+    [Teardown]    Take Screenshot
+
+Verify Awaiting Approval Is Disabled
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason3]
+
+Verify Awaiting Fare Details Is Disabled
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason2]
+
+Verify Awaiting Form of Payment Is Disabled
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason5]
+
+Verify On Hold Reasons Is Checked
+    [Arguments]    @{on_hold_reasons_state}
+    : FOR    ${onhold_state}    IN    @{on_hold_reasons_state}
+    \    Run Keyword If    ${onhold_state} == "Awaiting Customer Referenes"    Verify Awaiting Customer Reference Is Checked
+    \    ...    ELSE IF    ${onhold_state} == "Awaiting Fare Details"    Verify Awaiting Fare Details Is Checked
+    \    ...    ELSE IF    ${onhold_state} == "Awaiting Approval"    Verify Awaiting Approval Is Checked
+    \    ...    ELSE IF    ${onhold_state} == "Awaiting Form of Payment"    Verify Awaiting Form Of Payment Is Checked
+
+Verify Awaiting Customer Reference Is Checked
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}    ${arg5}    ${arg6}
+    ...    ${arg7}    ${arg8}    ${arg9}
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason1]
+
+Verify Awaiting Customer Reference Is Disabled
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}    ${arg5}    ${arg6}
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason1]
+
+Verify Awaiting Fare Details Is Checked
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}    ${arg5}    ${arg6}
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason2]
+
+Verify Awaiting Approval Is Checked
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason3]
+
+Verify Awaiting Form Of Payment Is Checked
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason5]
+
+Verify On Hold Reasons Remarks Are Written In the PNR
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING FARE DETAILS
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING APPROVAL
+
+Verify Reason For Skipping Profile Creation Is Hidden
+    Verify Control Object Is Not Visible    [NAME:lblReason]    Add New Traveller
+    Verify Control Object Is Not Visible    [NAME:ctxtReason]    Add New Traveller

@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        meetings_and_events

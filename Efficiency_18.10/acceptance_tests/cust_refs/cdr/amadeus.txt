@@ -1,0 +1,798 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../cust_refs_verification.txt
+Resource          ../../../resources/common/common_library.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+[NB] Verify That DefaultValue From CDR Table Will Default In Cust Refs Panel
+    [Tags]    us4782    17.8    not_ready    emea    de
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus DE 16 - Auto ¦ US4782    AutoOneEight    LokiTravTwo
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    Employee ID    TEST123
+    Verify CDR Value Is Correct    TripReason    AUTOTEST
+    Set CDR Value    Employee ID    ${EMPTY}
+    Set CDR Value    TripReason    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    *0601*TEST123
+    Verify Specific Line Is Not Written In The PNR    *0602*AUTOTEST
+    Click Clear All With Options    Clear All
+
+[AB] Verify That DefaultValue From CDR Table Will Default In Cust Refs Panel
+    [Tags]    us4782    17.8    not_ready    emea    de
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    Employee ID    TEST123
+    Verify CDR Value Is Correct    TripReason    AUTOTEST
+    Set CDR Value    Employee ID    ${EMPTY}
+    Set CDR Value    TripReason    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR    Amend Booking Worfklow For CDR
+    Execute Simultaneous Change Handling    Amend Booking Worfklow For CDR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    *0601*TEST123
+    Verify Specific Line Is Not Written In The PNR    *0602*AUTOTEST
+    Click Clear All With Options    Clear All
+
+[QA] Verify That DefaultValue From CDR Table Will Default In Cust Refs Panel
+    [Tags]    us4782    17.8    not_ready    emea    de
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    Diese Buchung ist auf Status ‘Warten auf Kundenreferenzen‘, sparen sie Zeit und benutzen sie den ‚Quick Amend‘ Knopf um fehlende Daten einzugeben und die Buchung abzuschließen!
+    Click Quick Amend
+    Verify Actual Panel Equals To Expected Panel    CUST REFS    DELIVERY    RECAP
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    Employee ID    TEST123
+    Verify CDR Value Is Correct    TripReason    AUTOTEST
+    Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Customer References
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR    Quick Amend Booking Worfklow For CDR
+    Execute Simultaneous Change Handling    Quick Amend Booking Worfklow For CDR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RMM ONHOLD:FEHLENDE ZUSATZDATEN
+    Verify Specific Line Is Written In The PNR    *0601*TEST123
+    Verify Specific Line Is Written In The PNR    *0602*AUTOTEST
+    Click Clear All With Options    Clear All
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Not Visible
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SE] Verify That CDRs Are Written in the RIR Remarks when 'Not Known at the time of Booking' is ticked and SO 'Enable Print CDRs On Itinerary' Is Set To Yes
+    [Tags]    se    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003KXR    en-GB    kronquillouk    SE QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    Power Express EMEA test ¦ SE-AMADEUS RAIL TEST    Cala    Carlson
+    Click New Booking
+    Book Flight X Months From Now    CDGARN/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Center    111
+    Set CDR Value    EmployeeID    ${EMPTY}
+    Set CDR Value    Trip Reason    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtb
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTER - 111
+    Verify CDR Remarks Are Written    RIR REFERENCE 2: EMPLOYEEID -
+    Verify CDR Remarks Are Written    RIR REFERENCE 3: TRIP REASON -
+
+[AB SE] Verify that CDRs are written in the RIR Remarks when 'Not Known at the time of Booking' is ticked and SO 'Enable Print CDRs On Itinerary' Is Set To Yes
+    [Tags]    se    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Center    111
+    Set CDR Value    EmployeeID    1234567891
+    Set CDR Value    Trip Reason    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking for CDRs written
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtr
+    Verify Specific Line Is Written In The PNR    *0601*111
+    Verify Specific Line Is Written In The PNR    *0602*1234567891
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtb
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTER - 111
+    Verify CDR Remarks Are Written    RIR REFERENCE 2: EMPLOYEEID - 1234567891
+    Verify CDR Remarks Are Written    RIR REFERENCE 3: TRIP REASON -
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB DK] Verify That No RIR Remarks Are Written For CDR When Enable Print CDRs On Itinerary Is Set To No And Not Known At Time Of Booking Is Ticked
+    [Tags]    dk    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003KXR    en-GB    kronquillouk    UK QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub2    Mason    James
+    Select Client Account Using Default Value
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    COSTCENT    ${EMPTY}
+    Set CDR Value    EMPLY.ID    ${EMPTY}
+    Set CDR Value    TRIP....    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Book Flight X Months From Now    CDGARN/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtb
+    Verify Specific Line Is Not Written In The PNR    RIR REFERENCE 2: Cost Center -
+    Verify Specific Line Is Not Written In The PNR    RIR REFERENCE 3: TRIP REASON CODE -
+
+[AB DK] Verify That No RIR Remarks Are Written For CDR When Enable Print CDRs On Itinerary Is Set To No And Not Known At Time Of Booking Is Ticked
+    [Tags]    dk    emea
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    COSTCENT    A1/34
+    Set CDR Value    EMPLY.ID    ${EMPTY}
+    Set CDR Value    TRIP....    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking for CDRs written when so is No
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtr    md
+    Verify Specific Line Is Written In The PNR    *0601*A1/34
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rtb
+    Verify Specific Line Is Not Written In The PNR    RIR REFERENCE 1: COST CENTER - A1/34
+    Verify Specific Line Is Not Written In The PNR    RIR REFERENCE 3: TRIP REASON -
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That CDR Values Written At Update PNR Are Read Back At Read Booking
+    [Tags]    ca    noram    us6723
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrFour
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Accounting    A1B
+    Set CDR Value    Cost Center    TST123
+    Set CDR Value    SU-Department Name    BPGIT
+    Set CDR Value    T-Booking Date    10 24 18
+    Set CDR Value    T-Matrix DP Code    C098
+    Set CDR Value    TS-PIN    DEF
+    Click Panel    Client Info
+    Update PNR for EN or GB
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U57/-A1B
+    Verify Specific Line Is Written In The PNR    RM *U58/-TST123
+    Verify Specific Line Is Written In The PNR    RM *U60/-BPGIT
+    Verify Specific Line Is Written In The PNR    RM *U55/-10 24 18
+    Verify Specific Line Is Written In The PNR    RM *DP/-C098
+    Verify Specific Line Is Written In The PNR    RM *U56/-DEF
+    [Teardown]    Click Clear All
+
+[NB CA] Verify That CDR Values Changed After Read Booking Are Written At Finish PNR
+    [Tags]    ca    noram    us6723
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrFour
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Accounting    A1B
+    Set CDR Value    Cost Center    TST123
+    Set CDR Value    SU-Department Name    BPGIT
+    Set CDR Value    T-Booking Date    10 24 18
+    Set CDR Value    T-Matrix DP Code    C098
+    Set CDR Value    TS-PIN    DEF
+    Click Panel    Client Info
+    Update PNR for EN or GB
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U57/-A1B
+    Verify Specific Line Is Written In The PNR    RM *U58/-TST123
+    Verify Specific Line Is Written In The PNR    RM *U60/-BPGIT
+    Verify Specific Line Is Written In The PNR    RM *U55/-10 24 18
+    Verify Specific Line Is Written In The PNR    RM *DP/-C098
+    Verify Specific Line Is Written In The PNR    RM *U56/-DEF
+    Book Flight X Months From Now    MSPORD/AAA    SS1Y1    FXP    6    1
+    Click Panel    Cust Refs
+    Set CDR Value    T-Booking Date    10 25 18
+    Set CDR Value    T-Matrix DP Code    D765
+    Set CDR Value    TS-PIN    GHI
+    Click Panel    Complete
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Value Is Correct    T-Booking Date    10 24 18
+    Verify CDR Value Is Correct    T-Matrix DP Code    C098
+    Verify CDR Value Is Correct    TS-PIN    DEF
+    Set CDR Value    T-Booking Date    10 25 18
+    Set CDR Value    T-Matrix DP Code    D765
+    Set CDR Value    TS-PIN    GHI
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U57/-A1B
+    Verify Specific Line Is Written In The PNR    RM *U58/-TST123
+    Verify Specific Line Is Written In The PNR    RM *U60/-BPGIT
+    Verify Specific Line Is Written In The PNR    RM *U55/-10 25 18
+    Verify Specific Line Is Written In The PNR    RM *DP/-D765
+    Verify Specific Line Is Written In The PNR    RM *U56/-GHI
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That CDRs Will Not Be Written Into The PNR If Tick Not Known At Time Of Booking Is Checked
+    [Tags]    ca    noram    us6723
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Accounting    B2C
+    Set CDR Value    SU-Department Name    BPGDEV
+    Set CDR Value    T-Matrix DP Code    D765
+    Tick Not Known At Time Of Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking
+    Update PNR for EN or GB
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U57/-B2C
+    Verify Specific Line Is Written In The PNR    RM *U60/-BPGDEV
+    Verify Specific Line Is Written In The PNR    RM *DP/-D765
+    Verify Specific Line Is Not Written In The PNR    RM *U58/-
+    Verify Specific Line Is Not Written In The PNR    RM *U55/-
+    Verify Specific Line Is Not Written In The PNR    RM *U56/-
+    Book Flight X Months From Now    ORDMSP/AAA    SS1Y1    FXP    6    3
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Value Is Correct    Accounting    B2C
+    Verify CDR Value Is Correct    SU-Department Name    BPGDEV
+    Verify CDR Value Is Correct    T-Matrix DP Code    D765
+    Verify CDR Value Is Correct    Cost Center    ${EMPTY}
+    Verify CDR Value Is Correct    T-Booking Date    ${EMPTY}
+    Verify CDR Value Is Correct    TS-PIN    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *U57/-B2C
+    Verify Specific Line Is Written In The PNR    RM *U60/-BPGDEV
+    Verify Specific Line Is Written In The PNR    RM *DP/-D765
+    Verify Specific Line Is Not Written In The PNR    RM *U58/-
+    Verify Specific Line Is Not Written In The PNR    RM *U55/-
+    Verify Specific Line Is Not Written In The PNR    RM *U56/-
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK]Verify That CDR Drop List Displayed In Chronological Order
+    [Tags]    us4572    uk
+    Open Power Express And Retrieve Profile    ${version}    TEST    U003WXR    en-GB    AutomationUK    UK QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub2    Smith    Amul
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    COSTCENT    A1/34
+    Get CostCent CDR List
+    Verify CDR Value Is Correct    COSTCENT    A1/34
+    Set CDR Value    TRVLCOST    TEST
+    Click Update PNR
+    Book Flight X Months From Now Without Pricing    CDGLHR/AAF    SS1Y1
+    Enter GDS Command    FXP    FXT01/P1
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Policy Check
+    Select Policy Status    Economy Class out of policy    HA - Has authority to travel
+    Click Panel    Air Fare
+    Select Realised Saving Code Value    C1 - Client Special Fare Accepted
+    Select Missed Saving Code Value    AA - test
+    Select Class Code Value    YC - Economy Client Fare
+    Comment    Select Fully Flexible
+    Click Panel    Pspt and Visa
+    Tick Domestic Trip
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *0601*A1/34
+    Verify Specific Line Is Written In The PNR    RM *0619*TEST
+
+[QA UK] Verify That CDR Drop List Displayed In Chronological Order For Quick Amend-Awaiting CDR
+    [Tags]    us4572    uk
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Spiel Is Visible    This booking is ‘On Hold – Awaiting CDR’. Save time by using the ‘Quick Amend’ button to add the missing data and finish the booking!
+    Verify Quick Amend Is Visible
+    Click Quick Amend
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    COSTCENT    A1/34
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *0601*A1/34
+    Verify Specific Line Is Written In The PNR    RM *0619*TEST
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SE] Verify That Cust Refs Displayed And Populate Multi CDR Tab Based on Passenger Relation
+    [Tags]    emea    us6201    us6731    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    SE QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    SE Amadeus 1 - SyEx ¦ SE - Amadeus Sub1    Svtest    Raynell
+    Select Client Account Value    717171 ¦ CWT AQUA TEST ACCOUNT ¦ SE - Amadeus Sub1
+    Click New Booking
+    Add Multiple Traveler    NM3POLO/LISA Mrs/Marco Mr/Riza Ms
+    Book Flight X Months From Now Without Pricing    LHRCDG/AAF    SS4Y3    6
+    Fare Quote For One Segment    S5    P1-2
+    Fare Quote For One Segment    S5    P3-4
+    Book Flight X Months From Now Without Pricing    CDGLHR/AAF    SS4Y3    6    4
+    Fare Quote For One Segment    S6    P1,3
+    Fare Quote For One Segment    S6    P2,4
+    Enter GDS Command    RM *0606*A2A/P1    RM *0601*CWTTST/P1    RM *0602*DEPTOFTEST/P1    RM *0604*X222/P1    RM *0605*JJJ/P1
+    Enter GDS Command    RM *0606*B2B/P2    RM *0601*CWTABC/P2    RM *0602*DEPTOFABCD/P2    RM *0603*12 20 20/P2    RM *0604*X888/P2    RM *0605*BBB/P2
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Tab Is Displayed    1. LISA POLO
+    Verify CDR Tab Is Displayed    2. MARCO POLO
+    Verify CDR Tab Is Displayed    3. RIZA POLO
+    Verify CDR Tab Is Displayed    4. RAYNELL SVTEST
+    Click Tab in Cust Ref Panel    1. LISA POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    CWTTST
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    DEPTOFTEST
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    X222
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    JJJ
+    Verify CDR Value Are Correct For MultiPax    Accounting    A2A
+    Click Tab in Cust Ref Panel    2. MARCO POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    CWTABC
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    DEPTOFABCD
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    12 20 20
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    X888
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    BBB
+    Verify CDR Value Are Correct For MultiPax    Accounting    B2B
+    Click Tab in Cust Ref Panel    3. RIZA POLO
+    Set CDR Value For Multipax    Cost Centre    CWTYYY
+    Set CDR Value For Multipax    T-Booking Date    11 11 11
+    Click Tab in Cust Ref Panel    4. RAYNELL SVTEST
+    Set CDR Value For Multipax    Cost Centre    CWTZZZ
+    Set CDR Value For Multipax    SU-Department Name    TESTDEPTAA
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    RM *0606*A2A/P1    RM *0601*CWTTST/P1    RM *0602*DEPTOFTEST/P1    RM *0604*X222/P1    RM *0605*JJJ/P1
+    Verify CDR Remarks Are Written    RM *0606*B2B/P2    RM *0601*CWTABC/P2    RM *0602*DEPTOFABCD/P2    RM *0603*12 20 20/P2    RM *0604*X888/P2    RM *0605*BBB/P2
+    Verify CDR Remarks Are Written    RM *0601*CWTYYY/P3    *0603*11 11 11/P3    RM *0601*CWTZZZ/P4    RM *0602*TESTDEPTAA/P4
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - CWTTST/P1    RIR REFERENCE 2: SU-DEPARTMENT NAME - DEPTOFTEST/P1    RIR REFERENCE 4: T-MATRIX DP CODE - X222/P1    RIR REFERENCE 5: TS-PIN - JJJ/P1    RIR REFERENCE 6: ACCOUNTING - A2A/P1
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - CWTABC/P2    RIR REFERENCE 2: SU-DEPARTMENT NAME - DEPTOFABCD/P2    RIR REFERENCE 3: T-BOOKING DATE - 12 20 20/P2    RIR REFERENCE 4: T-MATRIX DP CODE - X888/P2    RIR REFERENCE 5: TS-PIN - BBB/P2    RIR REFERENCE 6: ACCOUNTING - B2B/P2
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - CWTYYY/P3    RIR REFERENCE 3: T-BOOKING DATE - 11 11 11/P3    RIR REFERENCE 1: COST CENTRE - CWTZZZ/P4    RIR REFERENCE 2: SU-DEPARTMENT NAME - TESTDEPTAA/P4
+
+[AB SE] Verify That Cust Refs Displayed And Populate Multi CDR Tab Based on Passenger Relation
+    [Tags]    emea    us6201    us6731    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Tab Is Displayed    1. LISA POLO
+    Verify CDR Tab Is Displayed    2. MARCO POLO
+    Verify CDR Tab Is Displayed    3. RIZA POLO
+    Verify CDR Tab Is Displayed    4. RAYNELL SVTEST
+    Click Tab in Cust Ref Panel    1. LISA POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    CWTTST
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    DEPTOFTEST
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    X222
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    JJJ
+    Verify CDR Value Are Correct For MultiPax    Accounting    A2A
+    Click Tab in Cust Ref Panel    2. MARCO POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    CWTABC
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    DEPTOFABCD
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    12 20 20
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    X888
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    BBB
+    Verify CDR Value Are Correct For MultiPax    Accounting    B2B
+    Click Tab in Cust Ref Panel    3. RIZA POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    CWTYYY
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    11 11 11
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    Accounting    ${EMPTY}
+    Click Tab in Cust Ref Panel    4. RAYNELL SVTEST
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    CWTZZZ
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    TESTDEPTAA
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    Accounting    ${EMPTY}
+    Set CDR Value For Multipax    T-Matrix DP Code    R222
+    Set CDR Value For Multipax    TS-PIN    DDD
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    RM *0606*A2A/P1    RM *0601*CWTTST/P1    RM *0602*DEPTOFTEST/P1    RM *0604*X222/P1    RM *0605*JJJ/P1
+    Verify CDR Remarks Are Written    RM *0606*B2B/P2    RM *0601*CWTABC/P2    RM *0602*DEPTOFABCD/P2    RM *0603*12 20 20/P2    RM *0604*X888/P2    RM *0605*BBB/P2
+    Verify CDR Remarks Are Written    RM *0601*CWTYYY/P3    *0603*11 11 11/P3    RM *0601*CWTZZZ/P4    RM *0602*TESTDEPTAA/P4    RM *0604*R222/P4    RM *0605*DDD/P4
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - CWTABC/P2    RIR REFERENCE 2: SU-DEPARTMENT NAME - DEPTOFABCD/P2    RIR REFERENCE 3: T-BOOKING DATE - 12 20 20/P2    RIR REFERENCE 4: T-MATRIX DP CODE - X888/P2    RIR REFERENCE 5: TS-PIN - BBB/P2    RIR REFERENCE 6: ACCOUNTING - B2B/P2
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - CWTYYY/P3    RIR REFERENCE 3: T-BOOKING DATE - 11 11 11/P3    RIR REFERENCE 1: COST CENTRE - CWTZZZ/P4    RIR REFERENCE 2: SU-DEPARTMENT NAME - TESTDEPTAA/P4    RIR REFERENCE 4: T-MATRIX DP CODE - R222/P4    RIR REFERENCE 5: TS-PIN - DDD/P4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Cust Refs Displayed And Populate Multi CDR Tab Based on Passenger Relation
+    [Tags]    uk    us6201    us6731
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - US6868    AutoOneNineteen    EmeaTrvlrOne
+    Select Client Account Value    717171 ¦ DC April test ¦ UK - US6868
+    Click New Booking
+    Click Panel    Cust Refs
+    Verify CDR Tab Is Displayed    1. EMEATRVLRONE AUTOONENINETEEN
+    Update PNR for EN or GB
+    Add Multiple Traveler    NM3POLO/LISA Mrs/Marco Mr/Riza Ms
+    Book Flight X Months From Now    LHRCDG/AAF    SS4Y1    FXP    6
+    Enter GDS Command    RM *0610*111/P1    RM *0606*TESTA/P1    RM *0613*AAA/P1    RM *0619*TEST1/P1
+    Enter GDS Command    RM *0610*222/P2    RM *0606*TESTB/P2    RM *0613*BBB/P2    RM *0619*TEST2/P2
+    Enter GDS Command    RM *0610*123/P3    RM *0606*TESTC/P3    RM *0613*ABC/P3    RM *0619*TEST3/P3
+    Enter GDS Command    RM *0610*456/P4    RM *0606*TESTD/P4    RM *0613*XYZ/P4    RM *0619*TEST4/P4
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Tab Is Displayed    1. EMEATRVLRONE AUTOONENINETEEN
+    Verify CDR Tab Is Displayed    2. LISA POLO
+    Verify CDR Tab Is Displayed    3. MARCO POLO
+    Verify CDR Tab Is Displayed    4. RIZA POLO
+    Click Tab in Cust Ref Panel    3. MARCO POLO
+    Verify CDR Value Are Correct For MultiPax    ALINE.BUS    123
+    Verify CDR Value Are Correct For MultiPax    APPROVER    TESTC
+    Verify CDR Value Are Correct For MultiPax    DEPTNAME    ABC
+    Verify CDR Value Are Correct For MultiPax    TRVLCOST    TEST3
+    Click Tab in Cust Ref Panel    4. RIZA POLO
+    Verify CDR Value Are Correct For MultiPax    ALINE.BUS    456
+    Verify CDR Value Are Correct For MultiPax    APPROVER    TESTD
+    Verify CDR Value Are Correct For MultiPax    DEPTNAME    XYZ
+    Verify CDR Value Are Correct For MultiPax    TRVLCOST    TEST4
+    Click Tab in Cust Ref Panel    1. EMEATRVLRONE AUTOONENINETEEN
+    Set CDR Value For Multipax    APPROVER    ABCDE
+    Click Tab in Cust Ref Panel    2. LISA POLO
+    Set CDR Value For Multipax    BUS.UNIT    XYZ
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    RM *0610*111/P1    RM *0606*ABCDE/P1    RM *0613*AAA/P1    RM *0619*TEST1/P1
+    Verify CDR Remarks Are Written    RM *0610*222/P2    RM *0606*TESTB/P2    RM *0613*BBB/P2    RM *0619*TEST2/P2    RM *0612*XYZ/P2
+    Verify CDR Remarks Are Written    RM *0610*123/P3    RM *0606*TESTC/P3    RM *0613*ABC/P3    RM *0619*TEST3/P3
+    Verify CDR Remarks Are Written    RM *0610*456/P4    RM *0606*TESTD/P4    RM *0613*XYZ/P4    RM *0619*TEST4/P4
+    Verify CDR Remarks Are Written    RIR REFERENCE 10: ALINE.BUS - 111/P1    RIR REFERENCE 6: APPROVER - ABCDE/P1    RIR REFERENCE 13: DEPTNAME - AAA/P1    RIR REFERENCE 19: TRVLCOST - TEST1/P1
+    Verify CDR Remarks Are Written    RIR REFERENCE 10: ALINE.BUS - 222/P2    RIR REFERENCE 6: APPROVER - TESTB/P2    RIR REFERENCE 12: BUS.UNIT - XYZ/P2    RIR REFERENCE 13: DEPTNAME - BBB/P2    RIR REFERENCE 19: TRVLCOST - TEST2/P2
+    Verify CDR Remarks Are Written    RIR REFERENCE 10: ALINE.BUS - 123/P3    RIR REFERENCE 6: APPROVER - TESTC/P3    RIR REFERENCE 13: DEPTNAME - ABC/P3    RIR REFERENCE 19: TRVLCOST - TEST3/P3
+    Verify CDR Remarks Are Written    RIR REFERENCE 10: ALINE.BUS - 456/P4    RIR REFERENCE 6: APPROVER - TESTD/P4    RIR REFERENCE 13: DEPTNAME - XYZ/P4    RIR REFERENCE 19: TRVLCOST - TEST4/P4
+
+[AB UK] Verify That Cust Refs Displayed And Populate Multi CDR Tab Based on Passenger Relation
+    [Tags]    uk    us6201    us6731
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Tab Is Displayed    1. EMEATRVLRONE AUTOONENINETEEN
+    Verify CDR Tab Is Displayed    2. LISA POLO
+    Verify CDR Tab Is Displayed    3. MARCO POLO
+    Verify CDR Tab Is Displayed    4. RIZA POLO
+    Click Tab in Cust Ref Panel    3. MARCO POLO
+    Verify CDR Value Are Correct For MultiPax    ALINE.BUS    123
+    Verify CDR Value Are Correct For MultiPax    APPROVER    TESTC
+    Verify CDR Value Are Correct For MultiPax    DEPTNAME    ABC
+    Verify CDR Value Are Correct For MultiPax    TRVLCOST    TEST3
+    Set CDR Value For Multipax    ALINE.BUS    111
+    Set CDR Value For Multipax    DEPTNAME    YYY
+    Click Tab in Cust Ref Panel    4. RIZA POLO
+    Verify CDR Value Are Correct For MultiPax    ALINE.BUS    456
+    Verify CDR Value Are Correct For MultiPax    APPROVER    TESTD
+    Verify CDR Value Are Correct For MultiPax    DEPTNAME    XYZ
+    Verify CDR Value Are Correct For MultiPax    TRVLCOST    TEST4
+    Set CDR Value For Multipax    APPROVER    ABCXY
+    Set CDR Value For Multipax    TRVLCOST    DDD4
+    Click Tab in Cust Ref Panel    1. EMEATRVLRONE AUTOONENINETEEN
+    Verify CDR Value Are Correct For MultiPax    APPROVER    ABCDE
+    Click Tab in Cust Ref Panel    2. LISA POLO
+    Verify CDR Value Are Correct For MultiPax    BUS.UNIT    XYZ
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    RM *0610*111/P1    RM *0606*ABCDE/P1    RM *0613*AAA/P1    RM *0619*TEST1/P1
+    Verify CDR Remarks Are Written    RM *0610*222/P2    RM *0606*TESTB/P2    RM *0613*BBB/P2    RM *0619*TEST2/P2
+    Verify CDR Remarks Are Written    RM *0610*111/P3    RM *0606*TESTC/P3    RM *0613*YYY/P3    RM *0619*TEST3/P3
+    Verify CDR Remarks Are Written    RM *0610*456/P4    RM *0606*ABCXY/P4    RM *0613*XYZ/P4    RM *0619*DDD4/P4
+    Verify CDR Remarks Are Written    RIR REFERENCE 10: ALINE.BUS - 111/P1    RIR REFERENCE 6: APPROVER - ABCDE/P1    RIR REFERENCE 13: DEPTNAME - AAA/P1    RIR REFERENCE 19: TRVLCOST - TEST1/P1
+    Verify CDR Remarks Are Written    RIR REFERENCE 10: ALINE.BUS - 222/P2    RIR REFERENCE 6: APPROVER - TESTB/P2    RIR REFERENCE 12: BUS.UNIT - XYZ/P2    RIR REFERENCE 13: DEPTNAME - BBB/P2    RIR REFERENCE 19: TRVLCOST - TEST2/P2
+    Verify CDR Remarks Are Written    RIR REFERENCE 10: ALINE.BUS - 111/P3    RIR REFERENCE 6: APPROVER - TESTC/P3    RIR REFERENCE 13: DEPTNAME - YYY/P3    RIR REFERENCE 19: TRVLCOST - TEST3/P3
+    Verify CDR Remarks Are Written    RIR REFERENCE 10: ALINE.BUS - 456/P4    RIR REFERENCE 6: APPROVER - ABCXY/P4    RIR REFERENCE 13: DEPTNAME - XYZ/P4    RIR REFERENCE 19: TRVLCOST - DDD4/P4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FI] Verify That Cust Refs Displayed And Populate Multi CDR Tab Based On Passenger Relation
+    [Tags]    uk    us6201    us6731
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    FI Head Office Test Team
+    Select GDS    Amadeus
+    Set Client And Traveler    Finland Sales ¦ FI-Power Tools Test Company    Navis    Debbie
+    Select Client Account Value    717171 ¦ CWT AQUA TEST ACCOUNT ¦ FI-Power Tools Test Company
+    Click New Booking
+    Add Multiple Traveler    NM3POLO/LISA Mrs/Marco Mr/Riza Ms
+    Book Flight X Months From Now    LHRCDG/AAF    SS4Y1    FXP    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Tab Is Displayed    1. DEBBIE R NAVIS
+    Verify CDR Tab Is Displayed    2. LISA POLO
+    Verify CDR Tab Is Displayed    3. MARCO POLO
+    Verify CDR Tab Is Displayed    4. RIZA POLO
+    Click Tab in Cust Ref Panel    1. DEBBIE R NAVIS
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    Accounting    ${EMPTY}
+    Set CDR Value For Multipax    Cost Centre    AAAAAA
+    Set CDR Value For Multipax    TS-PIN    JJJ
+    Set CDR Value For Multipax    Accounting    A2A
+    Click Tab in Cust Ref Panel    2. LISA POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    Accounting    ${EMPTY}
+    Set CDR Value For Multipax    Cost Centre    BBBBBB
+    Set CDR Value For Multipax    T-Booking Date    22 22 22
+    Click Tab in Cust Ref Panel    3. MARCO POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    Accounting    ${EMPTY}
+    Set CDR Value For Multipax    Cost Centre    CCCCCC
+    Set CDR Value For Multipax    T-Booking Date    33 33 33
+    Set CDR Value For Multipax    Accounting    C2C
+    Click Tab in Cust Ref Panel    4. RIZA POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    Accounting    ${EMPTY}
+    Set CDR Value For Multipax    Cost Centre    DDDDDD
+    Set CDR Value For Multipax    SU-Department Name    DEPTOFTEST
+    Set CDR Value For Multipax    TS-PIN    DDD
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    RM *ACECRM-COST CENTRE-AAAAAA/P1    RM *ACECRM-TS-PIN-JJJ/P1    RM *ACECRM-COST CENTRE-BBBBBB/P2    RM *ACECRM-COST CENTRE-BBBBBB/P2    RM *ACECRM-T-BOOKING DATE-22 22 22/P2
+    Verify CDR Remarks Are Written    RM *ACECRM-COST CENTRE-CCCCCC/P3    RM *ACECRM-T-BOOKING DATE-33 33 33/P3    RM *ACECRM-ACCOUNTING-C2C/P3    RM *ACECRM-COST CENTRE-DDDDDD/P4    RM *ACECRM-SU-DEPARTMENT NAME-DEPTOFTEST/P4    RM *ACECRM-TS-PIN-DDD/P4
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - AAAAAA/P1    RIR REFERENCE 5: TS-PIN - JJJ/P1    RIR REFERENCE 6: ACCOUNTING - A2A/P1    RIR REFERENCE 1: COST CENTRE - BBBBBB/P2    RIR REFERENCE 3: T-BOOKING DATE - 22 22 22/P2
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - CCCCCC/P3    RIR REFERENCE 3: T-BOOKING DATE - 33 33 33/P3    RIR REFERENCE 6: ACCOUNTING - C2C/P3    RIR REFERENCE 1: COST CENTRE - DDDDDD/P4    RIR REFERENCE 2: SU-DEPARTMENT NAME - DEPTOFTEST/P4
+
+[AB FI] Verify That Cust Refs Displayed And Populate Multi CDR Tab Based On Passenger Relation
+    [Tags]    uk    us6201    us6731
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Click Panel    Cust Refs
+    Verify CDR Tab Is Displayed    1. DEBBIE R NAVIS
+    Verify CDR Tab Is Displayed    2. LISA POLO
+    Verify CDR Tab Is Displayed    3. MARCO POLO
+    Verify CDR Tab Is Displayed    4. RIZA POLO
+    Click Tab in Cust Ref Panel    1. DEBBIE R NAVIS
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    AAAAAA
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    JJJ
+    Verify CDR Value Are Correct For MultiPax    Accounting    A2A
+    Set CDR Value For Multipax    Cost Centre    ABCDEF
+    Set CDR Value For Multipax    SU-Department Name    TESTINGCWT
+    Click Tab in Cust Ref Panel    2. LISA POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    BBBBBB
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    22 22 22
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    Accounting    ${EMPTY}
+    Set CDR Value For Multipax    T-Booking Date    11 22 33
+    Set CDR Value For Multipax    T-Matrix DP Code    B123
+    Set CDR Value For Multipax    Accounting    B2B
+    Click Tab in Cust Ref Panel    3. MARCO POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    CCCCCC
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    33 33 33
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    Accounting    C2C
+    Click Tab in Cust Ref Panel    4. RIZA POLO
+    Verify CDR Value Are Correct For MultiPax    Cost Centre    DDDDDD
+    Verify CDR Value Are Correct For MultiPax    SU-Department Name    DEPTOFTEST
+    Verify CDR Value Are Correct For MultiPax    T-Booking Date    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    T-Matrix DP Code    ${EMPTY}
+    Verify CDR Value Are Correct For MultiPax    TS-PIN    DDD
+    Verify CDR Value Are Correct For MultiPax    Accounting    ${EMPTY}
+    Set CDR Value For Multipax    Cost Centre    DFDFDF
+    Set CDR Value For Multipax    SU-Department Name    DEPTOFTEST
+    Set CDR Value For Multipax    T-Booking Date    44 44 44
+    Set CDR Value For Multipax    T-Matrix DP Code    D444
+    Set CDR Value For Multipax    TS-PIN    DEF
+    Set CDR Value For Multipax    Accounting    D8A
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    RM *ACECRM-COST CENTRE-ABCDEF/P1    RM *ACECRM-SU-DEPARTMENT NAME-TESTINGCWT/P1    RM *ACECRM-TS-PIN-JJJ/P1    RM *ACECRM-ACCOUNTING-A2A/P1
+    Verify CDR Remarks Are Written    RM *ACECRM-COST CENTRE-BBBBBB/P2    RM *ACECRM-T-BOOKING DATE-11 22 33/P2    RM *ACECRM-T-MATRIX DP CODE-B123/P2    RM *ACECRM-ACCOUNTING-B2B/P2
+    Verify CDR Remarks Are Written    RM *ACECRM-COST CENTRE-CCCCCC/P3    RM *ACECRM-T-BOOKING DATE-33 33 33/P3    RM *ACECRM-ACCOUNTING-C2C/P3
+    Verify CDR Remarks Are Written    RM *ACECRM-COST CENTRE-DFDFDF/P4    RM *ACECRM-SU-DEPARTMENT NAME-DEPTOFTEST/P4    RM *ACECRM-T-BOOKING DATE-44 44 44/P4    RM *ACECRM-T-MATRIX DP CODE-D444/P4    RM *ACECRM-TS-PIN-DEF/P4    RM *ACECRM-ACCOUNTING-D8A/P4
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - ABCDEF/P1    RIR REFERENCE 2: SU-DEPARTMENT NAME - TESTINGCWT/P1    RIR REFERENCE 5: TS-PIN - JJJ/P1    RIR REFERENCE 6: ACCOUNTING - A2A/P1
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - BBBBBB/P2    RIR REFERENCE 3: T-BOOKING DATE - 11 22 33/P2    RIR REFERENCE 4: T-MATRIX DP CODE - B123/P2    RIR REFERENCE 6: ACCOUNTING - B2B/P2
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - CCCCCC/P3    RIR REFERENCE 2: SU-DEPARTMENT NAME -/P3    RIR REFERENCE 3: T-BOOKING DATE - 33 33 33/P3    RIR REFERENCE 6: ACCOUNTING - C2C/P3
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - DFDFDF/P4    RIR REFERENCE 2: SU-DEPARTMENT NAME - DEPTOFTEST/P4    RIR REFERENCE 3: T-BOOKING DATE - 44 44 44/P4    RIR REFERENCE 4: T-MATRIX DP CODE - D444/P4    RIR REFERENCE 5: TS-PIN - DEF/P4    RIR REFERENCE 6: ACCOUNTING - D8A/P4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SE] Verify That CDR And Backoffice Remarks Are Written For Multiple Passengers With Multiple Fares
+    [Tags]    us6731    us6644    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    SE QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    SE Amadeus 1 - SyEx ¦ SE - Amadeus Sub1    Svtest    Raynell
+    Select Client Account Value    717171 ¦ CWT AQUA TEST ACCOUNT ¦ SE - Amadeus Sub1
+    Click New Booking
+    Add Multiple Traveler    NM3POLO/LISA Mrs/Marco Mr/Riza Ms
+    Book Flight X Months From Now Without Pricing    LHRCDG/AAF    SS4Y3    6
+    Fare Quote For One Segment    S5    P1-2
+    Fare Quote For One Segment    S5    P3-4
+    Book Flight X Months From Now Without Pricing    CDGLHR/AAF    SS4Y3    6    4
+    Fare Quote For One Segment    S6    P1,3
+    Fare Quote For One Segment    S6    P2,4
+    Click Read Booking
+    Click Panel    Cust Refs
+    Click Tab in Cust Ref Panel    1. LISA POLO
+    Set CDR Value For Multipax    Cost Centre    CWTTST
+    Set CDR Value For Multipax    SU-Department Name    DEPTOFTEST
+    Set CDR Value For Multipax    T-Matrix DP Code    X222
+    Set CDR Value For Multipax    TS-PIN    JJJ
+    Set CDR Value For Multipax    Accounting    A2A
+    Click Tab in Cust Ref Panel    2. MARCO POLO
+    Set CDR Value For Multipax    Cost Centre    CWTABC
+    Set CDR Value For Multipax    SU-Department Name    DEPTOFABCD
+    Set CDR Value For Multipax    T-Booking Date    12 20 20
+    Set CDR Value For Multipax    T-Matrix DP Code    X888
+    Set CDR Value For Multipax    TS-PIN    BBB
+    Set CDR Value For Multipax    Accounting    B2B
+    Click Tab in Cust Ref Panel    3. RIZA POLO
+    Set CDR Value For Multipax    Cost Centre    CWTYYY
+    Set CDR Value For Multipax    T-Booking Date    11 11 11
+    Click Tab in Cust Ref Panel    4. RAYNELL SVTEST
+    Set CDR Value For Multipax    Cost Centre    CWTZZZ
+    Set CDR Value For Multipax    SU-Department Name    TESTDEPTAA
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Get Fare Details    Fare 2
+    Get Savings Code    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Get Fare Details    Fare 3
+    Get Savings Code    Fare 3
+    Populate Fare Tab With Default Values    Fare 4
+    Get Fare Details    Fare 4
+    Get Savings Code    Fare 4
+    Populate All Panels (Except Given Panels If Any)    Cust Refs    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CDR Remarks Are Written    RM *0606*A2A/P1    RM *0601*CWTTST/P1    RM *0602*DEPTOFTEST/P1    RM *0604*X222/P1    RM *0605*JJJ/P1
+    Verify CDR Remarks Are Written    RM *0606*B2B/P2    RM *0601*CWTABC/P2    RM *0602*DEPTOFABCD/P2    RM *0603*12 20 20/P2    RM *0604*X888/P2    RM *0605*BBB/P2
+    Verify CDR Remarks Are Written    RM *0601*CWTYYY/P3    *0603*11 11 11/P3    RM *0601*CWTZZZ/P4    RM *0602*TESTDEPTAA/P4
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - CWTTST/P1    RIR REFERENCE 2: SU-DEPARTMENT NAME - DEPTOFTEST/P1    RIR REFERENCE 4: T-MATRIX DP CODE - X222/P1    RIR REFERENCE 5: TS-PIN - JJJ/P1    RIR REFERENCE 6: ACCOUNTING - A2A/P1
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - CWTABC/P2    RIR REFERENCE 2: SU-DEPARTMENT NAME - DEPTOFABCD/P2    RIR REFERENCE 3: T-BOOKING DATE - 12 20 20/P2    RIR REFERENCE 4: T-MATRIX DP CODE - X888/P2    RIR REFERENCE 5: TS-PIN - BBB/P2    RIR REFERENCE 6: ACCOUNTING - B2B/P2
+    Verify CDR Remarks Are Written    RIR REFERENCE 1: COST CENTRE - CWTYYY/P3    RIR REFERENCE 3: T-BOOKING DATE - 11 11 11/P3    RIR REFERENCE 1: COST CENTRE - CWTZZZ/P4    RIR REFERENCE 2: SU-DEPARTMENT NAME - TESTDEPTAA/P4
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 1    S5    P1-2
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 2    S5    P3-4
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 3    S6    P1,3
+    Verify That Back Office RM Remarks Are Written Associated With Segment And Passenger    Fare 4    S6    P2,4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Worfklow For CDR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    Employee ID    TEST123
+    Verify CDR Value Is Correct    TripReason    AUTOTEST
+    Set CDR Value    Employee ID    ${EMPTY}
+    Set CDR Value    TripReason    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR    Amend Booking Worfklow For CDR
+
+Quick Amend Booking Worfklow For CDR
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    Diese Buchung ist auf Status ‘Warten auf Kundenreferenzen‘, sparen sie Zeit und benutzen sie den ‚Quick Amend‘ Knopf um fehlende Daten einzugeben und die Buchung abzuschließen!
+    Click Quick Amend
+    Verify Actual Panel Equals To Expected Panel    CUST REFS    DELIVERY    RECAP
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    Employee ID    TEST123
+    Verify CDR Value Is Correct    TripReason    AUTOTEST
+    Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Customer References
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR    Quick Amend Booking Worfklow For CDR
+
+Amend Booking for CDRs written
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Center    111
+    Set CDR Value    EmployeeID    1234567891
+    Set CDR Value    Trip Reason    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking for CDRs written when so is No
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    CostCenter    111
+    Set CDR Value    EMPLOYEE ID    ${EMPTY}
+    Set CDR Value    Trip Reason    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Get CostCent CDR List
+    Click Control Button    [NAME:cbtnCDRSearch1]
+    Wait Until Control Object Is Enabled    [NAME:pnlCDRValues]
+    ${cdr_list_values}    Get Control Text    [NAME:lbCDRValues]
+    Take Screenshot
+    Click Control Button    [NAME:btnHidePanel]
+
+Verify Multi CDR Tab Are Displayed
+    [Arguments]    @{cdr_passenger_names}
+    Activate Power Express Window
+    : FOR    ${passenger_name}    IN    @{cdr_passenger_names}
+    \    Wait Until Keyword Succeeds    1    30    Verify CDR Tab Is Displayed    ${passenger_name}    True
+
+Verify CDR Tab Is Displayed
+    [Arguments]    ${expected_tab_name}    ${click_tab_forcefully}=False
+    ${is_selected}    Is Tab Selected    ${expected_tab_name}
+    Run Keyword If    ${is_selected} == False and ${click_tab_forcefully} == True    Click Tab in Cust Ref Panel    ${expected_tab_name}
+    [Teardown]    Take Screenshot
+
+Determine CDR Description And Index For Multipax
+    [Arguments]    ${cdr_tab_index}
+    Wait Until Control Object Is Visible    [NAME:TabControl1]
+    ${cdr_dict}    Create Dictionary
+    : FOR    ${cdr_field_index}    IN RANGE    0    32
+    \    ${cdr_field_text}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblCDRDescription${cdr_field_index}${cdr_tab_index}]
+    \    Set To Dictionary    ${cdr_dict}    ${cdr_field_text}    ${cdr_field_index}
+    [Return]    ${cdr_dict}
+
+Verify CDR Value Are Correct For MultiPax
+    [Arguments]    ${cdr_description}    ${cdr_expected_value}
+    ${cdr_tab_index}    Fetch From Left    ${cdr_tab}    .
+    ${cdr_dict}    Determine CDR Description And Index For Multipax    ${cdr_tab_index}
+    ${cdr_index} =    Get From Dictionary    ${cdr_dict}    ${cdr_description}
+    Verify Control Object Text Value Is Correct    [NAME:ctxtCDRValue${cdr_index}${cdr_tab_index}]    ${cdr_expected_value}
+    [Teardown]    Take Screenshot
+
+Set CDR Value For Multipax
+    [Arguments]    ${cdr_field}    ${cdr_value}
+    ${cdr_tab_index}    Fetch From Left    ${cdr_tab}    .
+    ${cdr_dict}    Determine CDR Description And Index For Multipax    ${cdr_tab_index}
+    ${cdr_index} =    Get From Dictionary    ${cdr_dict}    ${cdr_field}
+    Send Control Text Value    [NAME:ctxtCDRValue${cdr_index}${cdr_tab_index}]    ${cdr_value}
+    Send    {TAB}

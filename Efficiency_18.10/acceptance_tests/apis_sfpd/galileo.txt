@@ -1,0 +1,21 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          apis_sfpd_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That Address Fields Are Displayed For Indirect Itineraries
+    [Tags]    uk    uat    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    LinkedTraveller    John
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    LinkedContact    John
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    AMSDTW/DL    01Y1    \    3    3
+    Book Flight X Months From Now    DTWMLI/DL    01Y1    \    3    6
+    Book Flight X Months From Now    MLIDTW/DL    01Y1    \    3    9
+    Book Flight X Months From Now    DTWAMS/DL    01Y1    FQ:NR    3    12
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Verify Apis Address Fields Are Displayed
+    [Teardown]    Click Clear All

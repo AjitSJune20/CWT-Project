@@ -1,0 +1,222 @@
+*** Settings ***
+Force Tags        sabre_rail
+Resource          ../rail_verification.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+Verify That Rail Remarks Are Written In PNR (TST=1, Class=BF, Fare=PT, Ticket Type=E)
+    [Tags]    uat    not_ready    fr-FR
+    [Setup]
+    Open Power Express And Retrieve Profile    ${version}    sandboxpilot    U003WXR    fr-FR    AutomationFR    FR Head Office Test Team
+    Select GDS    sabre
+    Create Shell PNR For Sabre Rail    CWT France (testing france) ¦ FR-CWT ITINERARY    BOURGEOIS    FABIENNE    ${EMPTY}
+    Select Sabre Tab    Sabre Rail
+    Select Rail Vendor    SNCF
+    Click Create New PNR    New PNR with profile
+    Search One Way Rail Availabity X Months From Now    FRLPE    FRPLY    60
+    Select Fares Criteria For TVG/Eurostar    Expand
+    Populate Rail More Criteria    Full Flex    \    BF
+    Populate Rail Negotiated Fares    BF
+    Click Rail Search Button
+    Select Rail Outbound Offers    1
+    Click Rail Next Button    Itinerary
+    Populate Rail Passenger Details    jayson.panganiban@carlsonwagonlit.com    01-01-1971
+    Click Rail Next Button    Passengers
+    Click Rail Next Button    Seats
+    Click Rail Next Button    Contact Info
+    Select Rail Delivery Mode    Electronic Ticket (TKE)
+    Click Rail Book Button
+    Click Rail Ignore PNR
+    Select Sabre Tab    Area A
+    Enter Specific Command On Native GDS    *${current_pnr}
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket Rail
+    Click Finish PNR    \    10
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Generic Rail Remarks Are Written
+    Verify CWT Itinerary Remarks Are Written    FA00    BF
+    [Teardown]    Cancel Sabre Rail PNR
+
+Verify That Rail Remarks Are Written In PNR (TST=2, Class=AF, Fare=FQ50, Ticket Type=D)
+    [Tags]    not_ready    uat    fr-FR
+    [Setup]
+    Open Power Express And Retrieve Profile    ${version}    sandboxpilot    U003WXR    fr-FR    AutomationFR    FR Head Office Test Team
+    Select GDS    sabre
+    Create Shell PNR For Sabre Rail    CWT France (testing france) ¦ FR-CWT ITINERARY    BOURGEOIS    FABIENNE    ${EMPTY}
+    Select Sabre Tab    Sabre Rail
+    Select Rail Vendor    SNCF
+    Click Create New PNR    New PNR with profile
+    Search Round Trip Rail Availabity X Months From Now    FRBOD    FRPNO    40    42
+    Select Fares criteria for TVG/Eurostar    Expand
+    Select Rail Class Criteria    Disable    \    First class    Second class
+    Select Rail Fares Profile    Enable    True    Business subscription
+    Populate Rail More Criteria    Full flex    \    AF    FQ50
+    Populate Rail Negotiated Fares    AF
+    Click Rail Search Button
+    Select Rail Outbound Offers    1
+    Select Rail Return Offers    1
+    Click Rail Next Button    Itinerary
+    Populate Rail Passenger Details    jayson.panganiban@carlsonwagonlit.com    01-01-1971
+    Click Rail Next Button    Passengers
+    Click Rail Next Button    Seats
+    Click Rail Next Button    Contact Info
+    Select Rail Delivery Mode    Homeprint (TKD)
+    Click Rail Book Button
+    Click Rail Ignore PNR
+    Select Sabre Tab    Area A
+    Enter Specific Command On Native GDS    *${current_pnr}
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket Rail
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Generic Rail Remarks Are Written
+    Verify CWT Itinerary Remarks Are Written    FQ50    AF
+    [Teardown]    Cancel Sabre Rail PNR    ${current_pnr}    ${sabre_rail_pnr}
+
+Verify That Rail Remarks Are Written In PNR (TST=1, Class=BP, Fare=PN00, Ticket Type=D)
+    [Tags]    not_ready    uat    fr-FR
+    [Setup]
+    Open Power Express And Retrieve Profile    ${version}    sandboxpilot    U003WXR    fr-FR    AutomationFR    FR Head Office Test Team
+    Select GDS    sabre
+    Create Shell PNR For Sabre Rail    CWT France (testing france) ¦ FR-CWT ITINERARY    BOURGEOIS    FABIENNE    ${EMPTY}
+    Select Sabre Tab    Sabre Rail
+    Select Rail Vendor    SNCF
+    Click Create New PNR    New PNR with profile
+    Search One Way Rail Availabity X Months From Now    FRLIL    FRPNO    50
+    Select Fares criteria for TVG/Eurostar    Expand
+    Select Rail Fares Profile    Enable    True    Leisure
+    Populate Rail More Criteria    \    \    BP    PN00
+    Populate Rail Negotiated Fares    BP
+    Click Rail Search Button
+    Select Rail Outbound Offers    1
+    Click Rail Next Button    Itinerary
+    Populate Rail Passenger Details    jayson.panganiban@carlsonwagonlit.com    01-01-1971
+    Click Rail Next Button    Passengers
+    Click Rail Next Button    Seats
+    Click Rail Next Button    Contact Info
+    Select Rail Delivery Mode    Homeprint (TKD)
+    Click Rail Book Button
+    Click Rail Ignore PNR
+    Select Sabre Tab    Area A
+    Enter Specific Command On Native GDS    *${current_pnr}
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket Rail
+    Click Finish PNR    \    10
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Generic Rail Remarks Are Written
+    Verify CWT Itinerary Remarks Are Written    PN00    BP
+    [Teardown]    Cancel Sabre Rail PNR    ${current_pnr}    ${sabre_rail_pnr}
+
+Verify That Rail Remarks Are Written In PNR (TST=1, Class=BE, Fare=FN30, Ticket Type=D)
+    [Tags]    not_ready    uat    fr-FR
+    [Setup]
+    Open Power Express And Retrieve Profile    ${version}    sandboxpilot    U003WXR    fr-FR    AutomationFR    FR Head Office Test Team
+    Select GDS    sabre
+    Create Shell PNR For Sabre Rail    CWT France (testing france) ¦ FR-CWT ITINERARY    BOURGEOIS    FABIENNE    ${EMPTY}
+    Select Sabre Tab    Sabre Rail
+    Select Rail Vendor    SNCF
+    Click Create New PNR    New PNR with profile
+    Search Round Trip Rail Availabity X Months From Now    FRLPD    FRPAR    45    46
+    Select Fares criteria for TVG/Eurostar    Expand
+    Select Rail Fares Profile    Enable    True    Social
+    Populate Rail More Criteria    \    \    BE    FN30
+    Populate Rail Negotiated Fares    BE
+    Click Rail Search Button
+    Select Rail Outbound Offers    1
+    Select Rail Return Offers    1
+    Click Rail Next Button    Itinerary
+    Populate Rail Passenger Details    jayson.panganiban@carlsonwagonlit.com    01-01-1971
+    Click Rail Next Button    Passengers
+    Click Rail Next Button    Seats
+    Click Rail Next Button    Contact Info
+    Select Rail Delivery Mode    Electronic Ticket (TKE)
+    Click Rail Book Button
+    Click Rail Ignore PNR
+    Select Sabre Tab    Area A
+    Enter Specific Command On Native GDS    *${current_pnr}
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket Rail
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Generic Rail Remarks Are Written
+    Verify CWT Itinerary Remarks Are Written    FN30    BE
+    [Teardown]    Cancel Sabre Rail PNR    ${current_pnr}    ${sabre_rail_pnr}
+
+Verify That Rail Remarks Are Written In PNR (TST=1, Class=BF, Fare=FQ50, Ticket Type=D)
+    [Tags]    not_ready    uat    fr-FR
+    [Setup]
+    Open Power Express And Retrieve Profile    ${version}    sandboxpilot    U003WXR    fr-FR    AutomationFR    FR Head Office Test Team
+    Select GDS    sabre
+    Create Shell PNR For Sabre Rail    CWT France (testing france) ¦ FR-CWT ITINERARY    BOURGEOIS    FABIENNE    ${EMPTY}
+    Click New Booking
+    Enter Specific Command On Native GDS    *R
+    Select Sabre Tab    Sabre Rail
+    Select Rail Vendor    SNCF
+    Click Create New PNR    New PNR with profile
+    Search Round Trip Rail Availabity X Months From Now    FRLIL    FRPNO    50    52
+    Select Fares criteria for TVG/Eurostar    Expand
+    Select Rail Fares Profile    Enable    True    Business subscription
+    Populate Rail More Criteria    \    \    BF    FN30
+    Populate Rail Negotiated Fares    BF
+    Click Rail Search Button
+    Select Rail Outbound Offers    1
+    Select Rail Return Offers    1
+    Click Rail Next Button    Itinerary
+    Populate Rail Passenger Details    jayson.panganiban@carlsonwagonlit.com    01-01-1971
+    Click Rail Next Button    Passengers
+    Click Rail Next Button    Seats
+    Click Rail Next Button    Contact Info
+    Select Rail Delivery Mode    Electronic Ticket (TKE)
+    Click Rail Book Button
+    Click Rail Ignore PNR
+    Select Sabre Tab    Area A
+    Enter Specific Command On Native GDS    *${current_pnr}
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket Rail
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Generic Rail Remarks Are Written
+    Verify CWT Itinerary Remarks Are Written    FN30    BE
+    [Teardown]    Cancel Sabre Rail PNR    ${current_pnr}    ${sabre_rail_pnr}
+
+*** Keywords ***
+Verify CWT Itinerary Remarks Are Written
+    [Arguments]    ${fare_code}    ${fare_class}
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *Z‡
+    Verify Specific Line Is Written In The PNR    Z‡LANGUAGE-EN-GB
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Written In The PNR    ‡ET D IMMIGRATION PEUVENT DEMANDER
+    Verify Specific Line Is Written In The PNR    ‡OFFICIELLEMENT AUX COMPAGNIES AERIENNES
+    Verify Specific Line Is Written In The PNR    ‡L ACCES AUX INFORMATIONS CONTENUES
+    Verify Specific Line Is Written In The PNR    ‡DANS VOTRE DOSSIER DE RESERVATION
+    Verify Specific Line Is Written In The PNR    ‡MERCI DE NOUS RETOURNER TOUT BILLET DE TRAIN NON
+    Verify Specific Line Is Written In The PNR    ‡UTILISE
+    Verify Specific Line Is Written In The PNR    ‡PASSEPORT ET VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    ‡ 2C TTL
+    Verify Specific Line Is Written In The PNR    ‡ 2C FARE CONDITIONS ${fare_code} ${fare_class}
+
+Verify Generic Rail Remarks Are Written
+    Verify Specific Line Is Written In The PNR    *0112*FABIENNE BOURGEOIS    #Ordered by
+    Verify Specific Line Is Written In The PNR    *0653*MUSUUPUUUUUS
+    Verify Specific Line Is Written In The PNR    *0111*2020    #User
+    Verify Specific Line Is Written In The PNR    *0650*14-21E09B14    #Passenger traveller id (GUID)
+    Verify Specific Line Is Written In The PNR    *0651*EGIRARD‡CARLSONWAGONLIT.FR     #Info L02: E-mail address \ \
+    Verify Specific Line Is Written In The PNR    *0102*1    #Invoice
+
+Setup Prereq
+    Comment    Click Clear All
+    Set Suite Variable    ${locale}    fr-FR
+    Set Suite Variable    ${gds_switch}    sabre
+    Set Suite Variable    ${current_pnr}    BUJBXZ
+    Set Suite Variable    ${sabre_rail_pnr}    RRBSRP

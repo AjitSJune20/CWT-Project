@@ -1,0 +1,189 @@
+*** Settings ***
+Suite Setup       Initialize Variables
+Resource          performance_test_resource.txt
+
+*** Test Cases ***
+Performance Test - Emulation And Clear All
+    [Setup]
+    @{matches_list}    Create List
+    Comment    Emulate PCC    PARWL210G
+    : FOR    ${INDEX}    IN RANGE    20
+    \    Delete Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Click Panel    Client Info
+    \    Click Update PNR
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    classic    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    Save Perf Logs To Excel    20    ${matches_list}
+    [Teardown]
+
+Performance Test - Emulation And Clear All2
+    [Setup]
+    @{matches_list}    Create List
+    Comment    Emulate PCC    PARWL210G
+    :FOR    ${INDEX}    IN RANGE    20
+    \    Delete Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Click Panel    Client Info
+    \    Click Update PNR
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    classic    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    Save Perf Logs To Excel    20    ${matches_list}
+    [Teardown]
+
+Performance Test - Emulation And Clear All3
+    [Setup]
+    @{matches_list}    Create List
+    Comment    Emulate PCC    PARWL210G
+    :FOR    ${INDEX}    IN RANGE    20
+    \    Delete Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Click Panel    Client Info
+    \    Click Update PNR
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    classic    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    Save Perf Logs To Excel    20    ${matches_list}
+    [Teardown]
+
+Performance Test - Emulation And Clear All4
+    [Setup]
+    @{matches_list}    Create List
+    Comment    Emulate PCC    PARWL210G
+    :FOR    ${INDEX}    IN RANGE    20
+    \    Delete Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Click Panel    Client Info
+    \    Click Update PNR
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    classic    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    Save Perf Logs To Excel    20    ${matches_list}
+    [Teardown]
+
+Performance Test - Emulation And Clear All5
+    [Setup]
+    @{matches_list}    Create List
+    Comment    Emulate PCC    PARWL210G
+    :FOR    ${INDEX}    IN RANGE    20
+    \    Delete Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Click Panel    Client Info
+    \    Click Update PNR
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    classic    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    Save Perf Logs To Excel    20    ${matches_list}
+    [Teardown]
+
+Performance Test - Emulation And Clear All6
+    [Setup]
+    @{matches_list}    Create List
+    Comment    Emulate PCC    PARWL210G
+    :FOR    ${INDEX}    IN RANGE    20
+    \    Delete Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Click Panel    Client Info
+    \    Click Update PNR
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    classic    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    Save Perf Logs To Excel    20    ${matches_list}
+    [Teardown]
+
+Performance Test - Emulation And Clear All7
+    [Setup]
+    @{matches_list}    Create List
+    Comment    Emulate PCC    PARWL210G
+    :FOR    ${INDEX}    IN RANGE    20
+    \    Delete Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Click Panel    Client Info
+    \    Click Update PNR
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    classic    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    Save Perf Logs To Excel    20    ${matches_list}
+    [Teardown]
+
+Performance Test - Emulation And Clear All8
+    [Setup]
+    @{matches_list}    Create List
+    Comment    Emulate PCC    PARWL210G
+    :FOR    ${INDEX}    IN RANGE    20
+    \    Delete Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Click Panel    Client Info
+    \    Click Update PNR
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    classic    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    Save Perf Logs To Excel    20    ${matches_list}
+    [Teardown]
+
+Performance Test - Emulation And Clear All9
+    [Setup]
+    @{matches_list}    Create List
+    Comment    Emulate PCC    PARWL210G
+    :FOR    ${INDEX}    IN RANGE    20
+    \    Delete Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Click Panel    Client Info
+    \    Click Update PNR
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    classic    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    Save Perf Logs To Excel    20    ${matches_list}
+    [Teardown]
+
+Performance Test - Emulation And Clear All10
+    [Setup]
+    @{matches_list}    Create List
+    Comment    Emulate PCC    PARWL210G
+    :FOR    ${INDEX}    IN RANGE    20
+    \    Delete Log File    SyExPerfLog
+    \    Set Client And Traveler    OPLEIDINGEN \ (Benelux test client) ¦ BE-OPLEIDINGEN ANTIGUA    ANTIGUA    BEL
+    \    Click New Booking
+    \    Click Panel    Client Info
+    \    Click Update PNR
+    \    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    \    Click Read Booking
+    \    Click Clear All
+    \    ${matches}    Get Perf Logs    classic    ${version}
+    \    Append To List    ${matches_list}    ${matches}
+    Save Perf Logs To Excel    20    ${matches_list}
+    [Teardown]
+
+*** Keywords ***
+Initialize Variables
+    Set Suite Variable    ${gds_switch}    amadeus
+    Set Suite Variable    ${locale}    fr-FR

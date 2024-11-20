@@ -1,0 +1,894 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../air_fare_verification.txt
+Library           SSHLibrary
+
+*** Test Cases ***
+[NB] Verify That Error Icon And Tooltip Messages Displays When Entering Invalid HF And LF
+    [Tags]    us552    valid_fail    de7171
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With One Way Flight Using Default Values    Apollo Legacy - Auto ¦ US552 Invalid HF and LF    AutoLegacy    NoramTrvlrSeventeen    MSPORD+AA    ${EMPTY}    Air Fare
+    Click Panel    Air Fare
+    Comment    Verify High Fare Field Is Mandatory
+    Verify Low Fare Field Is Mandatory
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Panel Is Red    Air Fare
+    Get Charged Fare Value    Fare 1
+    Set High Fare Field    ${converted_charged_fare}
+    Verify High Fare Accepts Input
+    Set Low Fare Field    ${converted_charged_fare}
+    Verify Low Fare Accepts Input
+    Verify High Fare Limits To Two Decimals Only
+    Verify Low Fare Limits To Two Decimals Only
+    Replace Decimal Sign    ${charged_fare_amount}    .    ,    custom_charged_fare_amount
+    Set High Fare Field    ${custom_charged_fare_amount}
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${custom_charged_fare_amount}
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set Low Fare Field    ${converted_charged_fare}
+    Set High Fare Field    ABCDE
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    FGHIJ
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set Low Fare Field    ${converted_charged_fare}
+    Update Amount    ${charged_fare_amount}    -    30    fare_less_than_charged_fare_amount
+    Set High Fare Field    ${fare_less_than_charged_fare_amount}
+    Verify Invalid Icon And Validate High Fare Message Is Displayed
+    Update Amount    ${charged_fare_amount}    +    30    fare_more_than_charged_fare_amount
+    Set High Fare Field    ${fare_more_than_charged_fare_amount}
+    Verify High Fare Accepts Input
+    Set Low Fare Field    ${fare_more_than_charged_fare_amount}
+    Verify Invalid Icon And Validate Low Fare Message Is Displayed
+    Set Low Fare Field    ${fare_less_than_charged_fare_amount}
+    Verify Low Fare Accepts Input
+    Click Read Booking
+    Click Panel    Air Fare
+    Comment    Verify High Fare Field Is Mandatory
+    Verify Low Fare Field Is Mandatory
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${converted_charged_fare}
+    Click Panel    Recap
+    Click Panel    Air Fare
+    Verify Panel Is Red    Air Fare
+    Verify Realised Saving Code Field Is Enabled
+    Verify Missed Savings Code Field Is Disabled
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${fare_less_than_charged_fare_amount}
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Set Low Fare Field    ${converted_charged_fare}
+    Select Realised Saving Code Value    L - Lowest fare available accepted
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Get High, Charged And Low Fare In Fare Tab
+    Verify Specific Line Is Written In The PNR    G*LP/${without_decimal_low_fare_1}
+    Verify Specific Line Is Written In The PNR    G*FF/${without_decimal_high_fare_1}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Error Icon And Tooltip Messages Displays When Entering Invalid HF And LF
+    [Tags]    us552    valid_fail    de7171
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book Flight X Months From Now    LAXCDG+AF    01Y1*    T:$B    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Comment    Verify High Fare Field Is Mandatory
+    Verify Low Fare Field Is Mandatory
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Panel Is Red    Air Fare
+    Get Charged Fare Value    Fare 1
+    Set High Fare Field    ${converted_charged_fare}
+    Verify High Fare Accepts Input
+    Set Low Fare Field    ${converted_charged_fare}
+    Verify Low Fare Accepts Input
+    Verify High Fare Limits To Two Decimals Only
+    Verify Low Fare Limits To Two Decimals Only
+    Replace Decimal Sign    ${charged_fare_amount}    .    ,    custom_charged_fare_amount
+    Set High Fare Field    ${custom_charged_fare_amount}
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${custom_charged_fare_amount}
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set Low Fare Field    ${converted_charged_fare}
+    Set High Fare Field    ABCDE
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    FGHIJ
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set Low Fare Field    ${converted_charged_fare}
+    Update Amount    ${charged_fare_amount}    -    30    fare_less_than_charged_fare_amount
+    Set High Fare Field    ${fare_less_than_charged_fare_amount}
+    Verify Invalid Icon And Validate High Fare Message Is Displayed
+    Update Amount    ${charged_fare_amount}    +    30    fare_more_than_charged_fare_amount
+    Set High Fare Field    ${fare_more_than_charged_fare_amount}0
+    Verify High Fare Accepts Input
+    Set Low Fare Field    ${fare_more_than_charged_fare_amount}0
+    Verify Invalid Icon And Validate Low Fare Message Is Displayed
+    Set Low Fare Field    ${fare_less_than_charged_fare_amount}0
+    Verify Low Fare Accepts Input
+    Click Read Booking
+    Click Panel    Air Fare
+    Comment    Verify High Fare Field Is Mandatory
+    Verify Low Fare Field Is Mandatory
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${converted_charged_fare}
+    Click Panel    Recap
+    Click Panel    Air Fare
+    Verify Panel Is Red    Air Fare
+    Verify Realised Saving Code Field Is Enabled
+    Verify Missed Savings Code Field Is Disabled
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${fare_less_than_charged_fare_amount}0
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Set Low Fare Field    ${converted_charged_fare}
+    Select Realised Saving Code Value    L - Lowest fare available accepted
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Invalid HF And LF If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Get High, Charged And Low Fare In Fare Tab
+    Verify Specific Line Is Written In The PNR    G*LP/${without_decimal_low_fare_1}
+    Verify Specific Line Is Written In The PNR    G*FF/${without_decimal_high_fare_1}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Realised Savings Code Defaults To L When CF = LF And L Exists
+    [Tags]    us2029    us552
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With One Way Flight Using Default Values    Apollo 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrFour    ORDMIA+AA    ${EMPTY}    Air Fare
+    Click Panel    Air Fare
+    Save Fares From Air Fare Tab    Fare 1
+    Verify Charged, High And Low Fare Amount Are Equal
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Select Realised Saving Code Value    E - Exchange
+    Click Finish PNR
+    Enter Specific Command On Native GDS    *R
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    G*FS/E
+    Verify Specific Line Is Written In The PNR    -FQ${charge_fare}/LP-${low_fare1}/FS-E/FF-${high_fare1}
+
+[AB] Verify That Realised Saving Code Still Defaults To L During Amend Booking When Realised Saving Code Selected During New Booking Is Not L
+    [Tags]    us2029    us552
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    ORDMSP+AA    01Y1    T:$BS1    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Charged, High And Low Fare Amount Are Equal
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Realised Savings Default Code If Simultaneous Change Error Is Displayed
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That High/Charged/Low Fare Missed/Realised Savings Code Are Computed When SO 'Disable Fare Calculations' Is Set To No For Multiple Air Segments With Exchange
+    [Tags]    us2543    data_dependent    de6867
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 15 - Auto ¦ US2543-2    AutoFifteenTen    NoramTrvlrFour
+    Click New Booking
+    Update PNR for EN or GB
+    Get GDS Server Date
+    Book Flight X Months From Now    SFOLAS+UA    01Y1    T:$BS1    6    11
+    Book Flight X Months From Now    LASSFO+UA    01Y1    T:$BS2    7    22
+    Click Read Booking
+    Click Panel    Air Fare
+    Get Charged Fare    Fare 1    *T
+    Get Lowest Fare    Fare 1    FS//D2/D/M/¤AB/S1
+    Get Highest Fare    Fare 1    $BB/S1/NR
+    Verify High/Charged/Low Fare Fields Has Correct Values    Fare 1
+    Populate Missed Saving Code If Enabled    Fare 1    B - Declined Preferred Carrier
+    Verify Route Code Default Value    DOM    Fare 1
+    Get Charged Fare    Fare 2    *T
+    Get Lowest Fare    Fare 2    FS//D2/D/M/¤AB/S2
+    Get Highest Fare    Fare 2    $BB/S2/NR
+    Click Fare Tab    Fare 2
+    Verify High/Charged/Low Fare Fields Has Correct Values    Fare 2
+    Populate Missed Saving Code If Enabled    Fare 2    7 - Low fare within policy threshold
+    Verify Route Code Default Value    DOM    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air fare
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *PRT
+    Verify Fare Quoted Remark Is Written    Fare 1
+    Verify Specific Line Is Written In The PNR    T/TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T/TKT1-ETK-S1
+    Verify Specific Line Is Written In The PNR    T/TKT2-ETK-S2
+    Verify Specific Line Is Written In The PNR    T/TKT2-DOM
+    Verify Fare Quoted Remark Is Written    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}    RM*
+    Verify Specific Line Is Written In The PNR    ROUTING : SAN FRANCISCO LAS VEGAS
+    Verify Specific Line Is Written In The PNR    ROUTING : LAS VEGAS SAN FRANCISCO
+    Verify Specific Line Is Written In The PNR    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE
+    Verify Specific Line Is Written In The PNR    FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    [Teardown]
+
+[AB] Verify That High/Charged/Low Fare Missed/Realised Savings Code Are Computed When SO 'Disable Fare Calculations' Is Set To No For Single Air Segment
+    [Tags]    us2543    data_dependent    de6867
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Retrieve Specific Line Numbers To Be Deleted in Apollo GDS    -FQ${charged_fare_2}/LP-${low_fare_2}/FS-7/FF-${high_fare_2}
+    Retrieve Specific Line Numbers To Be Deleted in Apollo GDS    T/TKT2-FEE-S2
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    LAXDEN+AA    01Y1    T:$BS1    6    11
+    Book Flight X Months From Now    DENLAX+AA    01Y1    T:$BS2    8    11
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Missed Saving Code If Enabled    Fare 1    T - Flight Time Declined
+    Click Fare Tab    Fare 2
+    Get Charged Fare    Fare 2    *T
+    Get Lowest Fare    Fare 2    FS//D2/D/M/¤AB/S2
+    Get Highest Fare    Fare 2    $BB/S2/NR
+    Verify High/Charged/Low Fare Fields Has Correct Values    Fare 2
+    Populate Missed Saving Code If Enabled    Fare 2    T - Flight Time Declined
+    Verify Route Code Default Value    DOM    Fare 2
+    Verify Fare Not Finalised Is Enabled
+    Select Fare Restriction    FULLY FLEXIBLE
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Click Finish PNR
+    Execute Simultaneous Change Handling    [AB] Verify That High/Charged/Low Fare Missed/Realised Savings Code Are Computed When SO 'Disable Fare Calculations' Is Set To No For Single Air Segment
+    Retrieve PNR Details From Travelport    ${current_pnr}    *PRT
+    Verify Specific Line Is Written In The PNR    T/TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T/TKT1-ETK-S1
+    Verify Specific Line Is Written In The PNR    T/TKT2-ETK-S2
+    Verify Specific Line Is Written In The PNR    T/TKT2-DOM
+    Verify Fare Quoted Remark Is Written    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}    RM*
+    Verify Specific Line Is Written In The PNR    ROUTING : LOS ANGELES DENVER
+    Verify Specific Line Is Written In The PNR    ROUTING : DENVER LOS ANGELES
+    Verify Specific Line Is Written In The PNR    ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE
+    Verify Specific Line Is Written In The PNR    FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKET.
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That High/Charged/Low Fare, Missed/Realised Savings Code Are Not Computed And Disabled When SO 'Disable Fare Calculations' Is Set To Yes For Single Air Segment
+    [Tags]    us2543    valid_fail    de6231    de6867
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 15 - Auto ¦ US2543    AutoFifteenTen    NoramTrvlrThree
+    Get GDS Server Date
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ORDLHR+UA    01Y1    T:$B    5    20
+    Get Base Fare Value (Apollo)    *T    FQ-USD    Fare 1
+    Click Read Booking
+    Click Panel    Air Fare
+    Get Charged Fare    Fare 1    *T
+    Get Base Fare Value From Apollo    *LF1    FARE USD    Fare 1
+    Enter GDS Command    ¤:5T/SPLIT1    ¤:5T/TKT1-BFUSD${base_fare_1}-S1    ¤:5T/TKT1-ETK-S1    ¤:5T/TKT1-ETK-FQ${charged_fare_value_1}/LP-1783/FS-B/FF-3074    ¤:5T/TKT1-INTL
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Routing Field Is Enabled
+    Verify High Fare Field Is Disabled
+    Verify Charged Fare Field Is Disabled
+    Verify Low Fare Field Is Disabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Route Code Field Is Disabled
+    Verify Fare Tab Details    ORD-LHR    3074.00    ${charged_fare_value_1}    1783.00    ${EMPTY}    B - Declined Preferred Carrier
+    ...    INTL
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *PRT
+    Verify Specific Line is Written in the PNR    T/SPLIT1
+    Verify Specific Line is Written in the PNR    T/TKT1-BFUSD${base_fare_1}-S1
+    Verify Specific Line is Written in the PNR    T/TKT1-ETK-S1
+    Verify Specific Line is Written in the PNR    T/TKT1-ETK-FQ${charged_fare_value_1}/LP-1783/FS-B/FF-3074
+    Verify Specific Line is Written in the PNR    T/TKT1-INTL
+    Verify No Other Remark Is Written In The PNR    T/    5
+    Retrieve PNR Details From Travelport    ${current_pnr}    RM*
+    Verify Specific Line is Written in the PNR    ROUTING : CHICAGO LONDON
+    Verify Specific Line is Written in the PNR    MAIN RESTRICTIONS:
+    Verify Specific Line is Written in the PNR    CHANGE OF RESERVATION : SCHEDULE CHANGE PERMITTED FREE
+    Verify Specific Line is Written in the PNR    OF CHARGE
+    Verify Specific Line is Written in the PNR    CANCELLATION : FULL REFUND
+    Verify Specific Line is Written in the PNR    VALID ON : UA
+    [Teardown]
+
+[AB] Verify That High/Charged/Low Fare, Missed/Realised Savings Code Are Not Computed And Disabled When SO 'Disable Fare Calculations' Is Set To Yes For Multiple Air Segments
+    [Tags]    us2543    valid_fail    de6231
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Retrieve Specific Line Numbers To Be Deleted in Apollo GDS    T/SPLIT1
+    Get Base Fare Value (Apollo)    *T    FQ-USD    Fare 1
+    Book Flight X Months From Now    LHRORD+UA    01Y1    T:$BS2    5    12
+    Get Base Fare Value (Apollo)    *T    FQ-GBP    Fare 2
+    Enter GDS Command    ¤:5T/SPLIT2    ¤:5T/TKT2-BFUSD${base_fare_2}-S2    ¤:5T/TKT2-ETK-S2    ¤:5T/TKT2-ETK-FQ953.65/LP-222/FS-T/FF-954    ¤:5T/TKT2-INTL
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify Fare fields are disabled
+    Verify Fare Tab Details    ORD-LHR    954.00    953.65    222.00    ${EMPTY}    T - Flight Time Declined
+    ...    INTL
+    Verify Fare Not Finalised Is Unticked
+    Populate Air Fare Restrictions    SEMI FLEXIBLE    5 percent    25 percent    UA only    Permitted    1 day
+    ...    28 days
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Execute Simultaneous Change Handling    [AB] Verify That High/Charged/Low Fare, Missed/Realised Savings Code Are Not Computed And Disabled When SO 'Disable Fare Calculations' Is Set To Yes For Multiple Air Segments
+    Retrieve PNR Details From Travelport    ${current_pnr}    *PRT
+    Verify Specific Line is Written in the PNR    T/SPLIT2
+    Verify Specific Line is Written in the PNR    T/TKT1-BFUSD${base_fare_1}-S1
+    Verify Specific Line is Written in the PNR    T/TKT1-ETK-S1
+    Verify Specific Line is Written in the PNR    T/TKT1-ETK-FQ${charged_fare_value_1}/LP-1783/FS-B/FF-3074
+    Verify Specific Line is Written in the PNR    T/TKT1-INTL
+    Verify Specific Line is Written in the PNR    T/TKT2-BFUSD${base_fare_2}-S2
+    Verify Specific Line is Written in the PNR    T/TKT2-ETK-S2
+    Verify Specific Line is Written in the PNR    T/TKT2-ETK-FQ953.65/LP-222/FS-T/FF-954
+    Verify Specific Line is Written in the PNR    T/TKT2-INTL
+    Retrieve PNR Details From Travelport    ${current_pnr}    RM*
+    Verify Specific Line is Written in the PNR    ROUTING : CHICAGO LONDON
+    Verify Specific Line is Written in the PNR    VALID ON : UA
+    Verify Specific Line is Written in the PNR    CHANGE OF RESERVATION : 5 PERCENT
+    Verify Specific Line is Written in the PNR    CANCELLATION : 25 PERCENT
+    Verify Specific Line is Written in the PNR    VALID ON : UA ONLY
+    Verify Specific Line is Written in the PNR    MAIN RESTRICTIONS:
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify Disabling Of Air Fare Panel when Delivery Method Is Set To Invoice Hotel For PNR with Hotel Segment Only
+    [Tags]    us4683
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4683    AutoSeventeenTwo    NoramTrvlrOne
+    Click New Booking
+    Update PNR for EN or GB
+    Book Passive Hotel Segment X Months From Now    FLL    FAKEHTL    6    1    6    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    2 Invoice only Hotel
+    Verify Actual Panel Does Not Contain Expected Panel    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line is Written in the PNR    TKT1-INV-HTL
+    Verify Specific Line is Written in the PNR    *INV.HOLD.AWAITING.APPROVAL
+    Verify Specific Line is Written in the PNR    T/SPLIT1
+    Verify Specific Line Is Not Written In The PNR    T/TKT1-BF
+    Verify Specific Line Is Not Written In The PNR    T/TKT1-ETK
+    Verify Specific Line Is Not Written In The PNR    T/TKT1-DOM
+    Verify Specific Line Is Not Written In The PNR    G*LP
+    Verify Specific Line Is Not Written In The PNR    G*FS
+    Verify Specific Line Is Not Written In The PNR    G*FF
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Missing Fares Warning Is Displayed When Segments Have PARTIAL FARE QT and PARTIAL TKT REMARKS
+    [Tags]    us4529    de6231    valid_fail    de6231
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4529    AutoSeventeenTwo    NoramTrvlrOne
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ORDFLL+AA    01Y1    \    6    0
+    Book Flight X Months From Now    FLLCLT+AA    01Y1    \    6    5
+    Book Flight X Months From Now    CLTMSP+AA    01Y1    \    6    10
+    Book Flight X Months From Now    MSPORD+AA    01Y1    \    6    15
+    Book Flight X Months From Now    ORDLHR+AA    01Y1    \    6    20
+    Enter GDS Command    T:$BS2
+    Get Base Fare Value From Apollo    *LF1    FARE USD    Fare 1
+    Enter GDS Command    T:$BS1+4
+    Get Base Fare Value From Apollo    *LF2    FARE USD    Fare 2
+    Enter GDS Command    ¤:5T/SPLIT2
+    Enter GDS Command    ¤:5T/TKT1-BFUSD${base_fare_1}-S2
+    Enter GDS Command    ¤:5T/TKT1-ETK-S2
+    Enter GDS Command    ¤:5T/TKT1-ETK-FQ1323.00/LP-323/FS-A/FF-1975
+    Enter GDS Command    ¤:5T/TKT1-INTL
+    Enter GDS Command    ¤:5T/TKT2-BFUSD${base_fare_2}-S1/4
+    Enter GDS Command    ¤:5T/TKT2-ETK-S1/4
+    Enter GDS Command    ¤:5T/TKT2-ETK-FQ2325.00/LP-1225/FS-Q/FF-2395
+    Enter GDS Command    ¤:5T/TKT2-INTL
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air fare
+    Click Finish PNR
+
+[AB] Verify That Missing Fares Warning Is Displayed When Segments Have PARTIAL FARE QT and PARTIAL TKT REMARKS
+    [Tags]    us4529    de6231
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Get Base Fare Value From Apollo    *LF1    FARE USD    Fare 1
+    Get Base Fare Value From Apollo    *LF2    FARE USD    Fare 2
+    Click Read Booking
+    Verify Panel Is Green    Air Fare
+    Click Panel    Air Fare
+    Verify Specific Warning In Air Fare Is Shown    Warning \ - No fare found for segment 3,5. \ If necessary, please fare quote and read the PNR again.
+    Verify Routing Field Is Enabled
+    Verify Fare fields are disabled
+    Verify Fare Tab Details    ORD-FLL-MSP-ORD    2395.00    2325.00    1225.00    ${EMPTY}    Q - Equipment Declined-commuter flights
+    ...    INTL
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    Fare 2
+    Verify Routing Field Is Enabled
+    Verify Fare fields are disabled
+    Verify Fare Tab Details    FLL-CLT    1975.00    1323.00    323.00    ${EMPTY}    A - Alternate Airport Declined
+    ...    INTL
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Select Fare Restriction    NON FLEXIBLE
+    Verify Fare Tab Is Not Visible    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Partial Fare If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *ALL
+    Verify Specific Line is Written in the PNR    T/SPLIT2
+    Verify Specific Line is Written in the PNR    T/TKT1-BFUSD${base_fare_1}-S2
+    Verify Specific Line is Written in the PNR    T/TKT1-ETK-S2
+    Verify Specific Line is Written in the PNR    T/TKT1-ETK-FQ1323.00/LP-323/FS-A/FF-1975
+    Verify Specific Line is Written in the PNR    T/TKT1-INTL
+    Verify Specific Line is Written in the PNR    T/TKT2-BFUSD${base_fare_2}-S1/4
+    Verify Specific Line is Written in the PNR    T/TKT2-ETK-S1/4
+    Verify Specific Line is Written in the PNR    T/TKT2-ETK-FQ2325.00/LP-1225/FS-Q/FF-2395
+    Verify Specific Line is Written in the PNR    T/TKT2-INTL
+    Verify No Other Remark Is Written In The PNR    T/TKT3    0
+    Verify Specific Line is Written in the PNR    G*LP/1225
+    Verify Specific Line is Written in the PNR    G*FS/Q
+    Verify Specific Line is Written in the PNR    G*FF/2395
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line is Written in the PNR    ROUTING : CHICAGO FT LAUDERDALE MINNEAPOLIS CHICAGO
+    Verify Specific Line is Written in the PNR    CHANGE OF RESERVATION : SCHEDULE CHANGE PERMITTED FREE OF CHARGE
+    Verify Specific Line is Written in the PNR    CANCELLATION : FULL REFUND
+    Verify Specific Line is Written in the PNR    VALID ON : AA
+    Verify Specific Line is Written in the PNR    ROUTING : FT LAUDERDALE CHARLOTTE
+    Verify Specific Line is Written in the PNR    CHANGE OF RESERVATION : NOT PERMITTED
+    Verify Specific Line is Written in the PNR    CANCELLATION : NOT PERMITTED
+    Verify Specific Line is Written in the PNR    VALID ON : AA ONLY
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Fares Found In Air Fare Panel Are Written In PNR When Booking With Snap Codes
+    [Tags]    legacy    rt9585
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo Legacy - Auto ¦ Snap Code    AutoLegacy    NoramTrvlrThree
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD8P+AA    01Y1    ${EMPTY}    6    3
+    Book Flight X Months From Now    ORDMSP8P+AA    01Y1    T:$B-QA01    6    8
+    Enter GDS Command    *T
+    Click Read Booking
+    Click Panel    Air Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Populate Missed Saving Code If Enabled    Fare 1    A - Alternate Airport Declined
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Remove Decimal Places for Charged, High And Low Fare
+    Retrieve PNR Details From Travelport    ${current_pnr}    \$\B-QA01
+    Verify Specific Line Is Written In The PNR    ${high_fare}    true
+    Retrieve PNR Details From Travelport    \    *T
+    Verify Specific Line Is Written In The PNR    ${charge_fare}    true
+    Retrieve PNR Details From Travelport    \    FS-QA01    10
+    Verify Specific Line Is Written In The PNR    ${low_fare}    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That High Fare And Low Fare Calculation For Non Exchange Is Correct
+    [Tags]    legacy
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With One Way Flight Using Default Values    Apollo Legacy - Auto ¦ Air Fare    AutoLegacy    NoramTrvlrTwo    LAXJFK+AA    ${EMPTY}
+    Click Panel    Recap
+    Set Skip Entries    AQUA: Continuity Override
+    Click Finish PNR
+
+[AB] Verify That High Fare And Low Fare Calculation For Non Exchange Is Correct
+    [Tags]    legacy
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Book Flight X Months From Now    JFKLAX+AA    01Y1    T:$B    6    4
+    Click Read Booking
+    Click Panel    Air Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Retrieve PNR Details From Travelport    ${EMPTY}    $B-QA01
+    Verify Specific Line Is Written In The PNR    ${converted_high_fare}
+    Retrieve PNR Details From Travelport    ${EMPTY}    FS-//D2/D/M
+    Verify Specific Line Is Written In The PNR    ${converted_low_fare}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Invalid High Fare And Low Fare Are Defaulted To Blank For Private Fares
+    [Tags]    us552
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo Legacy - Auto ¦ US552 Valid HF and LF    AutoLegacy    NoramTrvlrNineteen
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ATLDFW+AA    01Y1    T:$B-CRI    6    3
+    Delete Current Specific Log File    GDS_SyExDebugLog
+    Click Read Booking
+    Get GDS Server Date
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Get Charged Fare    Fare 1    *T
+    Get Lowest Fare    Fare 1    FS//D2/D/M/¤AB
+    Comment    Get Lowest Fare via Webservice
+    Get Highest Fare    Fare 1    $BB/PE00//¤AB
+    Verify If Low Fare Is Greater Than Charged Fare Then Low Fare Field Is Blank, Otherwise Contains Low Fare Value
+    Verify If High Fare Is Equal To Charged Fare
+    Comment    Verify If High Fare Is Less Than Charged Fare Then High Fare Field Is Blank, Otherwise Contains High Fare Value
+    Set Low Fare Field (If blank) with Charged Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Save Fares From Air Fare Tab    Fare 1
+    Populate Missed Saving Code If Enabled    Fare 1    B - Declined Preferred Carrier
+    Populate Realised Saving Code If Enabled    Fare 1    L - Lowest fare available accepted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    G*LP/${low_fare1}
+    Verify Specific Line Is Written In The PNR    G*FF/${high_fare1}
+
+[AB] Verify That Invalid High Fare And Low Fare Are Defaulted To Blank For Private Fares
+    [Tags]    us552
+    Remove Notepad Remark In PNR    T/TKT1-BF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT    XI
+    Book Flight X Months From Now    DFWATL+AA    01Y1    T:$B-CRI    6    6
+    Delete Current Specific Log File    GDS_SyExDebugLog
+    Click Read Booking
+    Get GDS Server Date
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Get Charged Fare    Fare 1    *T
+    Get Lowest Fare    Fare 1    FS-//D2/D/M/¤AB
+    Comment    Get Lowest Fare via Webservice
+    Get Highest Fare    Fare 1    $BB/PE00//¤AB
+    Verify If Low Fare Is Greater Than Charged Fare Then Low Fare Field Is Blank, Otherwise Contains Low Fare Value
+    Verify If High Fare Is Equal To Charged Fare
+    Comment    Verify If High Fare Is Less Than Charged Fare Then High Fare Field Is Blank, Otherwise Contains High Fare Value
+    Set Low Fare Field (If blank) with Charged Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Save Fares From Air Fare Tab    Fare 1
+    Populate Missed Saving Code If Enabled    Fare 1    B - Declined Preferred Carrier
+    Populate Realised Saving Code If Enabled    Fare 1    L - Lowest fare available accepted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Private Fares
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    G*LP/${low_fare1}
+    Verify Specific Line Is Written In The PNR    G*FF/${high_fare1}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Fares Are Visible But Disabled When Disable Fare Calc SO Is Set To Yes For International Flights During New Booking
+    [Tags]    de6350
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 15 - Auto ¦ US2543    AutoFifteenTen    NoramTrvlrThree
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    CDGLAX+AF    01Y1    T:$B    6
+    Get Base Fare Value (Apollo)    *T    FQ-EUR    Fare 1
+    Enter GDS Command    T-G*LP/385+T-G*FF/4000+T-G*FS/L+
+    Enter GDS Command    ¤:5T/TKT1-INTL+
+    Enter GDS Command    ¤:5T/TKT1-BFEUR${base_fare_1}-S1/2+
+    Enter GDS Command    ¤:5T/TKT1-ETK-S1/4+
+    Enter GDS Command    ¤:5T/TKT1-ETK-FQ3000/LP-3000/FS-L/FF-4000
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1
+    Click Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    CDG-LAX
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    4000.00    3000.00    3000.00    L - Lowest fare available accepted    ${EMPTY}    INTL
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Populate Air Fare Restrictions    Fully Flexible    Schedule change permitted free of charge    Full refund    AF    Permitted    No Minimum Stay
+    ...    One Year
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify All Panels Are Green
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *PR
+    Verify Specific Line Is Written In The PNR    T/TKT1-BFEUR${base_fare_1}-S1
+    Verify Specific Line Is Written In The PNR    T/TKT1-ETK-FQ3000/LP-3000/FS-L/FF-4000
+    [Teardown]
+
+[AB] Verify That Fares Are Visible But Disabled When Disable Fare Calc SO Is Set To Yes For International Flights During New Booking
+    [Tags]    de6350
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1
+    Click Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    CDG-LAX
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    4000.00    3000.00    3000.00    L - Lowest fare available accepted    ${EMPTY}    INTL
+    Verify Fully Flexible Fare Restriction Field Is Enabled
+    Verify Fare Not Finalised Is Enabled
+    Populate Air Fare Restrictions    Fully Flexible    Schedule change permitted free of charge    Full refund    AF    Permitted    No Minimum Stay
+    ...    One Year
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify All Panels Are Green
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Amend Booking Disable Fare Calculation International If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *PR
+    Verify Specific Line Is Written In The PNR    T/TKT1-BFEUR${base_fare_1}-S1
+    Verify Specific Line Is Written In The PNR    T/TKT1-ETK-FQ3000/LP-3000/FS-L/FF-4000
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow For Amend Booking Disable Fare Calculation International
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1
+    Click Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    CDG-LAX
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    4000.00    3000.00    3000.00    L - Lowest fare available accepted    ${EMPTY}    INTL
+    Verify Fully Flexible Fare Restriction Field Is Enabled
+    Verify Fare Not Finalised Is Enabled
+    Populate Air Fare Restrictions    Fully Flexible    Schedule change permitted free of charge    Full refund    AF    Permitted    No Minimum Stay
+    ...    One Year
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify All Panels Are Green
+    Click Finish PNR
+
+Amend Booking Workflow For Partial Fare
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Enter GDS Command    T:$BS2
+    Get Base Fare Value (Apollo)    *T    FQ-USD    Fare 1
+    Enter GDS Command    T:$BS1+4
+    Get Base Fare Value (Apollo)    *T    FQ-USD    Fare 2
+    Click Read Booking
+    Verify Panel Is Green    Air Fare
+    Click Panel    Air Fare
+    Verify Specific Warning In Air Fare Is Shown    Warning \ - No fare found for segment 3,5. \ If necessary, please fare quote and read the PNR again.
+    Verify Routing Field Is Enabled
+    Verify Fare fields are disabled
+    Verify Fare Tab Details    ORD-FLL-MSP-ORD    2395.00    2325.00    1225.00    ${EMPTY}    Q - Equipment Declined-commuter flights
+    ...    INTL
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    Fare 2
+    Verify Routing Field Is Enabled
+    Verify Fare fields are disabled
+    Verify Fare Tab Details    FLL-CLT    1975.00    1323.00    323.00    ${EMPTY}    A - Alternate Airport Declined
+    ...    INTL
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Select Fare Restriction    NON FLEXIBLE
+    Verify Fare Tab Is Not Visible    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air fare
+    Click Finish PNR
+
+Amend Booking Workflow For Private Fares
+    Remove Notepad Remark In PNR    T/TKT1-BF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT    XI
+    Book Flight X Months From Now    DFWLAX+AA    01Y1    T:$B-CRI    6    6
+    Delete Current Specific Log File    GDS_SyExDebugLog
+    Click Read Booking
+    Get GDS Server Date
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Get Charged Fare    Fare 1    *T
+    Get Lowest Fare via Webservice
+    Get Highest Fare    Fare 1    $BB/PE00//¤AB
+    Verify If Low Fare Is Greater Than Charged Fare Then Low Fare Field Is Blank, Otherwise Contains Low Fare Value
+    Verify If High Fare Is Less Than Charged Fare Then High Fare Field Is Blank, Otherwise Contains High Fare Value
+    Set Low Fare Field (If blank) with Charged Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Save Fares From Air Fare Tab    Fare 1
+    Populate Missed Saving Code If Enabled    Fare 1    B - Declined Preferred Carrier
+    Populate Realised Saving Code If Enabled    Fare 1    L - Lowest fare available accepted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking Workflow For Realised Savings Default Code
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Stored Fare and Segment
+    Book Flight X Months From Now    ORDMIA+AA    01Y1    T:$BS1    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Charged Fare And Low Fare Are Equal
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Get Base Fare Value (Apollo)
+    [Arguments]    ${gds_command}    ${identifier}    ${tab_value}=1
+    Activate Travelport Window
+    Send    ${gds_command}{ENTER}
+    Sleep    3
+    Clear Data From Clipboard
+    Send    {CTRLDOWN}ac{CTRLUP}
+    Sleep    2
+    ${gds_window_data}    Get Data From Clipboard
+    ${tab_index}    Fetch From Right    ${tab_value}    ${SPACE}
+    ${gds_data_lines}    Split String    ${gds_window_data}    /
+    ${whole_integer}    Set Variable    0
+    : FOR    ${each}    IN    @{gds_data_lines}
+    \    ${base_fare_found}    Run Keyword And Return Status    Should Contain    ${each}    ${identifier}
+    \    Run Keyword If    ${base_fare_found}==True    Remove All Non-Integer (retain period)    ${each}
+    \    Exit For Loop If    ${base_fare_found}==True
+    Set Suite Variable    ${base_fare_${tab_index}}    ${whole_integer}
+
+Get Base Fare Value From Apollo
+    [Arguments]    ${gds_command}    ${identifier}    ${tab_value}=1
+    Retrieve PNR Details From Travelport    ${EMPTY}    ${gds_command}
+    ${tab_index}    Fetch From Right    ${tab_value}    ${SPACE}
+    ${base_fare}    Get String Matching Regexp    ${identifier}[0-9]+.[0-9]+    ${pnr_details}
+    ${base_fare_amount} =    Fetch From Right    ${base_fare}    ${identifier}
+    Set Suite Variable    ${base_fare_${tab_index}}    ${base_fare_amount.strip()}
+
+Get Charged Fare
+    [Arguments]    ${fare_tab}    ${gds_command}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Enter Specific Command On Native GDS    ${gds_command}
+    Sleep    2
+    ${pnr_details}    Get Clipboard Data Travelport
+    ${next_segment_num}    Evaluate    ${fare_tab_index} + 1
+    ${charged_amount_line} =    Get String Using Marker    ${pnr_details}    ${fare_tab_index}/ATFQ    ${next_segment_num}/ATFQ
+    ${charged_amount} =    Get String Using Marker    ${charged_amount_line}    XT/USD${SPACE}    -${SPACE}
+    Set Suite Variable    ${charged_fare_value_${fare_tab_index}}    ${charged_amount.strip()}
+    [Teardown]    Take Screenshot
+
+Get Fare For Apollo With X Number Of Fares
+    Retrieve PNR Details From Travelport    ${current_pnr}    *T
+    : FOR    ${counter}    IN RANGE    1    ${number_of_fares}+1
+    \    ${next_fare}    Determine If Next Fare Exists
+    \    ${subset}    Get String Between Strings    ${pnr_details}    FQ${counter}    ${next_fare}
+    \    ${base_fare_value}    Get Lines Containing String    ${subset}    FARE
+    \    ${line_to_start_from}    Determine Line Start Value
+    \    ${base_fare_value}    Fetch From Right    ${base_fare_value}    ${line_to_start_from}
+    \    ${base_fare_value}    Fetch From Left    ${base_fare_value}    TAX
+    \    ${base_fare_value}    Remove All Non-Integer (retain period)    ${base_fare_value}
+    \    Set Test Variable    ${base_fare_value_${counter}}    ${base_fare_value}
+
+Get GDS Server Date
+    ${current_gds_date} =    Get Gds Current Date
+    Set Suite Variable    ${current_gds_date}
+
+Get Highest Fare
+    [Arguments]    ${fare_tab}    ${gds_command}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Enter Specific Command On Native GDS    *R    ${gds_command}
+    Sleep    2
+    ${pnr_details}    Get Clipboard Data Travelport
+    ${line_consist_of} =    Get Lines Containing String    ${pnr_details}    TOT USD
+    ${highest_amount} =    Get String Using Marker    ${line_consist_of}    USD${SPACE}    ${SPACE}
+    Set Suite Variable    ${high_fare_value_${fare_tab_index}}    ${highest_amount.strip()}
+    [Teardown]    Take Screenshot
+
+Get Lowest Fare
+    [Arguments]    ${fare_tab}    ${gds_command}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Enter Specific Command On Native GDS    ${gds_command}
+    Sleep    5
+    ${pnr_details}    Get Clipboard Data Travelport
+    ${line_consist_of} =    Get Lines Containing String    ${pnr_details}    TOTAL AMOUNT
+    @{lines_list}    Split String    ${line_consist_of}    TOTAL AMOUNT
+    @{amount_list}    Create List
+    : FOR    ${item}    IN    @{lines_list}
+    \    ${amount} =    Get String Using Marker    ${item}    ${SPACE}    USD
+    \    ${is_number}    Run Keyword And Return Status    Should Match RegExp    ${amount}    (\\d{1})+\\.(\\d{2})+
+    \    Run Keyword If    ${is_number} == True    Append To List    ${amount_list}    ${amount}
+    Log    Price List From Smartpoint: ${amount_list}
+    ${lowest_amount} =    Get Minimum Value From List    ${amount_list}
+    ${lowest_amount} =    Convert To String    ${lowest_amount}
+    Set Suite Variable    ${low_fare_value_${fare_tab_index}}    ${lowest_amount}
+    [Teardown]    Take Screenshot
+
+Get Lowest Fare via Webservice
+    ${logfile}    Get Log File    GDS_SyExDebugLog
+    Log    Log File: ${logfile}
+    ${line_consist_of} =    Get Lines Containing String    ${logfile}    TOTAL AMOUNT
+    @{lines_list}    Split String    ${line_consist_of}    TOTAL AMOUNT
+    @{amount_list}    Create List
+    : FOR    ${item}    IN    @{lines_list}
+    \    ${amount} =    Get String Using Marker    ${item}    ${SPACE}    USD
+    \    ${is_number}    Run Keyword And Return Status    Should Match RegExp    ${amount}    (\\d{1})+\\.(\\d{1})+
+    \    Run Keyword If    "${is_number}" == "True"    Append To List    ${amount_list}    ${amount}
+    Log    Price List From Webservice: ${amount_list}
+    ${lowest_amount}    Get Minimum Value From List    ${amount_list}
+    ${lowest_amount}    Convert To String    ${lowest_amount}
+    ${decimal}    Fetch From Right    ${lowest_amount}    .
+    ${no_of_decimal}    Get Length    ${decimal}
+    Run Keyword If    "${no_of_decimal}" == "1"    Set Suite Variable    ${low_fare_value_${fare_tab_index}}    ${lowest_amount}0
+    ...    ELSE    Set Suite Variable    ${low_fare_value_${fare_tab_index}}    ${lowest_amount}
+
+Remove Decimal Places for Charged, High And Low Fare
+    ${high_fare}    Remove Decimals    ${high_fare}
+    ${low_fare}    Remove Decimals    ${low_fare}
+    ${charge_fare}    Remove Decimals    ${charge_fare}
+    Set Test Variable    ${high_fare}
+    Set Test Variable    ${low_fare}
+    Set Test Variable    ${charge_fare}
+
+Remove High Fare And Low Fare G* Remark In PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *PT
+    ${line_number1}    Get Line Number In PNR Remarks    G*LP/
+    ${line_number2}    Get Line Number In PNR Remarks    G*FF/
+    Activate Power Express Window
+    Run Keyword If    '${line_number1}' != '${EMPTY}' or '${line_number2}' != '${EMPTY}'    Enter GDS Command    C:${line_number2}T-    C:${line_number1}T-    R:CWTTEST    ER
+    ...    ER
+    Run Keyword If    '${line_number1}' != '${EMPTY}' or '${line_number2}' != '${EMPTY}'    Remove High Fare And Low Fare G* Remark In PNR
+    Run Keyword If    '${line_number1}' == '${EMPTY}' and '${line_number2}' == '${EMPTY}'    Enter GDS Command    I
+
+Remove Notepad Remark In PNR
+    [Arguments]    ${remark}
+    Retrieve PNR Details From Travelport    ${current_pnr}    *PR
+    ${bf_line}    Get Line Number In PNR Remarks    ${remark}
+    Activate Power Express Window
+    Run Keyword If    '${bf_line}' != '${EMPTY}'    Enter GDS Command    C:${bf_line}¤:5    R:CWTTEST    ER    ER
+    Run Keyword If    '${bf_line}' != '${EMPTY}'    Remove Notepad Remark In PNR    ${remark}
+    Run Keyword If    '${bf_line}' == '${EMPTY}'    Enter GDS Command    I
+
+Retrieve Specific Line Numbers To Be Deleted in Apollo GDS
+    [Arguments]    ${line_to_search_for}
+    Activate Travelport Window
+    ${gds_line_number} =    Get Line Number In PNR Remarks    ${line_to_search_for}
+    Sleep    1
+    Enter GDS Command    C:${gds_line_number}¤:5
+    Sleep    2
+    Enter GDS Command    R:CWTUSER
+    Sleep    2
+    Enter GDS Command    ER
+    Sleep    2
+    [Teardown]    Take Screenshot
+
+Save Fares From Air Fare Tab
+    [Arguments]    ${fare_tab_value}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    Get High, Charged and Low Fare in Fare Tab    ${fare_tab_value}
+    ${removed_low_fare}    Fetch From Left    ${low_fare}    .
+    ${removed_high_fare}    Fetch From Left    ${high_fare}    .
+    ${removed_charged_fare}    Fetch From Left    ${charge_fare}    .
+    # Without Decimal
+    Set Suite Variable    ${low_fare${fare_tab_index}}    ${removed_low_fare}
+    Set Suite Variable    ${high_fare${fare_tab_index}}    ${removed_high_fare}
+    # With Decimal Included
+    Set Suite Variable    ${charge_fare${fare_tab_index}}    ${charge_fare}
+
+Verify Fare Quoted Remark Is Written
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    -FQ${charged_fare_${fare_tab_index}}/LP-${without_decimal_low_fare_${fare_tab_index}}/FS-${fare_code_value${fare_tab_index}}/FF-${without_decimal_high_fare_${fare_tab_index}}
+
+Verify If High Fare Is Equal To Charged Fare
+    Log    ${high_fare_value_${fare_tab_index}}
+    Log    ${charged_fare_value_${fare_tab_index}}
+    Run Keyword And Continue On Failure    Run Keyword If    ${high_fare_value_${fare_tab_index}} < ${charged_fare_value_${fare_tab_index}}    Verify High Fare Is Equal To Charged Fare
+    ...    ELSE    Verify High Fare Field Value    ${high_fare_value_${fare_tab_index}}
+    [Teardown]    Take Screenshot
+
+Verify High Fare Is Equal To Charged Fare
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    Verify Control Object Text Value Is Correct    ${object_name}    ${charged_fare_value_${fare_tab_index}}    High fare should be equal to charged fare

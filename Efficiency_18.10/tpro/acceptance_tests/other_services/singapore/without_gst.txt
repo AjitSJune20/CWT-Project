@@ -1,0 +1,199 @@
+*** Settings ***
+Force Tags        without_gst    valid_fail
+Resource          ../other_services.txt
+Resource          ../../../../acceptance_tests/gds/gds_verification.txt
+Resource          ../other_services_verification.txt
+
+*** Test Cases ***
+[NB OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash Or Invoice And BTA Description Is Not Blank
+    [Tags]    us723    us457    us480
+    [Setup]
+    Create PNR Using Credit Card As FOP
+    Click Other Services
+    Select Product And Vendor    Airline Penalty Fee    CARLSON WAGONLIT TRAVEL
+    Select Form Of Payment (FOP) Value    Credit Card (CX)
+    Verify Service Info Fields    Credit Card (CX)    False    SG
+    Select Form Of Payment (FOP) Value    Credit Card (CC)
+    Verify Service Info Fields    Credit Card (CC)    False    SG
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Verify Service Info Fields    Cash or Invoice    False    SG
+    Click Vendor Info Tab
+    Verify Vendor Info Fields
+    Click Service Info Tab
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Set BTA Description    Desc 1
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    Airline Penalty Fee    CARLSON WAGONLIT TRAVEL    Cash or Invoice    SG
+    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    SG
+
+[OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card Is CC And BTA Description Is Not Blank
+    [Tags]    us723    us457    us480
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Deposit    CARLSON WAGONLIT TRAVEL
+    Populate Service Info Cost Details    Vendor Contact    123.45    678.90
+    Verify Commission Fee Value Is Correct    555.45
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Select Form Of Payment (FOP)    Credit Card (CC)
+    Populate Credit Card Details    4444333322221111    VI    12    2027
+    Set BTA Description    Sample Description
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    Deposit    CARLSON WAGONLIT TRAVEL    Credit Card (CC)    SG
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    4444333322221111    VI    12    2027    Credit Card (CC)    SG
+
+[AB OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card Is CX (VI) And BTA Description Is Not Blank
+    [Tags]    us457    us723    us857    us686    us624    ${EMPTY}
+    Amend PNR Using Cash As FOP
+    Click Other Services
+    Select Product And Vendor    Deposit    CARLSON WAGONLIT TRAVEL
+    Select Form Of Payment (FOP) Value    Credit Card (CC)
+    Populate Service Info Cost Details    Vendor Contact    344.23    566.00
+    Verify Commission Fee Value Is Correct    221.77
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Verify Error Icon Is Displayed When Expiry Date Is Earlier Than Current Date    Please enter valid credit card expiry date
+    Populate Credit Card Details    4444333322221111    VI    12    2026
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    EARLY CHECKIN IS ALLOWED    NO SMOKING
+    Click Finish PNR    [AB OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card Is CX (VI) And BTA Description Is Not Blank    panel=Other Svcs
+    Get Exchange Order Number    identifier=deposit
+    Generate Exchange Order Creation Date    P1
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    Deposit    CARLSON WAGONLIT TRAVEL    Credit Card (CX)    SG
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    4444333322221111    VI    12    2026    Credit Card (CX)    SG
+    [Teardown]    Click Clear All
+
+[AOS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card Is CX (VI) And BTA Description Is Not Blank
+    [Tags]    us832
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend EO    ${eo_number_deposit}
+    Get Other Services Cost Details
+    Verify Vendor Contact Value Is Correct    Vendor Contact
+    Verify Nett Cost Value Is Correct    344.23
+    Verify Selling Price Value Is Correct    566.00
+    Verify Commission Fee Value Is Correct    233.09
+    Verify Merchant Fee Value Is Correct    11.32
+    Verify Total Selling Price Value Is Correct    577.32
+    Verify Description Value From Additional Information Is Correct    Deposit
+    Verify BTA Description Value Is Correct    Deposit
+    Verify Date Value Is Correct
+    Verify Form Of Payment Details Are Correct    Credit Card (CX)    VI    ************1111    12    2026
+    Verify Exchange Order Number    ${eo_number_deposit}
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    CARLSON WAGONLIT TRAVEL
+    Verify Address 1 Value Is Correct    INTERCOMPANY-TRADE
+    Verify Address 2 Value Is Correct
+    Verify City Value Is Correct    SINGAPORE
+    Verify Country Value Is Correct    SINGAPORE
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    EARLY CHECKIN IS ALLOWED    NO SMOKING
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    80    Deposit    MS    021007
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_deposit}
+    Click Service Info Tab
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    Deposit    CARLSON WAGONLIT TRAVEL    Credit Card (CX)    SG
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    4444333322221111    VI    12    2026    Credit Card (CX)    SG
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+
+[OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash Or Invoice And BTA Description Is Blank
+    [Tags]    us457    us723
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Tour Package    CITI NETWORK PTE LTD
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Populate Service Info Cost Details    Vendor Contact    400.5    500.5
+    Verify Commission Fee Value Is Correct    100.00
+    Set BTA Description    ${EMPTY}
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    Tour Package    CITI NETWORK PTE LTD    Cash or Invoice    SG
+    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    SG
+
+[OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card Is CC And BTA Description Is Blank
+    [Tags]    us457    us723
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    CWT TO GO HOTEL FEE    CARLSON WAGONLIT TRAVEL
+    Select Form Of Payment (FOP)    Credit Card (CC)
+    Populate Service Info Cost Details    Vendor Contact    600.0    700.0
+    Populate Credit Card Details    4444333322221111    VI    12    2027
+    Set BTA Description    ${EMPTY}
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    CWT TO GO HOTEL FEE    CARLSON WAGONLIT TRAVEL    Credit Card (CC)    SG
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    4444333322221111    VI    12    2027    Credit Card (CC)    SG
+
+[OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card Is CX (AX) And BTA Description Is Blank
+    [Tags]    us457    us723    us857
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    CWT TO GO HOTEL FEE    CARLSON WAGONLIT TRAVEL
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Verify Error Icon Is Displayed When Expiry Date Is Earlier Than Current Date    Please enter valid credit card expiry date
+    Populate Credit Card Details    378282246310005    AX    12    2026
+    Set BTA Description    ${EMPTY}
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    CWT TO GO HOTEL FEE    CARLSON WAGONLIT TRAVEL    Credit Card (CX)    SG
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    378282246310005    AX    12    2026    Credit Card (CX)    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Ticket Type Value Is Correct
+    [Arguments]    ${exp_value}
+    Get Ticket Type
+    Verify Actual Value Matches Expected Value    ${ticket_type}    ${exp_value}
+
+Verify Fare No Value Is Correct
+    [Arguments]    ${exp_value}
+    Get Fare Number
+    Verify Actual Value Matches Expected Value    ${fare_number_text}    ${exp_value}

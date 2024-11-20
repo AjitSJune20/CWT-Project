@@ -1,0 +1,279 @@
+*** Settings ***
+Force Tags        without_gst    valid_fail
+Resource          ../other_services.txt
+Resource          ../../../../acceptance_tests/gds/gds_verification.txt
+Resource          ../other_services_remarks_control.txt
+Resource          ../other_services_ui_verification.txt
+
+*** Test Cases ***
+[NB OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card CX (MC) And BTA Description Is Not Blank
+    [Tags]    us457    us724    us857    us960    us480    us686
+    ...    us624
+    Create PNR Using Credit Card As FOP    HK
+    Click Other Services
+    Select Product And Vendor    24 EMERGENCY SERVICE FEE    CWT
+    Select Form Of Payment (FOP) Value    Credit Card (CX)
+    Verify Service Info Fields    Credit Card (CX)    False    HK
+    Select Form Of Payment (FOP) Value    Credit Card (CC)
+    Verify Service Info Fields    Credit Card (CC)    False    HK
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Verify Service Info Fields    Cash or Invoice    False    HK
+    Verify Vendor Info Fields
+    Click Service Info Tab
+    Populate Service Info Cost Details    Vendor Contact    700    800
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Populate Credit Card Details    5100000000000000    MC    12    2022
+    Set Description    OTHER
+    Set BTA Description    BTA description 3
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Form Of Payment Details
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    24 Emergency Service Fee    CWT    Credit Card (CX)    HK
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    5100000000000000    MC    12    2022    Credit Card (CX)    HK
+    ...    False
+    [Teardown]
+
+[OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card (CC) And BTA Description Is Not Blank
+    [Tags]    us457    us724    us960
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    24 EMERGENCY SERVICE FEE    CWT
+    Populate Service Info Cost Details    AIR FRANCE    344    566
+    Select Form Of Payment (FOP)    Credit Card (CC)
+    Populate Credit Card Details    4444333322221111    VI    01    2023
+    Set Description    Description 1
+    Set BTA Description    BTA description 2
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    CANCELLATION IS NOT ALLOWED    INFANT INCLUDED
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number    identifier=wgst
+    Generate Exchange Order Creation Date    P1
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Form Of Payment Details
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    24 EMERGENCY SERVICE FEE    CWT    Credit Card (CC)    HK
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    4444333322221111    VI    01    2023    Credit Card (CC)    HK
+    ...    False
+    [Teardown]
+
+[AOS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card Is CX (DC) And BTA Description Is Not Blank
+    [Tags]    hk    us832    horton
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend EO    ${eo_number_wgst}
+    Get Other Services Cost Details
+    Verify Vendor Contact Value Is Correct    AIR FRANCE
+    Verify Nett Cost Value Is Correct    344
+    Verify Selling Price Value Is Correct    566
+    Verify Commission Fee Value Is Correct    222
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    566
+    Verify Description Value From Additional Information Is Correct    Description 1
+    Verify BTA Description Value Is Correct    BTA description 2
+    Verify Date Value Is Correct
+    Verify Form Of Payment Details Are Correct    Credit Card (CC)    VI    ************1111    01    2023
+    Verify Exchange Order Number    ${eo_number_wgst}
+    Populate Service Info Cost Details    Vendor Contact    630    730
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Verify Vendor Value Is Correct    CWT
+    Verify Address 1 Value Is Correct    27/F ING TOWER
+    Verify Address 2 Value Is Correct    308 DES VOEUX ROAD CENTRAL
+    Verify City Value Is Correct
+    Verify Country Value Is Correct    HONG KONG
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    CANCELLATION IS NOT ALLOWED    INFANT INCLUDED
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    18    24 EMERGENCY SERVICE FEE    MS    000001
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_wgst}
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    24 EMERGENCY SERVICE FEE    CWT    Credit Card (CX)    HK
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    4444333322221111    VI    01    2023    Credit Card (CC)    HK
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+
+[AB OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Not Blank
+    [Tags]    us457    us724
+    Amend PNR Using Cash As FOP
+    Click Other Services
+    Select Product And Vendor    24 EMERGENCY SERVICE FEE    CWT
+    Populate Service Info Cost Details    AIR FRANCE    500    600
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Set Description    Description 1
+    Set BTA Description    bta description 1
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    24 EMERGENCY SERVICE FEE    CWT    Cash or Invoice    HK
+    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    HK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card CX (TP) And BTA Description Blank
+    [Tags]    us457    us724    us857
+    Create PNR Using Cash As FOP    HK
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    MEET AND GREET SERVICE    MEET AND GREET SERVICES
+    Populate Service Info Cost Details    Vendor Contact    630    730
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Populate Credit Card Details    3530111333300000    TP    12    2022
+    Set BTA Description    ${EMPTY}
+    Click Remarks Tab
+    Select Exchange Order Remarks    EXCHANGE ORDER PREDEFINED REMARK
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number    identifier=wgst
+    Generate Exchange Order Creation Date    P1
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Form Of Payment Details
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    MEET AND GREET SERVICE    MEET AND GREET SERVICES    Credit Card (CX)    HK
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    3530111333300000    TP    12    2022    Credit Card (CX)    HK
+    [Teardown]
+
+[AOS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card CX (TP) And BTA Description Blank
+    [Tags]    hk    us832    horton
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend EO    ${eo_number_wgst}
+    Get Other Services Cost Details
+    Verify Vendor Contact Value Is Correct    Vendor Contact
+    Verify Nett Cost Value Is Correct    630
+    Verify Selling Price Value Is Correct    730
+    Verify Commission Fee Value Is Correct    115
+    Verify Merchant Fee Value Is Correct    15
+    Verify Total Selling Price Value Is Correct    745
+    Verify Description Value From Additional Information Is Correct    MEET AND GREET SERVICE
+    Verify BTA Description Value Is Correct    ${EMPTY}
+    Verify Form Of Payment Details Are Correct    Credit Card (CX)    TP    ************0000    12    2022
+    Verify Exchange Order Number    ${eo_number_wgst}
+    Populate Service Info Cost Details    Test Vendor Contact    630    730
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    MEET AND GREET SERVICES
+    Verify Address 1 Value Is Correct
+    Verify Address 2 Value Is Correct
+    Verify City Value Is Correct
+    Verify Country Value Is Correct
+    Verify Email Value Is Correct
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    EXCHANGE ORDER PREDEFINED REMARK
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    12    MEET AND GREET SERVICE    MS    000610
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_wgst}
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    MEET AND GREET SERVICE    MEET AND GREET SERVICES    Credit Card (CX)    HK
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    3530111333300000    TP    12    2022    Credit Card (CX)    HK
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    [Teardown]
+
+[OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card (CC) And BTA Description Is Blank
+    [Tags]    us457    us724    us960
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    CRUISE    CHARMING HOLIDAYS LTD
+    Populate Service Info Cost Details    UNITED AIRLINES    604.0    704.0
+    Select Form Of Payment (FOP)    Credit Card (CC)
+    Populate Credit Card Details    371449635398431    AX    02    2024
+    Set Description    Description 1
+    Set BTA Description    ${EMPTY}
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Form Of Payment Details
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Without GST Service Accounting General Remarks    CRUISE    CHARMING HOLIDAYS LTD    Credit Card (CC)    HK
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    371449635398431    AX    02    2024    Credit Card (CC)    HK
+    [Teardown]
+
+[OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank
+    [Tags]    us457    us724    US720    US453
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    HANDLING FEE    CWT
+    Populate Service Info Cost Details    AIR FRANCE    470.6    570.1
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Set Description    Description 1
+    Set BTA Description    ${EMPTY}
+    Verify Exchange And Itinerary Order Remarks Fields Are working Correctly
+    Select Exchange Order Remarks    SPECIAL REQUESTS BY CUSTOMER
+    Add Remarks In Exchange Order    Test EO remark 1    Test EO remark 2    Test EO remark 3    Test EO remark 4    Test EO remark 5
+    Select Itinerary Remarks    OTHER REQUESTS    SMOKING IS BAD FOR YOUR HEALTH
+    Add Remarks In Itinerary    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Other Services Without GST Service Accounting General Remarks    HANDLING FEE    CWT    Cash or Invoice    HK
+    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    HK
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    1    OTHER REQUESTS    SMOKING IS BAD FOR YOUR HEALTH    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3
+    ...    Test Itinerary Remark 4    Test Itinerary Remark 5
+    [Teardown]
+
+[OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card CX (CA) And BTA Description Blank
+    [Tags]    us457    us724    us857    US453    US720    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    C2G HOTEL FEE    CWT
+    Populate Service Info Cost Details    Vendor Contact    700    800
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Populate Credit Card Details    4444333322221111    CA    07    2022
+    Set BTA Description    ${EMPTY}
+    Click Remarks Tab
+    Select Exchange Order Remarks    SPECIAL REQUESTS BY CUSTOMER
+    Add Remarks In Exchange Order    Test EO remark 1    Test EO remark 2    Test EO remark 3    Test EO remark 4    Test EO remark 5
+    Select Itinerary Remarks    OTHER REQUESTS    SMOKING IS BAD FOR YOUR HEALTH
+    Add Remarks In Itinerary    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Form Of Payment Details
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Other Services Without GST Service Accounting General Remarks    C2G HOTEL FEE    CWT    Credit Card (CX)    HK
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    4444333322221111    CA    07    2022    Credit Card (CX)    HK
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    2    OTHER REQUESTS    SMOKING IS BAD FOR YOUR HEALTH    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3
+    ...    Test Itinerary Remark 4    Test Itinerary Remark 5
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***

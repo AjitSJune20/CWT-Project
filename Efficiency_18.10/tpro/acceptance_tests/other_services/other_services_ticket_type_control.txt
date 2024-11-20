@@ -1,0 +1,221 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Get EO Number Of Consolidator Ticket
+    ${consolidator_ticket_prefix}    Get Control Text Value    [NAME:EOPrefixTextBox]
+    Set Suite Variable    ${consolidator_ticket_prefix}
+    ${consolidator_ticket_number}    Get Control Text Value    [NAME:EONoTicketTextBox]
+    Set Suite Variable    ${consolidator_ticket_number}
+
+Get Fare Number
+    ${fare_number_text}    Get Control Text Value    [NAME:FareNoTextBox]
+    Set Suite Variable    ${fare_number_text}
+
+Get Passenger ID Value
+    ${object}    Determine Multiple Object Name Based On Active Tab    PassengerIdTextBox,PassengerIDTextBox    False
+    ${passenger_id}    Get Control Text Value    ${object}
+    Set Suite Variable    ${passenger_id}
+    [Return]    ${passenger_id}
+
+Get Select Air Segments
+    @{displayed_segment_list}    Get Segments From List Control
+    Set Suite Variable    ${displayed_segment_list}
+
+Get Ticket No Value
+    ${ticket_prefix}    Get Control Text Value    [NAME:TicketPrefixTextBox]
+    Set Suite Variable    ${ticket_prefix}
+    ${ticket_no}    Get Control Text Value    [NAME:TicketNoTextBox]
+    Set Suite Variable    ${ticket_no}
+
+Get Ticket Type
+    ${ticket_type}    Get Control Text Value    [NAME:TicketTypeComboBox]
+    Set Suite Variable    ${ticket_type}
+
+Get Ticket Type All Values
+    @{ticket_types}    Get Dropdown Values    [NAME:TicketTypeComboBox]
+    Set Suite Variable    ${ticket_types}
+    [Return]    ${ticket_types}
+
+Get Ticket Type Current Value
+    ${ticket_type}    Get Control Text Value    [NAME:TicketTypeComboBox]
+    Set Suite Variable    ${ticket_type}
+    [Return]    ${ticket_type}
+
+Get Ticket Type Details
+    Get Ticket Type
+    Run Keyword If    '${ticket_type}' == 'BSP (without File Fare)'    Get Ticket No Value
+    ...    ELSE IF    '${ticket_type}' == 'BSP (with File Fare)'    Get Fare Number
+    ...    ELSE IF    '${ticket_type}' == 'Consolidator Ticket'    Get EO Number Of Consolidator Ticket
+    ...    ELSE    Fail
+    Get Passenger ID Value
+
+Populate EO No
+    [Arguments]    ${ticket_type}    ${eo_prefix}    ${eo_number}
+    Select Ticket Type    ${ticket_type}
+    Set EO No Prefix    ${eo_prefix}
+    Set EO No    ${eo_number}
+    Take Screenshot
+    [Teardown]    Take Screenshot
+
+Populate Fare No
+    [Arguments]    ${ticket_type}    ${fare_number}
+    Select Ticket Type    ${ticket_type}
+    Set Fare No    ${fare_number}
+    Take Screenshot
+    [Teardown]    Take Screenshot
+
+Populate Ticket No
+    [Arguments]    ${ticket_type}    ${ticket_prefix}    ${ticket_number}
+    Select Ticket Type    ${ticket_type}
+    Set Ticket No Prefix    ${ticket_prefix}
+    Set Ticket No    ${ticket_number}
+    Take Screenshot
+    [Teardown]    Take Screenshot
+
+Populate Ticket Type Details
+    [Arguments]    ${ticket_type}    ${fare_number}    ${passenger_id}=${EMPTY}    @{segment_number}
+    Select Ticket Type    ${ticket_type}
+    Run Keyword If    "${passenger_id}" != "${EMPTY}"    Set Passenger ID    ${passenger_id}
+    : FOR    ${segment}    IN    @{segment_number}
+    \    Select Air Segment    ${segment}
+    [Teardown]    Take Screenshot
+
+Populate Ticket Type With Default Values
+    [Arguments]    ${ticket_type}
+    Run Keyword And Continue On Failure    Run Keyword If    "${ticket_type}" == "BSP (without File Fare)"    Populate Ticket No    ${ticket_type}    111    1234567890
+    ...    ELSE IF    "${ticket_type}" == "BSP (with File Fare)"    Populate Fare No    ${ticket_type}    11
+    ...    ELSE IF    "${ticket_type}" == "Consolidator Ticket"    Populate EO No    ${ticket_type}    111    1234567890
+    ...    ELSE    Fail    Invalid Ticket Type: "${ticket_type}"
+
+Select Air Segment
+    [Arguments]    @{air_segments}
+    ${segment_num}    Create List
+    : FOR    ${segment}    IN    @{air_segments}
+    \    Comment    ${segment}    Replace String    ${segment}    S    ${EMPTY}
+    \    Click List Item    ${segment}    True
+    \    ${segments}    Set Variable    0${segment}
+    \    Append To List    ${segment_num}    ${segments}
+    Take Screenshot
+    ${segment_number}    Evaluate    ''.join(${segment_num})
+    Set Suite Variable    ${segment_number}
+
+Select All Air Segments
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTA
+    Get Current Segments From The PNR
+    Select Air Segment    ${segments_list}
+
+Select Ticket Type
+    [Arguments]    ${ticket_type}
+    Select Value From Dropdown List    [NAME:TicketTypeComboBox]    ${ticket_type}
+
+Set EO No
+    [Arguments]    ${ticket_number}
+    Set Control Text Value    [NAME:EONoTicketTextBox]    ${ticket_number}
+    Send    {TAB}
+    [Teardown]    Take Screenshot
+
+Set EO No Prefix
+    [Arguments]    ${ticket_prefix}
+    Set Control Text Value    [NAME:EOPrefixTextBox]    ${ticket_prefix}
+    Send    {TAB}
+    [Teardown]    Take Screenshot
+
+Set Fare No
+    [Arguments]    ${fare_number}
+    Set Control Text Value    [NAME:FareNoTextBox]    ${fare_number}
+    Send    {TAB}
+    Take Screenshot
+
+Set Passenger ID Value
+    [Arguments]    ${passenger_id}
+    ${object}    Determine Multiple Object Name Based On Active Tab    PassengerIdTextBox,PassengerIDTextBox    False
+    Set Control Text Value    ${object}    ${passenger_id}
+    Take Screenshot
+    [Teardown]    Take Screenshot
+
+Set Ticket No
+    [Arguments]    ${ticket_number}
+    Set Control Text Value    [NAME:TicketNoTextBox]    ${ticket_number}
+    Send    {TAB}
+    [Teardown]    Take Screenshot
+
+Set Ticket No Prefix
+    [Arguments]    ${ticket_prefix}
+    Set Control Text Value    [NAME:TicketPrefixTextBox]    ${ticket_prefix}
+    Send    {TAB}
+    [Teardown]    Take Screenshot
+
+Verify Air Segments Are Retrieved Correctly
+    Get Select Air Segments
+    ${expected_segments_list}    Evaluate    [flight.replace("\ \ ", " ") for flight in ${segments_list}]
+    Log List    ${displayed_segment_list}
+    Log List    ${expected_segments_list}
+    : FOR    ${expected_flight}    IN    @{expected_segments_list}
+    \    Run Keyword And Continue On Failure    List Should Contain Value    ${displayed_segment_list}    ${expected_flight}
+
+Verify Default EO Fields Are Mandatory and Blank
+    Wait Until Control Object Is Visible    [NAME:EOPrefixTextBox]
+    Verify Control Object Field Is Mandatory    [NAME:EOPrefixTextBox]
+    Verify Control Object Field Is Mandatory    [NAME:EONoTicketTextBox]
+    Get EO Number Of Consolidator Ticket
+    Verify Actual Value Matches Expected Value    ${consolidator_ticket_prefix}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${consolidator_ticket_number}    ${EMPTY}
+
+Verify Default Fare Fields Are Mandatory And Blank
+    Wait Until Control Object Is Visible    [NAME:FareNoTextBox]
+    Verify Control Object Field Is Mandatory    [NAME:FareNoTextBox]
+    Get Fare Number
+    Verify Actual Value Matches Expected Value    ${fare_number_text}    ${EMPTY}
+
+Verify Default Ticket Fields Are Mandatory And Blank
+    Wait Until Control Object Is Visible    [NAME:TicketPrefixTextBox]
+    Verify Control Object Field Is Mandatory    [NAME:TicketPrefixTextBox]
+    Verify Control Object Field Is Mandatory    [NAME:TicketNoTextBox]
+    Get Ticket No Value
+    Verify Actual Value Matches Expected Value    ${ticket_prefix}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${ticket_no}    ${EMPTY}
+
+Verify Default Values For Selected Ticket Type
+    [Arguments]    ${type}
+    Select Ticket Type    ${type}
+    Run Keyword And Continue On Failure    Run Keyword If    "${type}" == "BSP (without File Fare)"    Verify Default Ticket Fields Are Mandatory And Blank
+    ...    ELSE IF    "${type}" == "BSP (with File Fare)"    Verify Default Fare Fields Are Mandatory And Blank
+    ...    ELSE IF    "${type}" == "Consolidator Ticket"    Verify Default EO Fields Are Mandatory and Blank
+    ...    ELSE    Fail    Invalid Ticket Type: "${ticket_type}"
+
+Verify Error Icon Is Displayed For Air Segments
+    [Arguments]    ${expected_tooltip}
+    Verify Error Icon Is Displayed For Ticket Type    ${expected_tooltip}    OtherServicesSegmentControl
+
+Verify Error Icon Is Displayed For EO No
+    [Arguments]    ${expected_tooltip}
+    Verify Error Icon Is Displayed For Ticket Type    ${expected_tooltip}
+
+Verify Error Icon Is Displayed For EO No Prefix
+    [Arguments]    ${expected_tooltip}
+    Verify Error Icon Is Displayed For Ticket Type    ${expected_tooltip}
+
+Verify Error Icon Is Displayed For Fare No
+    [Arguments]    ${expected_tooltip}
+    Verify Error Icon Is Displayed For Ticket Type    ${expected_tooltip}
+
+Verify Error Icon Is Displayed For Ticket No
+    [Arguments]    ${expected_tooltip}
+    Verify Error Icon Is Displayed For Ticket Type    ${expected_tooltip}
+
+Verify Error Icon Is Displayed For Ticket No Prefix
+    [Arguments]    ${expected_tooltip}
+    Verify Error Icon Is Displayed For Ticket Type    ${expected_tooltip}
+
+Verify Error Icon Is Displayed For Ticket Type
+    [Arguments]    ${expected_tooltip}    ${parent_control_id}=OtherServicesTicketType
+    Comment    Sleep    3
+    ${actual_tool_tip}    Get Tooltip From Error Icon    ${parent_control_id}
+    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_tool_tip}    ${expected_tooltip}
+    Take Screenshot
+
+Verify Ticket Type Is Blank By Default
+    Get Ticket Type
+    Verify Actual Value Matches Expected Value    ${ticket_type}    ${EMPTY}
+    Verify Control Object Field Is Mandatory    [NAME:TicketTypeComboBox]

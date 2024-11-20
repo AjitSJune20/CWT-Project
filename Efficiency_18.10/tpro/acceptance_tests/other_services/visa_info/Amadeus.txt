@@ -1,0 +1,327 @@
+*** Settings ***
+Suite Setup
+Force Tags        amadeus    valid_fail
+Resource          ../other_services_verification.txt
+Resource          ../other_services.txt
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[HK NB OS] Verify That Visa Processing Behaves Correctly And Written In The PNR When FOP Is CX
+    [Tags]    hk    horton    US463    obsolete
+    Create PNR Using Cash As FOP
+    Click Other Services
+    Select Product And Vendor    VISA PROCESSING    CWT VISA
+    Click Visa Info Tab
+    Verify FOP Info In Other Services
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2022
+    Populate Visa Processing Fee Values    500    200    150    2
+    Get Field Values On Visa Processing    VISA INFO
+    Compute Fees for Visa Processing
+    Tick Merchant Fee CheckBox for Nett Cost
+    Compute Fees for Visa Processing
+    Untick Merchant Fee CheckBox For Nett Cost
+    Compute Fees for Visa Processing
+    Tick Merchant Fee CheckBox For CWT Handling
+    Compute Fees for Visa Processing
+    Untick Merchant Fee CheckBox For CWT Handling
+    Compute Fees for Visa Processing
+    Populate Visa Processing Panel Details    CWT Vendor    Philippines    Other    Single    Days    15
+    ...    Express    15    ${EMPTY}
+    Click Tab In Other Services Panel    Remarks
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0
+    Click Add Button In Itinerary Remarks Grid View
+    Click Visa Info Tab
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Accounting Lines For Visa Processing Are Written When FOP is CX
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    1    @{selected_multiple_io_rmk_list}
+    [Teardown]
+
+[HK AB OS] Verify That Visa Processing Behaves Correctly And Written In The PNR When FOP Is CC
+    [Tags]    hk    horton    US463    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    CWT
+    Comment    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel (TKXL)
+    Click Finish PNR
+    Click Other Services
+    Select Product    VISA PROCESSING
+    Select Vendor    CWT VISA
+    Click Continue In Other Svcs
+    Click Visa Info Tab
+    Verify FOP Info In Other Services
+    Select Form Of Payment (FOP)    Credit Card (CX)    DC    378282246310005    12    2022
+    Populate Visa Processing Fee Values    850    250    250    2
+    Get Field Values On Visa Processing    VISA INFO
+    Compute Fees for Visa Processing
+    Tick Merchant Fee CheckBox For CWT Handling
+    Tick Merchant Fee CheckBox for Nett Cost
+    Compute Fees for Visa Processing
+    Populate Visa Processing Panel Details    CWT Vendor    Singapore    Business    Multiple    Months    3
+    ...    Normal    0    ${EMPTY}
+    Click Tab In Other Services Panel    Remarks
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0
+    Click Add Button In Itinerary Remarks Grid View
+    Click Visa Info Tab
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Re-Execute Amend Booking For Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare For HK If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Accounting Lines For Visa Processing Are Written When FOP is CX
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    2    @{selected_multiple_io_rmk_list}
+    [Teardown]
+
+[HK OS] Verify That Visa Processing Behaves Correctly And Written In The PNR When FOP Is Invoice
+    [Tags]    hk    horton    US463    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    VISA PROCESSING
+    Select Vendor    CWT VISA
+    Click Continue In Other Svcs
+    Click Visa Info Tab
+    Verify FOP Info In Other Services
+    Select Form Of Payment (FOP)    Cash or Invoice    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Populate Visa Processing Fee Values    1000    320    410    2
+    Get Field Values On Visa Processing    VISA INFO
+    Compute Fees for Visa Processing
+    Populate Visa Processing Panel Details    CWT Vendor    Hongkong    Resident    Multiple    Years    5
+    ...    Normal    15    AR
+    Click Tab In Other Services Panel    Remarks
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0
+    Click Add Button In Itinerary Remarks Grid View
+    Click Visa Info Tab
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Re-Execute Amend Booking For Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare For HK If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Accounting Lines For Visa Processing Are Written When FOP is Invoice
+    Comment    Verify That Accounting Lines For Visa Processing Are Written When FOP is CX
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    3    @{selected_multiple_io_rmk_list}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB OS SG] Verify That Visa Handling Behave Correctly In Other Services Panel And Written In The PNR When FOP Type Is CX
+    [Documentation]    due to FOP is masked in the PNR
+    [Tags]    sg    horton    US466    expected_to_fail
+    Create PNR Using Cash As FOP
+    Click Other Services
+    Select Product And Vendor    Visa Handling Fee    Carlson Wagonlit GST
+    Populate Service Info Cost Details    Vendor Contact    800.00    1000.00
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2026
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Form Of Payment
+    Compute Other Services Fees    7    2
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For GST
+    Compute Other Services Fees    7    2    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Untick CWT Absorb Checkbox For GST
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    7    2    false    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For GST
+    Compute Other Services Fees    7    2    true    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Populate Service Info Cost Details    Vendor Contact    344.23    566.00
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    371449635398431    12    2027
+    Populate Visa Processing Country Details    Singapore    Other    Single    Month(s)    Normal    0123456
+    Set Passenger ID Value    99
+    Unmask Credit Card Number
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Service Visa Processing Country Details
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Itinerary Remarks    PLEASE VERIFY VISA TYPE AND VALIDITY
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number    identifier=handling
+    Generate Data For Specific Product    False    P1    37    Visa Handling Fee    VI    021238
+    ...    ${EMPTY}    New
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Visa Handling Remarks Are Written When FOP Is Credit Card In The PNR    Visa Handling Fee    37    021238
+    Verify Specific Remark Is Written In The PNR    RIR PLEASE VERIFY VISA TYPE AND VALIDITY
+
+[AOS] Verify That Visa Handling Behave Correctly In Other Services Panel And Written In The PNR When FOP Type Is CX
+    [Tags]    sg    horton    us832
+    Click Other Services
+    Click Amend EO    ${eo_number_handling}
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Service Visa Processing Country Details
+    Verify Vendor Contact Value Is Correct    Vendor Contact
+    Verify Nett Cost Value Is Correct    344.23
+    Verify Selling Price Value Is Correct    566.00
+    Verify Commission Fee Value Is Correct    184.74
+    Verify GST Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    528.97
+    Verify Form Of Payment Details Are Correct    Credit Card (CX)    AX    ************8431    12    2027
+    Verify Visa Processing Country Details    Singapore    Other    Single    Month(s)    Normal    99
+    ...    0123456
+    Click Tab In Other Services Panel    Vendor Info
+    Verify Vendor Value Is Correct    Carlson Wagonlit GST
+    Verify Address 1 Value Is Correct    INTERCOMPANY - TRADE
+    Verify Address 2 Value Is Correct
+    Verify City Value Is Correct    SIN
+    Verify Country Value Is Correct
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Tab In Other Services Panel    Visa Info
+    Unmask Credit Card Number
+    Get Other Services Form Of Payment Details
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    37    Visa Handling Fee    VI    021238
+    ...    ${EMPTY}    New
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Visa Handling Remarks Are Written When FOP Is Credit Card In The PNR    Visa Handling Fee    37    021238
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+
+[AB OS SG] Verify That Visa Handling Behave Correctly In Other Services Panel And Written In The PNR When FOP Type Is CX
+    [Tags]    sg    horton    US466
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Visa Handling Fee    Carlson Wagonlit GST
+    Set Nett Cost    250.00
+    Set Selling Price    800.00
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2026
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Compute Other Services Fees    7    2
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For GST
+    Compute Other Services Fees    7    2    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Untick CWT Absorb Checkbox For GST
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    7    2    false    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For GST
+    Compute Other Services Fees    7    2    true    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Set Nett Cost    0.
+    Get Other Services Cost Details
+    Compute Other Services Fees    7    2    true    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Set Nett Cost    250.00
+    Set Selling Price    0.
+    Get Other Services Cost Details
+    Compute Other Services Fees    7    2    true    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Set Selling Price    800.00
+    Get Other Services Cost Details
+    Compute Other Services Fees    7    2    true    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Populate Visa Cost Tab
+    Unmask Credit Card Number
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Service Visa Processing Country Details
+    Click Remarks Tab
+    Select Itinerary Remarks    PLEASE VERIFY VISA TYPE AND VALIDITY
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Visa Handling Remarks Are Written When FOP Is Credit Card In The PNR    Visa Handling Fee    37    021238
+    Verify Specific Remark Is Written In The PNR    RIR PLEASE VERIFY VISA TYPE AND VALIDITY
+
+[OS SG] Verify That Visa Handling Behave Correctly In Other Services Panel And Written In The PNR When FOP Type Is Cash Or Invoice
+    [Tags]    sg    horton    US466
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Visa Handling Fee
+    Select Vendor    Carlson Wagonlit GST
+    Click Continue In Other Svcs
+    Set Nett Cost    250.00
+    Set Selling Price    800.00
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Compute Other Services Fees    7    2
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For GST
+    Compute Other Services Fees    7    2    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Untick CWT Absorb Checkbox For GST
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    7    2    false    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For GST
+    Compute Other Services Fees    7    2    true    true
+    Verify Commission Fee Value Is Correct
+    Verify GST Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Populate Visa Processing Country Details    Singapore    Other    Single    Month(s)    Normal    0123456
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Service Visa Processing Country Details
+    Click Remarks Tab
+    Select Itinerary Remarks    PLEASE VERIFY VISA TYPE AND VALIDITY
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Visa Handling Remarks Are Written When FOP Is Cash Or Invoice In The PNR    Visa Handling Fee    37    021238
+    Verify Specific Remark Is Written In The PNR    RIR PLEASE VERIFY VISA TYPE AND VALIDITY
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

@@ -1,0 +1,1833 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../air_fare_verification.txt
+
+*** Test Cases ***
+[NB HK] Verify That Airline Commission Is Retained For DU/MG Client And Only 1 Airline Commission Is Retrieved
+    [Tags]    us4467    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo HK 16 - Auto ¦ US3528    AutoSixteenFour    ApacTrvlrFour
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSYD/QF    01Y1    FQS1    6
+    Book Flight X Months From Now    SYDHKG/QF    01Y1    FQS2    6    5
+    Enter GDS Command    TMU1NFHKD2000
+    Enter GDS Command    NP.HF*COUNTRY:HK TYPE:DU DISC:1.8 MARK:2.4
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Air Fare
+    Click Pricing Extras Tab
+    Verify Airline Commision Percentage Is Disabled
+    Verify Airline Commission Percentage Value    0.00 - NETT REMIT
+    Verify Airline Commission Amount Is Disabled
+    Verify Airline Commission Amount Value    0.00
+    Verify Commission Rebate Percentage Is Disabled
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Is Disabled
+    Verify Commission Rebate Amount Value    0.00
+    Verify Mark-Up Percentage Value    2.40
+    Determine Mark-Up Amount For DU/MG From Nett Fare    2000    2.40
+    Verify Mark-Up Amount Value    ${expected_mg_mark_up_amount}
+    Set Nett Fare Field    0.00
+    Verify Airline Commision Percentage Is Enabled
+    Verify Airline Commission Percentage Value    3.00 - ALL OTHER
+    Verify Commission Rebate Percentage Value    1.8
+    Determine Airline Commision Amount From Base Fare    Fare 1    1.8
+    Round Down Amount    ${expected_airline_commission_amount}    commission_rebate_amount
+    Verify Commission Rebate Amount Value    ${commission_rebate_amount}
+    Verify Mark-Up Percentage Value    0.00
+    Verify Mark-Up Amount Value    0.00
+    Set Mark-up Percentage Field    5
+    Verify Airline Commision Percentage Is Enabled
+    Verify Airline Commission Percentage Value    3.00 - ALL OTHER
+    Determine Airline Commision Amount From Base Fare    Fare 1    3
+    Verify Airline Commission Amount Value    ${expected_airline_commission_amount}
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Select Airline Commission Percentage    5
+    Verify Commission Rebate Percentage Value    1.8
+    Verify Commission Rebate Amount Value    ${commission_rebate_amount}
+    Verify Mark-Up Percentage Value    0.00
+    Verify Mark-Up Amount Value    0.00
+    Select Airline Commission Percentage    0.00
+    Verify Mark-Up Percentage Value    2.40
+    Determine Mark-Up Amount For DU/MG From Base Fare    Fare 1    2.40
+    Verify Mark-Up Amount Value    ${expected_mg_mark_up_amount}
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Select Airline Commission Percentage    3.00 - ALL OTHER
+    Verify Commission Rebate Percentage Value    1.8
+    Verify Commission Rebate Amount Value    ${commission_rebate_amount}
+    Verify Mark-Up Percentage Value    0.00
+    Verify Mark-Up Amount Value    0.00
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Value    3.00 - ALL OTHER
+    Verify Commission Rebate Percentage Value    1.8
+    Determine Airline Commision Amount From Base Fare    Fare 2    1.8
+    Round Down Amount    ${expected_airline_commission_amount}    commission_rebate_amount
+    Verify Commission Rebate Amount Value    ${commission_rebate_amount}
+    Verify Mark-Up Percentage Value    0.00
+    Verify Mark-Up Amount Value    0.00
+    Select Airline Commission Percentage    0.00
+    Verify Mark-Up Percentage Value    2.40
+    Determine Mark-Up Amount For DU/MG From Base Fare    Fare 2    2.40
+    Verify Mark-Up Amount Value    ${expected_mg_mark_up_amount}
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Set Mark-up Percentage Field    0.00
+    Set Mark-Up Amount Field    0.00
+    Verify Airline Commission Percentage Value    0.00
+    Verify Airline Commission Amount Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Verify Commission Rebate Percentage Value    0.00
+    Select Airline Commission Percentage    5
+    Verify Commission Rebate Percentage Value    1.8
+    Verify Commission Rebate Amount Value    ${commission_rebate_amount}
+    Verify Mark-Up Percentage Value    0.00
+    Verify Mark-Up Amount Value    0.00
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Airline Commission Is Retained For DU/MG Client And Default Value Is 'Please Select'
+    [Tags]    us4467    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo HK 16 - Auto ¦ US3528    AutoSixteenFour    ApacTrvlrFour
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SLCSYD/UA    01Y1*    FQ    6
+    Enter GDS Command    NP.HF*COUNTRY:HK TYPE:DU DISC:1.8 MARK:2.4
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Pricing Extras Tab
+    Select Turnaround    LAX
+    Verify Airline Commission Percentage Value    Please Select
+    Verify Airline Commission Amount Is Disabled
+    Verify Airline Commission Amount Value    ${EMPTY}
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Verify Mark-Up Percentage Value    2.40
+    Determine Mark-Up Amount For DU/MG From Base Fare    Fare 1    2.40
+    Verify Mark-Up Amount Value    ${expected_mg_mark_up_amount}
+    Select Airline Commission Percentage    5.00 - EX HONG KONG    SELECT
+    Verify Commission Rebate Percentage Value    1.8
+    Determine Airline Commision Amount From Base Fare    Fare 1    1.8
+    Round Down Amount    ${expected_airline_commission_amount}    commission_rebate_amount
+    Verify Commission Rebate Amount Value    ${commission_rebate_amount}
+    Verify Mark-Up Percentage Value    0.00
+    Verify Mark-Up Amount Value    0.00
+    Select Airline Commission Percentage    0.00 - ALL OTHER    SELECT
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Verify Mark-Up Percentage Value    2.40
+    Determine Mark-Up Amount For DU/MG From Base Fare    Fare 1    2.40
+    Verify Mark-Up Amount Value    ${expected_mg_mark_up_amount}
+    Set Mark-up Percentage Field    0.00
+    Verify Airline Commission Percentage Value    0.00 - ALL OTHER
+    Verify Airline Commission Amount Value    0.00
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Select Airline Commission Percentage    Please Select    SELECT
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Verify Mark-Up Percentage Value    2.40
+    Verify Mark-Up Amount Value    ${expected_mg_mark_up_amount}
+    Select Airline Commission Percentage    12
+    Verify Commission Rebate Percentage Value    1.8
+    Determine Airline Commision Amount From Base Fare    Fare 1    1.8
+    Round Down Amount    ${expected_airline_commission_amount}    commission_rebate_amount
+    Verify Commission Rebate Amount Value    ${commission_rebate_amount}
+    Verify Mark-Up Percentage Value    0.00
+    Verify Mark-Up Amount Value    0.00
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Default Airline Commission Is Retained When Mark-Up Is Entered
+    [Tags]    us4467    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo SG 16 - Auto ¦ US3536    AutoSixteenFour    ApacTrvlrNine
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQS1    6
+    Book Flight X Months From Now    SYDSIN/QF    01Y1    FQS2    6    5
+    Book Flight X Months From Now    SINBKK/TG    01Y1    FQS3    6    10
+    Enter GDS Command    TMU1NFSGD1000.09
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Pricing Extras Tab
+    Verify Airline Commision Percentage Is Disabled
+    Verify Airline Commission Percentage Value    0.00 - NETT REMIT
+    Verify Airline Commission Amount Is Disabled
+    Verify Airline Commission Amount Value    0.00
+    Verify Commission Rebate Percentage Is Disabled
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Is Disabled
+    Verify Commission Rebate Amount Value    0.00
+    Set Mark-up Percentage Field    20
+    Verify Airline Commision Percentage Is Disabled
+    Verify Airline Commission Percentage Value    0.00 - NETT REMIT
+    Verify Airline Commission Amount Is Disabled
+    Verify Airline Commission Amount Value    0.00
+    Verify Commission Rebate Percentage Is Disabled
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Is Disabled
+    Verify Commission Rebate Amount Value    0.00
+    Set Nett Fare Field    0.00
+    Verify Airline Commision Percentage Is Enabled
+    Verify Airline Commission Percentage Value    0.00 - ALL
+    Verify Airline Commission Amount Is Disabled
+    Verify Airline Commission Amount Value    0.00
+    Verify Commission Rebate Percentage Is Enabled
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Is Enabled
+    Verify Commission Rebate Amount Value    0.00
+    Select Turnaround    SIN
+    Verify Airline Commision Percentage Is Enabled
+    Verify Airline Commission Percentage Value    3.00 - ALL Other
+    Verify Airline Commission Amount Is Disabled
+    Determine Airline Commision Amount From Base Fare    Fare 1    3
+    Verify Airline Commission Amount Value    ${expected_airline_commission_amount}
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Set Mark-Up Amount Field    0.00
+    Verify Airline Commision Percentage Is Enabled
+    Verify Airline Commission Percentage Value    3.00 - ALL Other
+    Verify Airline Commission Amount Is Disabled
+    Verify Airline Commission Amount Value    ${expected_airline_commission_amount}
+    Verify Commission Rebate Percentage Is Enabled
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Is Enabled
+    Verify Commission Rebate Amount Value    0.00
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Enabled
+    Verify Airline Commission Percentage Value    0.00 - ALL
+    Verify Airline Commission Amount Is Disabled
+    Verify Airline Commission Amount Value    0.00
+    Verify Commission Rebate Percentage Is Enabled
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Is Enabled
+    Verify Commission Rebate Amount Value    0.00
+    Set Mark-Up Amount Field    200
+    Verify Airline Commission Percentage Is Enabled
+    Verify Airline Commission Percentage Value    0.00 - ALL
+    Verify Airline Commission Amount Is Disabled
+    Verify Airline Commission Amount Value    0.00
+    Verify Commission Rebate Percentage Is Enabled
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Is Enabled
+    Verify Commission Rebate Amount Value    0.00
+    Select Airline Commission Percentage    50
+    Verify Commission Rebate Amount Is Enabled
+    Determine Airline Commision Amount From Base Fare    Fare 2    50
+    Verify Airline Commission Amount Value    ${expected_airline_commission_amount}
+    Verify Commission Rebate Amount Value    0.00
+    Verify Commission Rebate Percentage Is Enabled
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Is Enabled
+    Verify Commission Rebate Amount Value    0.00
+    Set Commission Rebate Percentage    50
+    Verify Commission Rebate Amount Is Enabled
+    Round Down Amount    ${expected_airline_commission_amount}    commission_rebate_amount
+    Verify Commission Rebate Amount Value    ${commission_rebate_amount}
+    Click Fare Tab    Fare 3
+    Click Pricing Extras Tab
+    Verify Airline Commision Percentage Is Disabled
+    Verify Airline Commission Percentage Value    12.00
+    Verify Airline Commission Amount Is Disabled
+    Determine Airline Commision Amount From Base Fare    Fare 3    12
+    Verify Airline Commission Amount Value    ${expected_airline_commission_amount}
+    Verify Commission Rebate Percentage Is Enabled
+    Verify Commission Rebate Percentage Value    12.00
+    Verify Commission Rebate Amount Is Enabled
+    Round Down Amount    ${expected_airline_commission_amount}    commission_rebate_amount
+    Verify Commission Rebate Amount Value    ${commission_rebate_amount}
+    Set Mark-up Percentage Field    10
+    Determine Mark-Up Amount From Base Fare    Fare 3    10
+    Verify Mark-Up Amount Value    ${expected_mark_up_amount}
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That 'Please Select' On Airline Commission Is Retained When Mark-up Is Entered
+    [Tags]    us4467    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo SG 16 - Auto ¦ US3536    AutoSixteenFour    ApacTrvlrNine
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINLHR/BA    01Y1    FQS1    6
+    Book Flight X Months From Now    LHRSIN/BA    01Y1    FQS2    6    2
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Enabled
+    Verify Airline Commission Percentage Value    Please Select
+    Verify Airline Commission Amount Value    ${EMPTY}
+    Verify Commission Rebate Percentage Is Enabled
+    Verify Commission Rebate Percentage Value    ${EMPTY}
+    Verify Commission Rebate Amount Is Enabled
+    Verify Commission Rebate Amount Value    ${EMPTY}
+    Verify Mark-Up Percentage Is Enabled
+    Verify Mark-Up Percentage Value    ${EMPTY}
+    Verify Mark-Up Amount Is Enabled
+    Verify Mark-Up Amount Value    ${EMPTY}
+    Select Airline Commission Percentage    3.00 - All Other    SELECT
+    Verify Mark-Up Percentage Is Enabled
+    Verify Mark-Up Percentage Value    ${EMPTY}
+    Verify Mark-Up Amount Is Enabled
+    Verify Mark-Up Amount Value    ${EMPTY}
+    Set Mark-up Percentage Field    10
+    Determine Mark-Up Amount From Base Fare    Fare 1    10
+    Verify Mark-Up Amount Value    ${expected_mark_up_amount}
+    Verify Airline Commission Percentage Value    3.00 - All Other
+    Determine Airline Commision Amount From Base Fare    Fare 1    3
+    Verify Airline Commission Amount Value    ${expected_airline_commission_amount}
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Select Airline Commission Percentage    0.00 - ALL    SELECT
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Verify Mark-Up Percentage Value    10
+    Verify Mark-Up Amount Value    ${expected_mark_up_amount}
+    Set Mark-up Percentage Field    ${EMPTY}
+    Verify Airline Commission Percentage Value    0.00 - ALL
+    Verify Airline Commission Amount Value    0.00
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Set Mark-up Percentage Field    20
+    Verify Airline Commission Percentage Value    0.00 - ALL
+    Verify Airline Commission Amount Value    0.00
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Enabled
+    Verify Airline Commission Percentage Value    Please Select
+    Verify Airline Commission Amount Value    ${EMPTY}
+    Verify Commission Rebate Percentage Is Enabled
+    Verify Commission Rebate Percentage Value    ${EMPTY}
+    Verify Commission Rebate Amount Is Enabled
+    Verify Commission Rebate Amount Value    ${EMPTY}
+    Verify Mark-Up Percentage Is Enabled
+    Verify Mark-Up Percentage Value    ${EMPTY}
+    Verify Mark-Up Amount Is Enabled
+    Verify Mark-Up Amount Value    ${EMPTY}
+    Set Mark-up Percentage Field    30
+    Verify Airline Commission Percentage Is Enabled
+    Verify Airline Commission Percentage Value    Please Select
+    Verify Airline Commission Amount Value    ${EMPTY}
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Set Nett Fare Field    500.00
+    Verify Airline Commission Percentage Value    0.00 - NETT REMIT
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Determine Mark-Up Amount From Nett Fare    500.00    30
+    Verify Mark-Up Amount Value    ${expected_mark_up_amount}
+    Set Nett Fare Field    00.00
+    Verify Airline Commission Percentage Value    Please Select
+    Verify Airline Commission Amount Value    ${EMPTY}
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Determine Mark-Up Amount From Base Fare    Fare 2    30
+    Verify Mark-Up Amount Value    ${expected_mark_up_amount}
+    Verify Mark-Up Percentage Value    30
+    Select Airline Commission Percentage    3.00 - All Other    SELECT
+    Verify Commission Rebate Percentage Value    0.00
+    Verify Commission Rebate Amount Value    0.00
+    Verify Mark-Up Amount Value    ${expected_mark_up_amount}
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Commission Rebate, Fuel Surcharge And Transaction Fee Are Written In The PNR
+    [Tags]    us3849    us3528    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo HK 16 - Auto ¦ US3528    AutoSixteenFour    ApacTrvlrFour    HKGSYD/QF    01Y1    FQS1
+    ...    SYDHKG/QF    01Y1    FQS2    ${EMPTY}    Air Fare
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    QF
+    Click Pricing Extras Tab
+    Verify Error and Warning Message For Transaction Fee
+    Select Airline Commission Percentage    25
+    Set Commission Rebate Percentage    10
+    Get Expected Commission Rebate and Fuel Surcharge Amount    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    15
+    Set Commission Rebate Percentage    5
+    Get Expected Commission Rebate and Fuel Surcharge Amount    Fare 2
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Fuel Surcharge For Fare 1 Are Written In The PNR
+    Verify Fuel Surcharge For Fare 2 Are Written In The PNR
+    Verify Commission Rebate For Fare 1 Are Written In The PNR
+    Verify Commission Rebate For Fare 2 Are Written In The PNR
+    Verify Correct Transaction Fee Is Written In The PNR    TRANSACTION FEE: HKD 12
+    [Teardown]
+
+[AB HK] Verify That Commission Rebate And Fuel Surcharge Are Written In The PNR
+    [Tags]    us3849    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Select Form Of Payment    ${EMPTY}
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    EK
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    25
+    Set Commission Rebate Percentage    25
+    Set Fuel Surcharge Field    35
+    Get Expected Commission Rebate and Fuel Surcharge Amount    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    AA
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    19
+    Set Commission Rebate Percentage    12
+    Set Fuel Surcharge Field    60
+    Get Expected Commission Rebate and Fuel Surcharge Amount    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Worfklow For Commission Rebate And Fuel Surcharge Are Written In The PNR If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Fuel Surcharge For Fare 1 Are Written In The PNR
+    Verify Fuel Surcharge For Fare 2 Are Written In The PNR
+    Verify Commission Rebate For Fare 1 Are Written In The PNR
+    Verify Commission Rebate For Fare 2 Are Written In The PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That RF, LF And SF Computation Are Correct And Mark-up Exist
+    [Tags]    us3536    us3807    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Create New Booking With Three Segments Using Default Values    Galileo HK 16 - Auto ¦ US3536    AutoSixteenFour    ApacTrvlrTen    HKGSYD/QF    01Y1    FQS1
+    ...    SYDHKG/QF    01Y1    FQS2    HKGSYD/QF    01Y1    FQS3
+    ...    ${EMPTY}    Air Fare
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    100
+    Set Mark-Up Amount Field    10
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    90
+    Set Mark-Up Amount Field    9
+    Populate Fare Tab With Default Values    Fare 3
+    Click Pricing Extras Tab
+    Set Nett Fare Field    80
+    Set Mark-Up Amount Field    8
+    Comment    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 3
+    Retrieve PNR Details From Travelport    ${current_pnr}    *DI
+    Verify RF, SF And LF Are Written In The PNR For Fare Tab    Fare 1
+    Verify RF, SF And LF Are Written In The PNR For Fare Tab    Fare 2
+    Verify RF, SF And LF Are Written In The PNR For Fare Tab    Fare 3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That RF, LF And SF Computation Are Correct When Merchant Fee And Mark-up Exist
+    [Tags]    us3536    us3287    us3807    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Set Client And Traveler    Galileo SG 16 - Auto ¦ US3536    AutoSixteenFour    ApacTrvlrNine
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQS1
+    Book Flight X Months From Now    SYDSIN/QF    01Y1    FQS2    6    4
+    Enter GDS Command    TMU1FS
+    Enter GDS Command    TMU2FS
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    DC    30569309025904    1220
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    ${EMPTY}
+    Select Airline Commission Percentage    0
+    Set Commission Rebate Amount    ${EMPTY}
+    Set Mark-Up Amount Field    300
+    Set Merchant Fee Amount    100.5
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    0
+    Select Airline Commission Percentage    0
+    Set Commission Rebate Amount    0
+    Set Mark-Up Amount Field    500
+    Set Merchant Fee Percentage Field    0.15
+    Get Mark-Up Amount Value    Fare 2
+    Enter Specific Command On Native GDS    T.TAU/${departure_date}
+    Enter GDS Command    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}    *DI
+    Verify RF, SF And LF Are Written In The PNR For Fare Tab    Fare 1
+    Verify RF, SF And LF Are Written In The PNR For Fare Tab    Fare 2
+    Verify Merchant Fee Amount Is Not Included In SF for Fare 1
+    Verify Merchant Fee Amount Is Not Included In SF for Fare 2
+    [Teardown]
+
+[AB SG] Verify That RF, SF And LF Are Written In The PNR When Nett Fare Is Greater Than 0, And Mark-Up And Commission Rebate Are Blank Or 0
+    [Tags]    us3536    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set Low Fare Field    200.00
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    100.00
+    Set Mark-Up Amount Field    ${EMPTY}
+    Click Fare Tab    Fare 2
+    Set Low Fare Field    300.00
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    150.00
+    Set Mark-Up Amount Field    0
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Comment    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For RF, SF And LF Are Written In The PNR If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}    *DI
+    Verify RF, SF And LF Are Written In The PNR For Fare Tab    Fare 1
+    Verify RF, SF And LF Are Written In The PNR For Fare Tab    Fare 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Correct Transaction Fee Is Written In The PNR
+    [Tags]    us3755    us3528    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo SG 16 - Auto ¦ US3755    AutoSixteenSeven    ApacTrvlrEight    SINSYD/QF    01Y1    FQS1
+    ...    SYDSIN/QF    01Y1    FQS2    ${EMPTY}    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    120.00-Offline-Standard
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    120.00-Offline-Standard
+    Verify Error and Warning Message For Transaction Fee
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    120.00-Offline-Standard
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    120.00-Offline-Standard
+    Comment    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Correct Transaction Fee Is Written In The PNR    TRANSACTION FEE: SGD 120.00
+    Verify Correct Transaction Fee Is Written In The PNR    TRANSACTION FEE: SGD 11.23
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Nett Fare From Filed Fare Can Be Amended Via Pricing Extras Panel And Written Back To The Relevant Filed Fare
+    [Tags]    us4050    us4503    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Delete Current Specific Log File    SyExPerfLog
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight and TMU    Galileo HK 16 - Auto ¦ US4050    AutoSixteenSeven    ApacTrvlrTwentyOne    HKGPEK/KA    01Y1    FQS1
+    ...    TMU1NFHKD500    PEKHKG/KA    01Y1    FQS2    TMU2NFHKD600    ${EMPTY}
+    ...    AIR FARE
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 500.00 Based On The TMU Line
+    Set Nett Fare Field    550.55
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 600.00 Based On The TMU Line
+    Set Nett Fare Field    675
+    Comment    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Verify Specific Remark Is Written In The PNR    NFHKD550
+    Verify Specific Remark Is Written In The PNR    NFHKD675
+    [Teardown]
+
+[AB HK] Verify That Nett Fare From Filed Fare Can Be Deleted Via Pricing Extras Panel And Relevant Filed Fare Will Be Updated
+    [Tags]    us4050    us4503    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 550.00 Based On The TMU Line
+    Set Nett Fare Field    0
+    Select Airline Commission Percentage    0.00
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 675.00 Based On The TMU Line
+    Set Nett Fare Field    ${EMPTY}
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Re-Execute Amend Booking Worfklow For Nett Fare From Filed Fare Can Be Deleted If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Verify Specific Remark Is Not Written In The PNR    NFHKD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Nett Fare From Filed Fare Can Be Amended Via Pricing Extras Panel And Written Back To The Relevant Filed Fare
+    [Tags]    us4050    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Delete Current Specific Log File    SyExPerfLog
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Create New Booking With Round Trip Air Flight and TMU    Galileo SG 16 - Auto ¦ US4050    AutoSixteenFour    ApacTrvlrEight    SINICN/KE    01Y1    FQS1
+    ...    TMU1NFSGD300.45    ICNSIN/KE    01Y1    FQS2    TMU2NFSGD350.40    ${EMPTY}
+    ...    AIR FARE
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 300.45 Based On The TMU Line
+    Set Nett Fare Field    458.23654
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 350.40 Based On The TMU Line
+    Set Nett Fare Field    250.23654
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Verify Specific Remark Is Written In The PNR    NFSGD458.24
+    Verify Specific Remark Is Written In The PNR    NFSGD250.24
+    [Teardown]
+
+[AB SG] Verify That Nett Fare From Filed Fare Can Be Deleted Via Pricing Extras Panel And Relevant Filed Fare Will Be Updated
+    [Tags]    us4050    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 458.24 Based On The TMU Line
+    Set Nett Fare Field    0
+    Select Airline Commission Percentage    0.00
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 250.24 Based On The TMU Line
+    Set Nett Fare Field    ${EMPTY}
+    Select Airline Commission Percentage    0.00
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Re-Execute Amend Workflow For Nett Fare From Filed Fare Can Be Deleted Via Pricing Extras Panel If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Verify Specific Remark Is Not Written In The PNR    NFSGD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB HK] Verify That Online Assist Fee Is Populated In The Transaction Fee When FF34 Is AA
+    [Tags]    us3759    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/1IW/AG
+    Comment    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Set Client And Traveler    Galileo HK 16 - Auto ¦ US3759    AutoSixteenSeven    ApacTrvlrTwo
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSYD/QF    01Y1    FQ
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    NP.BT*CBK
+    Enter GDS Command    DI.FT-FF34/*1/AA
+    Enter GDS Command    DI.FT-FF35/*1/AMA
+    Enter GDS Command    DI.FT-FF36/*1/S
+    Enter GDS Command    R.CWTPTEST
+    Enter GDS Command    ER
+    Click Read Booking
+    Click Panel    Amend
+    Select Touch Level    Agent Assisted
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    ${online_assist_transaction_fee_2}    Compute Transaction Fee    1    10
+    ${online_assist_transaction_fee_3}    Compute Transaction Fee    1    5
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    35.00-Online-Assist    ${online_assist_transaction_fee_2}-Online-Assist    ${online_assist_transaction_fee_3}-Online-Assist
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB SG] Verify That Online Assist Fee Is Populated In The Transaction Fee When FF34 is EB
+    [Tags]    us3759    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Create New Booking With One Way Flight Using Default Values    Galileo SG 16 - Auto ¦ US3759    AutoSixteenSeven    ApacTrvlrOne    SINSYD/QF    ${EMPTY}
+    Comment    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    NP.BT*CBK
+    Enter GDS Command    DI.FT-FF34/*1/EB
+    Enter GDS Command    DI.FT-FF35/*1/CBK
+    Enter GDS Command    DI.FT-FF36/*1/S
+    Enter GDS Command    R.CWTPTEST
+    Enter GDS Command    ER
+    Click Read Booking
+    Click Panel    Amend
+    Select Touch Level    Online Unassisted
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    ${online_assist_transaction_fee_2}    Compute Transaction Fee    1    12
+    ${online_assist_transaction_fee_3}    Compute Transaction Fee    1    10
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    45.00-Online-Online    ${online_assist_transaction_fee_2}-Online-Online    ${online_assist_transaction_fee_3}-Online-Online
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Merchant Fee Remark Is Written In PNR And Amount Is Not Included On Fare Amount When Nett Fare, Commisson Rebate, And Mark-up Amounts Are Blank Or 0
+    [Tags]    us3859    us4585    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Set Client And Traveler    Galileo SG 16 - Auto ¦ US3859    AutoSixteenSeven    ApacTrvlrSix
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQS1
+    Book Flight X Months From Now    SYDSIN/QF    01Y1    FQS2    6    4
+    Enter GDS Command    TMU1FS
+    Enter GDS Command    TMU2FS
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1220
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    ${EMPTY}
+    Select Airline Commission Percentage    0
+    Set Commission Rebate Amount    ${EMPTY}
+    Set Mark-Up Amount Field    ${EMPTY}
+    Set Merchant Fee Amount    100.5
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    0
+    Select Airline Commission Percentage    0
+    Set Commission Rebate Amount    0
+    Set Mark-Up Amount Field    0
+    Set Merchant Fee Percentage Field    0.15
+    Get Mark-Up Amount Value    Fare 1
+    Enter Specific Command On Native GDS    T.TAU/10MAY
+    Enter GDS Command    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}    *RI
+    Verify Merchant Fee For SG Is Not Included In Fare Amount For Fare 1
+    Verify Merchant Fee For SG Is Not Included In Fare Amount For Fare 2
+    Verify Merchant Fee For SG Is Included In Total Amount For Fare 1
+    Verify Merchant Fee For SG Is Included In Total Amount For Fare 2
+    Verify Merchant Fee Amount For SG Is Written in PNR For Fare 1
+    Verify Merchant Fee Amount For SG Is Written in PNR For Fare 2
+    Verify Fare Amount Including Tax For SG Is Written In The PNR For Fare 1
+    Verify Fare Amount Including Tax For SG Is Written In The PNR For Fare 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AU] Verify That Merchant Fee Remark Is Written And Amount Is Not Included On Fare Amount When Nett Fare And Mark-up Has Value, And Commission Rebate Amounts Is Blank Or 0
+    [Tags]    us3859    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationAU    AU AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo AU 16 - Auto ¦ US3859    AutoSixteenSeven    ApacTrvlrSeven
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SYDAKL/QF    01Y1    FQS1
+    Book Flight X Months From Now    AKLSYD/QF    01Y1    FQS2    6    4
+    Enter GDS Command    TMU1FS
+    Enter GDS Command    TMU2FS
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    DC    30569309025904    1220
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    ${EMPTY}
+    Select Airline Commission Percentage    0.00
+    Set Commission Rebate Amount    ${EMPTY}
+    Set Commission Rebate Percentage    ${EMPTY}
+    Set Mark-Up Amount Field    ${EMPTY}
+    Set Merchant Fee Amount    100.5
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Set Commission Rebate Amount    ${EMPTY}
+    Set Commission Rebate Percentage    ${EMPTY}
+    Set Mark-Up Amount Field    200
+    Set Merchant Fee Amount    5
+    Get Merchant Fee Amount Value    Fare 2
+    Enter Specific Command On Native GDS    T.TAU/10MAY
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}    *RI
+    Verify Merchant Fee For AU Is Not Included In Fare Amount For Fare 1
+    Verify Merchant Fee For AU Is Not Included In Fare Amount For Fare 2
+    Verify Merchant Fee For AU Is Included In Total Amount For Fare 1
+    Verify Merchant Fee For AU Is Included In Total Amount For Fare 2
+    Verify Merchant Fee Amount For AU Is Written in PNR For Fare 1
+    Verify Merchant Fee Amount For AU Is Written in PNR For Fare 2
+    Verify Fare Amount For AU Is Written In The PNR For Fare 1
+    Verify Fare Amount For AU Is Written In The PNR For Fare 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AU] Verify That Commission Rebate Amount Is Not Deducted To The Selling Fare
+    [Tags]    us3807    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationAU    AU AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo AU 16 - Auto ¦ US3807    AutoSixteenSeven    ApacTrvlrThirteen
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SYDAKL/QF    01Y1    FQS1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    ${EMPTY}
+    Select Airline Commission Percentage    5
+    Set Commission Rebate Amount    ${EMPTY}
+    Set Commission Rebate Percentage    5.00
+    Enter Specific Command On Native GDS    T.TAU/10MAY
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify RF, SF And LF Are Written In The PNR For Fare Tab    Fare 1
+    Verify Commission Rebate Amount For AU Is Not Deducted In SF For Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Mark-up Is Pre-populated From DU/MG Line When There Is No Airline Commission Setup
+    [Tags]    us3148    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo HK 16 - Auto ¦ US3148    APAC    ThreeOneFourEight
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSFO/AA    01Y1    FQS1    8    2
+    Book Flight X Months From Now    GRUJFK/JJ    01Y2    FQS2    8    4
+    Enter GDS Command    NP.HF*COUNTRY:HK TYPE:DU DISC:1.8 MARK:2.4
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Value In Mark-up Percentage    2.40
+    Verify Value In Commission Rebate Percentage    0.00
+    Select Airline Commission Percentage    3
+    Verify Value In Commission Rebate Percentage    1.8
+    Verify Value In Mark-up Percentage    0.00
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Value In Mark-up Percentage    2.40
+    Verify Value In Commission Rebate Percentage    0.00
+    Select Airline Commission Percentage    10
+    Verify Value In Commission Rebate Percentage    1.8
+    Verify Value In Mark-up Percentage    0.00
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    [Teardown]
+
+[AB HK] Verify That Mark-up Is Pre-populated From DU/MG Line When There Is No Airline Commission Setup
+    [Tags]    us3148    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Verify Value In Commission Rebate Percentage    1.8
+    Verify Value In Mark-up Percentage    0.00
+    Set Mark-up Percentage Field    10
+    Verify Value In Commission Rebate Percentage    0.00
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Verify Value In Commission Rebate Percentage    1.8
+    Verify Value In Mark-up Percentage    0.00
+    Set Mark-up Percentage Field    10
+    Verify Value In Commission Rebate Percentage    0.00
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Mark-up Is Pre-populated From DU/MG Line When There Is An Airline Commission Setup
+    [Tags]    us3148    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo HK 16 - Auto ¦ US3148    APAC    ThreeOneFourEight
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSFO/AA    01Y1    FQS1    8    2
+    Book Flight X Months From Now    GRUJFK/JJ    01Y2    FQS2    8    4
+    Enter GDS Command    NP.HF*COUNTRY:HK TYPE:DU DISC:1.8 MARK:2.4
+    Enter GDS Command    TMU1Z30.00
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Value In Airline Commission Percentage    30.00
+    Verify Value In Commission Rebate Percentage    1.8
+    Verify Value In Mark-Up Percentage    0.00
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Value In Mark-up Percentage    2.40
+    Verify Value In Commission Rebate Percentage    0.00
+    Select Airline Commission Percentage    25
+    Verify Value In Commission Rebate Percentage    1.8
+    Verify Value In Mark-Up Percentage    0.00
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    [Teardown]
+
+[AB HK] Verify That Mark-up Is Pre-populated From DU/MG Line When There Is An Airline Commission Setup
+    [Tags]    us3148    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Verify Value In Airline Commission Percentage    30.00
+    Verify Value In Commission Rebate Percentage    1.8
+    Verify Value In Mark-up Percentage    0.00
+    Set Mark-up Percentage Field    10
+    Verify Value In Commission Rebate Percentage    0.00
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Verify Value In Airline Commission Percentage    25.00
+    Verify Value In Commission Rebate Percentage    1.8
+    Verify Value In Mark-up Percentage    0.00
+    Set Mark-up Percentage Field    10
+    Verify Value In Commission Rebate Percentage    0.00
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Value From TMU Line Is Retrieve When CAT35 Fare Has No Hidden Commission
+    [Tags]    us4748    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo HK 16 - Auto ¦ US4581 SO set to NO    AutomationSixteen    TravelerThree
+    Select Client Account Using Default Value
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSFO/UA    01Y1    FQS1
+    Book Flight X Months From Now    HKGSFO/UA    01Y1    FQS2    7
+    Enter GDS Command    TMU1Z5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Pre-Populated By 5.00
+    Select Airline Commission Percentage    10
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Is Enabled And Empty
+    Select Airline Commission Percentage    6.00
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    /Z10
+    Verify Specific Remark Is Written In The PNR    /Z6
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Correct Transaction Fee Populated Is Correct When Routing Is Between Cities
+    [Tags]    us3758    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo SG 16 - Auto ¦ US3536    AutoSixteenFour    ApacTrvlrNine    MNLNRT/JL    01Y1    FQS1
+    ...    NRTMNL/JL    01Y1    FQS2    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    175.50-Offline-User Defined
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    175.50-Offline-User Defined
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    175.50-Offline-User Defined
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    175.50-Offline-User Defined
+    [Teardown]    Click Clear All
+
+[NB HK] Verify That Correct Transaction Fee Populated Is Correct When There Are Multiple Segments In A Filed Fare [TPM]
+    [Tags]    us3758    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Create New Booking With Three Segments Using Default Values    Galileo HK 16 - Auto ¦ US3536    AutoSixteenFour    ApacTrvlrTen    SLCLAX/AA    01Y1    ${EMPTY}
+    ...    LAXNRT/AA    01Y1    ${EMPTY}    NRTMNL/NH    01Y1    FQ
+    ...    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    60.00-Offline-User Defined 3
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    60.00-Offline-User Defined 3
+    [Teardown]    Click Clear All
+
+[NB SG] Verify That Offline Transaction Fee Is Populated When OFFLINE Fee Is Setup And NO Exchange Fee Is Setup
+    [Tags]    us4178    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo SG 16 - Auto ¦ US4050    AutoSixteenFour    ApacTrvlrEight
+    Select Client Account Using Default Value
+    Click New Booking
+    Book Flight X Months From Now    SINMNL/SQ    01Y1    FQS1    6
+    Book Flight X Months From Now    MNLSIN/SQ    01Y1    FQS2    6    3
+    Book Flight X Months From Now    MNLZHA/CZ    01Y1*    FQS3-4    6    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Select Turnaround    ZHA
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    [Teardown]
+
+[AB SG] Verify That Offline Transaction Fee Is Populated When OFFLINE Fee Is Setup And NO Exchange Fee Is Setup
+    [Tags]    us4178    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter Specific Command On Native GDS    IR    *R    TMU1FEX    R.CWTPTEST    ER
+    Click Read Booking    True
+    Verify Exchange Pop-up Window Is Displayed
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    1.00-Offline-User Defined 6
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    1.00-Offline-User Defined 6
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    1.00-Offline-User Defined 6
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    1.00-Offline-User Defined 6
+    Click Fare Tab    Fare 3
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    ${EMPTY}
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    ${EMPTY}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Offline Exchange Transaction Fee Is Populated When EXCHANGE And OFFLINE Fees Are Setup
+    [Tags]    us4178    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo HK 16 - Auto ¦ US3536    AutoSixteenFour    ApacTrvlrTen    SLCLAX/AA    01Y1    FQS1
+    ...    LAXNRT/AA    01Y1    FQS2
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    [Teardown]
+
+[AB HK] Verify That Offline Exchange Transaction Fee Is Populated When EXCHANGE And OFFLINE Fees Are Setup
+    [Tags]    us4178    apac
+    Enter Specific Command On Native GDS    *${current_pnr}    IR    *R    TMU1FEX    R.CWTPTEST    ER
+    ...    ER    IR    TMU2FEX    R.CWTPTEST    ER    ER
+    ...    I
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking    True
+    Verify Exchange Pop-up Window Is Displayed
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    125.00-Offline-Exchange
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    125.00-Offline-Exchange
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    125.00-Offline-Exchange
+    Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown    125.00-Offline-Exchange
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Correct Airline Commission Is Retrieved Based On The Routing Policy For A Direct Flight
+    [Tags]    us4217    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Create New Booking With Three Segments Using Default Values    Galileo HK 16 - Auto ¦ US3528    AutoSixteenFour    ApacTrvlrFour    HKGLAX/AA    01Y1    FQS1
+    ...    SYDHKG/QF    01Y1    FQS2    SINHKG/UA    01Y1    FQS3
+    ...    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    AA
+    Click Pricing Extras Tab
+    Verify Turnaround Field Default Value    LAX
+    Verify Airline Commission Percentage Is Pre-Populated By 5.00 - EX HONG KONG
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    QF
+    Click Pricing Extras Tab
+    Verify Turnaround Field Default Value    HKG
+    Verify Airline Commission Percentage Is Pre-Populated By 3.00 - ALL OTHER
+    Populate Fare Tab With Default Values    Fare 3
+    Set LFCC Field    UA
+    Click Pricing Extras Tab
+    Verify Turnaround Field Default Value    HKG
+    Verify Airline Commission Percentage Is Pre-Populated By Please Select
+    Verify Airline Commission Percentage Dropdown Values    Please Select    0.00 - ALL OTHER    5.00 - EX HONG KONG
+    [Teardown]    Click Clear All
+
+[NB SG] Verify That Warning Message Is Not Displayed When There Is A Nett Fare In Filed Fare
+    [Tags]    us4477    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo SG 17 - Auto ¦ US4477    AutoSeventeenTwo    ApacTrvlrFour
+    Select Client Account Using Default Value
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    371449635398431    1220
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQS1    6
+    Book Flight X Months From Now    SYDMEL/VA    01Y1    FQS2    6    3
+    Enter GDS Command    TMU1FS    TMU2FS    TMU1NFSGD600.00    TMU2NFSGD655.02
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Disabled
+    Verify Airline Commision Percentage Is Disabled
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 600.00 Based On The TMU Line
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Mark-Up Amount Field    500
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Mark-Up Amount Field    0
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Disabled
+    Verify Airline Commision Percentage Is Disabled
+    Verify Airline Commission Percentage Value    ${EMPTY}
+    Verify Nett Fare Amount Is Pre-Populated By 655.02 Based On The TMU Line
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 2    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Mark-Up Amount Field    10
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 2    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Nett Fare Field    ${EMPTY}
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 2    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Nett Fare Field    655.02
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 2    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *DI
+    Verify Merchant Fee Lines Are Written In The PNR    Fare 1    SG    QF
+    Verify Merchant Fee Lines Are Written In The PNR    Fare 2    SG    VA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Warning Message Is Not Displayed When Merchant Fee Amount Or Percentage Is Manually Updated
+    [Tags]    us4477    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    galileo
+    Set Client And Traveler    Galileo SG 17 - Auto ¦ US4477    AutoSeventeenTwo    ApacTrvlrFour
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    371449635398431    1220
+    Book Flight X Months From Now    SINLHR/BA    01Y1    FQS1    6
+    Book Flight X Months From Now    LHRSIN/BA    01Y1    FQS2    6    3
+    Enter GDS Command    TMU1FS    TMU2FS
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Pre-Populated By Please Select
+    Verify No Warning Message Display On Merchant Fee Fields
+    Verify Merchant Fee Percentage Value    2.00
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    SG
+    Set Merchant Fee Percentage Field    3
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Merchant Fee Percentage Field    2
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Higher Merchant Fee Amount
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Lower Merchant Fee Amount
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Merchant Fee Percentage Field    .15
+    Set Nett Fare Field    2000
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Nett Fare Field    0
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Mark-up Percentage Field    10
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Mark-up Percentage Field    ${EMPTY}
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Pre-Populated By Please Select
+    Verify Merchant Fee Percentage Value    2.00
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 2    SG
+    Set Merchant Fee Percentage Field    5
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Merchant Fee Percentage Field    .15
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Higher Merchant Fee Amount
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Lower Merchant Fee Amount
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Merchant Fee Percentage Field    .15
+    Set Nett Fare Field    2000
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 2    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Nett Fare Field    ${EMPTY}
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 2    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    Set Mark-up Percentage Field    10
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 2    SG
+    Verify No Warning Message Display On Merchant Fee Fields
+    [Teardown]    Click Clear All
+
+[NB HK] Verify That Warning Message Is Not Displayed When Mark-up And Commission Rebate Is Pre-populated
+    [Tags]    us4477    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    galileo
+    Set Client And Traveler    Galileo HK 17 - Auto ¦ US4477    AutoSeventeenTwo    ApacTrvlrThree
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4916461648043239    1222
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQS1    6
+    Book Flight X Months From Now    HKGSIN/UA    01Y1    FQS2    6    3
+    Enter GDS Command    TMU1FS    TMU2FS    NP.HF*COUNTRY:HK TYPE:DU DISC:1.8 MARK:2.4
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    QF
+    Click Pricing Extras Tab
+    Verify Airline Commision Percentage Is Enabled
+    Verify Mark-Up Percentage Value    2.40
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    HK
+    Verify No Warning Message Display On Merchant Fee Fields
+    Select Airline Commission Percentage    2
+    Verify Commission Rebate Percentage Value    1.8
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    HK
+    Set Commission Rebate Amount    100
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 1    HK
+    Verify No Warning Message Display On Merchant Fee Fields
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    UA
+    Click Pricing Extras Tab
+    Verify Airline Commision Percentage Is Enabled
+    Verify Airline Commission Percentage Is Pre-Populated By Please Select
+    Select Airline Commission Percentage    5.00 - EX HONG KONG    SELECT
+    Verify Commission Rebate Percentage Value    1.8
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 2    HK
+    Verify No Warning Message Display On Merchant Fee Fields
+    Select Airline Commission Percentage    0
+    Verify Mark-Up Percentage Value    2.40
+    Verify Merchant Fee Amount Is Calculated Correctly    Fare 2    HK
+    Verify No Warning Message Display On Merchant Fee Fields
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *DI
+    Verify Merchant Fee Lines Are Written In The PNR    Fare 1    HK    QF
+    Verify Merchant Fee Lines Are Written In The PNR    Fare 2    HK    UA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Worfklow For Commission Rebate And Fuel Surcharge Are Written In The PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    EK
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    25
+    Set Commission Rebate Percentage    25
+    Set Fuel Surcharge Field    35
+    Get Expected Commission Rebate and Fuel Surcharge Amount    Fare1
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    AA
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    19
+    Set Commission Rebate Percentage    12
+    Set Fuel Surcharge Field    60
+    Get Expected Commission Rebate and Fuel Surcharge Amount    Fare2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking Worfklow For Nett Fare From Filed Fare Can Be Deleted
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 550.00 Based On The TMU Line
+    Set Nett Fare Field    0
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 675.00 Based On The TMU Line
+    Set Nett Fare Field    ${EMPTY}
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+
+Amend Booking Workflow For Correct Airline Commission Is Retrieved Based On The Routing Policy For Multi-Destination Flights
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Enter GDS Command    FXALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    HKGSYD.MNL/PR    01Y1*    ${EMPTY}    7
+    Book Flight X Months From Now    SYDSIN.MNL/PR    01Y1*    ${EMPTY}    7    2
+    Book Flight X Months From Now    HKGLAX.SYD/QF    01Y3*    ${EMPTY}    7    4
+    Book Flight X Months From Now    SLCSYD.LAX/UA    01Y1*    ${EMPTY}    7    6
+    Select Form Of Payment    Cash
+    Enter GDS Command    FQS1-4
+    Enter GDS Command    FQS5-8
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Pre-Populated By ${EMPTY}
+    Select Turnaround    SYD
+    Verify Airline Commission Percentage Is Pre-Populated By 7.00 - ALL
+    Select Turnaround    MNL
+    Verify Airline Commission Percentage Is Pre-Populated By ${EMPTY}
+    Select Turnaround    SIN
+    Verify Airline Commission Percentage Is Pre-Populated By ${EMPTY}
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    UA
+    Click Pricing Extras Tab
+    Verify Turnaround Field Default Value    SYD
+    Verify Airline Commission Percentage Is Pre-Populated By 3.00 - ALL OTHER
+    Select Turnaround    LAX
+    Verify Airline Commission Percentage Is Pre-Populated By 5.00 - ALL
+    Select Turnaround    SLC
+    Verify Airline Commission Percentage Is Pre-Populated By ${EMPTY}
+    Click Finish PNR
+
+Amend Booking Workflow For RF, SF And LF Are Written In The PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set Low Fare Field    200.00
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Set Nett Fare Field    100.00
+    Set Mark-Up Amount Field    ${EMPTY}
+    Click Fare Tab    Fare 2
+    Set Low Fare Field    300.00
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Set Nett Fare Field    150.00
+    Set Mark-Up Amount Field    0
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+
+Amend Workflow For Nett Fare From Filed Fare Can Be Deleted Via Pricing Extras Panel
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 458.24 Based On The TMU Line
+    Set Nett Fare Field    0
+    Select Airline Commission Percentage    0.00
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Amount Is Pre-Populated By 0.00
+    Verify Airline Commission Percentage Is Pre-Populated By 0.00 - NETT REMIT
+    Verify Nett Fare Amount Is Pre-Populated By 250.24 Based On The TMU Line
+    Set Nett Fare Field    ${EMPTY}
+    Select Airline Commission Percentage    0.00
+    Populate All Panels (Except Given Panels If Any)    AIR FARE
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+
+Determine Airline Commision Amount From Base Fare
+    [Arguments]    ${fare_tab}    ${airline_commission_percentage}
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    ${fare_tab}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Base Fare And Tax From Galileo For Fare X Tab    ${fare_tab}
+    ${airline_commission_percentage}    Get Percentage Value    ${airline_commission_percentage}
+    ${expected_airline_commission_amount}    Evaluate    ${airline_commission_percentage}*${base_fare_value_${fare_tab}}
+    ${expected_airline_commission_amount}    Convert To Float    ${expected_airline_commission_amount}
+    Set Test Variable    ${expected_airline_commission_amount}
+
+Determine Mark-Up Amount For DU/MG From Base Fare
+    [Arguments]    ${fare_tab}    ${mark_up_percentage}
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    ${fare_tab}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Base Fare And Tax From Galileo For Fare X Tab    ${fare_tab}
+    ${mark_up_percentage}    Get Percentage Value    ${mark_up_percentage}
+    ${mg_mark_up_percentage}    Evaluate    1-${mark_up_percentage}
+    ${base_over_mg_mark_up_percentage}    Evaluate    ${base_fare_value_${fare_tab}}/${mg_mark_up_percentage}
+    ${expected_mg_mark_up_amount}    Evaluate    ${base_over_mg_mark_up_percentage}-${base_fare_value_${fare_tab}}
+    ${expected_mg_mark_up_amount}    Round Up Hk    ${expected_mg_mark_up_amount}
+    ${expected_mg_mark_up_amount}    Convert To Float    ${expected_mg_mark_up_amount}
+    Set Test Variable    ${expected_mg_mark_up_amount}
+
+Determine Mark-Up Amount For DU/MG From Nett Fare
+    [Arguments]    ${nett_fare_amount}    ${mark_up_percentage}
+    ${mark_up_percentage}    Get Percentage Value    ${mark_up_percentage}
+    ${mg_mark_up_percentage}    Evaluate    1-${mark_up_percentage}
+    ${base_over_mg_mark_up_percentage}    Evaluate    ${nett_fare_amount}/${mg_mark_up_percentage}
+    ${expected_mg_mark_up_amount}    Evaluate    ${base_over_mg_mark_up_percentage}-${nett_fare_amount}
+    ${expected_mg_mark_up_amount}    Round Up Hk    ${expected_mg_mark_up_amount}
+    ${expected_mg_mark_up_amount}    Convert To Float    ${expected_mg_mark_up_amount}
+    Set Test Variable    ${expected_mg_mark_up_amount}
+
+Determine Mark-Up Amount From Base Fare
+    [Arguments]    ${fare_tab}    ${mark_up_percentage}
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FFALL
+    ${fare_tab}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Base Fare And Tax From Galileo For Fare X Tab    ${fare_tab}
+    ${mark_up_percentage}    Get Percentage Value    ${mark_up_percentage}
+    ${expected_mark_up_amount}    Evaluate    ${mark_up_percentage}*${base_fare_value_${fare_tab}}
+    ${expected_mark_up_amount}    Convert To Float    ${expected_mark_up_amount}
+    Set Test Variable    ${expected_mark_up_amount}
+
+Determine Mark-Up Amount From Nett Fare
+    [Arguments]    ${nett_fare_amount}    ${mark_up_percentage}
+    ${mark_up_percentage}    Get Percentage Value    ${mark_up_percentage}
+    ${expected_mark_up_amount}    Evaluate    ${mark_up_percentage}*${nett_fare_amount}
+    ${expected_mark_up_amount}    Convert To Float    ${expected_mark_up_amount}
+    Set Test Variable    ${expected_mark_up_amount}
+
+Get Expected Commission Rebate and Fuel Surcharge Amount
+    [Arguments]    ${fare_tab}    ${country}=HK
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Fuel Surcharge Value    ${fare_tab}
+    Get Commission Rebate Amount Value    ${fare_tab}
+    ${commission_rebate_amount}    Run Keyword If    "${country}" == "HK"    Fetch From Left    ${commission_rebate_value_${fare_tab_index}}    .
+    ...    ELSE    Set Variable    ${commission_rebate_value_${fare_tab_index}}
+    Set Test Variable    ${fuel_surcharge_value_${fare_tab_index}}
+    Set Test Variable    ${commission_rebate_value_${fare_tab_index}}    ${commission_rebate_amount}
+
+Round Down Amount
+    [Arguments]    ${amount_to_round_down}    ${amount_name}=amount_name
+    ${amount_to_round_down}    Convert To Number    ${amount_to_round_down}
+    ${amount_to_round_down}    Convert To Integer    ${amount_to_round_down}
+    ${amount_to_round_down}    Convert To Float    ${amount_to_round_down}
+    Set Test Variable    ${${amount_name}}    ${amount_to_round_down}
+
+Set ${qualifier} Merchant Fee Amount
+    ${merchant_fee_amount_field}    Determine Multiple Object Name Based On Active Tab    txtMerchantFeeAmount
+    ${merchant_fee_amount}    Get Control Text Value    ${merchant_fee_amount_field}    ${title_power_express}
+    Click Control Button    ${merchant_fee_amount_field}    ${title_power_express}
+    Set Control Text Value    ${merchant_fee_amount_field}    ${EMPTY}    ${title_power_express}
+    ${int_high_value}    Evaluate    ${merchant_fee_amount} + 1
+    ${int_low_value}    Evaluate    ${merchant_fee_amount} - 2
+    Run Keyword If    '${qualifier.upper()}' == 'HIGHER'    Send    ${int_high_value}
+    ...    ELSE IF    '${qualifier.upper()}' == 'LOWER'    Send    ${int_low_value}
+    Send    {TAB}
+    ${actual_merchant_fee_amount}    Get Control Text Value    ${merchant_fee_amount_field}    ${title_power_express}
+    Run Keyword And Continue On Failure    Should Be True    "${actual_merchant_fee_amount}" == "${int_high_value}" or "${actual_merchant_fee_amount}" == "${int_low_value}"
+
+Verify Airline Commision Percentage Is Disabled
+    ${airline_commision_percentage_field}    Determine Multiple Object Name Based On Active Tab    cmbAirCommissionPercentage
+    ${actual_airline_commision_percentage_field_color}    Determine Control Object Background Color    ${airline_commision_percentage_field}
+    ${bg_for_disabled1}    Run Keyword And Return Status    Should Be True    "${actual_airline_commision_percentage_field_color}" == "773000"
+    ${bg_for_disabled2}    Run Keyword And Return Status    Should Be True    "${actual_airline_commision_percentage_field_color}" == "D3D3D3"
+    Run Keyword If    "${bg_for_disabled1}" == "True"    Log    Passed. Airline Commission % is disabled
+    ...    ELSE IF    "${bg_for_disabled2}" == "True"    Log    Passed. Airline Commission % is disabled
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Airline Commission % is enabled
+    [Teardown]    Take Screenshot
+
+Verify Airline Commision Percentage Is Enabled
+    ${airline_commision_percentage}    Determine Multiple Object Name Based On Active Tab    cmbAirCommissionPercentage
+    Verify Control Object Is Enabled    ${airline_commision_percentage}
+    [Teardown]    Take Screenshot
+
+Verify Airline Commission Amount Is Disabled
+    ${airline_commision_amount_field}    Determine Multiple Object Name Based On Active Tab    txtAirCommissionAmount
+    ${actual_airline_commision_amount_field_color}    Determine Control Object Background Color    ${airline_commision_amount_field}
+    Run Keyword And Continue On Failure    Should Be True    "${actual_airline_commision_amount_field_color}" == "D3D3D3"
+    [Teardown]    Take Screenshot
+
+Verify Airline Commission Amount Is Pre-Populated By ${expected_value}
+    ${object}    Determine Multiple Object Name Based on Active Tab    txtAirCommissionAmount
+    Verify Control Object Text Value Is Correct    ${object}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Airline Commission Amount Value
+    [Arguments]    ${expected_airline_commision_amount}
+    ${airline_commision_amount_field}    Determine Multiple Object Name Based on Active Tab    txtAirCommissionAmount
+    Verify Control Object Text Value Is Correct    ${airline_commision_amount_field}    ${expected_airline_commision_amount}
+    [Teardown]    Take Screenshot
+
+Verify Airline Commission Is Enabled And Empty
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    cmbAirCommissionPercentage
+    Verify Control Object Is Enabled    ${object_name}
+    Verify Control Object Text Value Is Correct    ${object_name}    ${EMPTY}
+
+Verify Airline Commission Percentage Dropdown Values
+    [Arguments]    @{airline_commission_percentage_values}
+    ${object}    Determine Multiple Object Name Based On Active Tab    cmbAirCommissionPercentage
+    ${actual_airline_commission_percentage_value} =    Get Value From Dropdown List    ${object}
+    : FOR    ${airline_commission_percentage_value}    IN    @{airline_commission_percentage_values}
+    \    ${is_found}    Run Keyword And Return Status    List Should Contain Value    ${actual_airline_commission_percentage_value}    ${airline_commission_percentage_value}
+    \    Run Keyword If    '${is_found}' == 'True'    Log    ${airline_commission_percentage_value} is found in the List Values
+    \    ...    ELSE    Fail    ${airline_commission_percentage_value} is Not found in the List Values
+
+Verify Airline Commission Percentage Is Enabled
+    ${airline_commission_percentage}    Determine Multiple Object Name Based On Active Tab    cmbAirCommissionPercentage
+    Verify Control Object Is Enabled    ${airline_commission_percentage}
+    [Teardown]    Take Screenshot
+
+Verify Airline Commission Percentage Is Pre-Populated By ${expected_value}
+    ${object}    Determine Multiple Object Name Based on Active Tab    txtAirCommissionPercentage,cmbAirCommissionPercentage
+    Verify Control Object Text Value Is Correct    ${object}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Airline Commission Percentage Value
+    [Arguments]    ${expected_airline_commission_percentage_value}
+    ${airline_commission_percentage_field}    Determine Multiple Object Name Based on Active Tab    cmbAirCommissionPercentage
+    Verify Control Object Text Value Is Correct    ${airline_commission_percentage_field}    ${expected_airline_commission_percentage_value}
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Amount For ${country} Is Not Deducted In SF For ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${currency}    Get Currency    ${country}
+    ${sf_amount_value}    Evaluate    ${selling_fare_value_${fare_tab_index}} - ${commission_rebate_value_${fare_tab_index}}
+    ${sf_amount_value}    Run Keyword If    "${country.upper()}" == "HK"    Convert To String    ${sf_amount_value}    ${EMPTY}
+    ...    ELSE    Set Variable    ${sf_amount_value}
+    ${sf_amount_value}    Run Keyword If    "${country.upper()}" == "HK"    Fetch From Left    ${sf_amount_value}    .
+    ...    ELSE    Set Variable    ${sf_amount_value}
+    Verify Specific Remark Is Not Written In The PNR    FREE TEXT-SF/*${fare_tab_index}/${sf_amount_value}
+
+Verify Commission Rebate Amount Is Disabled
+    ${airline_commision_rebate_amount_field}    Determine Multiple Object Name Based On Active Tab    txtClientCommissionRebateAmount
+    ${actual_commision_rebate_amount_field_color}    Determine Control Object Background Color    ${airline_commision_rebate_amount_field}
+    Run Keyword And Continue On Failure    Should Be True    "${actual_commision_rebate_amount_field_color}" == "D3D3D3"
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Amount Is Enabled
+    ${commision_rebate_amount}    Determine Multiple Object Name Based On Active Tab    txtClientCommissionRebateAmount
+    Verify Control Object Is Enabled    ${commision_rebate_amount}
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Amount Value
+    [Arguments]    ${expected_commision_rebate_amount}
+    ${commision_rebate_amount_field}    Determine Multiple Object Name Based on Active Tab    txtClientCommissionRebateAmount
+    Verify Control Object Text Value Is Correct    ${commision_rebate_amount_field}    ${expected_commision_rebate_amount}
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Are Written In The PNR
+    [Arguments]    ${exp_segment_number}    ${exp_courier_code}    ${exp_commission_rebate_amount}
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-MS/*${exp_segment_number}/PC50/V000001/AC${exp_courier_code}/TK/PX1
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-MSX/*${exp_segment_number}/A-${exp_commission_rebate_amount}/SF-${exp_commission_rebate_amount}/C-${exp_commission_rebate_amount}/FS/
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-MSX/*${exp_segment_number}/FF34-AB/FF35-GAL/FF36-G/FF47-CWT
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-MSX/*${exp_segment_number}/FF DISCOUNT
+
+Verify Commission Rebate For Fare ${fare_number} Are Written In The PNR
+    Run Keyword If    "${fare_number}" != "${EMPTY}"    Run Keyword    Verify Commission Rebate Are Written In The PNR    ${fare_number}    QF    ${commission_rebate_value_${fare_number}}
+
+Verify Commission Rebate Percentage Is Disabled
+    ${airline_commision_rebate_percentage_field}    Determine Multiple Object Name Based On Active Tab    txtClientCommissionRebatePercentage
+    ${actual_commision_rebate_percentage_field_color}    Determine Control Object Background Color    ${airline_commision_rebate_percentage_field}
+    Run Keyword And Continue On Failure    Should Be True    "${actual_commision_rebate_percentage_field_color}" == "D3D3D3"
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Percentage Is Enabled
+    ${commision_rebate_percentage}    Determine Multiple Object Name Based On Active Tab    txtClientCommissionRebatePercentage
+    Verify Control Object Is Enabled    ${commision_rebate_percentage}
+    [Teardown]    Take Screenshot
+
+Verify Commission Rebate Percentage Value
+    [Arguments]    ${expected_commision_rebate_percentage}
+    ${commision_rebate_percentage_field}    Determine Multiple Object Name Based on Active Tab    txtClientCommissionRebatePercentage
+    Verify Control Object Text Value Is Correct    ${commision_rebate_percentage_field}    ${expected_commision_rebate_percentage}
+    [Teardown]    Take Screenshot
+
+Verify Correct Transaction Fee Is Written In The PNR
+    [Arguments]    ${transaction_fee_amount}
+    Verify Specific Remark Is Written In The PNR    ${transaction_fee_amount}
+
+Verify Error Message: "Amount Should Be Greater Than Zero" Is ${expected}
+    ${is_error_icon_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/transaction_fee_error.PNG    ${similarity}    ${timeout}
+    Run Keyword If    "${is_error_icon_exist}" == "True"    Hover Object    ${sikuli_image_path}/transaction_fee_error.PNG    ${similarity}    ${timeout}
+    Sleep    1
+    ${is_error_message_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/transaction_fee_error_amount_greater_zero.PNG    ${similarity}    ${timeout}
+    Run Keyword If    "${is_error_message_exist}" == "True" and "${expected}" == "Displayed"    Log    PASSED: Error message was displayed
+    ...    ELSE IF    "${is_error_message_exist}" == "False" and "${expected}" == "Not Displayed"    Log    PASSED: Error message was not displayed
+    ...    ELSE    Run Keyword and Continue on Failure    FAIL    FAILED: Error Message was not displayed
+    Take Screenshot
+    Mouse Move    1    1
+
+Verify Error and Warning Message For Transaction Fee
+    Set Transaction Fee    0
+    Verify Warning Message: "You Are Overriding The Available Transaction Fees With An Unexpected Value" Is Not Displayed
+    Set Transaction Fee    10.23
+    Verify Warning Message: "You Are Overriding The Available Transaction Fees With An Unexpected Value" Is Displayed
+    Set Transaction Fee    ${EMPTY}    DEL
+    Verify Warning Message: "You Are Overriding The Available Transaction Fees With An Unexpected Value" Is Not Displayed
+    Set Transaction Fee    -1
+    Verify Error Message: "Amount Should Be Greater Than Zero" Is Displayed
+    Set Transaction Fee    11.23
+    Verify Warning Message: "You Are Overriding The Available Transaction Fees With An Unexpected Value" Is Displayed
+
+Verify Exchange Pop-up Window Is Displayed
+    Wait Until Window Exists    Power Express
+    Verify Control Object Text Value Is Correct    [NAME:txtMessageTextBox]    Fare 1 is an exchange ticket transaction. Please enter the additional collection amount into the charged fare box or 0 when there is no additional collection.
+    Click Control Button    [NAME:OKBtn]    Power Express
+    Wait Until Progress Info is Completed
+
+Verify Fare Amount Including Tax For ${country} Is Written In The PNR For ${fare_tab}
+    ${currency}    Get Currency    ${country}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    ${fare_and_tax_value} =    Evaluate    ${fare_amount_${fare_tab_index}} + ${tax_amount_${fare_tab_index}}
+    ${fare_and_tax_value} =    Convert To Float    ${fare_and_tax_value}
+    Set Test Variable    ${fare_tax_value}    ${fare_and_tax_value}
+    Verify Specific Remark Is Written In The PNR    FARE INCLUDING AIRLINE TAXES: ${currency} ${fare_tax_value}
+
+Verify Fuel Surcharge Are Written In The PNR
+    [Arguments]    ${exp_segment_number}    ${exp_courier_code}    ${exp_surcharge}
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-MS/*${exp_segment_number}/PC41/V000001/AC${exp_courier_code}/TK/PX1
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-MSX/*${exp_segment_number}/S${exp_surcharge}/SF${exp_surcharge}/C${exp_surcharge}
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-MSX/*${exp_segment_number}/FS
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-MSX/*${exp_segment_number}/FF34-AB/FF35-GAL/FF36-G/FF47-CWT
+    Verify Text Contains Expected Value    ${pnr_details}    FREE TEXT-MSX/*${exp_segment_number}/FF SVC FEE FOR SURCHARGE
+    [Teardown]    Take Screenshot
+
+Verify Fuel Surcharge For Fare ${fare_number} Are Written In The PNR
+    Run Keyword If    "${fare_number}" != "${EMPTY}"    Run Keyword    Verify Fuel Surcharge Are Written In The PNR    ${fare_number}    QF    ${fuel_surcharge_value_${fare_number}}
+
+Verify Mark-Up Amount Is Enabled
+    ${markup_amount}    Determine Multiple Object Name Based On Active Tab    txtMarkupAmount
+    Verify Control Object Is Enabled    ${markup_amount}
+    [Teardown]    Take Screenshot
+
+Verify Mark-Up Amount Value
+    [Arguments]    ${expected_markup_amount}
+    ${markup_amount_field}    Determine Multiple Object Name Based on Active Tab    txtMarkupAmount
+    Verify Control Object Text Value Is Correct    ${markup_amount_field}    ${expected_markup_amount}
+    [Teardown]    Take Screenshot
+
+Verify Mark-Up Percentage Is Enabled
+    ${markup_percentage}    Determine Multiple Object Name Based On Active Tab    txtMarkupPercentage
+    Verify Control Object Is Enabled    ${markup_percentage}
+    [Teardown]    Take Screenshot
+
+Verify Mark-Up Percentage Value
+    [Arguments]    ${expected_markup_percentage}
+    ${markup_percentage_field}    Determine Multiple Object Name Based on Active Tab    txtMarkupPercentage
+    Verify Control Object Text Value Is Correct    ${markup_percentage_field}    ${expected_markup_percentage}
+    [Teardown]    Take Screenshot
+
+Verify Merchant Fee Amount For ${country} Is Written in PNR For ${fare_tab}
+    ${currency}    Get Currency    ${country}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    Verify Specific Remark Is Written In The PNR    MERCHANT FEE: ${currency} ${merchant_fee_value${fare_tab_index}}
+
+Verify Merchant Fee Amount Is Calculated Correctly
+    [Arguments]    ${fare_tab}    ${country}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Nett Fare Value    ${fare_tab}
+    Get Merchant Fee Percentage Value    ${fare_tab}
+    Get Merchant Fee Amount Value    ${fare_tab}
+    Get Mark-Up Amount Value    ${fare_tab}
+    Get Commission Rebate Amount Value    ${fare_tab}
+    Run Keyword If    "${commission_rebate_value_${fare_tab_index}}" == "${EMPTY}"    Set Test Variable    ${commission_rebate_value_${fare_tab_index}}    0
+    Run Keyword If    "${mark_up_value_${fare_tab_index}}" == "${EMPTY}"    Set Test Variable    ${mark_up_value_${fare_tab_index}}    0
+    Run Keyword If    "${nett_fare_value_${fare_tab_index}}" == "${EMPTY}" or "${nett_fare_value_${fare_tab_index}}" == "0"    Run Keywords    Get Base Fare And Tax From Galileo For Fare X Tab    ${fare_tab}
+    ...    AND    Set Test Variable    ${fare_value}    ${base_fare_value_${number_of_fares}}
+    ...    ELSE    Run Keywords    Get Base Fare And Tax From Galileo For Fare X Tab    ${fare_tab}
+    ...    AND    Set Test Variable    ${fare_value}    ${nett_fare_value_${fare_tab_index}}
+    ${actual_merchant_fee_value}    Evaluate    (${fare_value} + ${tax_amount_${number_of_fares}} + ${mark_up_value_${fare_tab_index}} - ${commission_rebate_value_${fare_tab_index}}) * (${merchant_fee_percentage_value_${fare_tab_index}}/100)
+    ${actual_merchant_fee_value}    Round Up Hk    ${actual_merchant_fee_value}
+    ${actual_merchant_fee_value}    Convert To Float    ${actual_merchant_fee_value}
+    Run Keyword And Continue On Failure    Should Be Equal    ${actual_merchant_fee_value}    ${merchant_fee_value_${fare_tab_index}}
+    Set Test Variable    ${merchant_fee_amount_${number_of_fares}}    ${merchant_fee_value_${fare_tab_index}}
+
+Verify Merchant Fee Amount Is Not Included In Nett Fare for ${fare_tab}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    Click Panel    Air Fare
+    Click Fare Tab    ${fare_tab}
+    Get Base or Nett Fare Value    ${nett_fare_value_${fare_tab_index}}    ${base_fare_value_${fare_tab_index}}
+    Get Merchant Fee Amount Value    ${fare_tab}
+    ${sf_plus_basefare_value}    Evaluate    ${merchant_fee_value_${fare_tab_index}} + ${base_or_nett_fare_value}
+    ${sf_plus_basefare_value}    Run Keyword If    "${country.upper()}" == "HK"    Convert To String    ${sf_plus_basefare_value}    ${EMPTY}
+    ...    ELSE    Set Variable    ${sf_plus_basefare_value}
+    ${sf_plus_basefare_value}    Run Keyword If    "${country.upper()}" == "HK"    Fetch From Left    ${sf_plus_basefare_value}    .
+    ...    ELSE    Set Variable    ${sf_plus_basefare_value}
+    Verify Specific Remark Is Not Written In The PNR    FREE TEXT-SF/*${fare_tab_index}/${sf_plus_markup_value}
+
+Verify Merchant Fee Amount Is Not Included In SF for ${fare_tab}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get RF, SF and LF Value For Fare X Tab    ${fare_tab}
+    Get Merchant Fee Amount Value    ${fare_tab}
+    ${sf_plus_markup_value}    Evaluate    ${merchant_fee_value_${fare_tab_index}} + ${selling_fare_value_${fare_tab_index}}
+    ${sf_plus_markup_value}    Convert To String    ${sf_plus_markup_value}
+    ${sf_plus_markup_value}    Fetch From Left    ${sf_plus_markup_value}    .
+    Verify Specific Remark Is Not Written In The PNR    FREE TEXT-SF/*${fare_tab_index}/${sf_plus_markup_value}
+
+Verify Merchant Fee For ${country} Is Included In Total Amount For ${fare_tab}
+    ${currency}    Get Currency    ${country}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    ${total_amount_value}    Evaluate    ${merchant_fee_value_${fare_tab_index}} + ${fare_amount_${fare_tab_index}} + ${tax_amount_${fare_tab_index}}
+    ${total_amount_value}    Run Keyword If    "${country.upper()}" == "HK"    Convert To String    ${total_amount_value}
+    ...    ELSE    Set Variable    ${total_amount_value}
+    ${total_amount_value}    Run Keyword If    "${country.upper()}" == "HK"    Fetch From Left    ${total_amount_value}    .
+    ...    ELSE    Set Variable    ${total_amount_value}
+    Verify Specific Remark Is Written In The PNR    TOTAL AMOUNT: ${currency} ${total_amount_value}
+
+Verify Merchant Fee For ${country} Is Not Included In Fare Amount For ${fare_tab}
+    ${currency}    Get Currency    ${country}
+    Get Fare Amount Value For Fare X Tab    ${fare_tab}
+    Get Merchant Fee Amount Value    ${fare_tab}
+    ${fare_amount_value}    Evaluate    ${merchant_fee_value_${fare_tab_index}} + ${fare_amount_${fare_tab_index}}
+    ${fare_amount_value}    Run Keyword If    "${country.upper()}" == "HK"    Convert To String    ${fare_amount_value}
+    ...    ELSE    Set Variable    ${fare_amount_value}
+    ${fare_amount_value}    Run Keyword If    "${country.upper()}" == "HK"    Fetch From Left    ${fare_amount_value}    .
+    ...    ELSE    Set Variable    ${fare_amount_value}
+    Verify Specific Remark Is Not Written In The PNR    FARE: ${currency} ${fare_amount_value}
+
+Verify Merchant Fee Lines Are Written In The PNR
+    [Arguments]    ${fare_tab}    ${country}    ${airline_code}
+    ${fare_number}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${merchant_fee}    Run Keyword If    "${country}" == "HK"    Remove Decimals    ${merchant_fee_amount_${fare_number}}
+    ...    ELSE    Set Variable    ${merchant_fee_amount_${fare_number}}
+    Run Keyword If    "${country}" == "SG"    Run Keywords    Set Test Variable    ${mechant_fee_line}    MERCHANT FEE
+    ...    AND    Set Test Variable    ${product_code}    PC41
+    ...    AND    Set Test Variable    ${vendor_code}    021007
+    ...    ELSE IF    "${country}" == "HK"    Run Keywords    Set Test Variable    ${mechant_fee_line}    CC CONVENIENCE FEE
+    ...    AND    Set Test Variable    ${product_code}    PC42
+    ...    AND    Set Test Variable    ${vendor_code}    000001
+    Run Keyword If    "${str_card_type}" == "AX"    Set Test Variable    ${credit_card_code}    CX2
+    ...    ELSE IF    "${str_card_type}" == "VI" or "${str_card_type}" == "MC"    Set Test Variable    ${credit_card_code}    CX4
+    ...    ELSE IF    "${str_card_type}" == "DI"    Set Test Variable    ${credit_card_code}    CX3
+    ...    ELSE    Set Test Variable    ${credit_card_code}    INVALIDCCTYPE
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MS/*${fare_number}/${product_code}/V${vendor_code}/AC${airline_code}/TK/PX1
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/*${fare_number}/S${merchant_fee}/SF${merchant_fee}/C${merchant_fee}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/*${fare_number}/F${credit_card_code}/CCN${str_card_type}${str_card_number}EXP${str_exp_date}/D${merchant_fee}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/*${fare_number}/FF34-AB/FF35-GAL/FF36-G/FF47-CWT
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/*${fare_number}/FF ${mechant_fee_line}
+
+Verify Merchant Fee Percentage Value
+    [Arguments]    ${expected_merchant_fee_percentage}
+    ${merchant_fee_percentage_field}    Determine Multiple Object Name Based On Active Tab    txtMerchantFeePercentage
+    Verify Control Object Text Value Is Correct    ${merchant_fee_percentage_field}    ${expected_merchant_fee_percentage}
+    [Teardown]    Take Screenshot
+
+Verify Nett Fare Amount Is Pre-Populated By ${expected_value} Based On The TMU Line
+    ${object}    Determine Multiple Object Name Based on Active Tab    txtNettFareAmount
+    Verify Control Object Text Value Is Correct    ${object}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify No Warning Message Display On Merchant Fee Fields
+    ${is_warn_icon_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/merchant_fee_warning.PNG    0.9    ${timeout}
+    ${is_warn_message_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/merchant_fee_tooltip_message.PNG    0.9    ${timeout}
+    Run Keyword If    "${is_warn_icon_exist}" == "True" or "${is_warn_message_exist}" == "True"    FAIL    Warning message for Merchant Fee is displayed.
+    ...    ELSE    Log    Passed: Warning message for Merchant Fee is not displayed.
+    Take Screenshot
+
+Verify Total For All Tickets Is Written In The PNR And The Amount Is The Sum Of ${number} Fare
+    Get Total For All Tickets From Galileo For X Number Of Fares    ${number}
+    ${fare_total_with_alternate}    Convert To String    ${fare_total_with_alternate}
+    ${fare_total_with_alternate}    Run Keyword If    "${currency}" == "HKD"    Fetch From Left    ${fare_total_with_alternate}    .
+    ...    ELSE    Set Variable    ${fare_total_with_alternate}
+    Verify Text Contains Expected Value    ${pnr_details}    TOTAL FOR ALL TICKETS: ${currency} ${fare_total_with_alternate}
+
+Verify Total For All Tickets Is Written In The PNR And The Amount Is The Sum Of ${number} Fare Without ${alternate_fare_number} Alternate Fare
+    Get Total For All Tickets From Galileo For X Number Of Fares    ${number}
+    Get Sum Of X Number Of Alternate Fares    ${alternate_fare_number}
+    ${fare_total_with_alternate}    Evaluate    ${total_for_all_tickets_value} + ${alternate_fare_total}
+    ${total_for_all_tickets_value}    Convert To String    ${total_for_all_tickets_value}
+    ${fare_total_with_alternate}    Convert To String    ${fare_total_with_alternate}
+    ${total_for_all_tickets_value}    Run Keyword If    "${currency}" == "HKD"    Fetch From Left    ${total_for_all_tickets_value}    .
+    ...    ELSE    Set Variable    ${total_for_all_tickets_value}
+    ${fare_total_with_alternate}    Run Keyword If    "${currency}" == "HKD"    Fetch From Left    ${fare_total_with_alternate}    .
+    ...    ELSE    Set Variable    ${fare_total_with_alternate}
+    Verify Text Contains Expected Value    ${pnr_details}    TOTAL FOR ALL TICKETS: ${currency} ${total_for_all_tickets_value}
+    Verify Text Does Not Contain Value    ${pnr_details}    TOTAL FOR ALL TICKETS: ${currency} ${fare_total_with_alternate}
+
+Verify Turnaround Field Default Value
+    [Arguments]    ${exp_turnaround}
+    ${object}    Determine Multiple Object Name Based On Active Tab    ccboPOT
+    Verify Control Object Text Contains Expected Value    ${object}    ${exp_turnaround}
+    [Teardown]    Take Screenshot
+
+Verify Value In Airline Commission Percentage
+    [Arguments]    ${expected_airline_commission_percentage}
+    Get Airline Commission Percentage Value    Fare 1
+    Verify Actual Value Matches Expected Value    ${airline_commission_percentage}    ${expected_airline_commission_percentage}    Expected: ${expected_airline_commission_percentage} is not equal to Actual: ${airline_commission_percentage}
+
+Verify Value In Commission Rebate Percentage
+    [Arguments]    ${expected_rebate_percentage}
+    Get Commission Rebate Percentage Value    Fare 1
+    Verify Actual Value Matches Expected Value    ${commission_rebate_percentage_value_1}    ${expected_rebate_percentage}    Expected: ${expected_rebate_percentage} is not equal to Actual: ${commission_rebate_percentage_value_1}
+
+Verify Value In Mark-up Percentage
+    [Arguments]    ${expected_mark_up_percentage}
+    Get Mark-Up Percentage Value    Fare 1
+    Verify Actual Value Matches Expected Value    ${mark_up_percentage_value_1}    ${expected_mark_up_percentage}    Expected: ${expected_mark_up_percentage} is not equal to Actual: ${mark_up_percentage_value_1}
+
+Verify Warning Message: "You Are Overriding The Available Transaction Fees With An Unexpected Value" Is ${expected}
+    ${is_warn_icon_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/transaction_fee_warning.PNG    ${similarity}    ${timeout}
+    Run Keyword If    "${is_warn_icon_exist}" == "True"    Hover Object    ${sikuli_image_path}/transaction_fee_warning.PNG    ${similarity}    ${timeout}
+    Sleep    1
+    ${is_warn_message_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/transaction_fee_error_overriding_value.PNG    ${similarity}    ${timeout}
+    Run Keyword If    "${is_warn_message_exist}" == "True" and "${expected}" == "Displayed"    Log    PASSED: Warning message was displayed
+    ...    ELSE IF    "${is_warn_message_exist}" == "False" and "${expected}" == "Not Displayed"    Log    PASSED: Warning message was not displayed
+    ...    ELSE    Run Keyword and Continue on Failure    FAIL    FAILED: Warning Message was not displayed
+    Take Screenshot
+    Mouse Move    1    1
+
+Verify RF, SF And LF Are Written In The PNR For Fare Tab
+    [Arguments]    ${fare_tab_value}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    Get RF, SF and LF Value For Fare X Tab    ${fare_tab_value}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-RF/*${fare_tab_index}/${ref_fare_value_${fare_tab_index}}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-SF/*${fare_tab_index}/${selling_fare_value_${fare_tab_index}}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-LF/*${fare_tab_index}/${lowest_fare_value_${fare_tab_index}}
+
+Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown
+    [Arguments]    @{transaction_fee_value}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    cmbTransactionFee
+    ${actual_content_list}    Get Value From Dropdown List    ${object_name}
+    Run Keyword And Continue On Failure    List Should Contain Sub List    ${transaction_fee_value}    ${actual_content_list}
+    [Teardown]    Take Screenshot
+
+Verify Fare Amount For ${country} Is Written In The PNR For ${fare_tab}
+    ${currency}    Get Currency    ${country}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    Set Test Variable    ${fare_amount_value}    ${fare_amount_${fare_tab_index}}
+    Verify Specific Remark Is Written In The PNR    FARE: ${currency} ${fare_amount_value}

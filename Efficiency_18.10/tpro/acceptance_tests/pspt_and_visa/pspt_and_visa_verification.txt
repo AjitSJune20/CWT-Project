@@ -1,0 +1,74 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+Resource          ../../../acceptance_tests/gds/gds_verification.txt
+Resource          ../air_fare/air_fare_verification.txt
+Resource          ../workflow/workflow_verification.txt
+
+*** Keywords ***
+Verify Journey Type Contains Expected Value
+    [Arguments]    ${country}    ${expected_value}
+    Get Journey Type Text Value    ${country}
+    Should Be Equal As Strings    ${expected_value}    ${journey_type_value}
+
+Verify Passport And Visa Details
+    ${pspt_visa_details}    Get Control Text Value    [NAME:txtPassportVisaInfo]
+    : FOR    ${i}    IN RANGE    99
+    \    ${object_status}    Is Control Visible    [NAME:ctxtCountries${i}]
+    \    Exit For Loop If    not ${object_status}
+    \    ${country}    Get Control Text Value    [NAME:ctxtCountries${i}]
+    \    ${country}    Set Variable If    '${country}'=='United States'    USA    ${country}
+    \    ${country}    Set Variable If    '${country}'=='Hong Kong'    Hong Kong (SAR China)    ${country}
+    \    ${checkbox_status}    Get Checkbox Status    [NAME:cchkIsTransit${i}]
+    \    ${detail_header}    Set Variable If    ${checkbox_status}    Transit    Destination
+    \    Run Keyword And Continue On Failure    Should Contain    ${pspt_visa_details}    ${detail_header} ${country}
+    [Teardown]    Take Screenshot
+
+Verify Transit Checkbox Is Not Ticked
+    [Arguments]    @{countries}
+    : FOR    ${country}    IN    @{countries}
+    \    ${index}    Get Field Index Using Country Name    ${country}
+    \    Verify Checkbox Is Unticked    [NAME:cchkIsTransit${index}]
+
+Verify Transit Checkbox Is Ticked
+    [Arguments]    @{countries}
+    : FOR    ${country}    IN    @{countries}
+    \    ${index}    Get Field Index Using Country Name    ${country}
+    \    Verify Checkbox Is Ticked    [NAME:cchkIsTransit${index}]
+
+Verify Visa Check Itinerary Remarks Are Written
+    [Arguments]    ${check_ESTA_website}=True
+    Click Panel    Pspt and Visa
+    ${countries_visited}    Get Countries Visited
+    ${selected_travel_doc}    Get Selected Use Document
+    Get Travel Document Details    ${selected_travel_doc}
+    ${list_length}    Get Length    ${countries_visited}
+    ${list_length}    Evaluate    ${list_length} - 1
+    Verify Specific Line Is Written In The PNR    RIR ********** PASSPORT AND VISA INFORMATION **********
+    Verify Specific Line Is Written In The PNR    RIR PASSPORT AND VISA INFORMATION
+    Verify Specific Line Is Written In The PNR    RIR TRAVELLERS NATIONALITY: ${nationality_${selected_travel_doc}.upper()}
+    Verify Specific Line Is Written In The PNR    RIR VALID PASSPORT HELD: ${passport_valid_${selected_travel_doc}.upper()}
+    : FOR    ${i}    IN RANGE    ${list_length}
+    \    Get Visa Requirements    ${i}
+    \    Get Transit Checkbox Status    ${i}
+    \    Verify Specific Line Is Written In The PNR    RIR ${transit_status.upper()} VISA CHECK: ${country_visited_${i}.upper()} ${visa_required_${i}.upper()}
+    \    Run Keyword If    '${country_visited_${i}.upper()}' =='UNITED STATES' and '${check_esta_website.upper()}' == 'TRUE'    Verify Specific Line Is Written In The PNR    RIR UNITED STATES HTTPS://ESTA.CBP.DHS.GOV
+    \    Run Keyword If    '${country_visited_${i}.upper()}' =='AUSTRALIA' and '${check_esta_website.upper()}' == 'TRUE'    Verify Specific Line Is Written In The PNR    RIR AUSTRALIA HTTPS://WWW.ETA.IMMI.GOV.AU/ETAS3/ETAS
+    \    Run Keyword If    '${country_visited_${i}.upper()}' =='CANADA' and '${check_esta_website.upper()}' == 'TRUE'    Verify Specific Line Is Written In The PNR    RIR CANADA HTTP://WWW.CIC.GC.CA/ENGLISH/VISIT/ETA.ASP
+    Verify Specific Line Is Written In The PNR    RIR FOR INTERNATIONAL TRAVEL PLEASE ENSURE YOUR PASSPORT IS
+    Verify Specific Line Is Written In The PNR    RIR VALID FOR MINIMUM 6 MONTHS AT TIME OF TRAVEL
+
+Verify Visa Required Contains Expected Value
+    [Arguments]    ${row_number}    ${expected_value}
+    ${actual_value}    Get Visa Required    ${row_number}
+    Run Keyword And Continue On Failure    Should Be Equal As Strings    ${expected_value}    ${actual_value}
+    [Teardown]    Take Screenshot
+
+Verify Visa Requirement Per Country
+    [Arguments]    ${country}    ${visa_required}    ${journey_type}    ${transit_tick}    # ${transit_ticked} Tick or Untick
+    [Documentation]    ${transit_ticked} Tick or Untick
+    ${row_number}    Get Field Index Using Country Name    ${country}
+    Run Keyword If    "${transit_tick.lower()}" == "tick"    Verify Checkbox Is Ticked    [NAME:cchkIsTransit${row_number}]
+    ...    ELSE    Verify Checkbox Is Unticked    [NAME:cchkIsTransit${row_number}]
+    Verify Control Object Text Value Is Correct    [NAME:ctxtCountries${row_number}]    ${country}
+    Run Keyword If    "${visa_required}" != "${EMPTY}"    Verify Control Object Text Value Is Correct    [NAME:ccboVisa${row_number}]    ${visa_required}
+    Run Keyword If    "${journey_type}" != "${EMPTY}"    Verify Control Object Text Value Is Correct    [NAME:ccboJourneyType${row_number}]    ${journey_type}

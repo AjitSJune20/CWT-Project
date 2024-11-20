@@ -1,0 +1,129 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[CA NB]Verify That The Rules Are Applied Correctly If Route Code Is Set To INTL
+    [Tags]    ca    us6968
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - US6968 Intl    AutoOne    TravellerOne
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YULICN/AAC    SS1Y1    FXP/S2-3    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    INTL
+    Click Panel    Delivery
+    Set Ticketing Date    6
+    Select Delivery Method    Amadeus edited TKXL
+    Tick Receive Itinerary Checkbox
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RM THIS IS AN INTERNATIONAL TRIP
+
+[CA AB]Verify That The Rules Are Applied Correctly If Route Code Is Set To INTL
+    [Tags]    ca    us6968
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    ICNYUL/AAC    SS1Y1    FXP/S4-5    5    3
+    Book Flight X Months From Now    YULYVR/AAC    SS1Y1    FXP/S6    5    9
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    INTL
+    Verify Route Code Value Is Correct    Fare 2    INTL
+    Click Fare Tab    Fare 3
+    Verify Route Code Value Is Correct    Fare 3    DOM
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Tick Receive Itinerary Checkbox
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Remark Is Not Written In The PNR    RM THIS IS AN INTERNATIONAL TRIP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[CA NB]Verify That The Rules Are Applied Correctly If Route Code Is Set To DOM
+    [Tags]    ca    us6968
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - US6968 Dom    AutoOne    TravellerTwo
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    BRUYUL/AAC    SS1Y1    FXP/S2    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    INTL
+    Click Panel    Delivery
+    Set Ticketing Date    6
+    Select Delivery Method    Amadeus edited TKXL
+    Tick Receive Itinerary Checkbox
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Remark Is Not Written In The PNR    RM PLEASE GET APPROVAL
+
+[CA AB]Verify That The Rules Are Applied Correctly If Route Code Is Set To DOM
+    [Tags]    ca    us6968
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    YULYVR/AAC    SS1Y1    FXP/S3    5    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    INTL
+    Click Fare Tab    Fare 2
+    Verify Route Code Value Is Correct    Fare 2    DOM
+    Click Panel    Cust Refs
+    Set CDR Value    T-Matrix DP Code    A123
+    Set CDR Value    Cost Center    COST12
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Tick Receive Itinerary Checkbox
+    Populate All Panels (Except Given Panels If Any)    Cust Refs    Delivery
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RM *DP/-B456
+    Verify Specific Remark Is Written In The PNR    RM *BB/-DOM
+    Verify Specific Remark Is Written In The PNR    RIR THIS IS AN ITINERARY REMARK FOR A DOMESTIC BOOKINGS
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[CA NB]Verify That The Rules Are Applied Correctly If Route Code Is Set To TRANS
+    [Tags]    ca    us6968
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - US6968 Trans    AutoOne    TravellerThree
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YULSFO/AAC    SS1Y1    FXP/S2    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    TRANS
+    Click Panel    Delivery
+    Set Ticketing Date    6
+    Select Delivery Method    Amadeus edited TKXL
+    Tick Receive Itinerary Checkbox
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Remark Is Not Written In The PNR    RM PLEASE GET APPROVAL
+
+[CA AB]Verify That The Rules Are Applied Correctly If Route Code Is Set To TRANS
+    [Tags]    ca    us6968
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    SFOICN/AUA    SS1Y1    FXP/S3    5    3
+    Click Read Booking
+    Verify That Popup Message Exist    US6968-Route Code Rule
+    Click Panel    Air Fare
+    Verify Route Code Value Is Correct    Fare 1    TRANS
+    Click Fare Tab    Fare 2
+    Verify Route Code Value Is Correct    Fare 2    INTL
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Tick Receive Itinerary Checkbox
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RM PLEASE GET APPROVAL
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

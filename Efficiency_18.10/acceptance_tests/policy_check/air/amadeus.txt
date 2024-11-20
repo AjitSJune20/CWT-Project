@@ -1,0 +1,536 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../policy_check_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Policy Advise Is Shown For Policy Name Air Cabin And Tour Code Written In PNR
+    [Tags]    us4629    fr    us2156    us6430
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ 1A FR Car Panel Testing    Smith    Walden
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Book Flight X Months From Now    MNLTPE/ABR    SS1J1    FXP    8
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class hors politique voyage    Permitted over 1200 miles (one way)    True
+    Select Policy Status    Business Class hors politique voyage    AA - En attente de validation
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Class Code Value    YA - Economy Tarif Public
+    Comment    Select Class Code Value    YC - Tarif Client Classe Economique
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Tour Codes Remark    1A12337654    S2    BR
+
+[QA] Verify That Policy Advise Is Shown For Policy Name Air Cabin
+    [Tags]    us4629    fr
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class hors politique voyage    Permitted over 1200 miles (one way)    True
+    Populate Delivery Panel Without On Hold Reason
+    Click Panel    Policy Check
+    Select Policy Status    Business Class hors politique voyage    TA - Voyageur/Booker avisé
+    Click Panel    Recap
+    Populate Recap Panel With Default Values
+    Click Finish PNR    Quick Amend
+
+[AB] Verify That Policy Advise Is Shown For Policy Name Air Cabin
+    [Tags]    us4629    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    FRALHR/AAF    SS1J1    FXP/S2    8    5
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class hors politique voyage    Permitted over 1200 miles (one way)    True
+    Verify Out of Policy Is Shown    Air Cabin    Business Class hors politique voyage
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Tour Code Remark Is Written In PNR
+    [Tags]    uk    us6430
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    AmadeusTest    Lucienne
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MANAMS/AKL    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    MB
+    Verify Tour Codes Remark    1A12337654    S2    KL
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB DE] Verify That Tour Code Remark Is Written In PNR
+    [Tags]    us6430    de    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    DE Amadeus 1 - SyEx ¦ DE - Amadeus Sub1    allam    swet
+    Select Client Account Value    717171 ¦ Client Account Name Change ¦ DE - Amadeus Sub1
+    Click New Booking
+    Book Flight X Months From Now    LHRFRA/AKL    SS1Y1    FXP    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    MB
+    Verify Tour Codes Remark    1A12334567    S2    KL
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Tracking ID Remark is Written in the PNR When Supplier Deal Code is Set
+    [Tags]    us6379    uk    de7580
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    SYEXFR    TEST
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AKL    SS1Y1    FXP    6    4
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    OSI YY CORPORATE 000004
+    Verify Specific Line Is Written In The PNR Only Once    OSI YY CORPORATE 000004
+    Verify Specific Line Is Written In The PNR    SSR DEAF KL
+    [Teardown]
+
+[AB UK] Verify That Tracking ID Remark is Written in the PNR When Supplier Deal Code is Set
+    [Tags]    us6379    uk    de7580
+    Click Clear All
+    Retrieve PNR    ${current_pnr}    5    True
+    Click Amend Booking
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S4    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking for Tracking ID
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR FPML KL NO1/S2
+    Verify Specific Line Is Written In The PNR Only Once    SSR FPML KL NO1/S2
+    Verify Specific Line Is Written In The PNR    SSR DEAF KL
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Tracking ID Remark is Written in the PNR When Supplier Deal Code is Set
+    [Tags]    us6379    fr    de7580
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DEAF AF    \    true
+    Verify Specific Line Is Written In The PNR Only Once    SSR DEAF AF
+    Verify Specific Line Is Written In The PNR    OSI YY CORPORATE 000004
+    [Teardown]
+
+[AB FR] Verify That Tracking ID Remark is Written in the PNR When Supplier Deal Code is Set
+    [Tags]    us6379    fr    de7580
+    Click Clear All
+    Retrieve PNR    ${current_pnr}    5    True
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DEAF AF    \    true
+    Verify Specific Line Is Written In The PNR Only Once    SSR DEAF AF
+    Verify Specific Line Is Written In The PNR    OSI YY CORPORATE 000004
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AB][CA] Vendor: Verify That Policy Is Displayed In Policy Panel And Reason Codes Are Written And Retain In The PNR
+    [Tags]    ca    us6626
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrFour
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LONCDG/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    Air Vendor    AIR
+    Verify Policy Is Displayed    Requires Approval    Approval
+    Select Policy Status By Name    Air Vendor    AA - Awaiting Approval
+    Select Policy Status By Name    Requires Approval    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AVP27438-AA-AIR VENDOR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter Command In Native GDS    TTE/ALL    XI
+    Book Flight X Months From Now    LONCDG/AAF    SS1Y1    FXP/S2    6
+    Get Date From Segment    2
+    Book Flight X Months From Now    CDGLON/AAF    SS1Y1    FXP/S3    6    1
+    Get Date From Segment    3
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Air Vendor    Air France Prohibited
+    Select Policy Status By Name    Air Vendor    AA - Awaiting Approval
+    Select Policy Status By Name    No Hotel Booked    H0 - Booked on own
+    Select Policy Status By Name    Requires Approval    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AVP27438-AA-AIR VENDOR
+    Verify No Hotel Booked Codes Remarks Are Written In The PNR    2    CDG    H0    02
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AB][CA] Cabin and MissedSavings: Verify That Policy Is Displayed In Policy Panel And Reason Codes Are Written And Updated In The PNR
+    [Tags]    ca    us6626
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrFour
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MANAMS/AKL    SS1Y1    FXP/S2    6
+    Get Date From Segment    2
+    Book Flight X Months From Now    AMSMAN/AKL    SS1Y1    FXP/S3    6    1
+    Get Date From Segment    3
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    Air Cabin    AIR
+    Verify Policy Is Displayed    No Hotel Booked    HOTEL
+    Select Policy Status By Name    Air Cabin    NV - Not going to affected area
+    Select Policy Status By Name    No Hotel Booked    H0 - Booked on own
+    Select Policy Status By Name    Requires Approval    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Populate Fare Tab With Default Values    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:ACP18962-NV-AIR CABIN
+    Verify No Hotel Booked Codes Remarks Are Written In The PNR    2    AMS    H0    02
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Air Cabin    Economy Class out of policy    NV - Not going to affected area
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AB][CA] Country And City: Verify That Policy Is Displayed In Policy Panel And Reason Codes Are Written And Updated In The PNR
+    [Tags]    ca    us6626
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrFour
+    Select Client Account    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S2    6
+    Get Date From Segment    2
+    Book Flight X Months From Now    MNLSIN/APR    SS1Y1    FXP/S3    6    1
+    Get Date From Segment    3
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    City    AIR
+    Verify Policy Is Displayed    Country    AIR
+    Verify Policy Is Displayed    No Hotel Booked    HOTEL
+    Select Policy Status By Name    City    HA - Has authority to travel
+    Select Policy Status By Name    Country    TA - Traveller Booker Advised
+    Select Policy Status By Name    No Hotel Booked    H0 - Booked on own
+    Select Policy Status By Name    Requires Approval    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:PTP2380-HA-CITY
+    Verify Specific Line Is Written In The PNR    PCHK:PCP16190-TA-COUNTRY
+    Verify No Hotel Booked Codes Remarks Are Written In The PNR    2    MNL    H0    02
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    City    Manila Prohibited
+    Verify Policy Status Is Defaulted To Correct Value    Country    Hong Kong Prohibited
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:PTP2380-AA-CITY
+    Verify Specific Line Is Written In The PNR    PCHK:PCP16192-AA-COUNTRY
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AB][UK] Verify That Air - Offer Is Displaying In Policy Check Panel And Reason Code Are Written In The PNR For Air Vendor
+    [Tags]    uk    us6752    us6978
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    AmadeusTest    Lucienne
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXORD/AAA    SS1Y1    FXP    6
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6    2
+    Create Amadeus Offer Remove Flight    S3
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    Air Vendor    AIR - OFFERS
+    Verify Policy Name Is Not Displayed    Air Advance Purchase
+    Select Policy Status By Name    Air Vendor    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AVP2327-AA-AIR VENDOR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Not Written In The PNR    RIR REASON: REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: YOUR TRIP MUST BE BOOKED MINIMUM 7 DAYS BEFORE
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Air Vendor    Air France Risk    AA - Awaiting Approval
+    Verify Policy Name Is Not Displayed    Air Advance Purchase
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AVP2327-AA-AIR VENDOR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Not Written In The PNR    RIR REASON: REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Not Written In The PNR    RIR ADVICE: YOUR TRIP MUST BE BOOKED MINIMUM 7 DAYS BEFORE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AB][UK] Verify That Air - Offer Is Displaying In Policy Check Panel And Reason Code Are Written In The PNR For Air Cabin And MissedSavings
+    [Tags]    uk    us6752
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    AmadeusTest    Lucienne
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6
+    Book Flight X Months From Now    CDGLHR/AAF    SS1J1    FXP    6    2
+    Create Amadeus Offer Remove Flight    S3
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    Air Vendor    AIR
+    Verify Policy Is Displayed    Air Cabin    AIR - OFFERS
+    Select Policy Status By Name    Air Vendor    AA - Awaiting Approval
+    Select Policy Status By Name    Air Cabin    TA - Traveller/Booker Advised
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AVP2327-AA-AIR VENDOR
+    Verify Specific Line Is Written In The PNR    PCHK:ACP642-TA-AIR CABIN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Air Vendor    Air France Risk    AA - Awaiting Approval
+    Verify Policy Status Is Defaulted To Correct Value    Air Cabin    Business Class out of policy    TA - Traveller/Booker Advised
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AVP2327-AA-AIR VENDOR
+    Verify Specific Line Is Written In The PNR    PCHK:ACP642-TA-AIR CABIN
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AB][UK] Verify That Air - Offer Is Not Displaying In Policy Check Panel And Reason Code Are Not Written In The PNR Which Has No Defined Policy
+    [Tags]    uk    us6752
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    AmadeusTest    Lucienne
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6
+    Book Flight X Months From Now    LAXORD/AAA    SS1Y1    FXP    6    2
+    Create Amadeus Offer Remove Flight    S3
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    Air Vendor    AIR
+    Select Policy Status By Name    Air Vendor    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AVP2327-AA-AIR VENDOR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Status Is Defaulted To Correct Value    Air Vendor    Air France Risk    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AVP2327-AA-AIR VENDOR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB][UK] Verify Policy Check Is Displayed When Exceeding Air Advanced Booking Threshold
+    [Tags]    19.3    us6978    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U001RTM    en-GB    rmartinezuk    UK QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub2    Viking    Erik
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    TRVLCOST    TEST
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    3
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    Air Advance Purchase    AIR
+    Verify Policy Advice Is Displayed    Air Advance Purchase    Requires approval prior to ticketing    Your trip must be purchased minimum 120 days before departure
+    Select Policy Status By Name    Air Advance Purchase    AA - Awaiting Approval
+    Select Policy Status By Name    Air Cabin    AA - Awaiting Approval
+    Click Panel    Air Fare
+    Select Realised Saving Code Value    C1 - Client Special Fare Accepted
+    Select Missed Saving Code Value    A6 - Alternative Carrier Declined
+    Select Class Code Value    YF - Economy Full Fare
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AAP398-AA-AIR ADVANCE PURCHASE
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    RIR POLICY WARNING
+    Verify Specific Line Is Written In The PNR    RIR REASON: REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Written In The PNR    RIR ADVICE: YOUR TRIP MUST BE PURCHASED MINIMUM 120 DAYS
+    Verify Specific Line Is Written In The PNR    RIR ADVICE: BEFORE DEPARTURE
+    Verify Specific Line Is Written In The PNR    RIR STATUS: AA - AWAITING APPROVAL
+
+[AB][UK] Verify Policy Check Is Displayed When Exceeding Air Advanced Booking Threshold During Amend Booking
+    [Tags]    uk    19.3    us6978
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    Air Advance Purchase    AIR
+    Verify Policy Advice Is Displayed    Air Advance Purchase    Requires approval prior to ticketing    Your trip must be purchased minimum 120 days before departure
+    Select Policy Status By Name    Air Advance Purchase    AA - Awaiting Approval
+    Select Policy Status By Name    Air Cabin    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking With Air Advanced Purchase
+    Execute Simultaneous Change Handling    Amend Booking With Air Advanced Purchase
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AAP398-AA-AIR ADVANCE PURCHASE
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    RIR POLICY WARNING
+    Verify Specific Line Is Written In The PNR    RIR REASON: REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Written In The PNR    RIR ADVICE: YOUR TRIP MUST BE PURCHASED MINIMUM 120 DAYS
+    Verify Specific Line Is Written In The PNR    RIR ADVICE: BEFORE DEPARTURE
+    Verify Specific Line Is Written In The PNR    RIR STATUS: AA - AWAITING APPROVAL
+    [Teardown]
+
+[QA][UK] Verify Policy Check Is Displayed When Exceeding Air Advanced Booking Threshold During Quick Amend
+    [Tags]    uk    19.3    us6978
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    Air Advance Purchase    AIR
+    Verify Policy Advice Is Displayed    Air Advance Purchase    Requires approval prior to ticketing    Your trip must be purchased minimum 120 days before departure
+    Select Policy Status By Name    Air Advance Purchase    HA - Has authority to travel
+    Select Policy Status By Name    Air Cabin    HA - Has authority to travel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Quick Amend With Air Advanced Purchase
+    Execute Simultaneous Change Handling    Quick Amend With Air Advanced Purchase
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRJ
+    Verify Specific Line Is Written In The PNR    PCHK:AAP398-HA-AIR ADVANCE PURCHASE
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    RIR POLICY WARNING
+    Verify Specific Line Is Written In The PNR    RIR REASON: REQUIRES APPROVAL PRIOR TO TICKETING
+    Verify Specific Line Is Written In The PNR    RIR ADVICE: YOUR TRIP MUST BE PURCHASED MINIMUM 120 DAYS
+    Verify Specific Line Is Written In The PNR    RIR ADVICE: BEFORE DEPARTURE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class hors politique voyage    Permitted over 1200 miles (one way)    True
+    Populate Delivery Panel Without On Hold Reason
+    Click Panel    Policy Check
+    Select Policy Status    Business Class hors politique voyage    TA - Voyageur/Booker avisé
+    Click Panel    Recap
+    Populate Recap Panel With Default Values
+    Click Finish PNR    Quick Amend
+
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    FRALHR/AAF    SS1J1    FXP/S2    8    5
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class hors politique voyage    Permitted over 1200 miles (one way)    True
+    Verify Out of Policy Is Shown    Air Cabin    Business Class hors politique voyage
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR    Amend Booking
+
+Get Number Of Segments
+    ${clip}    Get Clipboard Data Amadeus    RTA
+    ${clip_lines}    Get Lines Using Regexp    ${clip}    \\s?\\d\\s.*
+    ${number_of_segments}    Get Line Count    ${clip_lines}
+    Set Test Variable    ${number_of_segments}
+    [Return]    ${number_of_segments}
+
+Verify Tour Codes Remark
+    [Arguments]    ${deal_code_type}    ${segment_number}    ${airline}
+    Verify Specific Line Is Written In The PNR    FT PAX ${deal_code_type}/${segment_number}
+    Verify Specific Line Is Written In The PNR    FV PAX ${airline}/${segment_number}
+
+Amend Booking for Tracking ID
+    Click Clear All
+    Retrieve PNR    ${current_pnr}    5    True
+    Click Amend Booking
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S4    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Select Policy Status By Name
+    [Arguments]    ${expected_policy_name}    ${policy_status}
+    Wait Until Control Object Is Visible    [NAME:tlpPolicyCheck]
+    ${policy_dict}    Create Dictionary
+    : FOR    ${INDEX}    IN RANGE    0    10
+    \    ${is_control_visible}    Run Keyword And Return Status    Verify Control Object Is Visible    [NAME:clblPolicySegmentData${index}]
+    \    Exit For Loop If    ${is_control_visible} == 0
+    \    ${actual_policy_name}    Get Control Text Value    [NAME:clblPolicySegmentData${index}]
+    \    Set To Dictionary    ${policy_dict}    ${actual_policy_name}    ${cbo_policystatus${index}}
+    Log    ${policy_dict}
+    ${policy_name_field}    Get From Dictionary    ${policy_dict}    ${expected_policy_name}
+    Select Value From Dropdown List    ${policy_name_field}    ${policy_status}
+    [Teardown]    Take Screenshot
+
+Get Date From Segment
+    [Arguments]    ${segment_number}
+    Set Suite Variable    ${departure_date_${segment_number}}    ${departure_date}
+
+Verify No Hotel Booked Codes Remarks Are Written In The PNR
+    [Arguments]    ${segment_number}    ${city_code}    ${reason_code}    ${num_days_notbooked}
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *U21/-${departure_date_${segment_number}}${city_code}H${reason_code}${num_days_notbooked}
+    [Teardown]    Take Screenshot
+
+Quick Amend With Air Advanced Purchase
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    Air Advance Purchase    AIR
+    Verify Policy Advice Is Displayed    Air Advance Purchase    Requires approval prior to ticketing    Your trip must be purchased minimum 120 days before departure
+    Select Policy Status By Name    Air Advance Purchase    HA - Has authority to travel
+    Select Policy Status By Name    Air Cabin    HA - Has authority to travel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking With Air Advanced Purchase
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Is Displayed    Air Advance Purchase    AIR
+    Verify Policy Advice Is Displayed    Air Advance Purchase    Requires approval prior to ticketing    Your trip must be purchased minimum 120 days before departure
+    Select Policy Status By Name    Air Advance Purchase    AA - Awaiting Approval
+    Select Policy Status By Name    Air Cabin    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

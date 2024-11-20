@@ -1,0 +1,453 @@
+*** Settings ***
+Force Tags        amadeus    apac
+Resource          ../../../../acceptance_tests/client_info/client_info_verification.txt
+Resource          ../../../../resources/panels/client_info.txt
+Resource          ../client_info_verification.txt
+
+*** Test Cases ***
+[NB SG] Verify Airline Is The Merchant Or CWT Is The Merchant Can Be Selected When FOP Is CC
+    [Tags]    us611    obsolete    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    APAC QA
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG    BEAR    SING
+    Click New Booking
+    Handle Generic Window Popup
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Select Form Of Payment    Cash
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Select Form Of Payment    Invoice
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Manually Set Value In Form Of Payment    MC    5210000010001001    1222
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Clear All
+
+[NB SG] Verify That FOP Line Is Written When FOP Is Cash
+    [Tags]    us324    obsolete    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG    BEAR    ARLENE
+    Click New Booking
+    Handle Generic Window Popup
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL    SS1Y1    FXP    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Air Fare Savings Code Using Default Values
+    Comment    Click Panel    Delivery
+    Comment    Tick Receive Itinerary Checkbox
+    Comment    Tick Receive Invoice Checkbox
+    Comment    Select Delivery Method    Auto Cancel (TKXL)
+    Comment    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Comment    Verify FOP Line Is Written Per TST    Fare Quote 1    S2
+
+[AB SG] Verify That FOP Line Is Written When Manually Entered FOP Is A Diners TMP Card
+    [Tags]    us324    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    DC    36440326157431    1220
+    Verify Merchant Fee Type Is Blank And Mandatory
+    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    DC**********7431/D1220
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Comment    Click Panel    Delivery
+    Comment    Tick Receive Itinerary Checkbox
+    Comment    Select Delivery Method    Auto Cancel (TKXL)
+    Comment    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+    Execute Simultaneous Change Handling    [AB SG] Verify that FOP line is written when manually entered FOP is a Diners TMP card
+    Retrieve PNR Details from Amadeus
+    Comment    Verify FOP Line Is Written Per TST    Fare Quote 1    S2    True
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify Airline Is The Merchant Or CWT Is The Merchant Can Be Selected When FOP Is CC
+    [Tags]    us611    hk    obsolete    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    APAC QA
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN HK    BEAR    HONG
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Select Form Of Payment    Cash
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Select Form Of Payment    Invoice
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Manually Set Value In Form Of Payment    MC    5210000010001001    1222
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    [Teardown]    Click Clear All
+
+[NB HK] Verify That FOP Line Is Written When FOP Is Cash
+    [Tags]    us324    hk    obsolete    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN HK    BEAR    HONG
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP    6    1
+    Book Flight X Months From Now    MNLHKG/APR    SS1Y1    FXP/S3    6    10
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Click Fare Tab    Fare Quote 2
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Select Delivery Method    Auto Cancel (TKXL)
+    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify FOP Line Is Written Per TST    Fare Quote 1    S2    \    False
+    Verify FOP Line Is Written Per TST    Fare Quote 2    S3    \    False
+
+[AB HK] Verify That FOP Line Is Written When Manually Entered FOP Is A Diners TMP Card
+    [Tags]    us324    hk    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    DC    36440326157431    1220
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Auto Cancel (TKXL)
+    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+    Execute Simultaneous Change Handling    [AB HK] Verify that FOP line is written when manually entered FOP is a Diners TMP card
+    Retrieve PNR Details from Amadeus
+    Verify FOP Line Is Written Per TST    Fare Quote 1    S2    True    False
+    Verify FOP Line Is Written Per TST    Fare Quote 2    S3    True    False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That FOP Line Is Written When FOP Is Invoice
+    [Tags]    us324    hk    obsolete    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN HK    BEAR    HONG
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    SINHKG    SS1Y1    FXP    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Invoice
+    Set Commission Rebate Amount    10
+    Get Charged Fare Value    Fare Quote 1
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Auto Cancel (TKXL)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify FOP Line Is Written Per TST    Fare Quote 1    S2    \    False
+
+[AB HK] Verify That FOP Line Is Written When Manually Entered FOP Is A Citi TMP Card
+    [Tags]    us324    hk    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4484886028571841    1222
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Auto Cancel (TKXL)
+    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+    Execute Simultaneous Change Handling    [AB HK] Verify That FOP Line Is Written When Manually Entered FOP Is A Citi TMP Card
+    Retrieve PNR Details from Amadeus
+    Verify FOP Line Is Written Per TST    Fare Quote 1    S2    True    False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That FOP Line is Written When FOP Is Invoice
+    [Tags]    us324    obsolete    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    APAC QA
+    Select GDS    Amadeus
+    Activate Power Express Window
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN IN    Bear    Indi
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINHKG    SS1Y1    FXP    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Charged Fare Value    Fare Quote 1
+    Comment    Select Missed Saving Code Value    M - Miscellaneous
+    Comment    Select Class Code Value    YF - Economy Class Full Fare
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify FOP Line Is Written Per TST    Fare Quote 1    S2    \    False
+
+[AB IN] Verify that FOP line is written when manually entered FOP is a Citi TMP card
+    [Tags]    us324    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4484886028571841    1222
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+    Execute Simultaneous Change Handling    [AB IN] Verify that FOP line is written when manually entered FOP is a Citi TMP card
+    Retrieve PNR Details from Amadeus
+    Verify FOP Line Is Written Per TST    Fare Quote 1    S2    True    False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify that FOP line is written when FOP is credit card (VI) and CWT is The Merchant Is Selected
+    [Tags]    us324    hk    obsolete    not_ready
+    [Setup]
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG    BEAR    DOS
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4012888888881881    1222
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Comment    Select Merchant Fee Type    Airline
+    Verify Merchant Fee Type Is Blank And Mandatory
+    Select Merchant Fee Type    Airline
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    SINHKG    SS1Y1    FXP    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Charged Fare Value    Fare Quote 1
+    Comment    Select Missed Saving Code Value    M - Miscellaneous
+    Comment    Select Class Code Value    YF - Economy Class Full Fare
+    Populate Air Fare Savings Code Using Default Values
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify FOP Line Is Written Per TST    Fare Quote 1    S2    \    False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify that FOP Line Is Written When Manually Entered FOP Is AX Card
+    [Tags]    us324    obsolete    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u002kmb    en-GB    aobsumapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG    BEAR    ARLENE
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    371449635398431    1220
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Verify Merchant Fee Type Is Blank And Mandatory
+    Select Merchant Fee Type    Airline
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL/AIR,PR    SS1Y1    FXP    6    2
+    Book Flight X Months From Now    MNLSIN/AIR,PR    SS1Y1    FXP/S3    6    8
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Charged Fare Value    Fare Quote 1
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Comment    Select Missed Saving Code Value    M - Miscellaneous
+    Comment    Select Class Code Value    YF - Economy Class Full Fare
+    Populate Air Fare Savings Code Using Default Values
+    Get Nett Fare Value    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Get Charged Fare Value    Fare Quote 2
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Comment    Select Missed Saving Code Value    M - Miscellaneous
+    Comment    Select Class Code Value    YF - Economy Class Full Fare
+    Populate Air Fare Savings Code Using Default Values
+    Get Nett Fare Value    Fare Quote 2
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify FOP Line Is Written Per TST    Fare Quote 1    S2
+    Verify FOP Line Is Written Per TST    Fare Quote 2    S3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That FOP Line Is Written When Manually Entered FOP Is VI Card
+    [Tags]    us324    obsolete    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 3    BEAR    MONT
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1220
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Comment    Select Merchant Fee Type    CWT
+    Verify Merchant Fee Type Is Blank And Mandatory
+    Select Merchant Fee Type    CWT
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL    SS1Y1    FXP    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Charged Fare Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Set Nett Fare Field    10001.00
+    Get Nett Fare Value    Fare Quote 1
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify FOP Line Is Written Per TST    Fare Quote 1    S2
+
+[AB SG] Verify That FOP Line Is Written When Manually Entered FOP Is AX Card
+    [Tags]    us324    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    371449635398431    1220
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Comment    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Get Nett Fare Value    Fare Quote 1
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That FOP Line Is Written When Manually Entered FOP Is AX Card
+    Retrieve PNR Details from Amadeus
+    Verify FOP Line Is Written Per TST    Fare Quote 1    S2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+[AB HK] Verify That FOP Line Is Written When Manually Entered FOP Is A Diners TMP Card
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    DC    36440326157431    1220
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Auto Cancel (TKXL)
+    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+
+[AB HK] Verify That FOP Line Is Written When Manually Entered FOP Is A Citi TMP Card
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4484886028571841    1222
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+
+[AB SG] Verify That FOP Line Is Written When Manually Entered FOP Is A Diners TMP Card
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    DC    36440326157431    1220
+    Verify Merchant Fee Type Is Blank And Mandatory
+    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC From TST    Fare Quote 1    S2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    DC**********7431/D1220
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Comment    Click Panel    Delivery
+    Comment    Tick Receive Itinerary Checkbox
+    Comment    Select Delivery Method    Auto Cancel (TKXL)
+    Comment    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+
+[AB IN] Verify that FOP line is written when manually entered FOP is a Citi TMP card
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4484886028571841    1222
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR
+
+Amend Booking For Verify That FOP Line Is Written When Manually Entered FOP Is AX Card
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    371449635398431    1220
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Comment    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Get Nett Fare Value    Fare Quote 1
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Select On Hold Booking Reasons Using Default Value
+    Click Finish PNR

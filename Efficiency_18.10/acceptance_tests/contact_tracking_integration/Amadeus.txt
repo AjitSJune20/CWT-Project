@@ -1,0 +1,72 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../complete/complete_verification.txt
+Resource          ../gds/gds_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Power Express Does Not Freeze On Clear All When It Has Contact Tracking Window Displayed
+    [Tags]    us6374    amadeus    emea    uk    3rd_party_dependent
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    ES QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus UK 16 - Auto ¦ US4963    AutoSeventeenEight    EmeaTrvlrSix
+    Click Clear All With Contact Tracking
+    Verify Portrait Profile Panel Is Displayed
+    Set Client And Traveler    Amadeus UK 16 - Auto ¦ US4963    AutoSeventeenEight    EmeaTrvlrSix
+    Click New booking
+    Click Clear All With Contact Tracking
+    Verify Portrait Profile Panel Is Displayed
+    Set Client And Traveler    Amadeus UK 16 - Auto ¦ US4963    AutoSeventeenEight    EmeaTrvlrSix
+    Click New booking
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Create Shell
+    Click Clear All With Contact Tracking
+    Verify Portrait Profile Panel Is Displayed
+
+[AB] Verify That Power Express Does Not Freeze On Clear All When It Has Contact Tracking Window Displayed
+    [Tags]    us6374    amadeus    emea    uk    3rd_party_dependent
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Clear All With Contact Tracking
+    Verify Portrait Profile Panel Is Displayed
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Clear All With Contact Tracking
+    Verify Portrait Profile Panel Is Displayed
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR    Amend Booking For Verify Power Express Does Not Freeze
+    Execute Simultaneous Change Handling    Amend Booking For Verify Power Express Does Not Freeze
+    Click Clear All With Contact Tracking
+    Verify Portrait Profile Panel Is Displayed
+
+*** Keywords ***
+Click Clear All With Contact Tracking
+    Handle Contact Tracking Service
+    Click Clear All
+
+Verify Portrait Profile Panel Is Displayed
+    Activate Power Express Window
+    Verify Control Object Is Visible    [NAME:ccboCompany]
+    [Teardown]    Take Screenshot
+
+Amend Booking For Verify Power Express Does Not Freeze
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Clear All With Contact Tracking
+    Verify Portrait Profile Panel Is Displayed
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Clear All With Contact Tracking
+    Verify Portrait Profile Panel Is Displayed
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR    Amend Booking For Verify Power Express Does Not Freeze

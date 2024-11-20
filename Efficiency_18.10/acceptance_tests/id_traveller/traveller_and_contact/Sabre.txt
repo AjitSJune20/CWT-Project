@@ -1,0 +1,30 @@
+*** Settings ***
+Resource          ../id_traveller_verification.txt
+Resource          ../../complete/complete_verification.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+SO Set To NO - Verify that Power Library button in Power Express is not visible
+    [Tags]    US6514
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Guitarists    ARRIESGADO    Ula
+    Verify that Power Library button is not Visible
+    [Teardown]    Click Clear All
+
+SO Set To YES- Verify that Power Library button in Power Express is visible
+    [Tags]    US6514
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 15 - Auto ¦ US1433    Test    Happy
+    Verify that Power Library button is Visible
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Verify that Power Library button is not Visible
+    Verify Control Object Is Not Visible    [NAME:btnPowerLibraryLink]
+    Take Screenshot
+
+Verify that Power Library button is Visible
+    Verify Control Object Is Visible    [NAME:btnPowerLibraryLink]
+    Take Screenshot

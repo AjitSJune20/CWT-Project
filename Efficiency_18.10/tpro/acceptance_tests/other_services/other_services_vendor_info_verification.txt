@@ -1,0 +1,10 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verify Vendor Info Fields Default to Correct Values Upon Amend EO
+    [Arguments]    ${identifier1}    ${identifier2}
+    Log List    ${expected_list${identifier1}}
+    Log List    ${expected_list${identifier2}}
+    Run Keyword And Continue On Failure    Lists Should Be Equal    ${expected_list${identifier1}}    ${expected_list${identifier2}}
+    Run Keyword And Continue On Failure    Should Be Equal    ${vendor_info_collection${identifier1.lower()}}    ${vendor_info_collection${identifier2.lower()}}

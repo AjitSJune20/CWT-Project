@@ -1,0 +1,1157 @@
+*** Settings ***
+Force Tags        for_update    valid_fail
+Resource          ../air_fare_verification.txt
+
+*** Test Cases ***
+[NB HK] Verify That Accounting Remarks For Multiple FOP - Cash, VI (From Portrait), TMP
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    hk    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN HK 3    BEAR    PABLO
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXHKG/AHX    SS1Y1    FXP/S2    4
+    Book Flight X Months From Now    HKGCKG/AHX    SS1Y1    FXP/S3    4    10
+    Book Flight X Months From Now    CKGHKG/AHX    SS1Y1    FXP/S4    4    25
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Set Transaction Fee On Air Fare Panel    0
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Cash
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 1    30
+    Set Fuel Surcharge Field    0
+    Populate Fare Quote Tabs with Default Values
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    TEST CARD/VI************0087/D0823/CVV***
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    TEST CARD/VI4900000000000087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 2    30
+    Set Fuel Surcharge Value To Empty
+    Populate Fare Quote Tabs with Default Values
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Click Fare Tab    Fare Quote 3
+    Verify Manually Created Credit Card Invalid Number    Fare Quote 3
+    Verify Manually Created Credit Card Expiration Date    Fare Quote 3
+    Verify Selected Credit Card Expiration Date    Fare Quote 3    KMBSAMPLE/VI***********2111/D0808
+    Verify Manually Created Credit Card Near Expiration Date    Fare Quote 3
+    Verify FOP Credit Card Is Masked On Fare Quote Tab
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    DC3644031458720369/D${near_expiration_year}
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 3    30
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    Airline
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 1    S2    02    Cash    HK
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 2    S3    03    TEST CARD/VI4900000000000087/D0823/CVV***    HK    CWT
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 3    S4    04    DC3644031458720369/D${near_expiration_year}    HK    Airline
+    Verify Fuel Surcharge Remark Per TST Are Correct    Fare Quote 1    S2    02    Cash
+    Verify Fuel Surcharge Remark Per TST Are Correct    Fare Quote 2    S3    03    TEST CARD/VI4900000000000087/D0823/CVV***
+    Verify Fuel Surcharge Remark Per TST Are Correct    Fare Quote 3    S4    04    DC3644031458720369/D${near_expiration_year}
+
+[AB HK] Verify That Accounting Remarks For Multiple FOP - TP, CTCL VI, Invoice
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    hk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    TP    157387385187317    1232
+    Verify Form Of Payment Card Is Masked On Client Info
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    Cash
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA TP CARD/TP***********4198/D0825/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Set Fuel Surcharge Field    15.49379
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    TEST CARD/VI************0087/D0823/CVV***
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    CWT
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    BTA CTCL VI/VI************7710/D0823
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 2
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 2    0
+    Set Fuel Surcharge Field    30.6
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 3    Invoice
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 3
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 3    30
+    Set Fuel Surcharge Field    41
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - TP, CTCL VI, Invoice
+    Execute Simultaneous Change Handling    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - TP, CTCL VI, Invoice
+    Retrieve PNR Details from Amadeus
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 1    S2    02    BTA TP CARD/TP120298264454198/D0825    HK    Airline
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 2    S3    03    BTA CTCL VI/VI4484886032737710/D0823    HK    CWT
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 3    S4    04    Invoice    HK
+    Verify Fuel Surcharge Remark Per TST Are Correct    Fare Quote 1    S2    02    BTA TP CARD/TP120298264454198/D0825
+    Verify Fuel Surcharge Remark Per TST Are Correct    Fare Quote 2    S3    03    BTA CTCL VI/VI4484886032737710/D0823
+    Verify Fuel Surcharge Remark Per TST Are Correct    Fare Quote 3    S4    04    Invoice
+    [Teardown]
+
+[AB HK] Verify That Accounting Remarks For Multiple FOP - Retain FOP - TP, CTCL VI, Invoice
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    hk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Set Transaction Fee On Air Fare Panel    0
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 1    15
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA TP CARD/TP***********4198/D0825/CVV***
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    Airline
+    Set Fuel Surcharge Field    30
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Click Fare Tab    Fare Quote 2
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 2    31
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA CTCL VI/VI************7710/D0823
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    CWT
+    Set Fuel Surcharge Field    30
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Click Fare Tab    Fare Quote 3
+    Set Transaction Fee On Air Fare Panel    0
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 3    41
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    Invoice
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Set Fuel Surcharge Field    30
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - Retain FOP - TP, CTCL VI, Invoice
+    Execute Simultaneous Change Handling    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - Retain FOP - TP, CTCL VI, Invoice
+    Retrieve PNR Details from Amadeus
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 1    S2    02    BTA TP CARD/TP120298264454198/D0825    HK    Airline
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 2    S3    03    BTA CTCL VI/VI4484886032737710/D0823    HK    CWT
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 3    S4    04    Invoice    HK
+    Verify Fuel Surcharge Remark Per TST Are Correct    Fare Quote 1    S2    02    BTA TP CARD/TP120298264454198/D0825
+    Verify Fuel Surcharge Remark Per TST Are Correct    Fare Quote 2    S3    03    BTA CTCL VI/VI4484886032737710/D0823
+    Verify Fuel Surcharge Remark Per TST Are Correct    Fare Quote 3    S4    04    Invoice
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Accounting Remarks For Multiple FOP - VI, AX, DC
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    sg    us892
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 3    BEAR    MONT
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINMNL/ACX    SS1Y1    FXP/S2-3    4    5
+    Book Flight X Months From Now    MNLLAX/ACX    SS1Y1    FXP/S4-5    4    15
+    Book Flight X Months From Now    LAXHKG/ACX    SS1Y1    FXP/S6    4    25
+    Click Read Booking
+    Click Panel    Client Info
+    Get Service Option Item Value    Apply Commission Rebate on Calculation
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1233
+    Verify Merchant Fee Type Is Not Visible
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 1
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    VI************1111/D1233
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify FOP Credit Card Is UnMasked On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    VI4111111111111111/D1233
+    Populate Fare Quote Tabs with Default Values
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 2
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    TEST CARD/AX***********0009/D0822/CVV****
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify FOP Credit Card Is UnMasked On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    TEST CARD/AX375000000000009/D0822/CVV****
+    Click Mask Icon to Mask Card On Fare Quote Tab
+    Verify FOP Credit Card Is Masked On Fare Quote Tab
+    Populate Fare Quote Tabs with Default Values
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4-5
+    Click Fare Tab    Fare Quote 3
+    Set Nett Fare Field    Fare Quote 3    0
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 3
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 3    DC    38520000023237    1232
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    CWT
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    DC**********3237/D1232
+    Populate Fare Quote Tabs with Default Values
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S6
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 1    S2-3    0203    VI4111111111111111/D1233    SG    Airline
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 2    S4-5    0405    TEST CARD/AX375000000000009/D0822/CVV****    SG    CWT
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 3    S6    06    DC38520000023237/D1232    SG    CWT
+
+[AB SG] Verify That Accounting Remarks For Multiple FOP - DC TMP, CA, Cash
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    sg    us892
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    DC    3644031458720369    1230
+    Verify Form Of Payment Card Is Masked On Client Info    # for verification
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 1
+    Comment    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    VI************1111/D1233    #Needs to be verified
+    Comment    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    Airline    #Needs to be verified
+    Comment    Click Mask Icon To Unmask Card On Fare Quote Tab    #Needs to be verified
+    Comment    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    VI4111111111111111/D1233    #Needs to be verified
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 1    DC    3644031458720369    1230
+    Verify FOP Credit Card Is Masked On Fare Quote Tab
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    DC3644031458720369/D1230
+    Set Transaction Fee On Air Fare Panel    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Click Fare Tab    Fare Quote 2
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 2
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    TEST CARD/AX***********0009/D0822/CVV****    #Needs to be verified
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    CWT    #Needs to be verified
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    TEST CARD/AX375000000000009/D0822/CVV****    #Needs to be verified
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 2    CA    5105105105105100    1234
+    Verify FOP Credit Card Is Masked On Fare Quote Tab
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4-5
+    Click Fare Tab    Fare Quote 3
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 3
+    Comment    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    DC************3237/D1232    #Needs to be verified
+    Comment    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    Airline    #Needs to be verified
+    Comment    Click Mask Icon To Unmask Card On Fare Quote Tab    #Needs to be verified
+    Comment    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    DC38520000023237/D1232    #Needs to be verified
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 3    Cash
+    Comment    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S6
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - DC TMP, CA, Cash
+    Execute Simultaneous Change Handling    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - DC TMP, CA, Cash
+    Retrieve PNR Details from Amadeus
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 1    S2-3    0203    DC3644031458720369/D1230    SG    Airline
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 2    S4-5    0405    CA5105105105105100/D1234    SG    CWT
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 3    S6    06    Cash    SG
+    [Teardown]
+
+[AB SG] Verify That Accounting Remarks For Multiple FOP - AX, DC TMP (From Portrait), AX
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    sg    us892
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 1
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 1    AX    378282246310005    1223
+    Verify FOP Credit Card Is Masked On Fare Quote Tab
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    AX378282246310005/D1223
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Click Fare Tab    Fare Quote 2
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 2
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    PORTRAIT/DC************0004/D1023-DC TMP
+    Verify FOP Credit Card Is Masked On Fare Quote Tab
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify FOP Credit Card Is UnMasked On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    PORTRAIT/DC6011000000000004/D1023-DC TMP
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    Airline
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4-5
+    Click Fare Tab    Fare Quote 3
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 3
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    Cash
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 3    AX***********0005/D1223
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify FOP Credit Card Is UnMasked On Fare Quote Tab
+    Click Mask Icon to Mask Card On Fare Quote Tab
+    Verify FOP Credit Card Is Masked On Fare Quote Tab
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S6
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - AX, DC TMP (From Portrait), DC TMP
+    Execute Simultaneous Change Handling    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - AX, DC TMP (From Portrait), DC TMP
+    Retrieve PNR Details from Amadeus
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 1    S2-3    0203    AX378282246310005/D1223    SG    Airline
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 2    S4-5    0405    PORTRAIT/DC6011000000000004/D1023-DC TMP    SG    Airline
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 3    S6    06    AX378282246310005/D1223    SG    CWT
+    [Teardown]
+
+[NB IN] Verify That Accounting Remarks For Multiple FOP - CTCL VI, AX
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    in
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN IN 3    BEAR    NIYAK
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4484886075896240    1231
+    Verify Form Of Payment Card Is Masked On Client Info
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Update PNR for EN or GB
+    Book Flight X Months From Now    BOMDEL/AAI    SS1Y1    FXP/S2    4    5
+    Book Flight X Months From Now    DELDXB/AAI    SS1Y1    FXP/S3    4    15
+    Click Read Booking
+    Manually Set Value In Form Of Payment    AX    378282246310005    1233
+    Verify Merchant Fee Type Is Not Visible
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 1
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify FOP Credit Card Is UnMasked On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    AX378282246310005/D1233
+    Populate Fare Quote Tabs with Default Values
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Get Route Code Value    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 2
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify FOP Credit Card Is UnMasked On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    AX378282246310005/D1233
+    Click Mask Icon to Mask Card On Fare Quote Tab
+    Verify FOP Credit Card Is Masked On Fare Quote Tab
+    Populate Fare Quote Tabs with Default Values
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S3
+    Get Route Code Value    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 1    S2    02    AX378282246310005/D1233    IN    Airline
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 2    S3    03    AX378282246310005/D1233    IN    CWT
+    Verify GST Remarks Per TST Are Correct    Fare Quote 1    S2    02    AX378282246310005/D1233
+    Verify GST Remarks Per TST Are Correct    Fare Quote 2    S3    03    AX378282246310005/D1233
+
+[AB IN] Verify That Accounting Remarks For Multiple FOP - AX, VI, AX
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    in
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    DXBDEL/AAI    SS1Y1    FXP/S4    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Set Transaction Fee On Air Fare Panel    0
+    Set Nett Fare Field    Fare Quote 1    0
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    TEST CARD/AX***********0009/D0822/CVV****
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Set Nett Fare Field    Fare Quote 2    0
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 2
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    Airline
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 3    Cash
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Populate Fare Quote Tabs with Default Values
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - AX, VI, AX
+    Execute Simultaneous Change Handling    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - AX, VI, AX
+    Retrieve PNR Details from Amadeus
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 1    S2    02    TEST CARD/VI4900000000000087/D0823/CVV***    IN    CWT
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 2    S3    03    TEST CARD/VI4900000000000087/D0823/CVV***    IN    Airline
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 3    S4    04    Cash    IN
+    Verify GST Remarks Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI4900000000000087/D0823/CVV***
+    Verify GST Remarks Per TST Are Correct    Fare Quote 2    S3    03    TEST CARD/VI4900000000000087/D0823/CVV***
+    Verify GST Remarks Per TST Are Correct    Fare Quote 3    S4    04    Cash
+    [Teardown]
+
+[AB IN] Verify That Accounting Remarks For Multiple FOP - New Segments - Invoice, AX, CA
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    in
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Comment    Verify Form Of Payment Card Selected Is Displayed On Client Info    AX***********0005/D1233
+    Comment    Verify Form Of Payment Card Is Masked On Client Info
+    Comment    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Delete All Segments
+    Book Flight X Months From Now    DXBDEL/AAI    SS1Y1    FXP/S2    6    6
+    Book Flight X Months From Now    DELORD/AAI    SS1Y1    FXP/S3    6    12
+    Book Flight X Months From Now    ORDDEL/AAI    SS1Y1    FXP/S4    6    23
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Invoice
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    TEST CARD/AX***********0009/D0822/CVV****
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 3
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 3    CA    5105105105105100    1225
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    CWT
+    Set Transaction Fee    0
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Populate Fare Quote Tabs with Default Values
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - New Segments - Invoice, AX, CA
+    Execute Simultaneous Change Handling    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - New Segments - Invoice, AX, CA
+    Retrieve PNR Details from Amadeus
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 1    S2    02    Invoice    IN
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 2    S3    03    TEST CARD/AX375000000000009/D0822/CVV****    IN    CWT
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 3    S4    04    CA5105105105105100/D1225    IN    CWT
+    Verify GST Remarks Per TST Are Correct    Fare Quote 1    S2    02    Invoice
+    Verify GST Remarks Per TST Are Correct    Fare Quote 2    S3    03    TEST CARD/AX375000000000009/D0822/CVV****
+    Verify GST Remarks Per TST Are Correct    Fare Quote 3    S4    04    CA5105105105105100/D1225
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify FOP Lines And Accounting Remarks For Multiple Fare Quote tabs Are Written When FOP Used Are VI, AX And CA From Powerbase
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    hk
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN HK 3    BEAR    PABLO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXHKG/AHX    SS1Y1    FXP/S2    4    5
+    Book Flight X Months From Now    HKGCKG/AHX    SS1Y1    FXP/S3    4    15
+    Book Flight X Months From Now    CKGLAX/AHX    SS1Y1    FXP/S4-5    4    25
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Set Nett Fare Field    Fare Quote 1    0
+    Set Mark-Up Amount Field    0
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    BTA CTCL VI/VI************7710/D0823
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Set Nett Fare Field    Fare Quote 2    3600
+    Set Mark-Up Amount Field    0
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    TEST CARD/AX***********0009/D0822/CVV****
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 3
+    Set Nett Fare Field    Fare Quote 3    0
+    Set Mark-Up Amount Field    12
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 3    BTA CARD/CA************1114/D0828/CVV****
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 3
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4-5
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    command=RTY
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2    BTA CTCL VI/VI4484886032737710/D0823    HK    CWT
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S3    TEST CARD/AX375000000000009/D0822/CVV****    HK    Airline
+    Verify FOP Remark Per TST Is Written    Fare Quote 3    S4-5    BTA CARD/CA2222420000001114/D0828/CVV****    HK    Airline
+
+[AB HK] Verify FOP Lines And Accounting Remarks For Multiple Fare Quote tabs Are Written When FOP Used Are VI, AX And CA From Powerbase
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    hk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA CTCL VI/VI************7710/D0823
+    Set Nett Fare Field    Fare Quote 1    25000
+    Set Mark-Up Amount Field    12
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    TEST CARD/AX***********0009/D0822/CVV****
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Click Fare Tab    Fare Quote 3
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA CARD/CA************1114/D0828/CVV****
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 3
+    Set Nett Fare Field    Fare Quote 3    0
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4-5
+    Click Finish PNR    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote tabs Are Written When FOP Used Are VI, AX And CA From Powerbase
+    Execute Simultaneous Change Handling    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote tabs Are Written When FOP Used Are VI, AX And CA From Powerbase
+    Retrieve PNR Details from Amadeus    command=RTY
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2    BTA CTCL VI/VI4484886032737710/D0823    HK
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S3    TEST CARD/AX375000000000009/D0822/CVV****    HK    Airline
+    Verify FOP Remark Per TST Is Written    Fare Quote 3    S4-5    BTA CARD/CA2222420000001114/D0828/CVV****    HK    Airline
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are VI, AX And CA From Portrait
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    sg
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 3    BEAR    MONT
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINMNL/ACX    SS1Y1    FXP/S2-3    4
+    Book Flight X Months From Now    MNLLAX/ACX    SS1Y1    FXP/S4-5    4    10
+    Book Flight X Months From Now    LAXHKG/ACX    SS1Y1    FXP/S6    4    20
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    PORTRAIT/VI************0002/D1223-VISA
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Set Nett Fare Field    Fare Quote 1    0
+    Set Mark-Up Amount Field    10
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    PORTRAIT/AX***********0002/D1225-AMEX
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 2
+    Set Nett Fare Field    Fare Quote 2    2450
+    Set Mark-Up Amount Field    15
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4-5
+    Click Fare Tab    Fare Quote 3
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 3    PORTRAIT/CA************2124/D1221-CA
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 3
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S6
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    command=RTY
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2-3    PORTRAIT/VI4000000000000002/D1223-VISA    SG    Airline
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S4-5    PORTRAIT/AX370000000000002/D1225-AMEX    SG    CWT
+    Verify FOP Remark Per TST Is Written    Fare Quote 3    S6    PORTRAIT/CA5121212121212124/D1221-CA    SG    Airline
+
+[AB SG] Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are VI, AX And CA From Portrait
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    sg
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT/AX***********0002/D1225-AMEX
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 1    PORTRAIT/VI************0002/D1223-VISA    CWT
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 1
+    Set Nett Fare Field    Fare Quote 1    2700
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 2    PORTRAIT/AX***********0002/D1225-AMEX    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Set Nett Fare Field    Fare Quote 2    2500
+    Set Mark-Up Amount Field    27
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4-5
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 3    PORTRAIT/CA************2124/D1221-CA    CWT
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 3
+    Set Nett Fare Field    Fare Quote 3    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S6
+    Click Finish PNR    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are VI, AX And CA From Portrait
+    Execute Simultaneous Change Handling    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are VI, AX And CA From Portrait
+    Retrieve PNR Details from Amadeus    command=RTY
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2-3    PORTRAIT/VI4000000000000002/D1223-VISA    SG    CWT
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S4-5    PORTRAIT/AX370000000000002/D1225-AMEX    SG    Airline
+    Verify FOP Remark Per TST Is Written    Fare Quote 3    S6    PORTRAIT/CA5121212121212124/D1221-CA    SG    CWT
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are TMP DC, TP And CTCL VI From Portrait
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    sg
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 3    BEAR    MONT
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT/DC************0004/D1023-DC TMP
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Book Flight X Months From Now    LAXSIN/ACX    SS1Y1    FXP/S2-3    4    5
+    Book Flight X Months From Now    SINHKG/ACX    SS1Y1    FXP/S4    4    15
+    Book Flight X Months From Now    HKGLAX/ACX    SS1Y1    FXP/S5    4    25
+    Update PNR for EN or GB
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    PORTRAIT/DC************0004/D1023-DC TMP
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Set Nett Fare Field    Fare Quote 1    0
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    PORTRAIT/TP************0004/D1223-UATP
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 3
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 3    PORTRAIT/VI************0002/D1223-CTCL VISA
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 3
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S5
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    command=RTY
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2-3    PORTRAIT/DC6011000000000004/D1023-DC-TMP    SG    Airline
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S4    PORTRAIT/TP************0004/D1223-UATP    SG    CWT
+    Verify FOP Remark Per TST Is Written    Fare Quote 3    S5    PORTRAIT/VI4000000000000002/D1223-CTCL VISA    SG    Airline
+
+[AB SG] Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are TMP DC, TP And CTCL VI From Portrait
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    sg
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 1    PORTRAIT/DC************0004/D1023-DC TMP    CWT
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 1
+    Set Nett Fare Field    Fare Quote 1    500
+    Set Mark-Up Amount Field    11
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 2    PORTRAIT/TP************0004/D1223-UATP    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Set Nett Fare Field    Fare Quote 2    2615
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 3    PORTRAIT/VI************0002/D1223-CTCL VISA    CWT
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 3
+    Set Nett Fare Field    Fare Quote 3    0
+    Set Mark-Up Amount Field    52
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S5
+    Click Finish PNR    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are DC, TMP DC And CTCL VI From Portrait
+    Execute Simultaneous Change Handling    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are DC, TMP DC And CTCL VI From Portrait
+    Retrieve PNR Details from Amadeus    command=RTY
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2-3    PORTRAIT/DC6011000000000004/D1223-DC-TMP    SG    CWT
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S4    PORTRAIT/CA5121212121212124/D1221-CA    SG    Airline
+    Verify FOP Remark Per TST Is Written    Fare Quote 3    S5    PORTRAIT/VI4000000000000002/D1223-CTCL VISA    SG    CWT
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are DC, TMP DC And CTCL VI From Powerbase
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    in
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN IN 3    BEAR    NIYAK
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    BLRSIN/AAI    SS1Y1    FXP/S2-3    4    5
+    Book Flight X Months From Now    SINBOM/AAI    SS1Y1    FXP/S4    4    15
+    Book Flight X Months From Now    BOMDEL/AAI    SS1Y1    FXP/S5    4    25
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    BTA DC/DC**********2207/D0823/CVV***
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Set Nett Fare Field    Fare Quote 1    95555
+    Populate Fare Quote Tabs with Default Values
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Set Nett Fare Field    Fare Quote 2    0
+    Set Mark-Up Amount Field    14
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Populate Fare Quote Tabs with Default Values
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Click Fare Tab    Fare Quote 3
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 3
+    Set Nett Fare Field    Fare Quote 3    28526
+    Set Mark-Up Amount Field    0
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    CWT
+    Populate Fare Quote Tabs with Default Values
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S5
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    command=RTY
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2-3    BTA DC/DC30569101582207/D0823/CVV***    HK    CWT
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S4    BTA DC/DC**********2207/D0823/CVV***    HK    CWT
+    Verify FOP Remark Per TST Is Written    Fare Quote 3    S5    BTA DC/DC**********2207/D0823/CVV***    HK    CWT
+
+[AB IN] Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are DC, TMP DC And CTCL VI From Powerbase
+    [Tags]    us592    us852    us853    us854    us855    us293
+    ...    team_c    in
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA DC/DC**********2207/D0823/CVV***
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    CWT
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Set Mark-Up Amount Field    12
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA DC/DC**********2207/D0823/CVV***
+    Comment    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab    #needs to verify
+    Verify FOP Credit Card Is Masked On Fare Quote Tab
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 2
+    Set Nett Fare Field    Fare Quote 2    170000
+    Set Mark-Up Amount Field    11
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Click Fare Tab    Fare Quote 3
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA DC/DC**********2207/D0823/CVV***
+    Comment    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab    #needs to verify
+    Comment    Verify Merchant Fee Fields Are Enabled    Fare Quote 3
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S5
+    Click Finish PNR    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are DC, TMP DC And CTCL VI From Powerbase
+    Execute Simultaneous Change Handling    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are DC, TMP DC And CTCL VI From Powerbase
+    Retrieve PNR Details from Amadeus    command=RTY
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2-3    BTA DC/DC**********2207/D0823/CVV***    HK    CWT
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S4    BTA DC/DC**********2207/D0823/CVV***    HK    Airline
+    Verify FOP Remark Per TST Is Written    Fare Quote 3    S5    BTA DC/DC**********2207/D0823/CVV***    HK    CWT
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - TP, CTCL VI, Invoice
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    TP    157387385187317    1232
+    Verify Form Of Payment Card Is Masked On Client Info
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    Cash
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA TP CARD/TP***********4198/D0825/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 1    0
+    Set Fuel Surcharge Field    15.49379
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    TEST CARD/VI************0087/D0823/CVV***
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    CWT
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    BTA CTCL VI/VI************7710/D0823
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 2
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 2    0
+    Set Fuel Surcharge Field    30.6
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 3    Invoice
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 3
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 3    30
+    Set Fuel Surcharge Field    41
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - TP, CTCL VI, Invoice
+
+Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - Retain FOP - TP, CTCL VI, Invoice
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Set Transaction Fee On Air Fare Panel    0
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 1    15
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA TP CARD/TP***********4198/D0825/CVV***
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    Airline
+    Set Fuel Surcharge Field    30
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Click Fare Tab    Fare Quote 2
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 2    31
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA CTCL VI/VI************7710/D0823
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    CWT
+    Set Fuel Surcharge Field    30
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Click Fare Tab    Fare Quote 3
+    Set Transaction Fee On Air Fare Panel    0
+    Verify Fuel Surcharge Value In Air Fare    Fare Quote 3    41
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    Invoice
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Set Fuel Surcharge Field    30
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - Retain FOP - TP, CTCL VI, Invoice
+
+Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - DC TMP, CA, Cash
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    DC    3644031458720369    1230
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 1    DC    3644031458720369    1230
+    Set Transaction Fee On Air Fare Panel    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Click Fare Tab    Fare Quote 2
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 2    CA    5105105105105100    1234
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4-5
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 3    Cash
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S6
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - DC TMP, CA, Cash
+
+Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - AX, DC TMP (From Portrait), DC TMP
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 1    AX    378282246310005    1223
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    PORTRAIT/DC************0004/D1023-DC TMP
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    Airline
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4-5
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 3    AX***********0005/D1223
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S6
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - AX, DC TMP (From Portrait), DC TMP
+
+Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - AX, VI, AX
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    DXBDEL/AAI    SS1Y1    FXP/S4    4    25
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Set Transaction Fee On Air Fare Panel    0
+    Set Nett Fare Field    Fare Quote 1    0
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 1
+    Comment    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    VI************6240/D1231    #for verification
+    Comment    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab    \    #for verification
+    Comment    Verify FOP Credit Card Is Masked On Fare Quote Tab    \    #for verification
+    Comment    Click Mask Icon To Unmask Card On Fare Quote Tab    \    #for verification
+    Comment    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    VI4484886075896240/D1231    #for verification
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    AX***********0005/D1233
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    AX378282246310005/D1233
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Click Fare Tab    Fare Quote 2
+    Set Nett Fare Field    Fare Quote 2    0
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 2
+    Comment    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    AX***********0005/D1233    #for verification
+    Comment    Verify FOP Credit Card Is Masked On Fare Quote Tab    \    #for verification
+    Comment    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    Airline    #for verification
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    VI************6240/D1231
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    VI4484886075896240/D1231
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    Airline
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Click Fare Tab    Fare Quote 3
+    Verify Fuel Surcharge Is Not Displayed    Fare Quote 3
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 3    AX***********0005/D1233
+    Click Mask Icon To Unmask Card On Fare Quote Tab
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    AX378282246310005/D1233
+    Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - AX, VI, AX
+
+Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - New Segments - Invoice, AX, CA
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Delete All Segments
+    Book Flight X Months From Now    DXBDEL/AAI    SS1Y1    FXP/S2    6    6
+    Book Flight X Months From Now    DELORD/AAI    SS1Y1    FXP/S3    6    12
+    Book Flight X Months From Now    ORDDEL/AAI    SS1Y1    FXP/S4    6    23
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Invoice
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    TEST CARD/AX***********0009/D0822/CVV****
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 3
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 3    CA    5105105105105100    1225
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    CWT
+    Set Transaction Fee    0
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Populate Fare Quote Tabs with Default Values
+    Click Finish PNR    Amend Booking For Verify That FOP Selection, Remarks And Functions Are Covered For Multiple FOP - New Segments - Invoice, AX, CA
+
+Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote tabs Are Written When FOP Used Are VI, AX And CA From Powerbase
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA CTCL VI/VI************7710/D0823
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 1
+    Set Nett Fare Field    Fare Quote 1    25000
+    Set Mark-Up Amount Field    12
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    TEST CARD/AX***********0009/D0822/CVV****
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Click Fare Tab    Fare Quote 3
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA CARD/CA************1114/D0828/CVV****
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 3
+    Set Nett Fare Field    Fare Quote 3    0
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4-5
+    Click Finish PNR    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote tabs Are Written When FOP Used Are VI, AX And CA From Powerbase
+
+Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are VI, AX And CA From Portrait
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT/AX***********0002/D1225-AMEX
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 1    PORTRAIT/VI************0002/D1223-VISA    CWT
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 1
+    Set Nett Fare Field    Fare Quote 1    2700
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 2    PORTRAIT/AX***********0002/D1225-AMEX    Airline
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Set Nett Fare Field    Fare Quote 2    2500
+    Set Mark-Up Amount Field    27
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4-5
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 3    PORTRAIT/CA************2124/D1221-CA    CWT
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    CWT
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 3
+    Set Nett Fare Field    Fare Quote 3    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S6
+    Click Finish PNR    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are VI, AX And CA From Portrait
+
+Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are DC, TMP DC And CTCL VI From Portrait
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 1    PORTRAIT/DC************0004/D1023-DC TMP    CWT
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 1
+    Set Nett Fare Field    Fare Quote 1    500
+    Set Mark-Up Amount Field    11
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 2    PORTRAIT/DC************0004/D1223-DC    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Set Nett Fare Field    Fare Quote 2    2615
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 3    PORTRAIT/VI************0002/D1223-CTCL VISA    CWT
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    CWT
+    Set Nett Fare Field    Fare Quote 3    0
+    Set Mark-Up Amount Field    52
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S5
+    Click Finish PNR    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are DC, TMP DC And CTCL VI From Portrait
+
+Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are DC, TMP DC And CTCL VI From Powerbase
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify FOP Merchant Field Is Not Visible On Client Info Panel
+    Select Form Of Payment    BTA CTCL VI/VI************7710/D0823
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA DC/DC**********2207/D0823/CVV***
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    CWT
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2-3
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Set Mark-Up Amount Field    12
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA TMP-DC/DC***********0012/D0722/CVV***
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Verify FOP Credit Card Is Masked On Fare Quote Tab
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S4
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 2
+    Set Nett Fare Field    Fare Quote 2    170000
+    Set Mark-Up Amount Field    11
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Click Fare Tab    Fare Quote 3
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    BTA CTCL VI/VI************7710/D0823
+    Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S5
+    Verify Merchant Fee Fields Are Enabled    Fare Quote 3
+    Set Mark-Up Amount Field    0
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Click Finish PNR    Amend Booking For Verify FOP Lines And Accounting Remarks For Multiple Fare Quote Tabs Are Written When FOP Used Are DC, TMP DC And CTCL VI From Powerbase

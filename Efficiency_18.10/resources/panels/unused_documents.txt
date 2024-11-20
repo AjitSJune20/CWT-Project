@@ -1,0 +1,26 @@
+*** Settings ***
+Documentation     This resource file covers all reusable actions for Unused Documents Panel related test cases
+Resource          ../common/utilities.txt
+
+*** Keywords ***
+Get All Unused Document
+    ${all_unused_documents}    Get Document Items
+    Should Not Be Empty    ${all_unused_documents}
+    Set Test Variable    ${all_unused_documents}
+    [Return]    ${all_unused_documents}
+
+Get One Unused Document
+    [Arguments]    ${row_number}
+    ${row_number}    Evaluate    ${row_number}-1
+    ${selected_unused_document_detail}    Get Line    ${all_unused_documents}    ${row_number}
+    Should Not Be Empty    ${selected_unused_document_detail}
+    Set Test Variable    ${selected_unused_document_detail}
+    [Return]    ${selected_unused_document_detail}
+
+Select Unused Document Using Row Number
+    [Arguments]    ${double_click}=False    @{row_number}
+    ${all_unused_documents}    Get All Unused Document
+    : FOR    ${row_number}    IN    @{row_number}
+    \    ${unused_document_detail}    Get One Unused Document    ${row_number}
+    \    Click Document Item    ${unused_document_detail}    ${double_click}
+    [Teardown]    Take Screenshot

@@ -1,0 +1,81 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+Resource          ../../../resources/common/utilities.txt
+
+*** Keywords ***
+Verify CDR Fields Defined Are Retrieved
+    [Arguments]    @{expected_cdr_field_label}
+    ${cdr_dictionary}    Determine CDR Value And Position
+    : FOR    ${cdr_field_label}    IN    @{expected_cdr_field_label}
+    \    ${is_contain}    Run Keyword And Return Status    Dictionary Should Contain Key    ${cdr_dictionary}    ${cdr_field_label}
+    \    Run Keyword And Continue On Failure    Should Be True    "${is_contain}" == "True"    "${cdr_field_label}" was not in the list.
+
+Verify CDR Fields Retrieved Are Not Duplicate
+    ${cdr_dictionary}    Determine CDR Value And Position
+    Run Keyword And Continue On Failure    List Should Not Contain Duplicates    ${cdr_dictionary}
+
+Verify CDR Fields Is Not Visible Upon Load In Amend Booking Flow
+    Verify Control Object Is Not Visible    ${cdr_value1_locator}
+    Verify Control Object Is Not Visible    ${cdr_value2_locator}
+    Verify Control Object Is Not Visible    ${cdr_value3_locator}
+    [Teardown]    Take Screenshot
+
+Verify CDR Name Is Shown And Expected Value Is Correct
+    [Arguments]    ${cdr_object}    ${expected_cdr}    ${cdr_field}    ${expected_value}
+    Verify Control Object Text Value Is Correct    ${cdr_object}    ${expected_cdr}
+    Verify Control Object Text Value Is Correct    ${cdr_field}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify CDR Values Defined Are Retrieved
+    [Arguments]    ${cdr_field_label}    ${expected_cdr_value}
+    ${cdr_dictionary}    Determine CDR Value And Position
+    ${cdr_index}    Get From Dictionary    ${cdr_dictionary}    ${cdr_field_label}
+    Verify Control Object Text Value Is Correct    [NAME:ctxtCDRValue${cdr_index}]    ${expected_cdr_value}
+
+Verify Cust Refs Not Known Checkbox Is Unticked
+    Verify Checkbox Is Unticked    ${check_box_skip_validation}
+    [Teardown]    Take Screenshot
+
+Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Verify Checkbox Is Unticked    ${check_box_skip_validation}
+    Verify Control Object Is Disabled    ${check_box_skip_validation}
+    [Teardown]    Take Screenshot
+
+Verify Red Error Icon Existing In Selected Panel
+    [Arguments]    ${panel_name}=EMPTY
+    Click Panel    ${panel_name}
+    Sleep    1
+    ${is_error_icon_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/red_error_icon.PNG    ${similarity}    ${timeout}
+    Run Keyword If    "${is_error_icon_exist}" == "True"    Log    PASSED: Red error icon was displayed in ${panel_name} panel.
+    ...    ELSE    Log    FAILED: No Red error icon in ${panel_name} panel.
+    [Teardown]    Take Screenshot
+
+Verify Show All Client Defined References Checkbox Is Unticked
+    Wait Until Control Object Is Visible    ${label_client_defined_references}
+    ${checkbox_status}    Get checkbox status    ${check_box_show_all_cdr}
+    Should be True    '${checkbox_status}' == 'False'
+    [Teardown]    Take Screenshot
+
+Verify Specific CDR Is Not Shown Upon Load
+    [Arguments]    ${expected_cdr_field_name}
+    : FOR    ${field_index}    IN RANGE    1    15
+    \    ${clickstatus} =    Control Click    ${title_power_express}    ${EMPTY}    [NAME:ctxtCDRDescription${field_index}]
+    \    Sleep    1
+    \    ${currlabel} =    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblCDRDescription${field_index}]
+    \    Run Keyword If    '${currlabel}' == '${EMPTY}'    Continue For Loop
+    \    Run Keyword If    "${currlabel}" == "${expected_cdr_field_name}"    Fail    CDR Field ${expected_cdr_field_name} is Shown Upon Load
+    \    Run Keyword If    "${currlabel}" != "${expected_cdr_field_name}"    Exit For Loop
+    [Teardown]    Take Screenshot
+
+Verify Specific Panel Status
+    [Arguments]    ${panel_name}=EMPTY
+    Auto It Set Option    PixelCoordMode    2
+    Set Test Variable    ${x}    13
+    Comment    ${y}    Get From Dictionary    ${panel_coordinates}    ${panel_name.upper()}
+    ${actual_bgcolor}    Pixel Get Color    ${x}    ${y}
+    ${actual_bgcolor}    Convert To Hex    ${actual_bgcolor}
+    ${panel_status}    Run Keyword If    "${actual_bgcolor}" == "FF5151" or "${actual_bgcolor}" == "FF5A5A" or "${actual_bgcolor}" == "FF4A4A"    Set Variable    RED
+    ...    ELSE IF    "${actual_bgcolor}" == "7CD107" or "${actual_bgcolor}" == "78CE00"    Set Variable    GREEN
+    ...    ELSE    Set Variable    END
+    Auto It Set Option    PixelCoordMode    1
+    [Return]    ${panel_status}

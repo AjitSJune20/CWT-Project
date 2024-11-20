@@ -1,0 +1,84 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+Resource          ../../../resources/common/utilities.txt
+Resource          ../air_fare/air_fare_verifications.txt
+
+*** Keywords ***
+Calculate Merchant Fee Amount
+    [Arguments]    ${fare_tab}    ${country}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Nett Fare Value    ${fare_tab}
+    Get Merchant Fee Percentage Value    ${fare_tab}
+    Get Merchant Fee Amount Value    ${fare_tab}
+    Get Mark-Up Amount Value    ${fare_tab}
+    Get Commission Rebate Amount Value    ${fare_tab}
+    ${merchant_fee_percentage_value}    Convert To Float    ${merchant_fee_percentage_value_${fare_tab_index}}
+    Run Keyword If    "${gds_switch}"=="galileo" and ("${nett_fare_value_${fare_tab_index}}" == "${EMPTY}" or "${nett_fare_value_${fare_tab_index}}" == "0")    Run Keywords    Get Base Fare And Tax From Galileo For Fare X Tab    ${fare_tab}
+    ...    AND    Set Test Variable    ${fare_value}    ${base_fare_value_${fare_tab_index}}
+    ...    ELSE IF    "${gds_switch}"=="galileo" and ("${nett_fare_value_${fare_tab_index}}" != "${EMPTY}" or "${nett_fare_value_${fare_tab_index}}" != "0")    Run Keywords    Get Base Fare And Tax From Galileo For Fare X Tab    ${fare_tab}
+    ...    AND    Set Test Variable    ${fare_value}    ${nett_fare_value_${fare_tab_index}}
+    ...    ELSE IF    "${gds_switch}"=="sabre" and ("${nett_fare_value_${fare_tab_index}}" == "${EMPTY}" or "${nett_fare_value_${fare_tab_index}}" == "0")    Run Keywords    Get Base Fare And Tax From Sabre For Fare X Tab    ${fare_tab}    SGD
+    ...    *PQ    use_copy_content_from_sabre=False
+    ...    AND    Set Test Variable    ${fare_value}    ${fare_${fare_tab_index}_base_fare}
+    ${actual_merchant_fee_value}    Evaluate    (${fare_value} + ${tax_amount_${fare_tab_index}} + ${mark_up_value_${fare_tab_index}} - ${commission_rebate_value_${fare_tab_index}}) * (${merchant_fee_percentage_value}/100)
+    ${actual_merchant_fee_value}    Run Keyword If    "${country}" == "AU" or "${country}" == "NZ"    Round Off    ${actual_merchant_fee_value}
+    ...    ELSE    Round Up Hk    ${actual_merchant_fee_value}
+    ${gst_value_rounded}    Run Keyword If    "${route_code_${fare_tab_index}}" == "DOM" and "${country}" == "AU"    Evaluate    ${actual_merchant_fee_value} * .1
+    ...    ELSE IF    "${route_code_${fare_tab_index}}" == "DOM" and "${country}" == "NZ"    Evaluate    ${actual_merchant_fee_value} * .15
+    ...    ELSE IF    "${route_code_${fare_tab_index}}" == "DOM" and "${country}" == "MY"    Evaluate    ${actual_merchant_fee_value} * .06
+    ...    ELSE    Set Variable    0
+    ${gst_value_rounded}    Round Off    ${gst_value_rounded}
+    ${actual_merchant_fee_value}    Convert To Float    ${actual_merchant_fee_value}
+    ${gst_value_rounded}    Convert To Float    ${gst_value_rounded}
+    ${actual_merchant_fee_value_gst}    Evaluate    ${actual_merchant_fee_value} + ${gst_value_rounded}
+    ${actual_merchant_fee_value_gst}    Convert To Float    ${actual_merchant_fee_value_gst}
+    Set Test Variable    ${merchant_fee_amount_${fare_tab_index}}    ${actual_merchant_fee_value}
+    Set Test Variable    ${merchant_fee_amount_gst_${fare_tab_index}}    ${actual_merchant_fee_value_gst}
+
+Identify Vendor And Product Code For Merchant Fee
+    [Arguments]    ${country}
+    ${vendor_code}    Set Variable If    "${country}" == "AU"    119    "${country}" == "NZ"    120    "${country}" == "SG"
+    ...    021007    "${country}" == "MY"    021007
+    ${product_code}    Set Variable If    "${country}" == "AU"    PC57    "${country}" == "NZ"    PC57    "${country}" == "SG"
+    ...    PC41    "${country}" == "MY"    PC41
+    [Return]    ${vendor_code}    ${product_code}
+
+Verify Merchant Fee Amount Is Retrieved In Pricing Extras
+    [Arguments]    ${fare_tab}    ${country}=AU
+    Calculate Merchant Fee Amount    ${fare_tab}    ${country}
+    Get Merchant Fee Amount Value    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Run Keyword And Continue On Failure    Should Be Equal    ${merchant_fee_amount_gst_${fare_tab_index}}    ${merchant_fee_value_${fare_tab_index}}
+
+Verify Merchant Fee Percentage Is Retrieved In Pricing Extras
+    [Arguments]    ${fare_tab}    ${expected_merchant_fee_percentage}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Merchant Fee Percentage Value    ${fare_tab}
+    Run Keyword And Continue On Failure    Should Be Equal    ${merchant_fee_percentage_value_${fare_tab_index}}    ${expected_merchant_fee_percentage}
+    [Teardown]    Take Screenshot
+
+Verify Merchant Fee Remark Is Written In The RI Lines
+    [Arguments]    ${fare_tab}    ${route_code}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${merchant_fee_amount}    Set Variable If    "${route_code}" == "DOM"    ${merchant_fee_amount_gst_${fare_tab_index}}    ${merchant_fee_amount_${fare_tab_index}}
+    Verify Specific Remark Is Written In The PNR    MERCHANT FEE: ${currency} ${merchant_fee_amount}    true
+
+Verify Merchant Fee Remarks Are Written In The DI Lines
+    [Arguments]    ${fare_tab}    ${route_code}    ${validating_carrier}    ${booking_type}    ${country}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${expected_merchant_fee_amount}    Set Variable If    "${route_code.upper()}" == "DOM" and ("${country}" == "NZ" or "${country}" == "AU")    ${merchant_fee_amount_${fare_tab_index}}    ${merchant_fee_value_${fare_tab_index}}
+    ${vendor_code}    ${product_code}    Identify Vendor And Product Code for Merchant Fee    ${country}
+    Verify Fee Remarks Are Written In The DI Lines    ${fare_tab}    ${route_code}    ${vendor_code}    ${product_code}    ${validating_carrier}    ${booking_type}
+    ...    MERCHANT FEE    ${expected_merchant_fee_amount}    ${country}
+
+Verify Specific Remark Is Not Written In The PNR
+    [Arguments]    ${expected_remark}    ${reg_exp_flag}=false    ${multi_line_search_flag}=false
+    Verify Text Does Not Contain Value    ${pnr_details}    ${expected_remark}    ${reg_exp_flag}    ${multi_line_search_flag}
+
+Verify Specific Remark Is Written In The PNR
+    [Arguments]    ${expected_remark}    ${reg_exp_flag}=false    ${multi_line_search_flag}=false    ${remove_spaces}=false
+    Verify Text Contains Expected Value    ${pnr_details}    ${expected_remark}    ${reg_exp_flag}    ${multi_line_search_flag}    ${remove_spaces}
+
+Verify Specific Remark Is Written X Times In The PNR
+    [Arguments]    ${expected_remark}    ${occurence}
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    ${expected_remark}    ${occurence}

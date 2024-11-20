@@ -1,0 +1,353 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../recap_verification.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+[NB SE] Verify That Itinerary Is Not Sent To Queue When Itinerary Product SO Is Set To None
+    [Tags]    us3878    se    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    Optimize Auto - Amadeus SE ¦ US3878 A2SI 1A SE    Sweden    Optimize Auto
+    Click New Booking
+    Book One Way Flight X Months From Now    MSPORD/AUA    6
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Verify Queue Remark Is Written    FRAWL2378    70    1    1
+
+[SI SE] Verify That Itinerary Is Sent To Queue When Itinerary Product SO Is Set To None
+    [Tags]    us3878    se    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR    Send Itinerary
+    Execute Simultaneous Change Handling    Send Itinerary
+    Verify Queue Remark Is Written    FRAWL2378    70    1    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify that Only Awaiting Approval Are Ticked And Disabled And PNR Are Queue Correctly In Third Party Approval Queue
+    [Tags]    us6824    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus 3rd Party Approval    Juarez    Rosalie
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Cost Center    ABC123
+    Set CDR Value    T-Matrix DP Code    A123
+    Select Form Of Payment    Invoice
+    Click Update PNR
+    Book Flight X Months From Now    DENLAX/AUA    SS1Y1    FXP/S2    6
+    Book Flight X Months From Now    LAXDEN/AUA    SS1Y1    FXP/S3    6    4
+    Enter GDS Command    RMG/TRIGGER FOR APPROVAL
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Verify On Hold Booking Reason Is Disabled    Awaiting Approval
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Customer References
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Itinerary Segment
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Form of Payment
+    Tick Do Not Send Itinerary
+    Populate Fare Tab With Default Values    Fare 1    Canada and St. Pierre et Miquelon    Fully Flexible
+    Populate Fare Tab With Default Values    Fare 2    Canada and St. Pierre et Miquelon    Fully Flexible
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RMG TRIGGER FOR APPROVAL
+    Verify Queue Remark Is Written    LONWL2220    062    015
+    Verify Queue Remark Is Written    PARWL210G    070    004
+    verify OP Remark Is Not Written In The PNR    FRAWL2378    70    4    AQUA QUEUING
+
+[AB CA] Verify that Only Awaiting Approval Are Ticked And Disabled And PNR Are Queue Correctly In Third Party Approval Queue
+    [Tags]    us6824    ca
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XI    RFCWTPTEST    ER
+    Book Flight X Months From Now    FRALON/AAF    SS1Y1    FXP    6
+    Enter GDS Command    FXT01/P1
+    Enter GDS Command    RMG/TRIGGER FOR APPROVAL
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Cust Refs
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Verify On Hold Booking Reason Is Disabled    Awaiting Approval
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Customer References
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Itinerary Segment
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Form of Payment
+    Tick Do Not Send Itinerary
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    Canada and St. Pierre et Miquelon    Fully Flexible
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    RMG TRIGGER FOR APPROVAL
+    Verify Queue Remark Is Written    LONWL2220    062    015
+    Verify Queue Remark Is Written    PARWL210G    070    004
+    verify OP Remark Is Not Written In The PNR    FRAWL2378    70    4    AQUA QUEUING
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify that When Multi On Hold Reasons Are Selected, PNR Are Queue Correctly In the Other Follow Up Queue Groups And Not In Third Party Approval Queue
+    [Tags]    us6824    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus 3rd Party Approval    Cyril    De Guzman
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Cost Center    ABC123
+    Set CDR Value    T-Matrix DP Code    A123
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    DENLAX/AUA    SS1Y1    FXP/S2    6
+    Book Flight X Months From Now    LAXDEN/AUA    SS1Y1    FXP/S3    6    4
+    Enter GDS Command    RMG/TRIGGER FOR APPROVAL
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery    APIS/SFPD
+    Click Panel    APIS/SFPD
+    Set Date Of Birth For Secure Flight Passenger Date    01/01/1990
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Verify On Hold Booking Reason Is Disabled    Awaiting Approval
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Customer References
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Itinerary Segment
+    Verify On Hold Booking Reason Is Checked    Awaiting Form of Payment
+    Tick Do Not Send Itinerary
+    Populate Fare Tab With Default Values    Fare 1    Canada and St. Pierre et Miquelon    Fully Flexible
+    Populate Fare Tab With Default Values    Fare 2    Canada and St. Pierre et Miquelon    Fully Flexible
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMG TRIGGER FOR APPROVAL
+    Verify Queue Remark Is Not Written    LONWL2220    062    015
+    Verify Queue Remark Is Written    FRAWL2378    070    004
+    Verify Queue Remark Is Written    PARWL210G    090    014
+    Verify OP Remark Is Written    FRAWL2378    70    4    AQUA QUEUING
+    Verify OP Remark Is Written    PARWL210G    90    14    PNR ON HOLD SEE REM//ARKS
+
+[AB CA] Verify that When Multi On Hold Reasons Are Selected, PNR Are Queue Correctly In the Other Follow Up Queue Groups And Not In Third Party Approval Queue
+    [Tags]    us6824    ca
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XI    RFCWTPTEST    ER
+    Book Flight X Months From Now    FRALON/AAF    SS1Y1    FXP    6
+    Enter GDS Command    RMG/TRIGGER FOR APPROVAL
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Verify On Hold Booking Reason Is Disabled    Awaiting Approval
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Checked    Awaiting Customer References
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Itinerary Segment
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Form of Payment
+    Tick Do Not Send Itinerary
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1    Canada and St. Pierre et Miquelon    Fully Flexible
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RMG TRIGGER FOR APPROVAL
+    Verify Queue Remark Is Not Written    LONWL2220    062    015
+    Verify Queue Remark Is Written    FRAWL2378    070    004
+    Verify Queue Remark Is Written    PARWL210G    090    014
+    Verify OP Remark Is Written    FRAWL2378    70    4    AQUA QUEUING
+    Verify OP Remark Is Written    PARWL210G    90    14    PNR ON HOLD SEE REM//ARKS
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify that the PE Displayed Correct UI For Air Fare, Delivery Panel And PNR Are Queue in Replicator and IRD
+    [Tags]    ca    US6818
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus 3rd Party Approval    Juarez    Rosalie
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now Without Pricing    CDGLHR/ABA    ss1y1    5
+    Book Flight X Months From Now    LHRCDG/ABA    ss1y1    fxp    5    3
+    Enter GDS Command    RMG/TRIGGER FOR IRD-LONWL2220/62C15-PARWL210G/70C4
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Center    AAAAAA
+    Set CDR Value    T-Matrix DP Code    A111
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Ticked
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+    Set Ticketing Date    3
+    Tick Receive Itinerary Checkbox
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs    Client Info
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    AQUA
+    Verify Specific Line Is Not Written In The PNR    RMG TRIGGER FOR IRD-LONWL2220/62C15-PARWL210G/70C4
+    Verify Queue Remark Is Written    LONWL2220    062    015
+    Verify Queue Remark Is Written    PARWL210G    070    004
+
+[AB CA] Verify that the PE Displayed Correct UI For Air Fare, Delivery Panel And PNR Are Queue in Replicator and IRD
+    [Tags]    ca    US6818
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    tte/all
+    Enter GDS Command    xi
+    Book Flight X Months From Now    FRALHR/AAF    ss1y1    fxp    5    3
+    Enter GDS Command    RMG/TRIGGER FOR IRD-LONWL2220/62C15
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Cost Center    AAAAAA
+    Set CDR Value    T-Matrix DP Code    A111
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Ticked
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+    Set Ticketing Date    3
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method Using Default Value
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs
+    Click Panel    Recap
+    Click Finish PNR    Amend Booking for IRD Trigger Remarks
+    Execute Simultaneous Change Handling    Amend Booking for IRD Trigger Remarks
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    AQUA
+    Verify Specific Line Is Not Written In The PNR    RMG/TRIGGER FOR IRD-LONWL2220/62C15
+    Verify Queue Remark Is Written    LONWL2220    062    015
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify that When Multi On Hold Reasons Are Selected, PNR Are Queue Correctly In the Other Follow Up Queue Groups And Not In Replicator
+    [Tags]    US6818    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus 3rd Party Approval    Juarez    Rosalie
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Center    AAAAAA
+    Set CDR Value    T-Matrix DP Code    A111
+    Click Update PNR
+    Book Flight X Months From Now Without Pricing    CDGLHR/ABA    ss1y1    5
+    Book Flight X Months From Now    LHRCDG/ABA    ss1y1    fxp    5    3
+    Enter GDS Command    RMG/TRIGGER FOR IRD-LONWL2220/62C15-PARWL210G/70C4
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Ticked
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    AQUA
+    Verify Specific Line Is Written In The PNR    RMG TRIGGER FOR IRD-LONWL2220/62C15-PARWL210G/70C4
+    Verify Queue Remark Is Not Written    LONWL2220    062    015
+    Verify Queue Remark Is Not Written    PARWL210G    070    004
+    Verify Queue Remark Is Written    LONWL2220    090    014
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A NB] Verify that the Power Express when connected to Amadeus is also adding Follow-Up queue type of "End New PNR" during New Booking
+    [Tags]    US6902    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    ES QA Team Amadeus
+    Wait Until Control Object Is Ready    [NAME:Insights]
+    Select GDS    amadeus
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ FR - Amadeus Sub1    Agnes    Syex
+    Click New Booking
+    Book One Way Flight X Months From Now    MNLSIN/APR    6
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Verify Queue Remark Is Written    PARWL210G    62    105    1
+    Click Clear All With Contact Tracking For Fr
+
+[1A AB] Verify that the Power Express when connected to Amadeus is also adding Follow-Up queue type of "End Existing PNR" during Amend Booking.
+    [Tags]    US6902    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Verify Queue Minder Details are Correct    PARWL210G    62    105    END NEW PNR
+    Click Finish PNR
+    Verify Queue Remark Is Written    PARWL210G    62    100    1
+    Click Clear All With Contact Tracking For Fr
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR    Send Itinerary
+
+verify OP Remark Is Not Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${description}
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTO
+    Comment    Verify Specific Line Is Written In The PNR    OP ${pcc}\/\d{2}\D{3}\/${queue_number}C${queue_category}\/${description}    true
+    Verify Specific Line Is Not Written In The PNR    OP ${pcc}\/${current_date}\/${queue_number}C${queue_category}\/${description}
+
+Set Date Of Birth For Secure Flight Passenger Date
+    [Arguments]    ${birthdate}
+    @{birthdate}    Split String    ${birthdate}    /
+    Click Control Button    [NAME:cdtpDateOfBirthSFPD]    ${title_power_express}
+    Send    ${birthdate[2]}    1
+    Send    {LEFT}
+    Send    ${birthdate[0]}    1
+    Send    {LEFT}
+    Send    ${birthdate[1]}    1
+    Sleep    1
+    Send    {TAB}
+    Sleep    1
+
+Amend Booking for IRD Trigger Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    tte/all
+    Enter GDS Command    xi
+    Book Flight X Months From Now    FRALHR/AAF    ss1y1    fxp    5    3
+    Enter GDS Command    RMG/TRIGGER FOR IRD-LONWL2220/62C15
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Center    AAAAAA
+    Set CDR Value    T-Matrix DP Code    A111
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Ticked
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+    Set Ticketing Date    3
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method Using Default Value
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs
+    Click Panel    Recap
+    Click Finish PNR    Amend Booking for IRD Trigger Remarks
+
+Verify Queue Minder Details are Correct
+    [Arguments]    ${queue_pcc}    ${queue_number}    ${queue_category}    ${queue_message}
+    Comment    ${actual_queue_date}    Get Control Text Value    [NAME:cdtpDate0]    ${title_power_express}
+    ${actual_queue_pcc}    Get Control Text Value    [NAME:ctxtPCC0]    ${title_power_express}
+    ${actual_queue_number}    Get Control Text Value    [NAME:ctxtQueue0]    ${title_power_express}
+    ${actual_queue_category}    Get Control Text Value    [NAME:ctxtCategory0]    ${title_power_express}
+    ${actual_queue_message}    Get Control Text Value    [NAME:ctxtMessage0]    ${title_power_express}
+    Comment    Verify Actual Value Matches Expected Value    ${actual_queue_date}    ${queue_date}
+    Verify Actual Value Matches Expected Value    ${actual_queue_pcc}    ${queue_pcc}
+    Verify Actual Value Matches Expected Value    ${actual_queue_number}    ${queue_number}
+    Verify Actual Value Matches Expected Value    ${actual_queue_category}    ${queue_category}
+    Verify Actual Value Matches Expected Value    ${actual_queue_message}    ${queue_message}
+    [Teardown]    Take Screenshot
+
+Click Clear All With Contact Tracking For Fr
+    Handle Contact Tracking Service For Fr
+    Click Clear All
+    Wait Until Control Object Is Ready    [NAME:Insights]
+    [Teardown]    Take Screenshot

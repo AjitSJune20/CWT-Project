@@ -1,0 +1,209 @@
+*** Settings ***
+Test Teardown     Take Screenshot On Failure
+Force Tags        multiple_product_group
+Resource          other_services.robot
+
+*** Test Cases ***
+[NB OS] Verify That Air And Hotel Itinerary, General And Accounting Remarks Are Written When FOP Is Credit Card
+    [Tags]    in    us2231
+    Create PNR Using Credit Card As FOP    IN    True    passive_air_segment=True    hotel_segment=True    fop_dropdown_value=PORTRAIT-A/AX***********0002/D1235-TEST-AX
+    Click Panel    Other Svcs
+    #Main Product: Hotel Prepaid INTL
+    Create Exchange Order Product And Vendor    Hotel pre paid- INTL    ACCOR    hotel pre paid intl    False    False    True
+    ...    Associated Charges    Vendor Info
+    Create Associated Product And Vendor    Insurance    Reliance Corporate Insurance    insurance
+    Click Add Button In EO Panel    Charges
+    #Main Product: Air BSP
+    Create Exchange Order Product And Vendor    Air BSp    UNITED AIRLINES    airbsp    True    True    False
+    ...    Vendor Info
+    Click MI Tab
+    Get Client Mi Control Details    airbsp
+    Generate Expected Client MI Remarks    airbsp
+    Click Add Button In EO Panel    Charges
+    Click Finish PNR
+    Click Panel    Other Svcs
+    Get Exchange Order Number Using Product    Air BSp
+    Get Exchange Order Number Using Product    Hotel pre paid- INTL
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    #Main Product: Air BSP
+    Verify Air Remarks Are Written In The PNR    Air BSp    B.S.P.DOMESTIC SALES    airbsp    PC0    V00900031    0203
+    ...    CX2    1    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airbsp    Air BSp    0203
+    ...    CX2    1    Vat    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Merchant Fee    PC40    V00800004    airbsp    Air BSp    0203
+    ...    CX2    1    Merchant Fee    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airbsp    Air BSp    0203
+    ...    CX2    4    Vat    True
+    Verify Non-Air Remarks Are Written In The PNR    Transaction Fee-Air Only    PC35    V00800001    airbsp    Air BSp    0203
+    ...    CX2    1    Transaction Fee-Air Only    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airbsp    Air BSp    0203
+    ...    CX2    4    Vat    True
+    Verify Non-Air Remarks Are Written In The PNR    Merchant Fee    PC40    V00800004    airbsp    Air BSp    0203
+    ...    CX2    1    Merchant Fee TF    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airbsp    Air BSp    0203
+    ...    CX2    4    Vat    True
+    Verify Non-Air Remarks Are Written In The PNR    Rebate    PC50    V00800003    airbsp    Air BSp    0203
+    ...    CX2    1    Rebate    True    True
+    #Main Product: Hotel Prepaid INTL
+    Verify Non-Air Remarks Are Written In The PNR    Hotel pre paid- INTL    PC24    V00100063    hotel pre paid intl    Hotel pre paid- INTL    3
+    ...    CX2    1    nonair
+    Verify Non-Air Remarks Are Written In The PNR    Merchant fee    PC40    V00800004    hotel pre paid intl    Hotel pre paid- INTL    3
+    ...    CX2    1    nonair_subfees
+    Verify Non-Air Remarks Are Written In The PNR    VAT    PC87    V00800011    hotel pre paid intl    Hotel pre paid- INTL    3
+    ...    CX2    2    nonair_subfees
+    #Assoc Product: Insurance
+    Verify Non-Air Remarks Are Written In The PNR    Insurance    PC9    V00600011    insurance    Hotel pre paid- INTL    03
+    ...    CX2    1    nonair
+    Verify Non-Air Remarks Are Written In The PNR    Merchant Fee    PC40    V00800004    insurance    Hotel pre paid- INTL    03
+    ...    CX2    1    nonair_subfees
+    Verify Non-Air Remarks Are Written In The PNR    VAT    PC87    V00800011    insurance    Hotel pre paid- INTL    03
+    ...    CX2    2    nonair_subfees
+
+[AB OS] Verify That Air And Hotel Itinerary, General And Accounting Remarks Are Written When FOP Is Cash
+    [Tags]    in    us2231
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Select Form Of Payment    Cash
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Other Svcs
+    Click Panel    Other Svcs
+    #Main Product: Air BSP
+    Click Amend Eo    ${eo_number_air bsp}
+    Click Charges Tab
+    Verify Form Of Payment Selected Is Displayed    Cash    default_control_counter=False
+    Click Back To List In Other Svcs
+    #Main Product: Hotel Prepaid INTL
+    Click Amend Eo    ${eo_number_hotel pre paid- intl}
+    Click Charges Tab
+    Verify Form Of Payment Selected Is Displayed    Cash    default_control_counter=False
+    Click Back To List In Other Svcs
+    Click Finish PNR
+    Click Panel    Other Svcs
+    Get Exchange Order Number Using Product    Air BSp
+    Get Exchange Order Number Using Product    Hotel pre paid- INTL
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    #Main Product: Air BSP
+    Verify Air Remarks Are Written In The PNR    Air BSp    B.S.P.DOMESTIC SALES    airbsp    PC0    V00900031    0203
+    ...    S    1    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airbsp    Air BSp    0203
+    ...    S    1    Vat    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Merchant Fee    PC40    V00800004    airbsp    Air BSp    0203
+    ...    S    1    Merchant Fee    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airbsp    Air BSp    0203
+    ...    S    4    Vat    True
+    Verify Non-Air Remarks Are Written In The PNR    Transaction Fee-Air Only    PC35    V00800001    airbsp    Air BSp    0203
+    ...    S    1    Transaction Fee-Air Only    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airbsp    Air BSp    0203
+    ...    S    4    Vat    True
+    Verify Non-Air Remarks Are Written In The PNR    Merchant Fee    PC40    V00800004    airbsp    Air BSp    0203
+    ...    S    1    Merchant Fee TF    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airbsp    Air BSp    0203
+    ...    S    4    Vat    True
+    Verify Non-Air Remarks Are Written In The PNR    Rebate    PC50    V00800003    airbsp    Air BSp    0203
+    ...    S    1    Rebate    True    True
+    #Main Product: Hotel Prepaid INTL
+    Verify Non-Air Remarks Are Written In The PNR    Hotel pre paid- INTL    PC24    V00100063    hotel pre paid intl    Hotel pre paid- INTL    3
+    ...    S    1    nonair
+    Verify Non-Air Remarks Are Written In The PNR    Merchant fee    PC40    V00800004    hotel pre paid intl    Hotel pre paid- INTL    3
+    ...    S    0    nonair_subfees
+    Verify Non-Air Remarks Are Written In The PNR    VAT    PC87    V00800011    hotel pre paid intl    Hotel pre paid- INTL    3
+    ...    S    1    nonair_subfees
+    #Assoc Product: Insurance
+    Verify Non-Air Remarks Are Written In The PNR    Insurance    PC9    V00600011    insurance    Hotel pre paid- INTL    03
+    ...    S    1    nonair
+    Verify Non-Air Remarks Are Written In The PNR    Merchant Fee    PC40    V00800004    insurance    Hotel pre paid- INTL    03
+    ...    S    0    nonair_subfees
+    Verify Non-Air Remarks Are Written In The PNR    VAT    PC87    V00800011    insurance    Hotel pre paid- INTL    03
+    ...    S    1    nonair_subfees
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB OS] Verify That Air And Car Itinerary, General And Accounting Remarks Are Written When FOP Is Cash
+    [Tags]    in    us2231
+    Create PNR Using Cash As FOP    IN    air_segment=True    car_segment=True
+    Click Panel    Other Svcs
+    #Main Product: Car Dom
+    Create Exchange Order Product And Vendor    Car DOM    AVIS    Car DOM    False    False    True
+    ...    Associated Charges    Vendor Info
+    Create Associated Product And Vendor    Meet & Greet    ROYAL SERVICES    meet&greet
+    Click Add Button In EO Panel    Charges
+    #Main Product: Air Conso-Dom
+    Create Exchange Order Product And Vendor    Air Conso-Dom    JET AIRWAYS    airconsodom    True    True    False
+    ...    Vendor Info
+    Click MI Tab
+    Get Client Mi Control Details    airconsodom
+    Generate Expected Client MI Remarks    airconsodom
+    Click Add Button In EO Panel    Charges
+    Click Finish PNR
+    Click Panel    Other Svcs
+    Get Exchange Order Number Using Product    Air Conso-Dom
+    Get Exchange Order Number Using Product    Car DOM
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    #Itinerary Remarks
+    Verify Other Services Itinerary Remarks Are Written In The PNR    Car DOM    2    Others
+    #General Remarks
+    Verify Other Services General Remarks Are Written in PNR    Air Conso-Dom    airconsodom
+    #Main Product: Air Conso-Dom
+    Verify Air Remarks Are Written In The PNR    Air Conso-Dom    JET AIRWAYS    airconsodom    PC2    V00900005    04
+    ...    S    1    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airconsodom    Air Conso-Dom    04
+    ...    S    1    Vat    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Transaction Fee-Air Only    PC35    V00800001    airconsodom    Air Conso-Dom    04
+    ...    S    1    Transaction Fee-Air Only    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airconsodom    Air Conso-Dom    04
+    ...    S    2    Vat    True
+    Verify Non-Air Remarks Are Written In The PNR    Rebate    PC50    V00800003    airconsodom    Air Conso-Dom    04
+    ...    S    1    Rebate    True    True
+    #Main Product: Car Dom
+    Verify Non-Air Remarks Are Written In The PNR    Car DOM    PC19    V00200008    Car DOM    Car DOM    02
+    ...    S    1    nonair
+    Verify Non-Air Remarks Are Written In The PNR    Merchant fee    PC40    V00800004    Car DOM    Car DOM    02
+    ...    S    1    nonair_subfees
+    Verify Non-Air Remarks Are Written In The PNR    VAT    PC87    V00800011    Car DOM    Car DOM    02
+    ...    S    2    nonair_subfees
+
+[AB OS] Verify That Air And Car Itinerary, General And Accounting Remarks Are Written When FOP Is Credit Card
+    [Tags]    in    us2231
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Select Form Of Payment    PORTRAIT-A/AX***********0002/D1235-TEST-AX
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Other Svcs
+    Click Panel    Other Svcs
+    #Main Product: Air BSP
+    Click Amend Eo    ${eo_number_air conso-dom}
+    Click Charges Tab
+    Verify Form Of Payment Selected Is Displayed    BTA CTCL VI/VI************7710/D0823    default_control_counter=False
+    Click Back To List In Other Svcs
+    #Main Product: Hotel Prepaid INTL
+    Click Amend Eo    ${eo_number_car dom}
+    Click Charges Tab
+    Verify Form Of Payment Selected Is Displayed    BTA CTCL VI/VI************7710/D0823    default_control_counter=False
+    Click Back To List In Other Svcs
+    Click Finish PNR
+    Click Panel    Other Svcs
+    Get Exchange Order Number Using Product    Air Conso-Dom
+    Get Exchange Order Number Using Product    Car DOM
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    #Itinerary Remarks
+    Verify Other Services Itinerary Remarks Are Written In The PNR    Car DOM    2    Others
+    #General Remarks
+    Verify Other Services General Remarks Are Written in PNR    Air Conso-Dom    airconsodom
+    #Main Product: Air Conso-Dom
+    Verify Air Remarks Are Written In The PNR    Air Conso-Dom    JET AIRWAYS    airconsodom    PC2    V00900005    02
+    ...    CX2    1    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airconsodom    Air Conso-Dom    02
+    ...    CX2    1    Vat    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Transaction Fee-Air Only    PC35    V00800001    airconsodom    Air Conso-Dom    02
+    ...    CX2    1    Transaction Fee-Air Only    True    True
+    Verify Non-Air Remarks Are Written In The PNR    Vat    PC87    V00800011    airconsodom    Air Conso-Dom    02
+    ...    CX2    2    Vat    True
+    Verify Non-Air Remarks Are Written In The PNR    Rebate    PC50    V00800003    airconsodom    Air Conso-Dom    02
+    ...    CX2    1    Rebate    True    True
+    #Main Product: Car Dom
+    Verify Non-Air Remarks Are Written In The PNR    Car DOM    PC19    V00200008    Car DOM    Car DOM    02
+    ...    CX2    1    nonair
+    Verify Non-Air Remarks Are Written In The PNR    Merchant fee    PC40    V00800004    Car DOM    Car DOM    02
+    ...    CX2    1    nonair_subfees
+    Verify Non-Air Remarks Are Written In The PNR    VAT    PC87    V00800011    Car DOM    Car DOM    02
+    ...    CX2    2    nonair_subfees
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

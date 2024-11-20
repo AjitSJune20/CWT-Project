@@ -1,0 +1,11 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Get Exchange Order Text
+    ${exchange_order_text}    Get Control Text Value    [NAME:ExhangeOrderNumberTextBox]
+    Set Test Variable    ${exchange_order_text}
+    [Return]    ${exchange_order_text}
+
+Click Cancel
+    Click Control Button    [NAME:CancelButton]

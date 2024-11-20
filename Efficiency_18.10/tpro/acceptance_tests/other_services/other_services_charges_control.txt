@@ -1,0 +1,914 @@
+*** Settings ***
+Resource          ../../../acceptance_tests/gds/gds_verification.txt
+
+*** Keywords ***
+Get Charges Field Values
+    [Arguments]    ${identifier}
+    Get Product
+    Get Vendor
+    Get Discount In Charges
+    Get Cost Amount In Charges
+    Get Commission In Charges
+    Get Gross Sell In Charges
+    Get VAT/GST Amount In Charges
+    Get Merchant Fee In Charges
+    Get Total Selling Price In Charges
+    Get Form Of Payment Type In Charges
+    Get Description In Charges
+    Get CWT Reference No (TK) In Charges
+    Get Vendor Reference No (GSA) In Charges
+    Get Other Related No (PO) In Charges
+    Run Keyword If    "${charges_fop_type}"=="Credit Card (CC)"    Get CC Type In Charges
+    Run Keyword If    "${charges_fop_type}"=="Credit Card (CC)"    Get Card Number In Charges
+    Run Keyword If    "${charges_fop_type}"=="Credit Card (CC)"    Get Expiry Month In Charges
+    Run Keyword If    "${charges_fop_type}"=="Credit Card (CC)"    Get Expiry Year In Charges
+    @{charges_list}    Create List    ${product}    ${vendor}    ${charges_discount}    ${charges_cost_amount}    ${charges_commission}
+    ...    ${charges_gross_sell}    ${charges_vatgst_amount}    ${charges_merchant_fee}    ${charges_total_selling_price}    ${charges_fop_type}    ${charges_description}
+    ...    ${charges_cwt_ref_no}    ${charges_vendor_ref_no}    ${charges_other_related_no}
+    @{charges_cc_list}    Run Keyword If    "${charges_fop_type}"=="Credit Card (CC)"    Create List    ${charges_cc_type}    ${charges_card_number}    ${charges_expiry_month}
+    ...    ${charges_expiry_year}
+    ${final_charges_list}    Combine Lists    ${charges_list}    ${charges_cc_list}
+    ${final_charges_list}    Remove Empty Value From List    ${final_charges_list}
+    Set Suite Variable    ${final_charges_list${identifier.lower()}}    ${final_charges_list}
+
+Get Airline OR Com Dollar
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_AirLineOrComTextBox    FALSE
+    ${airline_or_com_dollar}    Get Control Text Value    ${object}
+    Set Suite Variable    ${airline_or_com_dollar}
+
+Get Base Amount
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_BaseAmountLabel    FALSE
+    ${base_amount}    Get Control Text Value    ${object}
+    Set Suite Variable    ${base_amount}
+
+Get Base Fare
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_BaseFareTextBox    False
+    ${base_fare}    Get Control Text Value    ${object}
+    Set Suite Variable    ${base_fare}
+
+Get CC Expiry Date In Charges
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_ExpiryDateComboBox,Charges_ExpiryDatePicker    False
+    ${charges_cc_expiry_date}    Get Control Text Value    ${object}
+    Set Suite Variable    ${charges_cc_expiry_date}
+
+Get CWT Reference (TK) No In Charges
+    Get CWT Reference No1
+    Get CWT Reference No2
+    Get CWT Reference No3
+
+Get CWT Reference No1
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_CwtRefNo1TextBox    False
+    ${cwtrno1}    Get Control Text Value    ${object}
+    Set Suite Variable    ${cwtrno1}
+
+Get CWT Reference No2
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_CwtRefNo2TextBox    False
+    ${cwtrno2}    Get Control Text Value    ${object}
+    Set Suite Variable    ${cwtrno2}
+
+Get CWT Reference No3
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_CwtRefNo3TextBox    False
+    ${cwtrno3}    Get Control Text Value    ${object}
+    Set Suite Variable    ${cwtrno3}
+
+Get Charges Field Values For Air Products
+    [Arguments]    ${product}    ${identifier}
+    Get Vendor
+    ##Pricing Parameters
+    Get Pricing
+    Get Final Destination
+    Get Trip Type
+    Get UATP
+    Get FOP
+    Get CC Type In Charges
+    Get Card Number In Charges
+    Get CC Expiry Date In Charges
+    ##Related Details
+    Run Keyword If    "${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic"    Get CWT Reference (TK) No In Charges
+    Run Keyword If    "${product.lower()}" != "air bsp" and "${product.lower()}" != "air domestic"    Get Vendor Reference No (GSA) In Charges
+    Get Other Related No (PO) In Charges
+    Run Keyword If    "${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic"    Get Status Of Reissued Ticket
+    Run Keyword If    "${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic"    Get Issue In Exchange For
+    ## Fare Calculation
+    Get Base Fare
+    Get IATA Com Percentage
+    Get Airline OR Com Dollar
+    Get Client Discount Percentage
+    Get YQ Tax
+    Get Oth Taxes
+    Get Returnable OR
+    ##VAT/GST Fields
+    Get VAT/GST Percentage
+    ##First Merchant Fee OT Percentage
+    Get OT1 Percentage
+    Get OT2 Percentage
+    Get Merchant Fee Percentage
+    ##TF Fields
+    Get Fee
+    Get Override Status
+    Get Merchant Fee Percantage For TF
+    ##After Calculation
+    Get Base Amount
+    Get Total IATA Com
+    Get Total Returnable OR
+    Get Total Discount
+    Get Total Sell Fare
+    Get Total VAT/GST
+    Get Total Merchant Fee
+    Get Total Selling Fare In Charges
+    Get Total Taxes
+    ##Total Merchant Fee TF
+    Get Merchant Fee TF
+    Get Total Charge
+    @{charges_condition_list1}    Run Keyword If    "${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic"    Create List    ${cwtrno1}    ${cwtrno2}    ${cwtrno3}
+    ...    ${charges_reissued_ticket_status}    ${issue_in_exchange_for}
+    @{charges_condition_list1}    Run Keyword If    "${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic"    Remove Empty Value From List    ${charges_condition_list1}
+    @{charges_condition_list2}    Run Keyword If    "${product.lower()}" != "air bsp" and "${product.lower()}" != "air domestic"    Create List    ${charges_vendor_ref_no}
+    @{charges_condition_list2}    Run Keyword If    "${product.lower()}" != "air bsp" and "${product.lower()}" != "air domestic"    Remove Empty Value From List    ${charges_condition_list2}
+    @{charges_list}    Create List    ${product}    ${vendor}    ${pricing}    ${final_destination}    ${uatp}
+    ...    ${fop}    ${charges_other_related_no}    ${base_fare}    ${iata_com}    ${airline_or_com_dollar}    ${client_discount_percentage}
+    ...    ${yq_tax}    ${oth_tax1}    ${oth_tax_code1}    ${oth_tax2}    ${oth_tax_code2}    ${oth_tax3}
+    ...    ${oth_tax_code3}    ${returnable_or_percentage}    ${vat_gst}    ${merchant_fee_ot_percentage}    ${ot1_percentage}    ${ot2_percentage}
+    ...    ${fee}    ${override_status}    ${merchant_fee_percentage}    ${base_amount}    ${total_iata_com}    ${total_discount}
+    ...    ${total_selling_fare}    ${total_merchant_fee}    ${total_vat_gst}    ${total_sell_fare}    ${total_taxes}    ${merchant_fee_tf}
+    @{charges_list}    Remove Empty Value From List    ${charges_list}
+    @{charges_cc_list}    Run Keyword If    "${fop.lower()}"=="credit card (cc)"    Create List    ${charges_cc_type}    ${charges_card_number}    ${charges_cc_expiry_date}
+    ${final_charges_list}    Combine Lists    ${charges_list}    ${charges_cc_list}    ${charges_condition_list1}    ${charges_condition_list2}
+    ${final_charges_list}    Remove Empty Value From List    ${final_charges_list}
+    Set Suite Variable    ${final_charges_list${identifier.lower()}}    ${final_charges_list}
+
+Get Client Discount Percentage
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_ClientDiscountTextBox    FALSE
+    ${client_discount_percentage}    Get Control Text Value    ${object}
+    Set Suite Variable    ${client_discount_percentage}
+
+Get FOP
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_FormOfPaymentComboBox    False
+    ${fop}    Get Control Text Value    ${object}
+    Set Suite Variable    ${fop}
+
+Get Fee
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_FeeTextBox    False
+    ${fee}    Get Control Text Value    ${object}
+    Set Suite Variable    ${fee}
+
+Get Final Destination
+    ${final_destination}    Get Control Text Value    [NAME:Charges_FinalDestinationComboBox]
+    Set Suite Variable    ${final_destination}
+
+Get Final Destination From AirSegments
+    [Documentation]    This Keyword Gets the Final Destination of the Air Segment Based up on the Last Air Segment
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RTA
+    Get Current Segments From The PNR
+    ${last_segment}    Get From List    ${segments_list}    -1
+    ${final_destination}    Get Substring    ${last_segment}    23    26
+    ${final_destination}    Strip String    ${final_destination}
+    Set Suite Variable    ${final_destination}
+
+Get IATA Com Percentage
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_IataComTextBox    FALSE
+    ${iata_com}    Get Control Text Value    ${object}
+    Set Suite Variable    ${iata_com}
+
+Get Issue In Exchange For
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_IssueInExchangeForTextBox    False
+    ${issue_in_exchange_for}    Get Control Text Value    ${object}
+    Set Suite Variable    ${issue_in_exchange_for}
+
+Get Merchant Fee Percantage For TF
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_MerchantFeeText2Box    FALSE
+    ${merchant_fee_percentage}    Get Control Text Value    ${object}
+    Set Suite Variable    ${merchant_fee_percentage}
+
+Get Merchant Fee Percentage
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_MerchantFee1TextBox    FALSE
+    ${merchant_fee_ot_percentage}    Get Control Text Value    ${object}
+    Set Suite Variable    ${merchant_fee_ot_percentage}
+
+Get Merchant Fee TF
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_MerchantFeeTfLabel    FALSE
+    ${merchant_fee_tf}    Get Control Text Value    ${object}
+    Set Suite Variable    ${merchant_fee_tf}
+
+Get OT1 Percentage
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_Ot1TextBox    FALSE
+    ${ot1_percentage}    Get Control Text Value    ${object}
+    Set Suite Variable    ${ot1_percentage}
+
+Get OT2 Percentage
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_Ot2TextBox    FALSE
+    ${ot2_percentage}    Get Control Text Value    ${object}
+    Set Suite Variable    ${ot2_percentage}
+
+Get Oth Tax Code1
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTaxCode1TextBox    FALSE
+    ${oth_tax_code1}    Get Control Text Value    ${object}
+    Set Suite Variable    ${oth_tax_code1}
+
+Get Oth Tax Code2
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTaxCode2TextBox    FALSE
+    ${oth_tax_code2}    Get Control Text Value    ${object}
+    Set Suite Variable    ${oth_tax_code2}
+
+Get Oth Tax Code3
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTaxCode3TextBox    FALSE
+    ${oth_tax_code3}    Get Control Text Value    ${object}
+    Set Suite Variable    ${oth_tax_code3}
+
+Get Oth Taxes
+    Get Oth Taxes1
+    Get Oth Tax Code1
+    Get Oth Taxes2
+    Get Oth Tax Code2
+    Get Oth Taxes3
+    Get Oth Tax Code3
+
+Get Oth Taxes1
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTax1TextBox    FALSE
+    ${oth_tax1}    Get Control Text Value    ${object}
+    Set Suite Variable    ${oth_tax1}
+
+Get Oth Taxes2
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTax2TextBox    FALSE
+    ${oth_tax2}    Get Control Text Value    ${object}
+    Set Suite Variable    ${oth_tax2}
+
+Get Oth Taxes3
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTax3TextBox    FALSE
+    ${oth_tax3}    Get Control Text Value    ${object}
+    Set Suite Variable    ${oth_tax3}
+
+Get Override Status
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OverrideFeeCheckBox    FALSE
+    ${override_status}    Get Checkbox Status    ${object}
+    Set Suite Variable    ${override_status}
+
+Get Pricing
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_PricingComboBox    False
+    ${pricing}    Get Control Text Value    ${object}
+    Set Suite Variable    ${pricing}
+
+Get Returnable OR
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_ReturnableOrTextBox    FALSE
+    ${returnable_or_percentage}    Get Control Text Value    ${object}
+    Set Suite Variable    ${returnable_or_percentage}
+
+Get Status Of Reissued Ticket
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_ReissuedTicketCheckBox    False
+    ${charges_reissued_ticket_status}    Get Checkbox Status    ${object}
+    Set Suite Variable    ${charges_reissued_ticket_status}
+
+Get Total Charge
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_TotalChargeLabel    FALSE
+    ${total_charge}    Get Control Text Value    ${object}
+    Set Suite Variable    ${total_charge}
+
+Get Total Discount
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_TotalDiscountLabel    FALSE
+    ${total_discount}    Get Control Text Value    ${object}
+    Set Suite Variable    ${total_discount}
+
+Get Total IATA Com
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_TotalataComLabel    FALSE
+    ${total_iata_com}    Get Control Text Value    ${object}
+    Set Suite Variable    ${total_iata_com}
+
+Get Total Merchant Fee
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_TotalMerchantFeeLabel    FALSE
+    ${total_merchant_fee}    Get Control Text Value    ${object}
+    Set Suite Variable    ${total_merchant_fee}
+
+Get Total Returnable OR
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_TotalReturnableLabel    FALSE
+    ${total_returnable_or}    Get Control Text Value    ${object}
+    Set Suite Variable    ${total_returnable_or}
+
+Get Total Sell Fare
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_TotalSellFareLabel    FALSE
+    ${total_sell_fare}    Get Control Text Value    ${object}
+    Set Suite Variable    ${total_sell_fare}
+
+Get Total Selling Fare In Charges
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_TotalSellingFareLabel    FALSE
+    ${total_selling_fare}    Get Control Text Value    ${object}
+    Set Suite Variable    ${total_selling_fare}
+
+Get Total Taxes
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_TotalTaxesLabel    FALSE
+    ${total_taxes}    Get Control Text Value    ${object}
+    Set Suite Variable    ${total_taxes}
+
+Get Total VAT/GST
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_TotalVatGstLabel    FALSE
+    ${total_vat_gst}    Get Control Text Value    ${object}
+    Set Suite Variable    ${total_vat_gst}
+
+Get Trip Type
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_TripTypeComboBox    False
+    ${trip_type}    Get Control Text Value    ${object}
+    Set Suite Variable    ${trip_type}
+
+Get UATP
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_UatpComboBox    False
+    ${uatp}    Get Control Text Value    ${object}
+    Set Suite Variable    ${uatp}
+
+Get VAT/GST Percentage
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_VatGstTextBox    FALSE
+    ${vat_gst}    Get Control Text Value    ${object}
+    Set Suite Variable    ${vat_gst}
+
+Get YQ Tax
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_YqTaxTextBox    FALSE
+    ${yq_tax}    Get Control Text Value    ${object}
+    Set Suite Variable    ${yq_tax}
+
+Populate Charges Field For Air Products
+    [Arguments]    ${destination}    ${trip_type}    ${uatp}    ${cwt_reference_no1}    ${cwt_reference_no2}    ${cwt_reference_no3}
+    ...    ${reissued_ticket}    ${override_status}    ${other_related_po_no}    ${vendor_reference_gsa}    ${base_fare}    ${iata_com_percentage}
+    ...    ${airline_or_com_dollar}    ${yq_tax}    ${oth_taxes1}    ${oth_tax_code1}    ${merchant_fee_percentage}=${EMPTY}    ${fee}=${EMPTY}
+    ...    ${issue_in_exchange_for}=${EMPTY}    ${oth_taxes2}=${EMPTY}    ${oth_tax_code2}=${EMPTY}    ${oth_taxes3}=${EMPTY}    ${oth_tax_code3}=${EMPTY}
+    [Documentation]    CWT Reference Numbers Default to ${EMPTY}, If value needed \ then pass three values for CWT Reference Keyword
+    ...    ${cwt_reference_no1}==${EMPTY}
+    ...    ${cwt_reference_no2}${EMPTY}
+    ...    ${cwt_reference_no3}${EMPTY}
+    ...
+    ...    Vendor Reference No (GSA) --This Text field is visible for only some of the air products , \ Default is set to EMPTY, If value needed for this field then pass value in the population of the keyword
+    ...    ${vendor_reference_gsa}=${EMPTY}
+    ...    With Value==>${vendor_reference_gsa}=Ex: Reference GSA
+    ...
+    ...    Final Destination= Pass the exact \ value based upon airline ticket booking
+    ...
+    ...    Merchant Fee=Default Value should be EMPTY, If any value need for percentage just override ${merchant_fee_percentage}="some value"
+    Select Final Destination    ${destination}
+    Select Trip Type    ${trip_type}
+    Select UATP    ${uatp}
+    Run Keyword If    "${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic"    Set CWT Reference No    ${cwt_reference_no1}    ${cwt_reference_no2}    ${cwt_reference_no3}
+    Run Keyword If    "${product.lower()}" != "air bsp" and "${product.lower()}" != "air domestic"    Set Vendor Reference No (GSA) In Charges    ${vendor_reference_gsa}
+    Set Other Related (PO) No    ${other_related_po_no}
+    Run Keyword If    ("${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic") and ('${reissued_ticket.lower()}'=='true')    Tick Reissued Ticket Checkbox    ${reissued_ticket}
+    Run Keyword If    ("${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic") and ('${reissued_ticket.lower()}'=='true')    Set Issue In Exchange For    ${issue_in_exchange_for}
+    Set Base Fare    ${base_fare}
+    Set IATA Com Percentage    ${iata_com_percentage}
+    Set Airline OR Com Dollar    ${airline_or_com_dollar}
+    Set YQ Tax    ${yq_tax}
+    Set Oth Taxes    ${oth_taxes1}    ${oth_tax_code1}    ${oth_taxes2}    ${oth_tax_code2}    ${oth_taxes3}    ${oth_tax_code3}
+    Tick Override Status    ${override_status}
+    Set Merchant Fee Percentage In Charges    ${merchant_fee_percentage}
+    Run Keyword If    '${override_status.lower()}'=='true'    Set Fee    ${fee}
+
+Select Final Destination
+    [Arguments]    ${destination}
+    Wait Until Control Object Is Visible    [NAME:Charges_FinalDestinationComboBox]
+    Select Value From Dropdown List    [NAME:Charges_FinalDestinationComboBox]    ${destination}
+
+Select Trip Type
+    [Arguments]    ${trip_type}
+    [Documentation]    Input:
+    ...
+    ...    Domestic- If it is Domestic trip Select Domestic to the field
+    ...
+    ...    International - If it is International trip Select International to the field
+    Wait Until Control Object Is Visible    [NAME:Charges_TripTypeComboBox]
+    Select Value From Dropdown List    [NAME:Charges_TripTypeComboBox]    ${trip_type}
+
+Select UATP
+    [Arguments]    ${uatp}
+    [Documentation]    Input:
+    ...
+    ...    This should be passed based upon the requirement
+    ...
+    ...
+    ...    1.Full Passthrough
+    ...    2.Non Passthrough
+    Wait Until Control Object Is Visible    [NAME:Charges_UatpComboBox]
+    Select Value From Dropdown List    [NAME:Charges_UatpComboBox]    ${uatp}
+
+Set Airline OR Com Dollar
+    [Arguments]    ${airline_or_com_dollar}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_AirLineOrComTextBox    False
+    Set Control Text Value    ${object}    ${airline_or_com_dollar}
+
+Set Base Fare
+    [Arguments]    ${base_fare}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_BaseFareTextBox    False
+    Set Control Text Value    ${object}    ${base_fare}
+
+Set CWT Reference No
+    [Arguments]    ${cwt_reference_no1}    ${cwt_reference_no2}    ${cwt_reference_no3}
+    Set CWT Reference No 1    ${cwt_reference_no1}
+    Set CWT Reference No 2    ${cwt_reference_no2}
+    Set CWT Reference No 3    ${cwt_reference_no3}
+
+Set CWT Reference No 1
+    [Arguments]    ${cwt_reference_no1}
+    Wait Until Control Object Is Visible    [NAME:Charges_CwtRefNo1TextBox]
+    Set Control Text Value    [NAME:Charges_CwtRefNo1TextBox]    ${cwt_reference_no1}
+
+Set CWT Reference No 2
+    [Arguments]    ${cwt_reference_no2}
+    Wait Until Control Object Is Visible    [NAME:Charges_CwtRefNo2TextBox]
+    Set Control Text Value    [NAME:Charges_CwtRefNo2TextBox]    ${cwt_reference_no2}
+
+Set CWT Reference No 3
+    [Arguments]    ${cwt_reference_no3}
+    Wait Until Control Object Is Visible    [NAME:Charges_CwtRefNo3TextBox]
+    Set Control Text Value    [NAME:Charges_CwtRefNo3TextBox]    ${cwt_reference_no3}
+
+Set FOP Type For Accounting Lines
+    ${fop_type}    Run Keyword If    "${fop}"=="Credit Card (CC)" and "${uatp}"=="Full Passthrough"    Set Variable    FCC
+    ...    ELSE IF    "${fop}"=="Credit Card (CC)" and "${uatp}"=="Non Passthrough" and "${charges_cc_type}"=="AX"    Set Variable    FCX2
+    ...    ELSE IF    "${fop}"=="Credit Card (CC)" and "${uatp}"=="Non Passthrough" and ("${charges_cc_type}"=="VI" or "${charges_cc_type}"=="CA")    Set Variable    FCX4
+    ...    ELSE IF    "${fop}"=="BTC"    Set Variable    FS
+    Set Suite Variable    ${fop_type}
+
+Set Fee
+    [Arguments]    ${fee}
+    Wait Until Control Object Is Visible    [NAME:Charges_FeeTextBox]
+    Set Control Text Value    [NAME:Charges_FeeTextBox]    ${fee}
+    Send    {TAB}
+
+Set IATA Com Percentage
+    [Arguments]    ${iata_com_percentage}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_IataComTextBox    False
+    Set Control Text Value    ${object}    ${iata_com_percentage}
+
+Set Merchant Fee Percentage In Charges
+    [Arguments]    ${merchant_fee_percentage}
+    Wait Until Control Object Is Visible    [NAME:Charges_MerchantFee1TextBox]
+    Set Control Text Value    [NAME:Charges_MerchantFee1TextBox]    ${merchant_fee_percentage}
+
+Set Oth Tax Code1
+    [Arguments]    ${oth_tax_code1}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTaxCode1TextBox    False
+    Set Control Text Value    ${object}    ${oth_tax_code1}
+
+Set Oth Tax Code2
+    [Arguments]    ${oth_tax_code2}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTaxCode2TextBox    False
+    Set Control Text Value    ${object}    ${oth_tax_code2}
+
+Set Oth Tax Code3
+    [Arguments]    ${oth_tax_code3}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTaxCode3TextBox    False
+    Set Control Text Value    ${object}    ${oth_tax_code3}
+
+Set Oth Taxes
+    [Arguments]    ${oth_taxes1}    ${oth_tax_code1}    ${oth_taxes2}=${EMPTY}    ${oth_tax_code2}=${EMPTY}    ${oth_taxes3}=${EMPTY}    ${oth_tax_code3}=${EMPTY}
+    Set Oth Taxes1    ${oth_taxes1}
+    Set Oth Tax Code1    ${oth_tax_code1}
+    Set Oth Taxes2    ${oth_taxes2}
+    Set Oth Tax Code2    ${oth_tax_code2}
+    Set Oth Taxes3    ${oth_taxes3}
+    Set Oth Tax Code3    ${oth_tax_code3}
+
+Set Oth Taxes1
+    [Arguments]    ${oth_taxes1}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTax1TextBox    False
+    Set Control Text Value    ${object}    ${oth_taxes1}
+
+Set Oth Taxes2
+    [Arguments]    ${oth_taxes2}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTax2TextBox    False
+    Set Control Text Value    ${object}    ${oth_taxes2}
+
+Set Oth Taxes3
+    [Arguments]    ${oth_taxes3}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OthTax3TextBox    False
+    Set Control Text Value    ${object}    ${oth_taxes3}
+
+Set Other Related (PO) No
+    [Arguments]    ${other_related_po_no}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_OtherRelatedNoPoTextBox    False
+    Set Control Text Value    ${object}    ${other_related_po_no}
+
+Set YQ Tax
+    [Arguments]    ${yq_tax}
+    ${object}    Determine Multiple Object Name Based On Active Tab    Charges_YqTaxTextBox    False
+    Set Control Text Value    ${object}    ${yq_tax}
+
+Tick Override Status
+    [Arguments]    ${override_status}
+    [Documentation]    Inputs:
+    ...
+    ...    true= To tick Override Checkbox. \ Override checkbox should be will be selected
+    ...
+    ...    false= To untick Override \ Checkbox. \ Override \ checkbox should be un-selected
+    ...
+    ...    By Default it should be Un Ticked.
+    Activate Power Express Window
+    ${overirde_status}    Determine Multiple Object Name Based On Active Tab    Charges_OverrideFeeCheckBox    False
+    ${is_checked} =    Get Checkbox Status    ${overirde_status}
+    Set Test Variable    ${is_checked}
+    Run Keyword If    '${is_checked.lower()}' == 'false' and '${override_status.lower()}' == 'true'    Tick Checkbox    ${overirde_status}
+    Run Keyword If    '${is_checked.lower()}' == 'true' and '${override_status.lower()}' == 'false'    Untick Checkbox    ${overirde_status}
+    Send    {TAB}
+
+Tick Reissued Ticket Checkbox
+    [Arguments]    ${reissued_ticket}
+    [Documentation]    Inputs:
+    ...
+    ...    true = To tick Reissued Ticket Checkbox. \ Reissued Ticket checkbox should be will be selected
+    ...
+    ...    false = To untick Reissued Ticket Checkbox. \ Reissued Ticket checkbox should be un-selected
+    ...
+    ...    By Default it should be Un Ticked.
+    Activate Power Express Window
+    ${reissued_ticket_lable}    Determine Multiple Object Name Based On Active Tab    Charges_ReissuedTicketCheckBox    False
+    ${is_checked}    Get Checkbox Status    ${reissued_ticket_lable}
+    Run Keyword If    "${is_checked.lower()}"=="false"and "${reissued_ticket.lower()}"=="true"    Tick Checkbox    ${reissued_ticket_lable}
+    Run Keyword If    "${is_checked.lower()}"=="true"and "${reissued_ticket.lower()}"=="false"    Untick Checkbox    ${reissued_ticket_lable}
+    Send    {TAB}
+
+Verify Default Value Airline Com Dollar
+    ${airline_or_com}    Get Control Text Value    [NAME:Charges_AirLineOrComTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${airline_or_com}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Base Amount
+    ${base_amount}    Get Control Text Value    [NAME:Charges_BaseAmountLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${base_amount}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Base Fare
+    ${base_fare}    Get Control Text Value    [NAME:Charges_BaseFareTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${base_fare}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of CC Type
+    [Arguments]    ${expected_cc_type}
+    ${actual_cc_type}    Get Control Text Value    [NAME:Charges_FopVendorComboBox]
+    Run Keyword And Continue On Failure    Should Be Equal    ${actual_cc_type}    ${expected_cc_type}
+
+Verify Default Value Of CWT Reference No
+    Verify Default Value Of CWT Reference No 1
+    Verify Default Value Of CWT Reference No 2
+    Verify Default Value Of CWT Reference No 3
+
+Verify Default Value Of CWT Reference No 1
+    ${cwt_refno1}    Get Control Text Value    [NAME:Charges_CwtRefNo1TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${cwt_refno1}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of CWT Reference No 2
+    ${cwt_refno2}    Get Control Text Value    [NAME:Charges_CwtRefNo2TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${cwt_refno2}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of CWT Reference No 3
+    ${cwt_refno3}    Get Control Text Value    [NAME:Charges_CwtRefNo3TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${cwt_refno3}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Card Number
+    [Arguments]    ${expected_cc_number}
+    ${actual_cc_number}    Get Control Text Value    [NAME:Charges_CardNumberTextBox]
+    Should Be Equal    ${actual_cc_number}    ${expected_cc_number}
+
+Verify Default Value Of Client Discount Percentage
+    ${client_discount_percentage}    Get Control Text Value    [NAME:Charges_ClientDiscountTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${client_discount_percentage}'!='100'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Expiry Date
+    [Arguments]    ${expected_expiry_year}
+    Get CC Expiry Date In Charges
+    Run Keyword And Continue On Failure    Should Be Equal    ${charges_cc_expiry_date}    ${expected_expiry_year}
+
+Verify Default Value Of FOP
+    [Arguments]    ${expected_fop_type}
+    Get FOP
+    Run Keyword And Continue On Failure    Should Be Equal    ${fop}    ${expected_fop_type}
+
+Verify Default Value Of Fee
+    ${fee}    Get Control Text Value    [NAME:Charges_FeeTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${fee}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Final Destination
+    Get Final Destination From AirSegments
+    Click Tab In Other Services Panel    Charges
+    ${destination}    Get Control Text Value    [NAME:Charges_FinalDestinationComboBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${destination}'!='${final_destination}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of IATA Com Percentage
+    ${iata_com}    Get Control Text Value    [NAME:Charges_IataComTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${iata_com}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Issue In Exchange For
+    ${issue_exchange_for}    Get Control Text Value    [NAME:Charges_IssueInExchangeForTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${issue_exchange_for}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Merchant Fee Percentage For TF
+    ${merchant_fee_percentage_tf}    Get Control Text Value    [NAME:Charges_MerchantFeeText2Box]
+    Run Keyword And Continue On Failure    Run Keyword If    '${merchant_fee_percentage_tf}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Merchant Fee Percentage In OT
+    ${merchant_fee_percentage}    Get Control Text Value    [NAME:Charges_MerchantFee1TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${merchant_fee_percentage}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Merchant Fee TF
+    ${merchant_fee_tf}    Get Control Text Value    [NAME:Charges_MerchantFeeTfLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${merchant_fee_tf}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of OT1 Percentage
+    [Arguments]    ${expected_ot1_percentage}
+    ${actual_ot1_percentage}    Get Control Text Value    [NAME:Charges_Ot1TextBox]
+    Should Be Equal    ${actual_ot1_percentage}    ${expected_ot1_percentage}
+
+Verify Default Value Of OT2 Percentage
+    [Arguments]    ${expected_ot2_percentage}
+    ${actual_ot2_percentage}    Get Control Text Value    [NAME:Charges_Ot2TextBox]
+    Should Be Equal    ${actual_ot2_percentage}    ${expected_ot2_percentage}
+
+Verify Default Value Of Oth Tax Code 1
+    ${oth_tax_code_1}    Get Control Text Value    [NAME:Charges_OthTaxCode1TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${oth_tax_code_1}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Oth Tax Code 2
+    ${oth_tax_code_2}    Get Control Text Value    [NAME:Charges_OthTaxCode2TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${oth_tax_code_2}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Oth Tax Code 3
+    ${oth_tax_code_3}    Get Control Text Value    [NAME:Charges_OthTaxCode3TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${oth_tax_code_3}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Oth Taxes 1
+    ${oth_taxes1}    Get Control Text Value    [NAME:Charges_OthTax1TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${oth_taxes1}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Oth Taxes 2
+    ${oth_taxes2}    Get Control Text Value    [NAME:Charges_OthTax2TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${oth_taxes2}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Oth Taxes 3
+    ${oth_taxes3}    Get Control Text Value    [NAME:Charges_OthTax3TextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${oth_taxes3}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Override Status
+    ${override_status}    Get Checkbox Status    [NAME:Charges_OverrideFeeCheckBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${override_status.lower()}'!='false'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Pricing Other Related (PO) No
+    ${other_po_no}    Get Control Text Value    [NAME:Charges_OtherRelatedNoPoTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${other_po_no}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Returnable OR
+    ${returnable_or_percentage}    Get Control Text Value    [NAME:Charges_ReturnableOrTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${returnable_or_percentage}'!='100'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Status Of Reissued Ticket
+    ${reissued_ticket_status}    Get Checkbox Status    [NAME:Charges_ReissuedTicketCheckBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${reissued_ticket_status.lower()}'!='false'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Total Charge
+    ${total_charge}    Get Control Text Value    [NAME:Charges_TotalChargeLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${total_charge}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Total Discount
+    ${total_discount}    Get Control Text Value    [NAME:Charges_TotalDiscountLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${total_discount}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Total IATA Com
+    ${total_iata_com}    Get Control Text Value    [NAME:Charges_TotalataComLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${total_iata_com}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Total Merchant Fee
+    ${total_merchant_fee}    Get Control Text Value    [NAME:Charges_TotalMerchantFeeLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${total_merchant_fee}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Total Returnable OR
+    ${total_returnable_or}    Get Control Text Value    [NAME:Charges_TotalReturnableLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${total_returnable_or}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Total Sell Fare
+    ${total_sell_fare}    Get Control Text Value    [NAME:Charges_TotalSellFareLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${total_sell_fare}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Total Selling Fare In Charges
+    ${total_selling_fare}    Get Control Text Value    [NAME:Charges_TotalSellingFareLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${total_selling_fare}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Total Taxes
+    ${total_taxes}    Get Control Text Value    [NAME:Charges_TotalTaxesLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${total_taxes}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Total VAT/GST
+    ${total_vat_gst}    Get Control Text Value    [NAME:Charges_TotalVatGstLabel]
+    Run Keyword And Continue On Failure    Run Keyword If    '${total_vat_gst}'!='0'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Trip Type
+    [Arguments]    ${expected_trip_type}
+    [Documentation]    Input:
+    ...
+    ...    Domestic- If flight booked as Domestic
+    ...
+    ...    International- If flight booked as International
+    ${actual_trip_type}    Get Control Text Value    [NAME:Charges_TripTypeComboBox]
+    Should Be Equal    ${actual_trip_type}    ${expected_trip_type}
+
+Verify Default Value Of UATP
+    ${uatp}    Get Control Text Value    [NAME:Charges_UatpComboBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${uatp}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of VAT/GST Percentage
+    [Arguments]    ${expected_vat_gst}
+    ${actual_vat_gst}    Get Control Text Value    [NAME:Charges_VatGstTextBox]
+    Should Be Equal    ${actual_vat_gst}    ${expected_vat_gst}
+
+Verify Default Value Of Vendor Reference GSA No
+    ${vendor_reno}    Get Control Text Value    [NAME:Charges_VendorRefNoGsaTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${vendor_reno}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of YQ Tax
+    ${yq_tax}    Get Control Text Value    [NAME:Charges_YqTaxTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${yq_tax}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Values Of Charges Fields For Air Products
+    [Arguments]    ${expected_trip_type}    ${expected_fop_type}    ${expected_cc_type}    ${expected_cc_number}    ${expected_expiry_year}
+    [Documentation]    ${expected_fop_type} | ${expected_cc_type} | ${expected_cc_number} | ${expected_expiry_year}
+    ...
+    ...
+    ...    ${expected_fop_type}== \ Cash
+    ...    then pass
+    ...    ${expected_cc_type} | ${expected_cc_number} | ${expected_expiry_year} ==${EMPTY} values,
+    ...    If It is CC then Pass CC Values whatever we passed in the intial booking flow.
+    ...    In Amend Booking If we change the values regarding FOP then update the latest values acccording to FOP type.Including all Values
+    Verify Default Value Of Final Destination
+    Verify Default Value Of Trip Type    ${expected_trip_type}
+    Verify Default Value Of UATP
+    Verify Default Value Of FOP    ${expected_fop_type}
+    Verify Default Value Of CC Type    ${expected_cc_type}
+    Verify Default Value Of Card Number    ${expected_cc_number}
+    Verify Default Value Of Expiry Date    ${expected_expiry_year}
+    Run Keyword If    "${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic"    Verify Default Value Of CWT Reference No
+    Run Keyword If    "${product.lower()}" != "air bsp" and "${product.lower()}" != "air domestic"    Verify Default Value Of Vendor Reference GSA No
+    Verify Default Value Of Pricing Other Related (PO) No
+    Run Keyword If    "${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic"    Verify Default Value Of Status Of Reissued Ticket
+    Run Keyword If    "${product.lower()}"=="air bsp" or "${product.lower()}"=="air domestic"    Verify Default Value Of Issue In Exchange For
+    ## Fare Calculation
+    Verify Default Value Of Base Fare
+    Verify Default Value Of IATA Com Percentage
+    Verify Default Value Airline Com Dollar
+    Verify Default Value Of Client Discount Percentage
+    Verify Default Value Of YQ Tax
+    Verify Default Values Of Oth Taxes
+    Verify Default Value Of Returnable OR
+ 
+    Get Charges Product Code And GST And OT1 And OT2    ${product}
+    Verify Default Value Of VAT/GST Percentage    ${gst}
+    Verify Default Value Of OT1 Percentage    ${ot1}
+    Verify Default Value Of OT2 Percentage    ${ot2}
+    Verify Default Value Of Merchant Fee Percentage In OT
+    Verify Default Value Of Fee
+    Verify Default Value Of Override Status
+    Verify Default Value Of Merchant Fee Percentage For TF
+    Verify Default Value Of Base Amount
+    Verify Default Value Of Total IATA Com
+    Verify Default Value Of Total Returnable OR
+    Verify Default Value Of Total Discount
+    Verify Default Value Of Total Sell Fare
+    Verify Default Value Of Total VAT/GST
+    Verify Default Value Of Total Merchant Fee
+    Verify Default Value Of Total Selling Fare In Charges
+    Verify Default Value Of Total Taxes
+    Verify Default Value Of Merchant Fee TF
+    Verify Default Value Of Total Charge
+
+Verify Default Values Of Oth Taxes
+    Verify Default Value Of Oth Taxes 1
+    Verify Default Value Of Oth Tax Code 1
+    Verify Default Value Of Oth Taxes 2
+    Verify Default Value Of Oth Tax Code 2
+    Verify Default Value Of Oth Taxes 3
+    Verify Default Value Of Oth Tax Code 3
+
+Verify Base Amount Calculation
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${expected_base_amount}    Round Apac    ${base_fare}    IN
+    ${base_amount}    Convert To Integer    ${base_amount}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_base_amount}    ${base_amount}
+
+Verify Total IATA Com Calculation
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${expected_total_iata_com}    Evaluate    ${base_amount}*(0.01*${iata_com})
+    ${expected_total_iata_com}    Round Apac    ${expected_total_iata_com}    IN
+    ${total_iata_com}    Convert To Integer    ${total_iata_com}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_total_iata_com}    ${total_iata_com}
+
+Verify Total Returnable OR Calculation When Airline OR Com is Cash
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${airline_or_com_dollar}    Set Variable If    "${airline_or_com_dollar}"=="${EMPTY}"    0    ${airline_or_com_dollar}
+    ${expected_total_returnable_or}    Evaluate    ${airline_or_com_dollar}*(0.01*${returnable_or_percentage})
+    ${expected_total_returnable_or}    Round Apac    ${expected_total_returnable_or}    IN
+    ${total_iata_com}    Convert To Integer    ${total_iata_com}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_total_returnable_or}    ${total_iata_com}
+
+Verify Total Returnable OR Calculation When Airline OR Com is Percentage
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${airline_or_com_dollar}    Set Variable If    "${airline_or_com_dollar}"=="${EMPTY}"    0    ${airline_or_com_dollar}
+    ${expected_total_returnable_or}    Evaluate    (${base_amount}-${total_iata_com})*(0.01*${airline_or_com_dollar})*(0.01*${returnable_or_percentage})
+    ${expected_total_returnable_or}    Round Apac    ${expected_total_returnable_or}    IN
+    ${total_returnable_or}    Convert To Integer    ${total_returnable_or}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_total_returnable_or}    ${total_returnable_or}
+
+Verify Total Discount Calculation
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${expected_total_discount}    Evaluate    ${total_returnable_or}+${total_iata_com}
+    ${expected_total_discount}    Round Apac    ${expected_total_discount}    IN
+    ${total_discount}    Convert To Integer    ${total_discount}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_total_discount}    ${total_discount}
+
+Verify Total Sell Fare Calculation
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${expected_total_sell_fare}    Round Apac    ${base_fare}    IN
+    ${total_sell_fare}    Convert To Integer    ${total_sell_fare}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_total_sell_fare}    ${total_sell_fare}
+
+Verify Total VAT/GST Calculation
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    Calculate VAT/GST
+
+Verify Total Merchant Fee Calculation
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${merchant_fee_percentage}    Set Variable If    "${merchant_fee_percentage}"=="${EMPTY}"    0    ${merchant_fee_percentage}
+    ${expected_total_merchant_fee}    Evaluate    (${total_sell_fare}+${total_vat_gst})*(0.01*${merchant_fee_percentage})
+    ${expected_total_merchant_fee}    Round Apac    ${expected_total_merchant_fee}    IN
+    ${total_merchant_fee}    Convert To Integer    ${total_merchant_fee}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_total_merchant_fee}    ${total_merchant_fee}
+
+Verify Total Selling Fare Calculation
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${expected_total_selling_fare}    Evaluate    (${base_amount}+${total_merchant_fee}+${total_vat_gst})-${total_discount}
+    ${expected_total_selling_fare}    Round Apac    ${expected_total_selling_fare}    IN
+    ${total_selling_fare}    Convert To Integer    ${total_selling_fare}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_total_selling_fare}    ${total_selling_fare}
+
+Verify Total Taxes Calculation
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${oth_tax1}    Set Variable If    "${oth_tax1}"=="${EMPTY}"    0    ${oth_tax1}
+    ${oth_tax2}    Set Variable If    "${oth_tax2}"=="${EMPTY}"    0    ${oth_tax2}
+    ${oth_tax3}    Set Variable If    "${oth_tax3}"=="${EMPTY}"    0    ${oth_tax3}
+    ${expected_total_taxes}    Evaluate    ${yq_tax}+${oth_tax1}+${oth_tax2}+${oth_tax3}
+    ${expected_total_taxes}    Round Apac    ${expected_total_taxes}    IN
+    ${total_taxes}    Convert To Integer    ${total_taxes}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_total_taxes}    ${total_taxes}
+
+Verify Merchant Fee (TF) Calculation
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${fee}    Set Variable If    "${fee}"=="${EMPTY}"    0    ${fee}
+    ${merchant_fee_percentage}    Set Variable If    "${merchant_fee_percentage}"=="${EMPTY}"    0    ${merchant_fee_percentage}
+    ${expected_merchant_fee_tf}    Evaluate    ${fee}*0.01*${merchant_fee_percentage}
+    ${expected_merchant_fee_tf}    Round Apac    ${expected_merchant_fee_tf}    IN
+    ${merchant_fee_tf}    Convert To Integer    ${merchant_fee_tf}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_merchant_fee_tf}    ${merchant_fee_tf}
+
+Verify Total Charge Calculation
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    ${fee}    Set Variable If    "${fee}"=="${EMPTY}"    0    ${fee}
+    ${expected_total_charge}    Evaluate    ${total_selling_fare}+${total_taxes}+${fee}+${merchant_fee_tf}
+    ${expected_total_charge}    Round Apac    ${expected_total_charge}    IN
+    ${total_charge}    Convert To Integer    ${total_charge}
+    Run Keyword And Continue On Failure    Should Be Equal    ${expected_total_charge}    ${total_charge}
+
+Verify Charges Field Calculations For Air Product
+    [Documentation]    Pre-requisite Keyword: Get Charges Field Values For Air Products
+    Verify Base Amount Calculation
+    Verify Total IATA Com Calculation
+    Comment    Verify Total Returnable OR Calculation When Airline OR Com is Cash
+    Verify Total Returnable OR Calculation When Airline OR Com is Percentage
+    Verify Total Discount Calculation
+    Verify Total Sell Fare Calculation
+    Verify Total VAT/GST Calculation
+    Verify Total Merchant Fee Calculation
+    Verify Total Selling Fare Calculation
+    Verify Total Taxes Calculation
+    Verify Merchant Fee (TF) Calculation
+    Verify Total Charge Calculation
+
+Calculate VAT/GST
+    ${computed_value_vat_gst}    Evaluate    (${total_sell_fare}+${yq_tax})*0.01*${vat_gst}
+    ${computed_value_vat_gst}    Round Apac    ${computed_value_vat_gst}    IN
+    ${computed_value_ot1}    Evaluate    (${total_sell_fare}+${yq_tax})*0.01*${ot1_percentage}
+    ${computed_value_ot1}    Round Apac    ${computed_value_ot1}    IN
+    ${computed_value_ot2}    Evaluate    (${total_sell_fare}+${yq_tax})*0.01*${ot2_percentage}
+    ${computed_value_ot2}    Round Apac    ${computed_value_ot2}    IN
+    ${expected_total_vat_gst}    Evaluate    ${computed_value_vat_gst}+${computed_value_ot1}+${computed_value_ot2}
+    ${expected_total_vat_gst}    Round Apac    ${expected_total_vat_gst}    IN
+    ${total_vat_gst}    Convert To Integer    ${total_vat_gst}
+    Comment    Run Keyword And Continue On Failure    Should Be Equal    ${expected_total_vat_gst}    ${total_vat_gst}
+    Set Suite Variable    ${computed_value_vat_gst}
+    Set Suite Variable    ${computed_value_ot1}
+    Set Suite Variable    ${computed_value_ot2}
+    [Return]    ${expected_total_vat_gst}
+
+Calculate FF99 Value In Charges
+    ${fee}    Set Variable If    "${fee}"=="${EMPTY}"    0    ${fee}
+    ${country} =    Set Variable    IN
+    ${gst_x} =    Set Variable    14
+    ${ot1_x} =    Set Variable    0.5
+    ${ot2_x} =    Set Variable    0.5
+    ${commision_x} =    Set Variable    0.01
+    ${fee_x} =    Set Variable    ${fee}
+    ${yq_tax_x} =    Set Variable    ${yq_tax}
+    ${value1}    Evaluate    ${fee_x} *${commision_x}*${gst_x}
+    ${value2}    Evaluate    ${fee_x} *${commision_x}*${ot1_x}
+    ${value3}    Evaluate    ${fee_x} *${commision_x}*${ot2_x}
+    ${value1}    Round Apac    ${value1}    ${country}
+    ${value2}    Round Apac    ${value2}    ${country}
+    ${value3}    Round Apac    ${value3}    ${country}
+    ${ff99_value}    Evaluate    ${value1}+${value2}+${value3}
+    Set Suite Variable    ${ff99_string}    ${gst_x}P${value1}*${ot1_x}P${value2}*${ot2_x}P${value3}
+    Set Suite Variable    ${ff99_value}

@@ -1,0 +1,31 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../../../sanity_tests/resource_sanity.txt
+Resource          ../client_info_verification.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Shell PNR Can Be Created Successfully
+    [Tags]    us455
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    galileo
+    Set Client And Traveler    Galileo Legacy - Auto ¦ US455    AutoLegacy    EmeaTrvlrOneZero
+    Click New Booking
+    Click Panel    Cust Refs
+    Verify Create Shell Is Visible And Enabled
+    Set CDR Value    PROJCODE    TEST
+    Create Shell PNR Via Keyboard Shortcut
+    Verify Create Shell Error Message
+    Click Panel    Cust Refs
+    Set CDR Value    PROJCODE    ${EMPTY}
+    Tick Not Known At Time Of Booking    TICK
+    Click Panel    Client Info
+    Verify All Panels Are Green
+    Click Create Shell
+    Verify Shell PNR Successfully Created
+    Retrieve PNR Details From Galileo    ${current_pnr}    *H
+    Verify Contact Information In RCVD From Field Exists    EMEATRVLRONEZEROAUTOLEGACY44-2-2-2
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Retention Line Exists    T \ ** \ TEXT ** \
+    Verify Ticketing Line In Remarks
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

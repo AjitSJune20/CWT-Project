@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        shell_pnr

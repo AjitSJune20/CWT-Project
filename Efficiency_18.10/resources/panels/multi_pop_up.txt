@@ -1,0 +1,15 @@
+*** Settings ***
+Documentation     This resource file covers all reusable actions for Recap Panel related test cases
+Resource          ../common/core.txt
+
+*** Keywords ***
+Set Multi Popup Textbox
+    [Arguments]    ${textbox_id}    ${textbox_value}    ${window_title}
+    Send Control Text Value    [NAME:TextBox${textbox_id}]    ${textbox_value}{TAB}    ${window_title}
+    [Return]    Take Screenshot
+
+Click Multi Popup OK Button
+    [Arguments]    ${window_title}
+    Click Control Button    [NAME:BtnOk]    ${window_title}
+    Wait Until Window Does Not Exists    ${window_title}    10
+    Wait Until Progress Info is Completed

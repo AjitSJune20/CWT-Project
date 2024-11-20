@@ -1,0 +1,84 @@
+*** Settings ***
+Resource          ../common/utilities.txt
+Resource          ../common/core.txt
+Variables         ../variables/policy_check_control_objects.py
+
+*** Keywords ***
+Populate Policy Check Panel With Default Values
+    [Arguments]    ${str_policy_status}=${EMPTY}
+    Wait Until Control Object Is Visible    [NAME:tlpPolicyCheck]
+    : FOR    ${index}    IN RANGE    0    10
+    \    ${is_field_visible} =    Control Command    ${title_power_express}    ${EMPTY}    ${cbo_policystatus${index}}    IsVisible
+    \    ...    ${EMPTY}
+    \    Exit For Loop If    ${is_field_visible} == 0
+    \    ${pc_policy_status} =    Control Get Text    ${title_power_express}    ${EMPTY}    ${cbo_policystatus${index}}
+    \    Run Keyword If    "${pc_policy_status}" == "${EMPTY}"    Click Panel    Policy Check
+    \    Run Keyword If    "${pc_policy_status}" == "${EMPTY}"    Control Click    ${title_power_express}    ${EMPTY}    ${cbo_policystatus${index}}
+    \    Run Keyword If    "${pc_policy_status}" == "${EMPTY}"    Send    {DOWN}{TAB}
+    [Teardown]    Take Screenshot
+
+Select Policy Status
+    [Arguments]    ${expected_policy_reason}    ${policy_status}
+    Wait Until Control Object Is Visible    [NAME:tlpPolicyCheck]
+    ${policy_dict}    Create Dictionary
+    : FOR    ${INDEX}    IN RANGE    0    10
+    \    ${is_control_visible}    Run Keyword And Return Status    Verify Control Object Is Visible    [NAME:clblPolicyReason${index}]
+    \    Comment    ${is_control_visible}    Control Command    ${title_power_express}    ${EMPTY}    [NAME:clblPolicyReason${index}]
+    \    ...    IsVisible    ${EMPTY}
+    \    Exit For Loop If    ${is_control_visible} == 0
+    \    ${actual_policy_reason}    Get Control Text Value    [NAME:clblPolicyReason${index}]
+    \    Set To Dictionary    ${policy_dict}    ${actual_policy_reason}    ${cbo_policystatus${index}}
+    Log    ${policy_dict}
+    ${policy_reason_field}    Get From Dictionary    ${policy_dict}    ${expected_policy_reason}
+    Select Value From Dropdown List    ${policy_reason_field}    ${policy_status}
+    Comment    Control Click    ${title_power_express}    ${EMPTY}    ${btn_GDScommand}    ${EMPTY}
+    [Teardown]    Take Screenshot
+
+Select Policy Status Using Index Number
+    [Arguments]    ${index_number}    ${policy_status}
+    Wait Until Control Object Is Visible    [NAME:tlpPolicyCheck]
+    Select Value From Dropdown List    ${cbo_policystatus${index_number}}    ${policy_status}
+    [Teardown]    Take Screenshot
+
+Get Numeric Value In Locator
+    [Arguments]    ${policy_reason_field}
+    ${number}    Get Substring    ${policy_reason_field}    22    23
+    Log    ${number}
+    ${number}    Convert To Integer    ${number}
+    [Return]    ${number}
+
+Select Policy Status By Name
+    [Arguments]    ${expected_policy_name}    ${policy_status}
+    Wait Until Control Object Is Visible    [NAME:tlpPolicyCheck]
+    ${policy_dict}    Create Dictionary
+    : FOR    ${INDEX}    IN RANGE    0    10
+    \    ${is_control_visible}    Run Keyword And Return Status    Verify Control Object Is Visible    [NAME:clblPolicySegmentData${index}]
+    \    Exit For Loop If    ${is_control_visible} == 0
+    \    ${actual_policy_name}    Get Control Text Value    [NAME:clblPolicySegmentData${index}]
+    \    Set To Dictionary    ${policy_dict}    ${actual_policy_name}    ${cbo_policystatus${index}}
+    Log    ${policy_dict}
+    ${policy_name_field}    Get From Dictionary    ${policy_dict}    ${expected_policy_name}
+    Select Value From Dropdown List    ${policy_name_field}    ${policy_status}
+    [Teardown]    Take Screenshot
+
+Verify Policy Is Displayed
+    [Arguments]    ${policy_name}    ${policy_type}    ${apply_search_pattern}=False
+    ${policy_status_row_number}    Get Policy Row Number    ${policy_name}    ${policy_type}    ${apply_search_pattern}
+    ${actual_policy_type}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblPolicyType${policy_status_row_number}]
+    Should Be Equal As Strings    ${policy_type}    ${actual_policy_type}
+    [Teardown]    Take Screenshot
+
+Get Policy Row Number
+    [Arguments]    ${policy_name}    ${policy_type}    ${apply_search_pattern}=False
+    : FOR    ${policy_row}    IN RANGE    10
+    \    ${actual_policy_name}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblPolicySegmentData${policy_row}]
+    \    ${actual_policy_type}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblPolicyType${policy_row}]
+    \    ${is_policy_name_equal}    Run Keyword And Return Status    Should Be Equal As Strings    ${policy_name}    ${actual_policy_name}
+    \    ${is_policy_type_equal}    Run Keyword If    "${apply_search_pattern}" == "True"    Run Keyword And Return Status    Should Match Regexp    ${actual_policy_type}
+    \    ...    ${policy_type}
+    \    ...    ELSE IF    "${apply_search_pattern}" == "False"    Run Keyword And Return Status    Should Be Equal As Strings    ${policy_type}
+    \    ...    ${actual_policy_type}
+    \    ${policy_status_row}    Run Keyword And Return If    ${is_policy_type_equal} == True and ${is_policy_type_equal} == True    Set Variable    ${policy_row}
+    \    Run Keyword If    ${is_policy_type_equal} == True and ${is_policy_type_equal} == True    Exit For Loop
+    \    ...    ELSE IF    ${is_policy_type_equal} == False and ${is_policy_type_equal} == False and ${policy_row} == 9    Fail    Cannot find combintaion of Policy Name: ${policy_name} and of Policy Reason: ${policy_type}
+    [Return]    ${policy_status_row}

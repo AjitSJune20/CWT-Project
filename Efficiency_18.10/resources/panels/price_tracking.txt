@@ -1,0 +1,340 @@
+*** Settings ***
+Resource          ../common/core.txt
+Resource          ../common/utilities.txt
+
+*** Keywords ***
+Click Booking Locator Button No PNR
+    Wait Until Control Object Is Visible    [NAME:btnSearchLocator]    \    true
+    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:btnSearchLocator]
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:btnSearchLocator]
+    Wait Until Progress Info is Completed
+    Wait Until Control Object Is Visible    [NAME:UGridBookings]    \    true
+    Sleep    1
+
+Enter PNR In Booking Locator
+    [Arguments]    ${pnr}
+    Wait Until Control Object Is Visible    [NAME:ctxtBookingLocator]    \    true
+    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:ctxtBookingLocator]
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:ctxtBookingLocator]
+    Control Set Text    ${title_power_express}    ${EMPTY}    [NAME:ctxtBookingLocator]    ${pnr}
+    Sleep    2
+
+Get Air Currency
+    ${air_currency}    Get Control Text Current Value    [NAME:ctxtAirCurrency]
+    Set Test Variable    ${air_currency}
+    [Return]    ${air_currency}
+
+Get Air New Ticketed Fare
+    ${air_new_ticketed_fare}    Get Control Text Current Value    [NAME:ctxtAirNewTicketedPrice]
+    Set Test Variable    ${air_new_ticketed_fare}
+    [Return]    ${air_new_ticketed_fare}
+
+Get Air No Action Free Text
+    ${air_no_action_free_text}    Get Control Text Current Value    [NAME:ctxtNoActionFreeText]
+    Set Test Variable    ${air_no_action_free_text}
+    [Return]    ${air_no_action_free_text}
+
+Get Air No Action Value
+    ${air_no_action_value}    Get Control Text Current Value    [NAME:ccboNoActionCode]
+    Set Test Variable    ${air_no_action_value}
+    [Return]    ${air_no_action_value}
+
+Get Air Original Fare
+    ${air_original_fare}    Get Control Text Current Value    [NAME:ctxtAirOriginalFare]
+    Set Test Variable    ${air_original_fare}
+    [Return]    ${air_original_fare}
+
+Get Air Penalty Fee
+    ${air_penalty_fee}    Get Control Text Current Value    [NAME:ctxtAirPenaltyFee]
+    Set Test Variable    ${air_penalty_fee}
+    [Return]    ${air_penalty_fee}
+
+Get Air Saving
+    ${air_saving}    Get Control Text Current Value    [NAME:ctxtAirSaving]
+    Set Test Variable    ${air_saving}
+    [Return]    ${air_saving}
+
+Get Air Ticket Number
+    ${air_ticket_number}    Get Control Text Current Value    [NAME:cboTicketList]
+    Set Test Variable    ${air_ticket_number}
+    [Return]    ${air_ticket_number}
+
+Get Air: No Action Details
+    Get Air Ticket Number
+    Get Air No Action Value
+    ${is_free_text_visible}    Is Control Visible    [NAME:ctxtNoActionFreeText]
+    Run Keyword If    ${is_free_text_visible} == True    Get Air No Action Free Text
+
+Get Air: Refund and Re-issue Details
+    Get Air Ticket Number
+    Get Air Currency
+    Get Air Original Fare
+    Get Air New Ticketed Fare
+    Get Air Penalty Fee
+    Get Air Saving
+    Get Refund Details
+
+Get Air: Void and Re-issue Details
+    Get Air Ticket Number
+    Get Air Currency
+    Get Air Original Fare
+    Get Air New Ticketed Fare
+    Get Air Penalty Fee
+    Get Air Saving
+
+Get Refund Details
+    ${air_total_fare}    Get Control Text Current Value    [NAME:ctxtRefundTotalFare]
+    ${air_tax_to_be_refunded}    Get Control Text Current Value    [NAME:ctxtRefundTaxRefunded]
+    ${air_penalty}    Get Control Text Current Value    [NAME:ctxtRefundPenalty]
+    ${air_total_for_refund}    Get Control Text Current Value    [NAME:ctxtRefundTotalforRefund]
+    Set Test Variable    ${air_total_fare}
+    Set Test Variable    ${air_tax_to_be_refunded}
+    Set Test Variable    ${air_penalty}
+    Set Test Variable    ${air_total_for_refund}
+    [Return]    ${air_total_fare}    ${air_tax_to_be_refunded}    ${air_penalty}    ${air_total_for_refund}
+
+Get Refund Penalty Value
+    ${refund_penalty_value}    Get Control Text Value    [NAME:ctxtRefundPenalty]
+    Set Test Variable    ${refund_penalty}    ${refund_penalty_value}
+    [Teardown]    Take Screenshot
+
+Get Refund Total Fare Value
+    ${refund_total_fare_value}    Get Control Text Value    [NAME:ctxtRefundTotalFare]
+    Set Test Variable    ${refund_total_fare}    ${refund_total_fare_value}
+    [Teardown]    Take Sreenshot
+
+Get Savings Value For Price Tracking Details
+    [Arguments]    ${price_tracking_process_option}
+    ${actual_saving_value}    Get Control Text Value    [NAME:ctxtAirSaving]
+    Set Test Variable    ${saving for ${price_tracking_process_option}}    ${actual_saving_value}
+    [Teardown]    Take Screenshot
+    [Return]    ${saving for ${price_tracking_process_option}}
+
+Get Value Of Total Refund Details
+    [Arguments]    ${expected_total_refund_value}
+    ${total_for_refund_field}    Determine Multiple Object Name Based On Active Tab    ctxtRefundTotalforRefund    False
+    ${actual_refund_value}    Get Control Text Value    ${total_for_refund_field}
+    Verify Text Contains Expected Value    ${actual_refund_value}    ${expected_total_refund_value}    True
+    [Teardown]    Take Screenshot
+
+Populate Air: No Action Details
+    [Arguments]    ${ticket_number}    ${no_action_value}    ${no_action_free_text}=${EMPTY}
+    Select Price Tracking Process    Air: No Action
+    Set Ticket Number Price Tracking    ${ticket_number}
+    Select No Action Value    ${no_action_value}
+    Run Keyword If    "${no_action_free_text}" !="${EMPTY}"    Set No Action Free Text    ${no_action_free_text}
+    [Teardown]    Take Screenshot
+
+Populate Air: Refund and Re-issue Details
+    [Arguments]    ${currency}    ${refund_ticket_value}    ${new_ticketed_fare}    ${penalty_fee}    ${tax_refund_value}    ${ticket_number}=${EMPTY}
+    Select Price Tracking Process    Air: Refund and Re-issue
+    Set Currency For Air    ${currency}
+    Set Original Fare Value    ${refund_ticket_value}
+    Set New Ticket Fare Value    ${new_ticketed_fare}
+    Set Penalty Fee    ${penalty_fee}
+    Set Tax To Refund    ${tax_refund_value}
+    Set Ticket Number Price Tracking    ${ticket_number}
+    [Teardown]    Take Screenshot
+
+Populate Air: Void and Re-issue Details
+    [Arguments]    ${currency}    ${original_fare_value}    ${ticket_fare_value}    ${penalty_fee_value}    ${ticket_number}=${EMPTY}
+    Select Price Tracking Process    Air: Void and Re-issue
+    Set Currency For Air    ${currency}
+    Set Original Fare Value    ${original_fare_value}
+    Set New Ticket Fare Value    ${ticket_fare_value}
+    Set Penalty Fee    ${penalty_fee_value}
+    Set Ticket Number Price Tracking    ${ticket_number}
+    [Teardown]    Take Screenshot
+
+Populate Hotel: Cancel and Re-book Details
+    [Arguments]    ${city_of_stay}    ${currency}    ${original_rate}    ${new_rate}
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Set Hotel City Of Stay    ${city_of_stay}
+    Set Currency For Hotel    ${currency}
+    Set Hotel Original Rate    ${original_rate}
+    Set Hotel New Rate    ${new_rate}
+    [Teardown]    Take Screenshot
+
+Populate Hotel: No Action Details
+    [Arguments]    ${no_action_value}    ${property_id}=${EMPTY}    ${hotel_rate_code}=${EMPTY}    ${no_action_free_text}=${EMPTY}
+    Select Price Tracking Process    Hotel: No Action
+    Select No Action Value    ${no_action_value}
+    Set Property ID    ${property_id}
+    Set Hotel Rate Code    ${hotel_rate_code}
+    Run Keyword If    "${no_action_free_text}" !="${EMPTY}"    Set No Action Free Text    ${no_action_free_text}
+    [Teardown]    Take Screenshot
+
+Select An Action Code
+    [Arguments]    ${action_code}
+    Verify Control Object Is Visible    [NAME:grpNoActionCode]
+    Select Value From Combobox    [NAME:ccboNoActionCode]    ${action_code}
+    Set Test Variable    ${action_code}
+    [Teardown]    Take Screenshot
+
+Select No Action Value
+    [Arguments]    ${no_action_value}
+    Select Value From Dropdown List    [NAME:ccboNoActionCode]    ${no_action_value}
+
+Select Price Tracking Process
+    [Arguments]    ${price_tracking_process}
+    Wait Until Control Object Is Visible    [NAME:grpPriceTrackingSelection]
+    Select Radio Button Value    ${price_tracking_process}
+
+Select Property ID
+    [Arguments]    ${property_id}
+    Select Value From Dropdown List    [NAME:cboTicketList]    ${property_id}
+
+Select Ticket List
+    [Arguments]    ${ticket_list}
+    Select Value From Dropdown List    [NAME:cboTicketList]    ${ticket_list}
+
+Set Currency For Air
+    [Arguments]    ${currency}
+    Set Control Text Value    [NAME:ctxtAirCurrency]    ${currency}
+    Set Test Variable    ${currency}
+
+Set Currency For Hotel
+    [Arguments]    ${currency}
+    Set Control Text Value    [NAME:ctxtHotelCurrency]    ${currency}
+    Set Test Variable    ${currency}
+
+Set Hotel City Of Stay
+    [Arguments]    ${set_city_of_stay}
+    Set Control Text Value    [NAME:ctxtHotelCityOfStay]    ${set_city_of_stay}
+    Send    {TAB}
+    ${city_of_stay_value}    Get Control Text Value    [NAME:ctxtHotelCityOfStay]
+    Set Test Variable    ${city_of_stay}    ${city_of_stay_value}
+    [Teardown]    Take Screenshot
+
+Set Hotel New Rate
+    [Arguments]    ${set_new_rate}
+    Set Control Text Value    [NAME:ctxtHotelNewRate]    ${set_new_rate}
+    Send    {TAB}
+    ${new_rate_value}    Get Control Text Value    [NAME:ctxtHotelNewRate]
+    Set Test Variable    ${new_rate}    ${new_rate_value}
+    [Teardown]    Take Screenshot
+
+Set Hotel Original Rate
+    [Arguments]    ${set_original_rate}
+    Set Control Text Value    [NAME:ctxtHotelOriginalRate]    ${set_original_rate}
+    Send    {TAB}
+    ${original_rate_value}    Get Control Text Value    [NAME:ctxtHotelOriginalRate]
+    Set Test Variable    ${original_rate}    ${original_rate_value}
+    [Teardown]    Take Screenshot
+
+Set Hotel Rate Code
+    [Arguments]    ${hotel_rate_code}
+    Set Control Text Value    [NAME:ctxtHotelRateCode]    ${hotel_rate_code}
+
+Set New Ticket Fare Value
+    [Arguments]    ${set_ticket_fare}
+    Set Control Text Value    [NAME:ctxtAirNewTicketedPrice]    ${set_ticket_fare}
+    Send    {TAB}
+    ${new_ticket_fare_value}=    Get Control Text Value    [NAME:ctxtAirNewTicketedPrice]
+    Set Test Variable    ${new_ticket_fare}    ${new_ticket_fare_value}
+    [Teardown]    Take Screenshot
+
+Set Original Fare Value
+    [Arguments]    ${set_original_fare}
+    Set Control Text Value    [NAME:ctxtAirOriginalFare]    ${set_original_fare}
+    Send    {TAB}
+    ${original_fare_value}=    Get Control Text Value    [NAME:ctxtAirOriginalFare]
+    Set Test Variable    ${original_fare}    ${original_fare_value}
+    [Teardown]    Take Screenshot
+
+Set Penalty Fee
+    [Arguments]    ${set_penalty_fee}
+    Set Control Text Value    [NAME:ctxtAirPenaltyFee]    ${set_penalty_fee}
+    Send    {TAB}
+    ${penalty_fee_value}    Get Control Text Value    [NAME:ctxtAirPenaltyFee]
+    Set Test Variable    ${penalty_fee}    ${penalty_fee_value}
+    [Teardown]    Take Screenshot
+
+Set Tax To Refund
+    [Arguments]    ${set_tax_refund}
+    Set Control Text Value    [NAME:ctxtRefundTaxRefunded]    ${set_tax_refund}
+    Send    {TAB}
+    ${tax_refund_value}    Get Control Text Value    [NAME:ctxtRefundTaxRefunded]
+    Set Test Variable    ${tax_refund}    ${tax_refund_value}
+    [Teardown]    Take Screenshot
+
+Set Ticket Number Price Tracking
+    [Arguments]    ${ticket_number}
+    Set Control Text Value    [NAME:cboTicketList]    ${ticket_number}
+    Send    {TAB}
+
+Click Remove From Future Price Track Checkbox
+    Tick Checkbox    [NAME:chkRemoveFromFuturePriceTracking]
+    Sleep    2
+
+Get Hotel City Of Stay
+    ${hotel_city}    Get Control Text Current Value    [NAME:ctxtHotelCityOfStay]
+    Set Test Variable    ${hotel_city}
+    [Return]    ${hotel_city}
+
+Get Hotel Currency
+    ${hotel_currency}    Get Control Text Current Value    [NAME:ctxtHotelCurrency]
+    Set Test Variable    ${hotel_currency}
+    [Return]    ${hotel_currency}
+
+Get Hotel Original Rate
+    ${hotel_original_rate}    Get Control Text Current Value    [NAME:ctxtHotelOriginalRate]
+    Set Test Variable    ${hotel_original_rate}
+    [Return]    ${hotel_original_rate}
+
+Get Hotel New Rate
+    ${hotel_new_rate}    Get Control Text Current Value    [NAME:ctxtHotelNewRate]
+    Set Test Variable    ${hotel_new_rate}
+    [Return]    ${hotel_new_rate}
+
+Get Hotel Saving
+    ${hotel_saving}    Get Control Text Current Value    [NAME:ctxtHotelSaving]
+    Set Test Variable    ${hotel_saving}
+
+Get Hotel: Cancel and Rebook details
+    Get Hotel City Of Stay
+    Get Hotel Currency
+    Get Hotel New Rate
+    Get Hotel Original Rate
+    Get Hotel Saving
+    Take Screenshot
+
+Get Hotel No Action Value
+    ${hotel_no_action_value}    Get Control Text Current Value    [NAME:ccboNoActionCode]
+    Set Test Variable    ${hotel_no_action_value}
+    [Return]    ${hotel_no_action_value}
+
+Get Hotel Property ID
+    ${hotel_property_id}    Get Control Text Current Value    [NAME:cboTicketList]
+    Set Test Variable    ${hotel_property_id}
+    [Return]    ${hotel_property_id}
+
+Get Hotel: No Action Details
+    Get Hotel No Action Value
+    Get Hotel Property ID
+    Get Hotel Rate Code
+    ${is_free_text_visible}    Is Control Visible    [NAME:ctxtNoActionFreeText]
+    Run Keyword If    ${is_free_text_visible} == True    Get Hotel No Action Free Text
+    [Teardown]    Take Screenshot
+
+Set No Action Free Text
+    [Arguments]    ${free_text}
+    Set Control Text    [NAME:ctxtNoActionFreeText]    ${free_text}
+
+Add Y Remarks In The PNR
+    Run Keyword If    "${GDS_switch}" == "sabre"    Enter GDS Command    5Y‡0011223344556 1 EWRBCN V P PUB L,U EUR436    5Y‡12345 \ 1K 259 \ USD \ 29SEP \ 3NT \ 1K 159, 2Q 166
+    ...    ELSE IF    "${GDS_switch}" == "amadeus"    Enter GDS Command    RM Y/0011223344556 1 EWRBCN V P PUB L,U EUR436    RM Y/12345 1K 259 USD 29SEP 3NT 1K 159, 2Q 166
+
+Get Hotel Rate Code
+    ${hotel_rate_code_value}    Get Control Text Current Value    [NAME:ctxtHotelRateCode]
+    Set Test Variable    ${hotel_rate_code_value}
+    [Return]    ${hotel_rate_code_value}
+
+Get Hotel No Action Free Text
+    ${hotel_no_action_free_text}    Get Control Text Current Value    [NAME:ctxtNoActionFreeText]
+    Set Test Variable    ${hotel_no_action_free_text}
+    [Return]    ${hotel_no_action_free_text}
+
+Set Property ID
+    [Arguments]    ${property_id}
+    Set Control Text Value    [NAME:cboTicketList]    ${property_id}

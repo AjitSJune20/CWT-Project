@@ -1,0 +1,108 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../../resources/common/global_resources.txt
+Resource          ../resource_sanity.txt
+
+*** Test Cases ***
+New Booking
+    Open Power Express And Retrieve Profile    ${version}    Pilot    U001NCB    en-GB    nbautistafr    EMEA QA Test Team
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values For Galileo    UK Galileo test Client ¦ Test SubUnit1    SMITH    LISA    MANAMS*KL    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Panel    Client Info
+    Run Keyword And Continue On Failure    Select Form Of Payment    VI************1111/D1221
+    Select Panel    Delivery
+    Sleep    5
+    Take Screenshot
+    Select Panel    Air Fare
+    Sleep    5
+    Take Screenshot
+    Select Panel    Recap
+    Run Keyword And Continue On Failure    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************1111/D1221
+    Run Keyword And Continue On Failure    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4111111111111111/D1221
+    Click Finish PNR
+    Retrieve PNR Details from Galileo    ${current_pnr}
+    Verify TET Code Line In Remarks    *0653*MUSS
+    Verify Specific Line Is Written In The PNR    HF*MERCHANT FEES-
+    Verify Specific Line Is Written In The PNR    BF-GBP.*:HC-C1 LC-A6 CL-YC DEST-AMS TK-ET INV-*    true
+    Verify SYEX GVS Line In Remarks    HA*SYEXGVS
+
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    AMSMAN*KL    01Y1    FQS3:NR    7
+    Enter GDS Command    FQS2:NR    FQS4:NR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Galileo
+    Retrieve PNR Details from Galileo    ${current_pnr}
+    Verify TET Code Line In Remarks    *0653*MUSS
+    Verify Specific Line Is Written In The PNR    HF*MERCHANT FEES-
+    Verify Specific Line Is Written In The PNR    BF-EUR.*:HC-C1 LC-A6 CL-YC DEST-MAN TK-ET INV-*    true
+    Verify SYEX GVS Line In Remarks    HA*SYEXGVS
+
+Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Send Itinerary For Galileo
+    Retrieve PNR Details from Galileo    ${current_pnr}
+    Verify TET Code Line In Remarks    *0653*MUSS
+
+Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Cancel Booking For Galileo
+    Retrieve PNR Details from Galileo    ${current_pnr}
+    Verify TET Code Line In Remarks    *0653*MUSS
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Create New Booking With One Way Flight Using Default Values For Galileo
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Click New Booking
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now For Galileo    ${city_pair}    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Book One Way Flight X Months From Now For Galileo
+    [Arguments]    ${city_pair}    ${number_of_month}
+    ${seat_select_command}    Set Variable If    '${GDS_switch}' == 'amadeus'    SS1Y1    01Y1
+    ${store_fare_command}    Set Variable If    '${GDS_switch}' == 'sabre'    WPRQ    '${GDS_switch}' == 'amadeus'    FXP    '${GDS_switch}' == 'apollo'
+    ...    T:$B    '${GDS_switch}' == 'galileo'    FQ:NR
+    Book Flight X Months From Now    ${city_pair}    ${seat_select_command}    ${store_fare_command}    ${number_of_month}
+
+Amend Booking For Galileo
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    AMSMAN*KL    01Y1    FQS3:NR    7
+    Enter GDS Command    FQS2:NR    FQS4:NR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+
+Send Itinerary For Galileo
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+
+Cancel Booking For Galileo
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR

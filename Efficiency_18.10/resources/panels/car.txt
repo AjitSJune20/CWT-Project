@@ -1,0 +1,352 @@
+*** Settings ***
+Resource          ../common/utilities.txt
+Resource          ../../Resources/Gds/amadeus.txt
+Resource          ../../Resources/Common/core.txt
+
+*** Keywords ***
+Click Car Tab
+    [Arguments]    ${car_tab}    ${identifier}=${EMPTY}
+    Run Keyword If    "${identifier}"!="${EMPTY}"    Set Test Variable    ${car_tab}    ${car_city${identifier}} - ${car_departure_date${identifier}}
+    Select Tab Control    ${car_tab}
+    ${car_index} =    Fetch From Right    ${car_tab}    ${SPACE}
+    Set Test Variable    ${car_index}
+    [Teardown]    Take Screenshot
+
+Get Car Associated Remarks
+    ${actual_car_assoc_remarks}    Get Control Text Current Value    [NAME:ctxtRemarks]
+    Set Suite Variable    ${actual_car_assoc_remarks}
+    Log    ${actual_car_assoc_remarks}
+
+Get Car Booking Method
+    ${actual_car_booking_method}    Get Control Text Current Value    [NAME:cbBookingMethod]
+    Set Suite Variable    ${actual_car_booking_method}
+    Log    ${actual_car_booking_method}
+
+Get Car Charged Rate
+    ${actual_car_charged_rate}    Get Control Text Current Value    [NAME:ctxtChargedFare]
+    Set Suite Variable    ${actual_car_charged_rate}
+    Log    ${actual_car_charged_rate}
+
+Get Car Commission
+    ${actual_car_commission}    Get Control Text Current Value    [NAME:ctxtCommission]
+    Set Suite Variable    ${actual_car_commission}
+    Log    ${actual_car_commission}
+
+Get Car Commissionable
+    ${actual_car_commissionable}    Get Control Text Current Value    [NAME:cbCommissionable]
+    Set Suite Variable    ${actual_car_commissionable}
+    Log    ${actual_car_commissionable}
+
+Get Car Currency
+    ${actual_car_currency}    Get Control Text Current Value    [NAME:txtCurrency]
+    Set Suite Variable    ${actual_car_currency}
+    Log    ${actual_car_currency}
+
+Get Car High Rate
+    ${actual_car_high_rate}    Get Control Text Current Value    [NAME:ctxtHighFare]
+    Set Suite Variable    ${actual_car_high_rate}
+    Log    ${actual_car_high_rate}
+
+Get Car Low Rate
+    ${actual_car_low_rate}    Get Control Text Current Value    [NAME:ctxtLowFare]
+    Set Suite Variable    ${actual_car_low_rate}
+    Log    ${actual_car_low_rate}
+
+Get Car Missed Savings Code
+    ${actual_car_missed_savings}    Get Control Text Current Value    [NAME:cbMissedSaving]
+    Set Suite Variable    ${actual_car_missed_savings}
+    Log    ${actual_car_missed_savings}
+
+Get Car Payment Type
+    ${actual_car_payment_type}    Get Control Text Current Value    [NAME:cbPaymentType]
+    Set Suite Variable    ${actual_car_payment_type}
+    Log    ${actual_car_payment_type}
+
+Get Car Rate Type
+    ${actual_car_rate_type}    Get Control Text Current Value    [NAME:cbRateType]
+    Set Suite Variable    ${actual_car_rate_type}
+    Log    ${actual_car_rate_type}
+
+Get Car Realised Savings Code
+    ${actual_car_realised_savings}    Get Control Text Current Value    [NAME:cbRealisedSaving]
+    Set Suite Variable    ${actual_car_realised_savings}
+    Log    ${actual_car_realised_savings}
+
+Get Car Tab Values
+    Activate Power Express Window
+    Get Car High Rate
+    Get Car Charged Rate
+    Get Car Low Rate
+    Get Car Currency
+    Get Car Rate Type
+    Get Car Realised Savings Code
+    Get Car Missed Savings Code
+    Get Car Payment Type
+    Get Car Commissionable
+    Get Car Commission
+    Get Car Booking Method
+    Get Car Associated Remarks
+
+Populate Car Tab With Values
+    [Arguments]    ${hi_rate}    ${lo_rate}    ${charged_rate}    ${realised_savings}    ${missed_savings}    ${payment_type}
+    ...    ${commissionable}    ${commission}    ${booking_method}    ${assoc_remarks}    ${rate_type}=${EMPTY}
+    Activate Power Express Window
+    Run Keyword Unless    '${hi_rate}'=='${EMPTY}'    Set Car High Rate    ${hi_rate}
+    Run Keyword Unless    '${lo_rate}'=='${EMPTY}'    Set Car Low Rate    ${lo_rate}
+    Run Keyword Unless    '${charged_rate}'=='${EMPTY}'    Set Car Charged Rate    ${charged_rate}
+    Select Car Realised Savings Code    ${realised_savings}
+    Run Keyword Unless    '${missed_savings}'=='${EMPTY}'    Select Car Missed Savings Code    ${missed_savings}
+    Select Payment Type    ${payment_type}
+    Select Commissionable    ${commissionable}
+    Run Keyword If    '${commissionable.upper()}'=='YES'    Set Car Commission    ${commission}
+    Select Car Booking Method    ${booking_method}
+    Set Car Associated Remarks    ${assoc_remarks}
+    Run Keyword Unless    '${rate_type}'=='${EMPTY}'    Select Car Rate Type    ${rate_type}
+    [Teardown]    Take Screenshot
+
+Select Car Booking Method
+    [Arguments]    ${booking_method}
+    ${is_visible}    Determine Control Object Is Visible On Active Tab    cbBookingMethod
+    Run Keyword If    ${is_visible}    Select Value From Dropdown List    [NAME:cbBookingMethod]    ${booking_method}
+    ...    ELSE    Log    "[NAME:cbBookingMethod]" is not visible    WARN
+
+Select Car Booking Method Simple
+    [Arguments]    ${booking_method}    ${select_by_index}=false
+    Select Value From Dropdown List    [NAME:cbBookingMethod]    ${booking_method}    \    ${select_by_index}
+
+Select Car Missed Savings Code
+    [Arguments]    ${missed_savings_code}
+    Select Value From Dropdown List    [NAME:cbMissedSaving]    ${missed_savings_code}
+
+Select Car Missed Savings Code By Index
+    [Arguments]    ${missed_savings_code}    ${select_by_index}=false
+    Select Value From Dropdown List    [NAME:cbMissedSaving]    ${missed_savings_code}    \    ${select_by_index}
+
+Select Car Rate Type
+    [Arguments]    ${payment_type_value}
+    Select Value From Dropdown List    [NAME:cbRateType]    ${payment_type_value}
+
+Select Car Realised Savings Code
+    [Arguments]    ${realised_savings_code}
+    Select Value From Dropdown List    [NAME:cbRealisedSaving]    ${realised_savings_code}
+
+Select Car Realised Savings Code By Index
+    [Arguments]    ${realised_savings_code}    ${select_by_index}=false
+    Select Value From Dropdown List    [NAME:cbRealisedSaving]    ${realised_savings_code}    \    ${select_by_index}
+
+Select Commissionable
+    [Arguments]    ${commissionable_value}
+    Select Value From Dropdown List    [NAME:cbCommissionable]    ${commissionable_value}
+
+Select Commissionable By Index
+    [Arguments]    ${commissionable_value}    ${select_by_index}=false
+    Select Value From Dropdown List    [NAME:cbCommissionable]    ${commissionable_value}    \    ${select_by_index}
+
+Select Payment Type
+    [Arguments]    ${payment_type_value}
+    Select Value From Dropdown List    [NAME:cbPaymentType]    ${payment_type_value}
+
+Select Payment Type By Index
+    [Arguments]    ${payment_type_value}    ${select_by_index}=false
+    Select Value From Dropdown List    [NAME:cbPaymentType]    ${payment_type_value}    \    ${select_by_index}
+
+Select Preferred Option
+    [Arguments]    ${preferred_value}
+    Select Value From Dropdown List    [NAME:cbPReffered]    ${preferred_value}
+
+Select Preferred Option By Index
+    [Arguments]    ${preferred_value}    ${select_by_index}=false
+    Select Value From Dropdown List    [NAME:cbPReffered]    ${preferred_value}    \    ${select_by_index}
+
+Select VAT
+    [Arguments]    ${vat_value}
+    Select Value From Dropdown List    [NAME:cbVat]    ${vat_value}
+
+Set Car Associated Remarks
+    [Arguments]    ${commission}
+    Set Control Text    [NAME:ctxtRemarks]    ${commission}
+
+Set Car Charged Rate
+    [Arguments]    ${charged_rate}
+    Set Control Text    [NAME:ctxtChargedFare]    ${charged_rate}
+
+Set Car Commission
+    [Arguments]    ${commission}
+    Set Control Text    [NAME:ctxtCommission]    ${commission}
+
+Set Car High Fare (If Blank) With Car Charged Fare
+    ${obj_charged_fare}    Determine Multiple Object Name Based On Active Tab    ctxtChargedFare
+    ${obj_high_fare}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    ${charged_fare}    Get Control Text Value    ${obj_charged_fare}
+    ${high_fare}    Get Control Text Value    ${obj_high_fare}
+    Run Keyword If    '${high_fare}' == '${EMPTY}' or '${high_fare}' < '${charged_fare}'    Set Control Text Value    ${obj_high_fare}    ${charged_fare}
+
+Set Car High Rate
+    [Arguments]    ${high_rate}
+    Set Control Text    [NAME:ctxtHighFare]    ${high_rate}
+
+Set Car Low Fare (If Blank) With Car Charged Fare
+    ${obj_charged_fare}    Determine Multiple Object Name Based On Active Tab    ctxtChargedFare
+    ${obj_low_fare}    Determine Multiple Object Name Based On Active Tab    ctxtLowFare
+    ${charged_fare}    Get Control Text Value    ${obj_charged_fare}
+    ${low_fare}    Get Control Text Value    ${obj_low_fare}
+    Run Keyword If    '${low_fare}' == '${EMPTY}' or '${low_fare}' > '${charged_fare}'    Set Control Text Value    ${obj_low_fare}    ${charged_fare}
+
+Set Car Low Rate
+    [Arguments]    ${low_rate}
+    Set Control Text    [NAME:ctxtLowFare]    ${low_rate}
+
+Select Booking Method In Car Panel
+    [Arguments]    ${expected _booking_method}
+    Select Value From Dropdown List    [NAME:cbBookingMethod]    ${expected _booking_method}
+
+Select Touch Level In Car Panel
+    [Arguments]    ${touch_level}
+    Select Value From Dropdown List    [NAME:cbTouchLevel]    ${touch_level}
+
+Get Active Car Segments
+    ${active_segment}    Get Lines Using Regexp    ${pnr_details}    (\\\s+\\\d\\\sCCR.*)
+    ${active_segment}    Split To Lines    ${active_segment}
+    ${active_segments}    Create List
+    : FOR    ${segment}    IN    @{active_segment}
+    \    @{before_slash}    Split String    ${segment}    /
+    \    Comment    ${active_1}    Split String    ${before_slash[0]}    ${SPACE}
+    \    Append To List    ${active_segments}    ${before_slash[0].replace("CCR","CAR")}    #${active_1[0]} ${active_1[1].replace("CCR","CAR")} ${active_1[2]}
+    Set Test Variable    ${active_segments}
+
+Get Current Car Segments
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTC    False
+    Log    ${pnr_details}
+    Get Active Car Segments
+    Get Passive Car Segments
+
+Get Passive Car Segments
+    ${passive_segment}    Get Lines Using Regexp    ${pnr_details}    (\\\s+\\\d\\\sCAR.*)
+    ${passive_segment}    Split To Lines    ${passive_segment}
+    ${passive_segments}    Create List
+    : FOR    ${segment}    IN    @{passive_segment}
+    \    @{before_slash}    Split String    ${segment}    /
+    \    Append To List    ${passive_segments}    ${before_slash[0]}
+    Set Test Variable    ${passive_segments}
+
+Populate Car Panel With Default Values
+    [Documentation]    Populates the Car Panel with some default values mentioned below. This keyword gets executed as a part of Populate All Panels With Default Panels, to exclude the execution pass 'Car' to Populate All Panels With Default Values Keyword.
+    ...
+    ...    Limitation: Tab names need to be unique. (CityCode - BookingDate, Either of CityCode or BookingDate has to be unique so that the tab names generated are unique to be determined by Get Tabs/Click Tab)
+    ...
+    ...    Default Values:
+    ...    | 500 - High Rate
+    ...    | 100 - Low Rate
+    ...    | 200 - Charged Rate
+    ...    | RF - RESTRICTED RATE ACCEPTED - Realised Saving
+    ...    | L - Lowest rate accepted - Missed Saving
+    ...    | 0 - Referral - Payment Type
+    ...    | No - Commisionable
+    ...    | ${EMPTY} - Commission
+    ...    | Manual - Booking Type
+    ...    | Associated Remarks - Associated Remarks
+    ...    | Daily - Rate Type
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTC    False
+    Get Current Car Segments
+    Click Panel    Car
+    @{car_tab_items}    Get Tab Items    tabCarFares    #[NAME:tabCarFares]
+    : FOR    ${tab}    IN    @{car_tab_items}
+    \    Click Car Fare Tab    ${tab}
+    \    Populate Car Tab With Default Values    500    100    200    RF - RESTRICTED RATE ACCEPTED    L - Lowest rate accepted
+    \    ...    0 - Referral    No    ${EMPTY}    Manual    Associated Remarks
+    \    ...    Daily
+
+Populate Car Panel With Available Values
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTC    False
+    Get Current Car Segments
+    Click Panel    Car
+    @{car_tab_items}    Get Tab Items    tabCarFares
+    : FOR    ${tab}    IN    @{car_tab_items}
+    \    Click Car Fare Tab    ${tab}
+    \    Populate Car Tab With Available Values    500    100    200    15    Associated Remarks
+    \    ...    Daily
+    Take Screenshot
+
+Click Car Fare Tab
+    [Arguments]    ${fare_tab_value}
+    Verify Car Fare Tab Is Visible    ${fare_tab_value}
+    Select Tab Control    ${fare_tab_value}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    Sleep    1
+
+Verify Car Fare Tab Is Visible
+    [Arguments]    @{fare_tab_name}
+    [Documentation]    Active and Passive Car segments retrieved by Get Car Segments Keyword.
+    Wait Until Control Object Is Visible    [NAME:tabCarFares]
+    ${car_tabs_pnr}    Create List
+    : FOR    ${each}    IN    @{active_segments}
+    \    ${tab_value}    Split String    ${each}    ${SPACE}
+    \    Append To List    ${car_tabs_pnr}    ${tab_value[4]} - ${tab_value[5]}
+    : FOR    ${each}    IN    @{passive_segments}
+    \    ${tab_value}    Split String    ${each}    ${SPACE}
+    \    ${seg_date}    Get String Matching Regexp    (\\\w{5}-)    ${tab_value[5]}
+    \    ${seg_date}    Replace String    ${seg_date}    -    ${EMPTY}
+    \    Append To List    ${car_tabs_pnr}    ${tab_value[4]} - ${seg_date}    #${tab_value[5[:5]]}
+    : FOR    ${fare_tab}    IN    @{fare_tab_name}
+    \    List Should Contain Value    ${car_tabs_pnr}    ${fare_tab}    ${fare_tab} should be visible
+
+Populate Car Tab With Default Values
+    [Arguments]    ${hi_rate}    ${lo_rate}    ${charged_rate}    ${realised_savings}    ${missed_savings}    ${payment_type}
+    ...    ${commissionable}    ${commission}    ${booking_method}    ${assoc_remarks}    ${rate_type}=${EMPTY}
+    [Documentation]    Used by Populate Car Panel With Default Values Keyword
+    Activate Power Express Window
+    Run Keyword Unless    '${hi_rate}'=='${EMPTY}'    Set Car High Rate    ${hi_rate}
+    Run Keyword Unless    '${lo_rate}'=='${EMPTY}'    Set Car Low Rate    ${lo_rate}
+    Run Keyword Unless    '${charged_rate}'=='${EMPTY}'    Set Car Charged Rate    ${charged_rate}
+    Select Car Realised Savings Code    ${realised_savings}
+    Run Keyword Unless    '${missed_savings}'=='${EMPTY}'    Select Car Missed Savings Code    ${missed_savings}
+    Select Payment Type    ${payment_type}
+    Select Commissionable    ${commissionable}
+    Run Keyword If    '${commissionable.upper()}'=='YES'    Set Car Commission    ${commission}
+    Select Car Booking Method    ${booking_method}
+    Set Car Associated Remarks    ${assoc_remarks}
+    Get Car Rate Type
+    Run Keyword If    '${actual_car_rate_type}'=='${EMPTY}'    Select Value From Dropdown List    [NAME:cbRateType]    ${rate_type}
+
+Populate Car Tab With Available Values
+    [Arguments]    ${hi_rate}    ${lo_rate}    ${charged_rate}    ${commission}    ${assoc_remarks}    ${rate_type}=${EMPTY}
+    [Documentation]    Used by Populate Car Panel With Default Values Keyword
+    Activate Power Express Window
+    Run Keyword Unless    '${hi_rate}'=='${EMPTY}'    Set Car High Rate    ${hi_rate}
+    Run Keyword Unless    '${lo_rate}'=='${EMPTY}'    Set Car Low Rate    ${lo_rate}
+    Run Keyword Unless    '${charged_rate}'=='${EMPTY}'    Set Car Charged Rate    ${charged_rate}
+    Select Car Realised Savings Code By Index    1    true
+    Select Car Missed Savings Code By Index    1    true
+    Select Payment Type By Index    1    true
+    Select Preferred Option By Index    1    true
+    Select Commissionable By Index    1    true
+    Set Car Commission    ${commission}
+    Select Car Booking Method Simple    1    true
+    Set Car Associated Remarks    ${assoc_remarks}
+    Get Car Rate Type
+    Select Value From Dropdown List    [NAME:cbRateType]    ${rate_type}
+
+Book Active Car Segment Simple
+    [Arguments]    ${location}    ${pdate_num}=2    ${pdays_num}=0    ${rdate_num}=2    ${rdays_num}=1    ${car_type}=ICAR
+    ...    ${car_index}=${EMPTY}
+    ${pickup_date} =    Set Departure Date X Months From Now In Gds Format    ${pdate_num}    ${pdays_num}
+    ${return_date} =    Set Departure Date X Months From Now In Gds Format    ${rdate_num}    ${rdays_num}
+    ${car_availability_command} =    Set Variable If    '${GDS_switch}' == 'amadeus'    CA${location}${pickup_date}-${return_date}/ARR-1000-1200/VT-${car_type}    '${GDS_switch}' == 'apollo' or '${GDS_switch}' == 'galileo'    CAL${pickup_date}-${return_date}${location}/ARR-2P/DT-2P    '${GDS_switch}' == 'sabre'
+    ...    CF${location}/${pickup_date}-${return_date}/0900-0900/ICAR
+    ${car_sell_command} =    Set Variable If    '${GDS_switch}' == 'amadeus'    CS1    '${GDS_switch}' == 'apollo' or '${GDS_switch}' == 'galileo'    01A1    '${GDS_switch}' == 'sabre'
+    ...    0C1
+    Enter GDS Command    ${car_availability_command}    ${car_sell_command}
+    Run Keyword If    "${car_index}" != "${EMPTY}"    Set Suite Variable    ${pickup_date_${car_index}}    ${pickup_date}
+
+Select New Missed Saving Code For Car
+    [Arguments]    ${index}
+    Select Car Missed Savings Code By Index    ${index}    true
+
+Generate CA Backoffice Car Remark
+    [Arguments]    ${pickup_month}    ${pickup_day}    ${pickup_city}
+    ${pickup_date} =    Set Departure Date X Months From Now In Gds Format    ${pickup_month}    ${pickup_day}
+    ${missed_saving_raw}=    Get Control Text Value    [NAME:cbMissedSaving]
+    ${missed_saving_code}=    Fetch From Left    ${missed_saving_raw}    ${SPACE}-
+    Comment    ${missed_saving_code}=    Strip String    ${missed_saving}
+    Set Suite Variable    ${backoffice_remark}    RM *CS${pickup_date}${pickup_city}/-SV-${missed_saving_code}

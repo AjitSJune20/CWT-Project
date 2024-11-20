@@ -1,0 +1,61 @@
+*** Settings ***
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify that T- will be written or deleted by Power Express when rules are triggered at both New Booking and Read Booking
+    [Tags]    us4846    apollo
+    Open Power Express And Retrieve Profile    ${version}    Test    U001RTM    en-US    rmartinez    NORAM QA
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 2 - SyEx ¦ 1V US4846 QA Test    Castro    Elisa
+    Select Client Account Value    U19XL ¦ "COVERITY, INC" ¦ 1V US4846 QA Test
+    Select Trip Type Value    Personal
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    P333
+    Set CDR Value    Reason for Travel    Training
+    Set CDR Value    T-Booking Date    030117
+    Set CDR Value    TS-Business Unit Name    ITDEV
+    Set CDR Value    T-Supervisor    WILL
+    Set CDR Value    Dept Name    ${empty}
+    Set CDR Value    SU Department Name    Test
+    Click Panel    Client Info
+    Click Update PNR
+    Retrieve PNR Details From Travelport
+    Verify Specific Line Is Written In The PNR    U88-LOREMIPSUMDOLORSITAMET,CONSECTETURADIPISCINGELIT.ALIQUAMVELI
+    Verify Specific Line Is Written In The PNR    U87-US4846TFIELD6NB
+    Verify Specific Line Is Not Written In The PNR    U99-AQUA
+    Verify Specific Line Is Not Written In The PNR    U27-ECT01
+    Book Flight X Months From Now    DENLAX+UA    01Y1    T:$BS1    6
+    Book Flight X Months From Now    LAXDEN+UA    01Y1    T:$BS2    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Cust Refs
+    Set CDR Value    Dept Name    ${empty}
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U86-US4846TFIELD7NB
+    Verify Specific Line Is Written In The PNR    U85-US4846TFIELD8NB
+    Verify Specific Line Is Not Written In The PNR    U12-TRAINING
+    Verify Specific Line Is Not Written In The PNR    U28-TEST//TEST.COM
+
+[AB] Verify that T- will be written or deleted by Power Express when rules are triggered at both Amend Booking and Read Booking
+    [Tags]    us4846    apollo
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Cust Refs
+    Set CDR Value    Dept Name    ${empty}
+    Set CDR Value    Reason for Travel    Training
+    Click Finish PNR
+    Retrieve PNR Details From Travelport
+    Verify Specific Line Is Written In The PNR    U84-SEDINCONDIMENTUMLOREM.VESTIBULUMNONIMPERDIETNUNC.SEDALIQUAMA
+    Verify Specific Line Is Written In The PNR    U83-US4846TFIELD6AB
+    Verify Specific Line Is Written In The PNR    U82-US4846TFIELD7AB
+    Verify Specific Line Is Written In The PNR    U81-US4846TFIELD8AB
+    Verify Specific Line Is Not Written In The PNR    U11-WILL
+    Verify Specific Line Is Not Written In The PNR    U87-US4846TFIELD6NB
+    Verify Specific Line Is Not Written In The PNR    G*BB/U14055
+    Verify Specific Line Is Not Written In The PNR    U85-US4846TFIELD8NB
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

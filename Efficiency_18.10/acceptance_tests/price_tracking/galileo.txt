@@ -1,0 +1,278 @@
+*** Settings ***
+Force Tags        galileo
+Resource          price_tracking_verification.txt
+Resource          ../database/database_verification.txt
+
+*** Test Cases ***
+[1G EMEA][PT] Verify That Loaded PNR In GDS Is Retrieved In Power Express Through Blank Search
+    [Tags]    galileo    emea    us2570    us5918    Us5917    not_ready
+    ...    us5929    us5919
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking Multiple Fare With Issue Ticket For Blank Search
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    Global - Price Tracking
+    Select GDS    Galileo
+    Verify Price Tracking Button Is Disabled
+    Verify Clear All Button Is Shown And Enabled
+    Display Team Selection Window
+    Select Team    Global - Price Tracking    UK AUTO GALILEO
+    Verify Non Price Tracking Team Is Selected
+    Display Team Selection Window
+    Select Team    Global - Price Tracking
+    Verify Price Tracking Team Is Selected
+    Retrieve PNR    ${pt_pnr}
+    Get Ticket From The Ticket List From PNR By Index    0
+    Enter GDS Command    NP.HY*0011223344556 1 EWRBCN V P PUB L,U EUR436    NP.HY*89991 XK 324 USD 12NOV 4NT XD 311
+    Click Price Tracking Via Shortcut Key
+    Verify That Traveller Tab Details Are Retained    Traveller/Contact
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    PRICETRACKING    AIR FARE    DELIVERY    RECAP
+    Verify Panel Is Green    CLIENT INFO    RECAP
+    Verify Panel Is Red    PRICETRACKING    DELIVERY    AIR FARE
+    Verify Panel Is Selected    PriceTracking
+    Verify Default Price Tracking Options
+    Verify Price Tracking Controls Present
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel: Cancel and Re-book UI Validation
+    Verify Hotel Cancel and Re-book Calculation    KUALA LUMPUR    GBP    2345    345    2000.00
+    Select Price Tracking Process    Air: Refund and Re-issue
+    Verify Air: Refund and Re-issue UI Validation    ${EMPTY}
+    Select Ticket List    ${ticket_number}
+    Verify Air Price Tracking Details Calculation    GBP    2546.780    235.080    45.255    2266.445
+    Verify Refund Details Calculation    501.52    2000.005
+    Select Price Tracking Process    Hotel: No Action
+    Verify Hotel: No Action UI Validation    89991
+    Select Price Tracking Process    Air: No Action
+    Verify Air: No Action UI Validation    0011223344556
+    Verify Clear All Pop-up Will Not Display Quick Workflows
+    Click Read Booking
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    PRICETRACKING    AIR FARE    DELIVERY    RECAP
+    Verify Panel Is Red    PRICETRACKING
+    Verify Panel Is Selected    PriceTracking
+    Verify Default Price Tracking Options
+    Select Price Tracking Process    Air: Void and Re-issue
+    Verify Air: Void and Re-issue UI Validation    ${EMPTY}
+    Verify Air Price Tracking Details Calculation    GBP    150    25    35.50    89.50
+    Select Ticket List    ${ticket_number}
+    [Teardown]    Click Clear All
+
+[1G EMEA][PT] Verify That Pricing Tracking Remarks Are Written
+    [Documentation]    Itin remarks
+    ...    General remarks
+    ...    Wings remark
+    ...    Handling fee remarks
+    ...    Queue minder
+    ...
+    ...    Pending Item: Cancel PNR with VOID ticket
+    [Tags]    US5922    not_ready    us5934    us5935
+    [Setup]
+    Activate Travelport Window
+    Enter Command In Native GDS    *${pt_pnr}
+    Activate Power Express Window
+    Click Booking Locator Button No PNR
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Void and Re-issue
+    Select Ticket List    0745942429260
+    Populate Air: Voidand Re-issue Details    EUR    500    400    10
+    Get Air: Void and Re-issue Details
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${pt_pnr}
+    Verify Price Tracking Handling Fee Remarks Is Written    Air    Wings
+    Verify Price Tracking Itinerary Remarks Are Written    Air: Void and Re-issue
+    Verify Price Tracking Generic Remarks Are Written    Air: Void and Re-issue
+    [Teardown]    Comment    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1G EMEA][PT] Verify That Pricing Tracking Remarks For Multiple Tickets In Air Refund And Re-issue Are Written
+    [Tags]    US5922    not_ready    us5934    us5935
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking Multiple Fare With Issue Ticket For Blank Search
+    Display Team Selection Window
+    Select Team    Global - Price Tracking
+    Retrieve PNR    ${pt_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Refund and Re-issue
+    Populate Air: Refund and Re-issue Details    EUR    600    450    100    5
+    Get Air: Refund and Re-issue Details
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Finish PNR
+    Verify Clear All Pop-up Will Not Display Quick Workflows
+    Retrieve PNR Details From Travelport    ${pt_pnr}
+    Verify Price Tracking Handling Fee Remarks Is Written    Air    Wings
+    Verify Price Tracking Itinerary Remarks Are Written    Air: Refund and Re-issue
+    Verify Price Tracking Generic Remarks Are Written    Air: Refund and Re-issue
+
+[1G EMEA][PT] Verify That Default Price Tracking Values Are Loaded And Saved For Realised Missed Savings And Class Code
+    [Tags]    galileo    emea    us6392    us6393
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values    Galileo Legacy - Auto ¦ Fare Remarks    AutoLegacy    EmeaTrvlrThree    MANAMS
+    Click Panel    Air Fare
+    Untick Fare Not Finalised
+    Populate Fare Tab With Default Values    Fare 1
+    Get Class Code Value    Fare 1
+    Click Finish PNR
+    Click Clear All
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    EMEA QA Price Tracking
+    Select GDS    Galileo
+    Retrieve PNR    ${pt_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    XX - No Saving
+    Verify Missed Savings Code Default Value    L - Lowest Fare Accepted
+    Verify Class Code Value Defaults To Previous Value    Fare 1
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Default Price Tracking Values
+    Retrieve PNR Details From Travelport    ${pt_pnr}
+    Verify Specific Line Is Written In The PNR    HC-XX LC-L
+    Verify Class Code Retained In PNR Wings Remarks    Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1G EMEA][PT] Verify that Client Info Panel is Disabled and Unable to End PNR Successfully when no FOP Selected for Hotel: Cancel and Rebook
+    [Documentation]    Service Option: Manadate FOP at End PNR
+    ...
+    ...    Value: Mandate with Onhold
+    [Tags]    US6646
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo Legacy - Auto ¦ Fare Remarks    AutoLegacy    EmeaTrvlrThree
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Create Shell
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    Client Info
+    Verify Not Known at Time of Booking is Unticked
+    Select Form Of Payment    ${EMPTY}
+    Click Panel    PriceTracking
+    Populate Hotel: Cancel and Re-book Details    Seattle    USD    2345    345
+    Verify Client Info Panel Is Disabled
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Click Panel    Recap
+    Verify Panel Is Red    Recap
+    Click Send To PNR
+    Comment    Wait Until Window Exists    [REGEXPTITLE:Progress Information|Information sur l'avancement]
+    Sleep    15
+    Verify Error(Expected) In Status Strip Text    Update Aborted - Please validate all activity panels
+
+[1G EMEA][PT] Verify that Client Info Panel is Disabled and Able to End PNR Successfully when no FOP Selected for Air: No Action
+    [Documentation]    Service Option: Manadate FOP at End PNR
+    ...
+    ...    Value: Mandate with Onhold
+    [Tags]    US6646
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo Legacy - Auto ¦ Fare Remarks    AutoLegacy    EmeaTrvlrThree
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Create Shell
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    Client Info
+    Verify Not Known at Time of Booking is Unticked
+    Select Form Of Payment    ${EMPTY}
+    Click Panel    PriceTracking
+    Populate Air: No Action Details    1234567890123    TA | Airline Waiver code received – unable to change itinerary/ticket
+    Verify Client Info Panel Is Disabled
+    Click Panel    Recap
+    Verify Panel Is Green    Recap
+    Click Finish PNR
+    Verify PNR Is Successfully Created    \    ...
+
+[1G EMEA][PT] Verify that Client Info Panel is Disabled and Able to End PNR Successfully when no FOP Selected for Hotel: No Action
+    [Documentation]    Service Option: Manadate FOP at End PNR
+    ...
+    ...
+    ...    Value: Mandate with Onhold
+    [Tags]    US6646    US6637
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo Legacy - Auto ¦ Fare Remarks    AutoLegacy    EmeaTrvlrThree
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Create Shell
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    Client Info
+    Verify Not Known at Time of Booking is Unticked
+    Select Form Of Payment    ${EMPTY}
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Verify Hotel Rate Code Field is Mandatory
+    Populate Hotel: No Action Details    BT | Client restricts change in the bedding type i.e. only allows King-Queens    12345    567890
+    Verify Client Info Panel Is Disabled
+    Click Panel    Recap
+    Verify Panel Is Green    Recap
+    Click Finish PNR
+    Verify PNR Is Successfully Created    \    ...
+
+*** Keywords ***
+Initialize Price Traking PNR
+    Set Test Variable    ${pt_pnr}    7T3XG2
+
+Get Ticket From The Ticket List From PNR By Index
+    [Arguments]    ${index}
+    Enter GDS Command    *${current_pnr}
+    Enter GDS Command    *HTE
+    ${data_clip}    Get Data From GDS Screen
+    Should Contain    ${data_clip}    ELECTRONIC TICKET LIST BY *HTE
+    ${ticket_number_raw}    Get Lines Containing String    ${data_clip}    *TE
+    ${ticket_number_raw}    Get Regexp Matches    ${ticket_number_raw}    [0-9]{13}
+    ${count}    Get Length    ${ticket_number_raw}
+    Log    ${count}
+    ${ticket_number_first}    Get From List    ${ticket_number_raw}    ${index}
+    Set Test Variable    ${ticket_number}    ${ticket_number_first.strip()}
+    log    ${ticket_number}
+
+Create New Booking Multiple Fare With Issue Ticket For Blank Search
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo Legacy - Auto ¦ Fare Remarks    AutoLegacy    EmeaTrvlrThree    MANAMS    01Y1    FQ:NR
+    ...    AMSMAN    01Y1    FQS2:NR    ${EMPTY}
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Get Traveller Tab Details    Traveller/Contact
+    Click Finish PNR
+    Issue Ticket For Galileo
+    Click Clear All
+
+Get Class Code From Air Fare Panel
+    [Arguments]    ${control_name}
+    ${class_code_full}    Get Control Text Value    ${control_name}
+    ${class_code}    Fetch From Left    ${class_code_full}    ${SPACE}-
+    Set Test Variable    ${class_code}
+    Set Test Variable    ${class_code_full}
+    [Return]    ${class_code}
+
+Amend Booking For Default Price Tracking Values
+    Retrieve PNR    ${pt_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    XX - No Saving
+    Verify Missed Savings Code Default Value    L - Lowest Fare Accepted
+    Verify Class Code Value Defaults To Previous Value    Fare 1
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Get Air: Void and Re-issue Details
+    Click Finish PNR

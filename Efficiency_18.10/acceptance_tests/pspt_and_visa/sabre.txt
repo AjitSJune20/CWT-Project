@@ -1,0 +1,258 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    sabre
+Force Tags        sabre
+Resource          pspt_and_visa_verification.txt
+
+*** Test Cases ***
+[1S NORAM][NB] Verify Countries Are Captured With Correct Visa Information In Domestic RT Flight With Diff Nationality Docs For Timatic On
+    [Tags]    US5337    US5696    US5695    US3844    DE6819    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With Round Trip Air Flight Using Default Values    Sabre 1 - SyEx ¦ US4684    Juarez    Cristina    FRAHAM¥LH    01Y1    ${EMPTY}
+    ...    HAMFRA¥LH    01Y1    WPRQ    ${EMPTY}    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Verify Travel Document Details Are Correct    Passport    United States    EB0987654    12/20/2020    Yes
+    Get Passport & Visa Info Panel Text
+    Verify That Countries Visited And Visa Status Is Correct    Germany    Not Required
+    Verify That Countries Visited And Visa Status Does Not Exist    Philippines    Not Required
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    Delivery
+    Click GDS Screen Tab
+    Populate Delivery Panel With Default Values
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY - US
+    Verify Specific Line Is Written In The PNR    VALID PASSPORT HELD - YES
+    Verify Specific Line Is Written In The PNR    VISA CHECK - GERMANY NOT REQUIRED
+
+[1S NORAM][AB] Verify Countries Are Captured With Correct Visa Information In International Multi Flight With Diff Nationality Docs For Timatic On
+    [Tags]    US5337    US5696    US5695    US3844    DE6819    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI    PQD-ALL
+    Book Flight X Months From Now    TLSNCE‡AF    01Y1    WPRQ‡S1    6    1
+    Book Flight X Months From Now    NCETLS‡AF    01Y1    WPRQ‡S2    6    5
+    Book Flight X Months From Now    FRAMUC‡LH    01Y1    WPRQ‡S3    6    8
+    Book Flight X Months From Now    MUCFRA‡LH    01Y1    WPRQ‡S4    6    13
+    Book Flight X Months From Now    MNLSIN‡PR    01Y1    WPRQ‡S5    6    20
+    Book Flight X Months From Now    JFKMUC‡LH    01Y1    WPRQ‡S6    6    25
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Travel Document Details Are Correct    Passport    United States    Eb0987654    12/20/2020    Yes
+    Verify That Countries Visited And Visa Status Is Correct    France    Not Required
+    Verify That Countries Visited And Visa Status Is Correct    Germany    Not Required
+    Verify That Countries Visited And Visa Status Is Correct    Philippines    Required
+    Verify That Countries Visited And Visa Status Is Correct    Singapore    Not Required
+    Verify That Countries Visited And Visa Status Does Not Exist    United States    Not Required
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S NORAM][NB] Verify Countries Are Captured With Correct Visa Information In Domestic OW Flight With Expired Documents
+    [Tags]    US5337    US5696    US5695    US3844    DE6819    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With Round Trip Air Flight Using Default Values    Sabre 1 - SyEx ¦ US4684    De Guzman    Cyril    FRAHAM¥LH    01Y1    ${EMPTY}
+    ...    HAMFRA¥LH    01Y1    WPRQ    ${EMPTY}    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Ticked    ${check_box_domestic_trip}
+    Verify Check Visa Requirements Button Is Disabled
+    Untick Domestic Trip
+    Tick Use Document    1
+    Click Check Visa Requirements No ESTA
+    Verify Travel Document Details Are Correct    Passport    Philippines    EB99238373    12/18/2021    Yes
+    Set Expiry Date for Passport    [NAME:cdtpExpiryDate0]    10    5    2015
+    Select Is Doc Valid    ${EMPTY}
+    Click Check Visa Requirements No ESTA
+    Verify Travel Document Details Are Correct    Passport    Philippines    EB99238373    10/5/2015    No
+    Get Passport & Visa Info Panel Text
+    Verify That Countries Visited And Visa Status Is Correct    Germany    Required
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    Delivery
+    Click GDS Screen Tab
+    Populate Delivery Panel With Default Values
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY - PH
+    Verify Specific Line Is Written In The PNR    VALID PASSPORT HELD - NO
+    Verify Specific Line Is Written In The PNR    VISA CHECK - GERMANY REQUIRED
+
+[1S NORAM][AB] Verify Countries Are Captured With Correct Visa Information In International Multi Flight With Expired Docs
+    [Tags]    US5337    US5696    US5695    US3844    DE6819    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI    PQD-ALL
+    Book Flight X Months From Now    TLSNCE‡AF    01Y1    WPRQ‡S1    6    1
+    Book Flight X Months From Now    NCETLS‡AF    01Y1    WPRQ‡S2    6    5
+    Book Flight X Months From Now    FRAMUC‡LH    01Y1    WPRQ‡S3    6    8
+    Book Flight X Months From Now    MUCFRA‡LH    01Y1    WPRQ‡S4    6    13
+    Book Flight X Months From Now    MNLSIN‡PR    01Y1    WPRQ‡S5    6    20
+    Book Flight X Months From Now    JFKMUC‡LH    01Y1    WPRQ‡S6    6    25
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Travel Document Details Are Correct    Passport: Normal    Philippines    Eb99238373    10/5/2015    No
+    Click Check Visa Requirements No ESTA
+    Verify That Countries Visited And Visa Status Is Correct    France    Required
+    Verify That Countries Visited And Visa Status Is Correct    Germany    Required
+    Verify That Countries Visited And Visa Status Is Correct    Philippines    Unable to Confirm
+    Verify That Countries Visited And Visa Status Is Correct    Singapore    Unable to Confirm
+    Verify That Countries Visited And Visa Status Is Correct    United States    Required
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S][SG][NB] Verify That Visa Requirements And Details Fields In Pspt And Visa Panel Are Hidden When SO = ON
+    [Tags]    us38    apac    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U003JDC    en-GB    jcabela    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    375532696401818    1220
+    Book Flight X Months From Now    SINSYD‡QF    01Y1    WPRQ¥S1    6    5
+    Book Flight X Months From Now    SYDJFK‡UA    01Y1    WPRQ¥S2    6    10
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Visa Requirements Section Is Not Displayed
+    Verify Visa Details Section Is Not Displayed
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    UA
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+[1S][SG][AB] Verify That Visa Requirements And Details Fields In Pspt And Visa Panel Are Hidden When SO = ON
+    [Tags]    us38    apac    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Visa Requirements Section Is Not Displayed
+    Verify Visa Details Section Is Not Displayed
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    UA
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That Visa Requirements And Details Fields In Pspt And Visa Panel Are Hidden When SO = ON If Simultaneous Change Error Is Displayed
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S][SG][NB] Verify That Visa Requirements And Details Fields In Pspt And Visa Panel Are Displayed When SO = OFF
+    [Tags]    us38    apac    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U003JDC    en-US    jcabela    NORAM QA
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Guitarists    DODLA    RANI
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/DODLA/R14977632
+    Click New Booking
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    375532696401818    1220
+    Click Update PNR
+    Book Flight X Months From Now    SINSYD‡QF    01Y1    WPRQ¥S1    6    5
+    Book Flight X Months From Now    SYDJFK‡UA    01Y1    WPRQ¥S2    6    10
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Visa Requirements Fields Are Displayed
+    Verify Visa Details Fields Are Displayed
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Comment    Select Fare Type    Corporate fare
+    Comment    Set LFCC Field    QF
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Comment    Select Fare Type    Corporate fare
+    Comment    Set LFCC Field    UA
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+[1S][SG][AB] Verify That Visa Requirements And Details Fields In Pspt And Visa Panel Are Displayed When SO = OFF
+    [Tags]    us38    apac    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Visa Requirements Fields Are Displayed
+    Verify Visa Details Fields Are Displayed
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Comment    Select Fare Type    Corporate fare
+    Comment    Set LFCC Field    QF
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Comment    Select Fare Type    Corporate fare
+    Comment    Set LFCC Field    UA
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That Visa Requirements And Details Fields In Pspt And Visa Panel Are Displayed When SO = OFF If Simultaneous Change Error Is Displayed
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Set Expiry Date for Passport
+    [Arguments]    ${expiry_date_field}    ${expiry_month}    ${expiry_day}    ${expiry_year}
+    Comment    ${expiry_date}=    Set Test Variable    10/5/2015
+    Comment    @{expiry_date_array}    Split String    ${expiry_date}    /
+    Comment    Set Test Variable    ${expiry_month}    ${expiry_date_array[0]}
+    Comment    Set Test Variable    ${expiry_day}    ${expiry_date_array[1]}
+    Comment    Set Test Variable    ${expiry_year}    ${expiry_date_array[2]}
+    Comment    Set Suite Variable    ${expiry_date}
+    Control Click    ${title_power_express}    ${EMPTY}    ${expiry_date_field}
+    Send    ${expiry_year}    1
+    Send    {LEFT}
+    Send    ${expiry_day}    1
+    Send    {LEFT}
+    Send    ${expiry_month}    1
+    Sleep    0.5
+    Send    {TAB}
+    Sleep    0.5
+
+Amend Booking Workflow For Verify That Visa Requirements And Details Fields In Pspt And Visa Panel Are Hidden When SO = ON
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Visa Requirements Section Is Not Displayed
+    Verify Visa Details Section Is Not Displayed
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    UA
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That Visa Requirements And Details Fields In Pspt And Visa Panel Are Displayed When SO = OFF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Visa Requirements Fields Are Displayed
+    Verify Visa Details Fields Are Displayed
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Comment    Select Fare Type    Corporate fare
+    Comment    Set LFCC Field    QF
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Comment    Select Fare Type    Corporate fare
+    Comment    Set LFCC Field    UA
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR

@@ -1,0 +1,334 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+Resource          ../../../resources/common/utilities.txt
+
+*** Keywords ***
+Calculate Fare Amount For MY
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Base Fare And Tax From Galileo For Fare X Tab    ${fare_tab}
+    Get Nett Fare Value    ${fare_tab}
+    Get Merchant Fee Amount Value    ${fare_tab}
+    Get Base or Nett Fare Value    ${nett_fare_value_${fare_tab_index}}    ${base_fare_value_${fare_tab_index}}
+    ${nett_airfare}    Evaluate    ${base_or_nett_fare_value} + ${merchant_fee_value_${fare_tab_index}}
+    ${calculated_gst}    Run Keyword If    "${route_code_${fare_tab_index}}" == "DOM"    Evaluate    (${nett_airfare} + ${tax_amount_${fare_tab_index}}) * 0.06
+    ...    ELSE    Set Variable    0
+    ${calculated_gst}    Convert To Float    ${calculated_gst}
+    ${fare_value}    Evaluate    ${base_or_nett_fare_value} + ${calculated_gst}
+    ${fare_value}    Convert To Float    ${fare_value}
+    Set Test Variable    ${fare_value_${fare_tab_index}}    ${fare_value}
+
+Calculate Transaction Fee Amount
+    [Arguments]    ${fare_tab}    ${country}    ${transaction_fee_type}=OFFLINE    ${booking_type}=NON-OBT
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${transaction_fee_amount}    Set Variable If    "${route_code_${fare_tab_index}}" == "DOM" and "${booking_type.upper()}" == "NON-OBT" and "${transaction_fee_type.upper()}" == "OFFLINE"    ${transaction_fee_amount_dom}    ("${route_code_${fare_tab_index}}" == "INT" or "${route_code_${fare_tab_index}}" == "INTL") and "${booking_type.upper()}" == "NON-OBT" and "${transaction_fee_type.upper()}" == "OFFLINE"    ${transaction_fee_amount_int}    "${route_code_${fare_tab_index}}" == "TTAS" and "${booking_type.upper()}" == "NON-OBT" and "${transaction_fee_type.upper()}" == "OFFLINE"
+    ...    ${transaction_fee_amount_ttas}    "${route_code_${fare_tab_index}}" == "DOM" and "${booking_type.upper()}" == "OBT" and "${transaction_fee_type.upper()}" == "ONLINE"    ${transaction_fee_amount_online_dom}    ("${route_code_${fare_tab_index}}" == "INT" or "${route_code_${fare_tab_index}}" == "INTL") and "${booking_type.upper()}" == "OBT" and "${transaction_fee_type.upper()}" == "ONLINE"    ${transaction_fee_amount_online_int}    "${route_code_${fare_tab_index}}" == "TTAS" and "${booking_type.upper()}" == "OBT" and "${transaction_fee_type.upper()}" == "ONLINE"
+    ...    ${transaction_fee_amount_online_ttas}    "${route_code_${fare_tab_index}}" == "DOM" and "${booking_type.upper()}" == "NON-OBT" and "${transaction_fee_type.upper()}" == "EXCHANGE"    ${transaction_fee_amount_exchange_dom}    ("${route_code_${fare_tab_index}}" == "INT" or "${route_code_${fare_tab_index}}" == "INTL") and "${booking_type.upper()}" == "NON-OBT" and "${transaction_fee_type.upper()}" == "EXCHANGE"    ${transaction_fee_amount_exchange_int}    "${route_code_${fare_tab_index}}" == "TTAS" and "${booking_type.upper()}" == "NON-OBT" and "${transaction_fee_type.upper()}" == "EXCHANGE"
+    ...    ${transaction_fee_amount_exchange_ttas}    0
+    ${transaction_fee_amount_gst}    Run Keyword If    "${route_code_${fare_tab_index}}" == "DOM" and "${country}" == "MY"    Evaluate    ${transaction_fee_amount} * 1.06
+    ...    ELSE IF    "${route_code_${fare_tab_index}}" == "DOM" and "${country}" == "AU"    Evaluate    ${transaction_fee_amount} * 1.1
+    ...    ELSE IF    "${route_code_${fare_tab_index}}" == "DOM" and "${country}" == "NZ"    Evaluate    ${transaction_fee_amount} * 1.15
+    ...    ELSE    Set Variable    ${transaction_fee_amount}
+    ${transaction_fee_amount_gst}    Truncate    ${transaction_fee_amount_gst}
+    ${transaction_fee_amount}    Set Variable If    "${route_code_${fare_tab_index}}" == "DOM" and ("${country}" == "AU" or "${country}" == "NZ" )    ${transaction_fee_amount}    ${transaction_fee_amount_gst}
+    Set Test Variable    ${expected_transaction_fee_amount_${fare_tab_index}}    ${transaction_fee_amount}    #Used for verification of DI/RI
+    Set Test Variable    ${expected_transaction_fee_amount_gst_${fare_tab_index}}    ${transaction_fee_amount_gst}    #Used for verification of UI
+
+Check If Simultaneous Encountered When Exchange TMU Is Entered
+    [Arguments]    ${fare}
+    : FOR    ${index}    IN RANGE    0    999
+    \    Enter Command In Native GDS    *${current_pnr}    IR    *R    TMU${fare}FEX    R.CWTPTEST
+    \    ...    ER    ER
+    \    Sleep    1
+    \    Send    ^a
+    \    Sleep    1
+    \    Send    ^c
+    \    Sleep    1
+    \    Send    {DOWN}
+    \    Sleep    1
+    \    ${data_clipboard}    Get Data From Clipboard
+    \    Send    {END}
+    \    Sleep    2
+    \    ${is_simultaneous_exist1}    Run Keyword And Return Status    Should Contain    """${data_clipboard.upper()}"""    SIMULTANEOUS
+    \    ${is_simultaneous_exist2}    Run Keyword And Return Status    Should Contain    """${data_clipboard.upper()}"""    SIMULTANEOUS CHANGES
+    \    Exit For Loop If    "${is_simultaneous_exist1}" == "False" and "${is_simultaneous_exist2}" == "False"
+    Send    ER{ENTER}
+    Sleep    2
+    Send    I{ENTER}
+    Sleep    2
+    Take Screenshot
+
+Enter Exchange Ticket In Native GDS
+    [Arguments]    ${number_of_fares}
+    Activate GDS Native
+    : FOR    ${fare}    IN RANGE    1    ${number_of_fares}+1
+    \    Check If Simultaneous Encountered When Exchange TMU Is Entered    ${fare}
+
+Generate Card Number To Be Written In The Remark
+    [Arguments]    ${card_number}=${str_card_number}
+    ${first_number}    Get Substring    ${card_number}    0    1
+    ${mid_numbers}    Get Substring    ${card_number}    1    12
+    ${last_numbers}    Get Substring    ${card_number}    12    16
+    ${modified_mid_number}    Replace String Using Regexp    ${mid_numbers}    [0-9]    0
+    ${generated_cc_number}    Catenate    SEPARATOR=    ${first_number}    ${modified_mid_number}    ${last_numbers}
+    Set Test Variable    ${str_card_number}    ${generated_cc_number}
+
+Identify Form Of Payment Code
+    [Arguments]    ${card_type}    ${country}
+    ${credit_card_code}    Run Keyword If    "${card_type}" == "AX"    Set Variable    CX2
+    ...    ELSE IF    "${card_type}" == "DC"    Set Variable    CX3
+    ...    ELSE IF    "${card_type}" == "VI"    Set Variable    CX4
+    ...    ELSE IF    ("${card_type}" == "MC" or "${card_type}" == "CA") and ("${country}" == "AU" or "${country}" == "NZ")    Set Variable    CX5
+    ...    ELSE IF    ("${card_type}" == "MC" or "${card_type}" == "CA") and ("${country}" == "SG" or "${country}" == "MY")    Set Variable    CX4
+    ...    ELSE IF    "${card_type.upper()}" == "CASH" or "${card_type.upper()}" == "INVOICE" or "${card_type.upper()}" == "CASH/INVOICE" or "${card_type.upper()}" == "${EMPTY}"    Set Variable    FS
+    ...    ELSE    Set Variable    INVALIDTYPE
+    [Return]    ${credit_card_code}
+
+Identify Vendor And Product Code
+    [Arguments]    ${country}    ${is_reinterface}=False    ${remark_type}=Transaction Fee
+    ${vendor_code}    Set Variable If    "${country}" == "AU" and "${is_reinterface.upper()}" == "FALSE" and "${remark_type.upper()}" == "TRANSACTION FEE"    90    "${country}" == "NZ" and "${is_reinterface.upper()}" == "FALSE" and "${remark_type.upper()}" == "TRANSACTION FEE"    90    "${country}" == "SG" and "${is_reinterface.upper()}" == "FALSE" and "${remark_type.upper()}" == "TRANSACTION FEE"
+    ...    021007    "${country}" == "MY" and "${is_reinterface.upper()}" == "FALSE" and "${remark_type.upper()}" == "TRANSACTION FEE"    021007    "${country}" == "AU" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "TRANSACTION FEE"    90    "${country}" == "NZ" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "TRANSACTION FEE"
+    ...    90    "${country}" == "SG" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "TRANSACTION FEE"    21007    "${country}" == "AU" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "MERCHANT FEE"    119    "${country}" == "NZ" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "MERCHANT FEE"
+    ...    120    "${country}" == "SG" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "MERCHANT FEE"    21007    "${country}" == "AU" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "BSP AIR TICKET"    30    "${country}" == "NZ" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "BSP AIR TICKET"
+    ...    30    "${country}" == "SG" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "BSP AIR TICKET"    22000
+    ${product_code}    Set Variable If    "${country}" == "AU" and "${is_reinterface.upper()}" == "FALSE" and "${remark_type.upper()}" == "TRANSACTION FEE"    PC35    "${country}" == "NZ" and "${is_reinterface.upper()}" == "FALSE" and "${remark_type.upper()}" == "TRANSACTION FEE"    PC35    "${country}" == "SG" and "${is_reinterface.upper()}" == "FALSE" and "${remark_type.upper()}" == "TRANSACTION FEE"
+    ...    PC35    "${country}" == "MY" and "${is_reinterface.upper()}" == "FALSE" and "${remark_type.upper()}" == "TRANSACTION FEE"    PC35    "${country}" == "AU" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "TRANSACTION FEE"    PC35    "${country}" == "NZ" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "TRANSACTION FEE"
+    ...    PC35    "${country}" == "SG" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "TRANSACTION FEE"    PC35    "${country}" == "AU" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "MERCHANT FEE"    PC57    "${country}" == "NZ" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "MERCHANT FEE"
+    ...    PC57    "${country}" == "SG" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "MERCHANT FEE"    PC41    "${country}" == "AU" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "BSP AIR TICKET"    PC00    "${country}" == "NZ" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "BSP AIR TICKET"
+    ...    PC00    "${country}" == "SG" and "${is_reinterface.upper()}" == "TRUE" and "${remark_type.upper()}" == "BSP AIR TICKET"    PC00
+    [Return]    ${vendor_code}    ${product_code}
+
+Transaction Fee Data In Powerbase
+    [Arguments]    ${start_substring}=4    ${end_substring}=6
+    ${country}    Get Substring    ${TEST NAME}    ${start_substring}    ${end_substring}
+    Run Keyword If    "${country}" == "MY"    Run Keywords    Set Suite Variable    ${transaction_fee_amount_dom}    71.26
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_int}    126.99
+    ...    ELSE IF    "${country}" == "AU"    Run Keywords    Set Suite Variable    ${transaction_fee_amount_dom}    47.41
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_int}    68.38
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_ttas}    47.41
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_online_dom}    38.31
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_online_int}    58.61
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_online_ttas}    38.31
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_exchange_dom}    50
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_exchange_ttas}    50
+    ...    ELSE IF    "${country}" == "SG"    Run Keywords    Set Suite Variable    ${transaction_fee_amount_int}    58.39
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_online_int}    56
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_exchange_int}    10
+    ...    ELSE IF    "${country}" == "NZ"    Run Keywords    Set Suite Variable    ${transaction_fee_amount_dom}    42.25
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_ttas}    42.25
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_int}    57.27
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_exchange_dom}    ${transaction_fee_amount_dom}
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_exchange_ttas}    50
+    ...    AND    Set Suite Variable    ${transaction_fee_amount_exchange_int}    ${transaction_fee_amount_int}    #currently no setup in Power Base for INT and DOM Exchange
+
+Verify Air Fare Restriction Option Is Not Visible
+    [Arguments]    ${str_fare_restriction}
+    ${air_fare_restriction_field}    Run Keyword If    "${str_fare_restriction.upper()}" == "FULLY FLEXIBLE"    Determine Multiple Object Name Based On Active Tab    cradFullyFlex, cradFullyFlex_alt, cradFullFlexOBT, cradFullFlexOBT_alt
+    ...    ELSE IF    "${str_fare_restriction.upper()}" == "SEMI FLEXIBLE"    Determine Multiple Object Name Based On Active Tab    cradSemiFlexOBT, cradSemiFlex, cradSemiFlex_alt, cradSemiFlexOBT_alt
+    ...    ELSE IF    "${str_fare_restriction.upper()}" == "NON FLEXIBLE"    Determine Multiple Object Name Based On Active Tab    cradNonFlex, cradNonFlexOBT, cradNonFlex_alt, cradNonFlexOBT_alt
+    ...    ELSE IF    "${str_fare_restriction.upper()}" == "DEFAULT"    Determine Multiple Object Name Based On Active Tab    cradDefault, cradDefaultOBT, cradDefault_alt, cradDefaultOBT_alt
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    Invalid Fare Restriction: ${str_fare_restriction}
+    Verify Control Object Is Not Visible    ${air_fare_restriction_field}    ${title_power_express}
+
+Verify Air Fare Restrictions Value
+    [Arguments]    ${fare_tab}    ${expected_changes_value}    ${expected_cancellations_value}    ${expected_validon_value}    ${expected_reroute_value}    ${expected_minstay_value}
+    ...    ${expected_maxstay_value}    ${field_instance}=${EMPTY}
+    Verify Cancellation Field Value    ${fare_tab}    ${expected_cancellations_value.upper()}    ${field_instance}
+    air_fare_verifications.Verify Changes Field Value    ${fare_tab}    ${expected_changes_value.upper()}    ${field_instance}
+    Run Keyword If    "${expected_validon_value}" != "default"    Verify Valid On Field Value    ${fare_tab}    ${expected_validon_value.upper()}
+    Verify Re-Route Field Value    ${fare_tab}    ${expected_reroute_value.upper()}
+    Verify Minimum Stay Field Value    ${fare_tab}    ${expected_minstay_value.upper()}
+    Verify Maximum Stay Field Value    ${fare_tab}    ${expected_maxstay_value.upper()}
+
+Verify Booking Identifier Are Written In DI
+    [Arguments]    ${fare_tab}    ${expected_booking_method}    ${expected_gds_idenfier}    ${expected_static_identifier}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF34/*${fare_tab_index}/${expected_booking_method.upper()}    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF35/*${fare_tab_index}/${expected_gds_idenfier.upper()}    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF36/*${fare_tab_index}/${expected_static_identifier.upper()}    1
+
+Verify Cancellation Field Value
+    [Arguments]    ${fare_tab}    ${expected_value}    ${field_instance}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Cancellation Value    ${fare_tab}    \    ${field_instance}
+    Verify Text Contains Expected Value    ${cancellation_value_${fare_tab_index}.upper()}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Changes Field Value
+    [Arguments]    ${fare_tab}    ${expected_changes_value}    ${field_instance}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Changes Value    ${fare_tab}    \    ${field_instance}
+    Verify Text Contains Expected Value    ${changes_value_${fare_tab_index}.upper()}    ${expected_changes_value}
+    [Teardown]    Take Screenshot
+
+Verify Default Text Is Displayed In The Default Text Field
+    [Arguments]    ${expected_default_text}
+    ${defaull_text_value}    Get Control Text    [NAME:lblDefault]
+    ${defaull_text_value}    Get From List    ${defaull_text_value}    0
+    Verify Text Contains Expected Value    ${defaull_text_value}    ${expected_default_text}
+
+Verify Fare Remark Is Written In The RI Lines
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${country_code}    Get Country Code Based On Currency    ${currency}
+    ${fare_amount}    Set Variable If    "${country_code.upper()}" == "MY"    ${fare_value_${fare_tab_index}}    ${fare_amount_${fare_tab_index}}
+    Verify Specific Remark Is Written In The PNR    FARE: ${currency} ${fare_amount}
+
+Verify Fee Remarks Are Written In The DI Lines
+    [Arguments]    ${fare_tab}    ${route_code}    ${vendor_code}    ${product_code}    ${validating_carrier}    ${booking_type}
+    ...    ${fee_text}    ${fee_amount}    ${country}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${credit_card_code}    Identify Form Of Payment Code    ${str_card_type}    ${country}
+    ${fee_remark_1st}    Set Variable If    ("${country}" == "AU" or "${country}" == "NZ") and "${route_code.upper()}" == "DOM"    FREE TEXT-MS/*${fare_tab_index}/${product_code}/V${vendor_code}/VC1/AC${validating_carrier}/TK/PX1    FREE TEXT-MS/*${fare_tab_index}/${product_code}/V${vendor_code}/AC${validating_carrier}/TK/PX1
+    ${fee_remark_3rd}    Set Variable If    "${credit_card_code.upper()}" == "FS"    FREE TEXT-MSX/*${fare_tab_index}/FS    FREE TEXT-MSX/*${fare_tab_index}/F${credit_card_code}/CCN${str_card_type}${str_card_number}EXP${str_exp_date}/D${fee_amount}
+    ${fee_remark_4th}    Set Variable If    "${booking_type.upper()}" == "OBT"    FREE TEXT-MSX/*${fare_tab_index}/FF34-AA/FF35-AMA/FF36-S/FF47-CWT    FREE TEXT-MSX/*${fare_tab_index}/FF34-AB/FF35-GAL/FF36-G/FF47-CWT
+    Verify Specific Remark Is Written In The PNR    ${fee_remark_1st}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/*${fare_tab_index}/S${fee_amount}/SF${fee_amount}/C${fee_amount}
+    Verify Specific Remark Is Written In The PNR    ${fee_remark_3rd}
+    Verify Specific Remark Is Written In The PNR    ${fee_remark_4th}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/*${fare_tab_index}/FF ${fee_text}
+
+Verify GST Remark Is Written In The RI Lines If Applicable
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Run Keyword If    "${gst_amount_${fare_tab_index}}" != "0"    Verify Specific Remark Is Written In The PNR    GST: ${currency} ${gst_amount_${fare_tab_index}}
+    ...    ELSE    Verify Specific Remark Is Not Written In The PNR    GST: ${currency} ${gst_amount_${fare_tab_index}}
+
+Verify Header And Ticket Text Are Writen In RI
+    [Arguments]    ${expected_header_text}    ${expected_ticket_text}
+    Verify Specific Remark Is Written X Times In The PNR    *RITOP**${expected_header_text.upper()}*    1
+    Verify Specific Remark Is Written X Times In The PNR    *TICKET**${expected_ticket_text.upper()}*    1
+
+Verify Itinerary Quote Remarks Are Written In RI
+    [Arguments]    ${quote_number}    ${airline}    ${routing}    ${transaction_fee}    ${merchant_fee}    ${changes}
+    ...    ${cancellation}    ${valid_on}    ${reroute}    ${min_stay}    ${max_stay}
+    Verify Specific Remark Is Written In The PNR    QUOTE NUMBER: ${quote_number}
+    Verify Specific Remark Is Written In The PNR    AIRLINE: ${airline.upper()}
+    Verify Specific Remark Is Written In The PNR    ROUTING: ${routing.upper()}
+    Verify Specific Remark Is Written In The PNR    FARE:
+    Verify Specific Remark Is Written In The PNR    TAX:
+    Run Keyword If    "${transaction_fee}" != "${EMPTY}"    Verify Specific Remark Is Written In The PNR    TRANSACTION FEE: ${transaction_fee.upper()}
+    Run Keyword If    "${merchant_fee}" != "${EMPTY}"    Verify Specific Remark Is Written In The PNR    MERCHANT FEE: ${merchant_fee.upper()}
+    Verify Specific Remark Is Written In The PNR    TOTAL AMOUNT:
+    Verify Specific Remark Is Written In The PNR    CHANGES: ${changes.upper()}
+    Verify Specific Remark Is Written In The PNR    CANCELLATION: ${cancellation.upper()}
+    Verify Specific Remark Is Written In The PNR    RE ROUTE: ${reroute.upper()}
+    Verify Specific Remark Is Written In The PNR    VALID ON: ${valid_on.upper()}
+    Verify Specific Remark Is Written In The PNR    MIN STAY: ${min_stay.upper()}
+    Verify Specific Remark Is Written In The PNR    MAX STAY: ${max_stay.upper()}
+    Verify Specific Remark Is Written In The PNR    ALL PRICES SUBJECT TO CHANGE AT ANYTIME WITHOUT NOTICE
+
+Verify LF RF And SF Remarks Are Written In DI
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-LF/*${fare_tab_index}/    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-RF/*${fare_tab_index}/    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-SF/*${fare_tab_index}/    1
+
+Verify LFCC Is Written In DI
+    [Arguments]    ${fare_tab}    ${expected_lfcc}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF81/*${fare_tab_index}/${expected_lfcc.upper()}    1
+
+Verify Maximum Stay Field Value
+    [Arguments]    ${fare_tab}    ${expected_value}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Maximum Stay Value    ${fare_tab}
+    Verify Text Contains Expected Value    ${max_stay_value_${fare_tab_index}.upper()}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Minimum Stay Field Value
+    [Arguments]    ${fare_tab}    ${expected_value}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Mininum Stay Value    ${fare_tab}
+    Verify Text Contains Expected Value    ${min_stay_value_${fare_tab_index}.upper()}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Passport And Visa Remarks Are Written In RI
+    [Arguments]    ${expected_nationality_or_citizenship}    ${expected_is_doc_valid}    ${expected_country_visited}    ${expected_visa_required}
+    Verify Specific Remark Is Written X Times In The PNR    ********** PASSPORT AND VISA INFORMATION **********    1
+    Verify Specific Remark Is Written X Times In The PNR    PASSPORT AND VISA INFORMATION    2
+    Verify Specific Remark Is Written X Times In The PNR    TRAVELLERS NATIONALITY: ${expected_nationality_or_citizenship.upper()}    1
+    Verify Specific Remark Is Written X Times In The PNR    VALID PASSPORT HELD: ${expected_is_doc_valid.upper()}    1
+    Verify Specific Remark Is Written X Times In The PNR    VISA CHECK: ${expected_country_visited.upper()} ${expected_visa_required.upper()}    1
+    Verify Specific Remark Is Written X Times In The PNR    FOR INTERNATIONAL TRAVEL PLEASE ENSURE YOUR PASSPORT IS    1
+    Verify Specific Remark Is Written X Times In The PNR    VALID FOR MINIMUM 6 MONTHS AT TIME OF TRAVEL    1
+
+Verify Re-Route Field Value
+    [Arguments]    ${fare_tab}    ${expected_value}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Re-Route Value    ${fare_tab}
+    Verify Text Contains Expected Value    ${reroute_value_${fare_tab_index}.upper()}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Realised, Missed and Class Code Are Written In DI
+    [Arguments]    ${fare_tab}    ${expected_realised_saving}    ${expected_missed_saving}    ${expected_class_code}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF30/*${fare_tab_index}/${expected_realised_saving.upper()}    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-EC/*${fare_tab_index}/${expected_missed_saving.upper()}    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF8/*${fare_tab_index}/${expected_class_code.upper()}    1
+
+Verify Route Code Value Is Correct
+    [Arguments]    ${fare_tab}    ${expected_route_code}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Route Code Value    ${fare_tab}
+    Verify Text Contains Expected Value    ${route_code_${fare_tab_index}}    ${expected_route_code}
+    Take Screenshot
+
+Verify Tax Remark Is Written In The RI Lines
+    [Arguments]    ${fare_tab}    ${route_code}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${country_code}    Get Country Code Based On Currency    ${currency}
+    ${tax_amount}    Set Variable If    "${route_code.upper()}" == "DOM" and ("${country_code.upper()}" == "AU" or "${country_code.upper()}" == "NZ")    ${total_tax_less_gst_${fare_tab_index}}    ${tax_amount_${fare_tab_index}}
+    Verify Specific Remark Is Written In The PNR    TAX: ${currency} ${tax_amount}
+
+Verify Transaction Fee Amount Is Retrieved In Pricing Extras
+    [Arguments]    ${fare_tab}    ${country}    ${transaction_fee_type}    ${booking_type}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Calculate Transaction Fee Amount    ${fare_tab}    ${country}    ${transaction_fee_type}    ${booking_type}
+    Get Transaction Fee Amount Value    ${fare_tab}
+    Verify Text Contains Expected Value    ${transaction_fee_value_${fare_tab_index}}    ${expected_transaction_fee_amount_gst_${fare_tab_index}}
+
+Verify Transaction Fee Remark Is Written In The RI Lines
+    [Arguments]    ${fare_tab}    ${country}    ${transaction_fee_type}    ${booking_type}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${currency}    Get Currency    ${country}
+    Calculate Transaction Fee Amount    ${fare_tab}    ${country}    ${transaction_fee_type}    ${booking_type}
+    Verify Specific Remark Is Written In The PNR    TRANSACTION FEE: ${currency} ${expected_transaction_fee_amount_${fare_tab_index}}
+
+Verify Transaction Fee Remarks Are Not Written In The DI Lines
+    [Arguments]    ${fare_tab}    ${transaction_fee_type}    ${route_code}    ${validating_carrier}    ${booking_type}    ${country}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${vendor_code}    ${product_code}    Identify Vendor And Product Code    ${country}
+    ${credit_card_code}    Identify Form Of Payment Code    ${str_card_type}    ${country}
+    ${transaction_fee_remark_1st}    Set Variable If    "${route_code.upper()}" == "TTAS" or "${route_code.upper()}" == "INT"    FREE TEXT-MS/*${fare_tab_index}/${product_code}/V${vendor_code}/AC${validating_carrier}/TK/PX1    "${route_code.upper()}" == "DOM"    FREE TEXT-MS/*${fare_tab_index}/${product_code}/V${vendor_code}/VC1/AC${validating_carrier}/TK/PX1
+    ${transaction_fee_remark_3rd}    Set Variable If    "${credit_card_code.upper()}" == "FS"    FREE TEXT-MSX/*${fare_tab_index}/FS    FREE TEXT-MSX/*${fare_tab_index}/F${credit_card_code}/CCN${str_card_type}${str_card_number}EXP${str_exp_date}/D${transaction_fee_value_${fare_tab_index}}
+    ${transaction_fee_remark_4th}    Set Variable If    "${booking_type.upper()}" == "OBT"    FREE TEXT-MSX/*${fare_tab_index}/FF34-AA/FF35-AMA/FF36-S/FF47-CWT    FREE TEXT-MSX/*${fare_tab_index}/FF34-AB/FF35-GAL/FF36-G/FF47-CWT
+    ${transaction_fee_remark_5th}    Set Variable If    "${transaction_fee_type.upper()}" == "EXCHANGE"    FREE TEXT-MSX/*${fare_tab_index}/FF REISSUE FEE    FREE TEXT-MSX/*${fare_tab_index}/FF TRANSACTION FEE
+    Verify Specific Remark Is Not Written In The PNR    ${transaction_fee_remark_1st}
+    Verify Specific Remark Is Not Written In The PNR    FREE TEXT-MSX/*${fare_tab_index}/S${transaction_fee_value_${fare_tab_index}}/SF${transaction_fee_value_${fare_tab_index}}/C${transaction_fee_value_${fare_tab_index}}
+    Verify Specific Remark Is Not Written In The PNR    ${transaction_fee_remark_3rd}
+    Verify Specific Remark Is Not Written In The PNR    ${transaction_fee_remark_4th}
+    Verify Specific Remark Is Not Written In The PNR    ${transaction_fee_remark_5th}
+
+Verify Transaction Fee Remarks Are Written In The DI Lines
+    [Arguments]    ${fare_tab}    ${transaction_fee_type}    ${route_code}    ${validating_carrier}    ${booking_type}    ${country}
+    ...    ${invoice_remark}=NON-EXCHANGE
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fee_text}    Set Variable If    "${invoice_remark.upper()}" == "EXCHANGE"    REISSUE FEE    TRANSACTION FEE
+    ${vendor_code}    ${product_code}    Identify Vendor And Product Code    ${country}
+    Calculate Transaction Fee Amount    ${fare_tab}    ${country}    ${transaction_fee_type.upper()}    ${booking_type.upper()}
+    Verify Fee Remarks Are Written In The DI Lines    ${fare_tab}    ${route_code_${fare_tab_index}}    ${vendor_code}    ${product_code}    ${validating_carrier}    ${booking_type}
+    ...    ${fee_text}    ${expected_transaction_fee_amount_${fare_tab_index}}    ${country}
+
+Verify Turnaround Is Written In DI
+    [Arguments]    ${fare_tab}    ${expected_turnaround}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF7/*${fare_tab_index}/${expected_turnaround.upper()}    1
+
+Verify Valid On Field Value
+    [Arguments]    ${fare_tab}    ${expected_value}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Valid On Value    ${fare_tab}
+    Verify Text Contains Expected Value    ${valid_on_value_${fare_tab_index}.upper()}    ${expected_value}
+    [Teardown]    Take Screenshot

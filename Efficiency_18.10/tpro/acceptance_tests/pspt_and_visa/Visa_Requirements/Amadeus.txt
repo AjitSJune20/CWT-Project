@@ -1,0 +1,215 @@
+*** Settings ***
+Force Tags        amadeus    apac
+Resource          ../../../../resources/common/common_library.txt
+Resource          ../../../../resources/common/core.txt
+Resource          ../../../../acceptance_tests/complete/complete_verification.txt
+Resource          ../pspt_and_visa_verification.txt
+
+*** Test Cases ***
+[NB IN] Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR
+    [Tags]    in
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US555    BEAR    INFIVEFIVEFIVE
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Book Flight X Months From Now    NRTJFK/AAA    SS1Y1    FXP/S3    5    10
+    Book Flight X Months From Now    JFKLHR/AAA    SS1Y1    FXP/S4    5    15
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Populate Pspt & Visa With Values    1    Passport: Normal    India    12345    Yes
+    Verify Visa Requirement Per Country    Japan    ${EMPTY}    ${EMPTY}    Untick
+    Verify Visa Requirement Per Country    Singapore    ${EMPTY}    ${EMPTY}    Untick
+    Verify Visa Requirement Per Country    United States    ${EMPTY}    ${EMPTY}    Untick
+    Verify Visa Requirement Per Country    United Kingdom    ${EMPTY}    ${EMPTY}    Untick
+    Select Is Doc Valid    Yes
+    Click Check Visa Requirements    APAC
+    Verify Passport And Visa Details
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written    check_ESTA_website=False
+
+[AB IN] Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR
+    [Tags]    in
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    LHRFRA/ALH    SS1Y1    FXP/S5    5    20
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Populate Pspt & Visa With Values    1    Passport: Normal    India    12345    Yes
+    Verify Visa Requirement Per Country    Japan    ${EMPTY}    Business    Untick
+    Verify Visa Requirement Per Country    Singapore    ${EMPTY}    Business    Untick
+    Verify Visa Requirement Per Country    United States    ${EMPTY}    Business    Untick
+    Verify Visa Requirement Per Country    United Kingdom    ${EMPTY}    Business    Untick
+    Select Is Doc Valid    Yes
+    Click Check Visa Requirements
+    Verify Passport And Visa Details
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR    Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For IN
+    Execute Simultaneous Change Handling    Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For IN
+    Retrieve PNR Details    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written    check_ESTA_website=False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR
+    [Tags]    sg
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US555    BEAR    SGFIVEFIVEFIVE
+    Click New Booking
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Book Flight X Months From Now    NRTJFK/AAA    SS1Y1    FXP/S3    5    10
+    Book Flight X Months From Now    JFKLHR/AAA    SS1Y2    FXP/S4    5    15
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Visa Requirement Per Country    Japan    ${EMPTY}    Business    Untick
+    Verify Visa Requirement Per Country    Singapore    ${EMPTY}    Business    Untick
+    Verify Visa Requirement Per Country    United States    ${EMPTY}    Business    Untick
+    Verify Visa Requirement Per Country    United Kingdom    ${EMPTY}    Business    Untick
+    Click Check Visa Requirements
+    Verify Passport And Visa Details
+    Select Is Doc Valid    Yes
+    Verify Visa Requirement Per Country    Japan    Required    Business    Untick
+    Verify Visa Requirement Per Country    Singapore    Not Required    Business    Untick
+    Verify Visa Requirement Per Country    United States    Required    Business    Untick
+    Verify Visa Requirement Per Country    United Kingdom    Required    Business    Untick
+    Tick Transit Checkbox    Japan
+    Tick Transit Checkbox    Singapore
+    Tick Transit Checkbox    United States
+    Tick Transit Checkbox    United Kingdom
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written    check_ESTA_website=False
+
+[AB SG] Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR
+    [Tags]    sg
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Visa Requirement Per Country    Japan    Required    ${EMPTY}    Tick
+    Verify Visa Requirement Per Country    Singapore    Not Required    ${EMPTY}    Tick
+    Verify Visa Requirement Per Country    United States    Required    ${EMPTY}    Tick
+    Verify Visa Requirement Per Country    United Kingdom    Required    ${EMPTY}    Tick
+    Select Is Doc Valid    Yes
+    Click Check Visa Requirements
+    Verify Passport And Visa Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For SG
+    Execute Simultaneous Change Handling    Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For SG
+    Retrieve PNR Details    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written    check_ESTA_website=False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR
+    [Tags]    hk
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US555    BEAR    HKFIVEFIVEFIVE
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Book Flight X Months From Now    NRTJFK/AAA    SS1Y1    FXP/S3    5    10
+    Book Flight X Months From Now    JFKLHR/AAA    SS1Y2    FXP/S4    5    15
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Select Nationality/Citizenship    Somalia
+    Select Expiry Date X Months
+    Set Document Number    123
+    Select Is Doc Valid    Yes
+    Verify Transit Checkbox Is Not Ticked    Japan
+    Verify Transit Checkbox Is Not Ticked    Singapore
+    Verify Transit Checkbox Is Not Ticked    United States
+    Verify Transit Checkbox Is Not Ticked    United Kingdom
+    Tick Transit Checkbox    Japan
+    Tick Transit Checkbox    United States
+    Click Check Visa Requirements
+    Verify Passport And Visa Details
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written    check_ESTA_website=False
+
+[AB HK] Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR
+    [Tags]    hk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Select Nationality/Citizenship    Somalia
+    Select Expiry Date X Months
+    Set Document Number    123
+    Select Is Doc Valid    Yes
+    Verify Transit Checkbox Is Not Ticked    United States
+    Verify Transit Checkbox Is Not Ticked    Japan
+    Verify Transit Checkbox Is Not Ticked    United Kingdom
+    Tick Transit Checkbox    United States
+    Tick Transit Checkbox    Japan
+    Click Check Visa Requirements
+    Verify Passport And Visa Details
+    Click Finish PNR    Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For HK
+    Execute Simultaneous Change Handling    Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For HK
+    Retrieve PNR Details    ${current_pnr}
+    Verify Visa Check Itinerary Remarks Are Written    check_ESTA_website=False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Visa Requirement Per Country    Japan    Required    ${EMPTY}    Tick
+    Verify Visa Requirement Per Country    Singapore    Not Required    ${EMPTY}    Tick
+    Verify Visa Requirement Per Country    United States    Required    ${EMPTY}    Tick
+    Verify Visa Requirement Per Country    United Kingdom    Required    ${EMPTY}    Tick
+    Select Is Doc Valid    Yes
+    Click Check Visa Requirements
+    Verify Passport And Visa Details
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For SG
+
+Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Select Nationality/Citizenship    Somalia
+    Select Expiry Date X Months
+    Set Document Number    123
+    Select Is Doc Valid    Yes
+    Verify Transit Checkbox Is Not Ticked    United States
+    Verify Transit Checkbox Is Not Ticked    Japan
+    Verify Transit Checkbox Is Not Ticked    United Kingdom
+    Tick Transit Checkbox    United States
+    Tick Transit Checkbox    Japan
+    Click Check Visa Requirements
+    Verify Passport And Visa Details
+    Click Finish PNR    Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For HK
+
+Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    LHRFRA/ALH    SS1Y1    FXP/S5    5    20
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Populate Pspt & Visa With Values    1    Passport: Normal    India    12345    Yes
+    Verify Visa Requirement Per Country    Japan    ${EMPTY}    Business    Untick
+    Verify Visa Requirement Per Country    Singapore    ${EMPTY}    Business    Untick
+    Verify Visa Requirement Per Country    United States    ${EMPTY}    Business    Untick
+    Verify Visa Requirement Per Country    United Kingdom    ${EMPTY}    Business    Untick
+    Select Is Doc Valid    Yes
+    Click Check Visa Requirements
+    Verify Passport And Visa Details
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Panel    Recap
+    Click Finish PNR    Amend Booking For Verify That For International Trip, Destination And Transit Countries Are Written In Passport & Visa Info Tab And PNR For IN

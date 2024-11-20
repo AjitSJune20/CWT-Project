@@ -1,0 +1,266 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Generate Missed Saving Code List
+    [Arguments]    ${country}
+    @{sg_missed_list}    Run Keyword If    '${country.upper()}' == 'SG'    Create List    B - PASSENGER REQUESTED SPECIFIC AIRLINE    C - LOW COST CARRIER FARE DECLINED    F - PASSENGER REQUESTED SPECIFIC CLASS
+    ...    I - PASSENGER BOOKED TOO LATE    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    K - CLIENT NEGOTIATED FARE DECLINED    L - NO MISSED SAVING    M - MISCELLANEOUS    N - CLIENT SPECIFIC
+    ...    O - TRAVELLING WITH ANOTHER PERSON    P - PASSENGER DECLINED RESTRICTED FARE    T - CONTRACTED AIRLINE NON CONVENIENT    Z - CWT ALTERNATIVE DECLINED
+    @{hk_missed_list}    Run Keyword If    '${country.upper()}' == 'HK'    Create List    B - PASSENGER REQUESTED SPECIFIC AIRLINE    C - LOW COST CARRIER FARE DECLINED    E - EXCHANGE
+    ...    F - PASSENGER REQUESTED SPECIFIC CLASS    H - PASSENGER REQUESTED SPECIFIC SCHEDULE OR DATE    I - PASSENGER BOOKED TOO LATE    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    K - CLIENT NEGOTIATED FARE DECLINED    L - NO MISSED SAVING
+    ...    N - CLIENT SPECIFIC    O - TRAVELLING WITH ANOTHER PERSON    P - PASSENGER DECLINED RESTRICTED FARE    Q - CLIENT NEGOTIATED RATE ACCEPTED    X - POLICY WAIVED - EMERGENCY CONDITIONS
+    Comment    @{sg_missed_list}    Run Keyword If    '${country.upper()}' == 'SG'    Create List    EXCHANGE    Declined lower fare because
+    ...    LoWEST FARE ACCEPTED
+    Comment    @{hk_missed_list}    Run Keyword If    '${country.upper()}' == 'HK'    Create List    abc    def
+    ...    ghi
+    ${expected_missed_code}    Set Variable If    '${country.upper()}' == 'SG'    ${sg_missed_list}    ${hk_missed_list}
+    Set Suite Variable    ${expected_missed_code}
+    [Return]    ${expected_missed_code}
+
+Generate Realise Saving Code List
+    [Arguments]    ${country}
+    @{sg_realised_list}    Run Keyword If    '${country.upper()}' == 'SG'    Create List    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED    CR - INTELLIGENT TICKETING    LC - LOW COST CARRIER FARE ACCEPTED
+    ...    MC - MISCELLANEOUS    RF - RESTRICTED FARE ACCEPTED    SD - SPECIAL SUPPLIER DISCOUNT    SF - MULTI TRAVELLERS FARE SAVING ACCEPTED    TP - TRAVEL POLICY APPLIANCE    UC - VALUE ADDED OFFER
+    ...    WF - CWT NEGOTIATED FARE SAVING ACCEPTED    XI - ROUTE DEAL ACCEPTED    XX - NO SAVING
+    @{hk_realised_list}    Run Keyword If    '${country.upper()}' == 'HK'    Create List    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED    CR - INTELLIGENT TICKETING    EX - EXCHANGE
+    ...    LC - LOW COST CARRIER FARE ACCEPTED    MC - MISCELLANEOUS    RF - RESTRICTED FARE ACCEPTED    SC - SUBSCRIPTION    UC - VALUE ADDED OFFER    WF - CWT NEGOTIATED FARE SAVING ACCEPTED
+    ...    XX - NO SAVING
+    Comment    @{sg_realised_list}    Run Keyword If    '${country.upper()}' == 'SG'    Create List    EXCHANGE    Lowest offered fare accepted
+    ...    RESTRICTED FARE ACEPTED
+    Comment    @{hk_realised_list}    Run Keyword If    '${country.upper()}' == 'HK'    Create List    abc    def
+    ...    ghi
+    ${expected_realised_code}    Set Variable If    '${country.upper()}' == 'SG'    ${sg_realised_list}    ${hk_realised_list}
+    Set Suite Variable    ${expected_realised_code}
+    [Return]    ${expected_realised_code}
+
+Get MI Class Of Service
+    ${mi_class_of_service_value}    Get Control Text Value    [NAME:ClassOfServicesComboBox]    ${title_power_express}
+    @{class_of_service}    Split String    ${mi_class_of_service_value}    ${SPACE}
+    Set Test Variable    ${mi_class_of_service_value}
+    Set Suite Variable    ${mi_class_of_service}    ${class_of_service[0]}
+
+Get MI Fields Values
+    Get MI Filed Fare Number
+    Get MI Reference Fare
+    Get MI Low Fare
+    Get MI Final Destination
+    Get MI Low Fare Carrier
+    Get MI Type Of Ticket
+    Get MI Realised Saving Code
+    Get MI Missed Saving Code
+    Get MI Class Of Service
+
+Get MI Filed Fare Number
+    ${mi_file_fare_number}    Get Control Text Value    [NAME:FiledFareNumberComboBox]    ${title_power_express}
+    Set Test Variable    ${mi_file_fare_number}
+
+Get MI Final Destination
+    ${mi_final_destination}    Get Control Text Value    [NAME:FinalDestinationTextBox]    ${title_power_express}
+    Set Test Variable    ${mi_final_destination}
+
+Get MI Low Fare
+    ${mi_low_fare}    Get Control Text Value    [NAME:LowFareTextBox]    ${title_power_express}
+    Set Test Variable    ${mi_low_fare}
+
+Get MI Low Fare Carrier
+    ${mi_low_fare_carrier}    Get Control Text Value    [NAME:LowFareCarrierTextBox]    ${title_power_express}
+    Set Test Variable    ${mi_low_fare_carrier}
+
+Get MI Missed Saving Code
+    ${mi_missed_saving}    Get Control Text Value    [NAME:MissedSavingCodeComboBox]    ${title_power_express}
+    @{mi_missed_value}    Split String    ${mi_missed_saving}    ${SPACE}
+    Set Test Variable    ${mi_missed_saving}
+    Set Suite Variable    ${mi_missed_saving_code}    ${mi_missed_value[0]}
+
+Get MI Realised Saving Code
+    ${mi_realised_saving}    Get Control Text Value    [NAME:RealisedSavingCodeComboBox]    ${title_power_express}
+    @{mi_realised_value}    Split String    ${mi_realised_saving}    ${SPACE}
+    Set Test Variable    ${mi_realised_saving}
+    Set Suite Variable    ${mi_realised_saving_code}    ${mi_realised_value[0]}
+
+Get MI Reference Fare
+    ${mi_reference_fare}    Get Control Text Value    [NAME:ReferenceFareTextBox]    ${title_power_express}
+    Set Test Variable    ${mi_reference_fare}
+
+Get MI Type Of Ticket
+    [Documentation]    This refers to the PT / ET dropdown in the MI tab
+    ${et_pt}    Get Control Text Value    [NAME:PtEtComboBox]    ${title_power_express}
+    Set Test Variable    ${et_pt}
+
+Populate MI Fields
+    [Arguments]    ${reference_fare}    ${low_fare}    ${destination}    ${carrier}
+    Set MI Reference Fare    ${reference_fare}
+    Set MI Low Fare    ${low_fare}
+    Set MI Final Destination    ${destination}
+    Set MI Low Fare Carrier    ${carrier}
+
+Select MI Class Of Service
+    [Arguments]    ${class_code}
+    Select Value From Dropdown List    [NAME:ClassOfServicesComboBox]    ${class_code}
+    Take Screenshot
+
+Select MI Filed Fare Number
+    [Arguments]    ${fare_no}
+    Select Value From Dropdown List    [NAME:FiledFareNumberComboBox]    ${fare_no}
+    Take Screenshot
+
+Select MI Missed Saving Code
+    [Arguments]    ${missed_code}
+    Select Value From Dropdown List    [NAME:MissedSavingCodeComboBox]    ${missed_code}
+    Take Screenshot
+
+Select MI Realised Saving Code
+    [Arguments]    ${realised_code}
+    Select Value From Dropdown List    [NAME:RealisedSavingCodeComboBox]    ${realised_code}
+    Take Screenshot
+
+Select MI Type Of Ticket
+    [Arguments]    ${etpt}
+    [Documentation]    This refers to the PT / ET dropdown in the MI tab
+    Select Value From Dropdown List    [NAME:PtEtComboBox]    ${etpt}
+    Take Screenshot
+
+Set MI Final Destination
+    [Arguments]    ${destination}
+    Set Control Text Value    [NAME:FinalDestinationTextBox]    ${destination}
+    Take Screenshot
+
+Set MI Low Fare
+    [Arguments]    ${fare}
+    Set Control Text Value    [NAME:LowFareTextBox]    ${fare}
+    Take Screenshot
+
+Set MI Low Fare Carrier
+    [Arguments]    ${carrier}
+    Set Control Text Value    [NAME:LowFareCarrierTextBox]    ${carrier}
+    Take Screenshot
+
+Set MI Reference Fare
+    [Arguments]    ${fare}
+    Set Control Text Value    [NAME:ReferenceFareTextBox]    ${fare}
+    Take Screenshot
+
+Populate MI Tab For All Air Products
+    [Arguments]    ${ref_fare}    ${low_fare}    ${class_service}    ${low_fare_carrier}    ${booking_action}    ${realise_saving_code}
+    ...    ${missed_saving_code}    ${declined_airline_1}    ${declined_airline_2}    ${declined_fare_1}    ${declined_fare_2}
+    Wait Until Control Object Is Visible    [NAME:OtherServicesMIForIndiaControl]
+    Set Reference Fare Value    ${ref_fare}
+    Set Low Fare Field    ${low_fare}    False
+    Select Class Of Service    ${class_service}
+    Set Low Fare Carrier    ${low_fare_carrier}
+    Select Booking Action    ${booking_action}
+    Select Realised Saving Code Value    ${realise_saving_code}    False
+    Select Missed Saving Code Value    ${missed_saving_code}    False
+    Set Declined Airline 1    ${declined_airline_1}
+    Set Declined Airline 2    ${declined_airline_2}
+    Set Declined Fare 1    ${declined_fare_1}
+    Set Declined Fare 2    ${declined_fare_2}
+
+Set Low Fare Carrier
+    [Arguments]    ${low_fare_carrier}
+    ${object}    Determine Multiple Object Name Based On Active Tab    LowFareCarrierTextBox    False
+    Set Control Text Value    ${object}    ${low_fare_carrier}
+
+Select Booking Action
+    [Arguments]    ${booking_action}
+    Select Value From Dropdown List    [NAME:BookingActionComboBox]    ${booking_action}
+
+Set Declined Airline 1
+    [Arguments]    ${declined_airline_1}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedAirline1Textbox    False
+    Set Control Text Value    ${object}    ${declined_airline_1}
+
+Set Declined Airline 2
+    [Arguments]    ${declined_airline_2}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedAirline2Textbox    False
+    Set Control Text Value    ${object}    ${declined_airline_2}
+
+Set Declined Fare 1
+    [Arguments]    ${declined_fare_1}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedFare1Textbox    False
+    Set Control Text Value    ${object}    ${declined_fare_1}
+
+Set Declined Fare 2
+    [Arguments]    ${declined_fare_2}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedFare2Textbox    False
+    Set Control Text Value    ${object}    ${declined_fare_2}
+
+Get MI Field Values When Products Is Air
+    [Arguments]    ${identifier}
+    Get Reference Fare Value    ${EMPTY}
+    Get Low Fare Value    ${EMPTY}    False
+    Get Class Of Service
+    Get Low Fare Carrier
+    Get Booking Action
+    Get Realised Saving Code Value
+    Get Missed Saving Code Value
+    Get Declined Airline 1
+    Get Declined Airline 2
+    Get Declined Fare 1
+    Get Declined Fare 2
+    ${miscellaneous_collection}    Create List    ${reference_fare}    ${low_fare}    ${class_service}    ${low_fare_carrier}    ${booking_action}
+    ...    ${realise_saving_code}    ${missed_saving_code}    ${declined_airline_1}    ${declined_airline_2}    ${declined_fare_1}    ${declined_fare_2}
+    Set Suite Variable    ${miscellaneous_collection${identifier}}    ${miscellaneous_collection}
+    Log    ${miscellaneous_collection${identifier}}
+
+Get Low Fare Carrier
+    Comment    ${low_fare_carrier}    Get Control Text Value    [NAME:LowFareTextbox]
+    Comment    Set Suite Variable    ${low_fare_carrier}
+    ${object}    Determine Multiple Object Name Based On Active Tab    LowFareCarrierTextBox    FALSE
+    ${low_fare_carrier}    Get Control Text Value    ${object}
+    Set Suite Variable    ${low_fare_carrier}
+
+Get Booking Action
+    ${booking_action}    Get Control Text Value    [NAME:BookingActionComboBox]
+    Set Test Variable    ${booking_action}
+
+Get Declined Airline 1
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedAirline1Textbox    FALSE
+    ${declined_airline_1}    Get Control Text Value    ${object}
+    Set Suite Variable    ${declined_airline_1}
+
+Get Declined Airline 2
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedAirline2Textbox    FALSE
+    ${declined_airline_2}    Get Control Text Value    ${object}
+    Set Suite Variable    ${declined_airline_2}
+
+Get Declined Fare 1
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedFare1Textbox    FALSE
+    ${declined_fare_1}    Get Control Text Value    ${object}
+    Set Suite Variable    ${declined_fare_1}
+
+Get Declined Fare 2
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedFare2Textbox    FALSE
+    ${declined_fare_2}    Get Control Text Value    ${object}
+    Set Suite Variable    ${declined_fare_2}
+
+Select Class Of Service
+    [Arguments]    ${class_service}
+    Select Value From Dropdown List    [NAME:ClassOfServiceComboBox]    ${class_service}
+
+Get Class Of Service
+    ${class_service}    Get Control Text Value    [NAME:ClassOfServiceComboBox]
+    ${class_service}    Fetch From Left    ${class_service}    ${SPACE}-
+    Set Suite Variable    ${class_service}
+
+Get Reference Fare Value
+    [Arguments]    ${arg1}
+    ${reference_fare}    Get Control Text Value    [NAME:ReferenceFareTextbox]
+    Set Suite Variable    ${reference_fare}
+
+Set Reference Fare Value
+    [Arguments]    ${ref_fare}
+    Set Control Text Value    [NAME:ReferenceFareTextbox]    ${ref_fare}
+    Send    {TAB}
+    [Teardown]    Take Screenshot
+
+Get Missed Saving Code Value
+    ${missed_saving_code}    Get Control Text Value    [NAME:MissedSavingCodeComboBox]
+    ${missed_saving_code}    Fetch From Left    ${missed_saving_code}    ${SPACE}-
+    Set Suite Variable    ${missed_saving_code}
+
+Get Realised Saving Code Value
+    ${realise_saving_code}    Get Control Text Value    [NAME:RealisedSavingCodeComboBox]
+    ${realise_saving_code}    Fetch From Left    ${realise_saving_code}    ${SPACE}-
+    Set Suite Variable    ${realise_saving_code}

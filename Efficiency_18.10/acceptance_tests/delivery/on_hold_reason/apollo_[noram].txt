@@ -1,0 +1,186 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../delivery_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Customer References'
+    [Tags]    us2444
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With Round Trip Air Flight Using Default Values    Apollo 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrFour    LHRCDG+AF    01Y1    ${EMPTY}
+    ...    CDGLHR+AF    01Y1    T:$B    ${EMPTY}    AIR FARE    CUST REFS
+    ...    DELIVERY
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking    TICK
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Verify On Hold Booking Reason Is Checked    Awaiting Customer References
+    Verify On Hold Booking Reason Is Disabled    Awaiting Customer References
+    Click Finish PNR
+    Retrieve PNR Details from Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    ON HOLD:AWAITING CUSTOMER REFERENCES
+
+[QA] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Customer References'
+    [Tags]    us2444
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    This booking is ‘On Hold – Awaiting CDR’. Save time by using the ‘Quick Amend’ button to add the missing data and finish the booking!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    CUST REFS    DELIVERY    RECAP
+    Click Panel    Cust Refs
+    Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Customer References
+    Click Finish PNR
+    Re-Execute Quick Amend If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    ON HOLD:AWAITING CUSTOMER REFERENCES
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddCDR
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddCDR    ${exp_OverallTransactionStartTime}
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Not Visible
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Approval'
+    [Tags]    us2447
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With Round Trip Air Flight Using Default Values    Apollo 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrFour    LHRCDG+AF    01Y1    ${EMPTY}
+    ...    CDGLHR+AF    01Y1    T:$B    ${EMPTY}    AIR FARE    CUST REFS
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U/ONHOLD-AWAITING APPROVAL
+    Verify Specific Line Is Written In The PNR    ON HOLD:AWAITING APPROVAL
+
+[QA] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Approval'
+    [Tags]    us2447
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    This booking is ‘On Hold – Awaiting Approval’. Save time by using the ‘Quick Amend’ button to add the missing data and finish the booking!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    DELIVERY    RECAP
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Approval
+    Click Finish PNR
+    Re-Execute Quick Amend If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    U/ONHOLD-AWAITING APPROVAL
+    Verify Specific Line Is Not Written In The PNR    ON HOLD:AWAITING APPROVAL
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddSimpleApproval
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddSimpleApproval    ${exp_OverallTransactionStartTime}
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Not Visible
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Secure Flight Data'
+    [Tags]    us2445
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With One Way Flight Using Default Values    Apollo 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrFour    JFKCDG+AF    ${EMPTY}    AIR FARE
+    ...    CUST REFS    APIS/SFPD    DELIVERY
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Panel With Default Values
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Verify On Hold Booking Reason Is Checked    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Disabled    Awaiting Secure Flight Data
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U/ONHOLD-AWAITING SECURE FLIGHT DATA
+    Verify Specific Line Is Written In The PNR    ON HOLD:AWAITING SECURE FLIGHT DATA
+
+[QA] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Secure Flight Data'
+    [Tags]    us2445
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    This booking is ‘On Hold – Awaiting SFPD’, save time by using the ‘Quick Amend’ button to add the missing data and finish the booking!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    APIS/SFPD    DELIVERY    RECAP
+    Click Panel    APIS/SFPD
+    Verify APIS/SFPD Not Known Checkbox Is Unticked And Disabled
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Secure Flight Data
+    Click Finish PNR
+    Re-Execute Quick Amend If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    U/ONHOLD-AWAITING SECURE FLIGHT DATA
+    Verify Specific Line Is Not Written In The PNR    ON HOLD:AWAITING SECURE FLIGHT DATA
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddSFPD
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddSFPD    ${exp_OverallTransactionStartTime}
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Not Visible
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Policy Check'
+    [Tags]    us2446
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With One Way Flight Using Default Values    Apollo 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrFour    SYDHKG+QF    ${EMPTY}    AIR FARE
+    ...    CUST REFS    POLICY CHECK    DELIVERY
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Policy Check
+    Select Policy Status    Qantas Airways Risk    AA - Awaiting Approval
+    Select Policy Status    Hong Kong Risk    AA - Awaiting Approval
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Verify On Hold Booking Reason Is Disabled    Awaiting Approval
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U/ONHOLD-AWAITING APPROVAL
+    Verify Specific Line Is Written In The PNR    ON HOLD:AWAITING APPROVAL
+
+[QA] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Policy Check'
+    [Tags]    us2446
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    This booking is ‘On Hold – Policy Check Awaiting Approval’. Save time by using the ‘Quick Amend’ button to add the missing data and finish the booking!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    POLICY CHECK    DELIVERY    RECAP
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    Qantas Airways Risk
+    Verify Policy Status Is Blank By Default    Hong Kong Risk
+    Verify Policy Status Does Not Contain Option    Qantas Airways Risk    AA - Awaiting Approval
+    Verify Policy Status Does Not Contain Option    Hong Kong Risk    AA - Awaiting Approval
+    Select Policy Status    Qantas Airways Risk    HA - Has authority to travel
+    Select Policy Status    Hong Kong Risk    HA - Has authority to travel
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Approval
+    Click Finish PNR
+    Re-Execute Quick Amend For Awaiting Policy Check If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    U/ONHOLD-AWAITING APPROVAL
+    Verify Specific Line Is Not Written In The PNR    ON HOLD:AWAITING APPROVAL
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddPolicyApproval
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddPolicyApproval    ${exp_OverallTransactionStartTime}
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Not Visible
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend With Timestamp
+    Click Finish PNR
+
+Quick Amend For Awaiting Policy Check
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend With Timestamp
+    Click Panel    Policy Check
+    Select Policy Status    Qantas Airways Risk    HA - Has authority to travel
+    Select Policy Status    Hong Kong Risk    HA - Has authority to travel
+    Click Finish PNR

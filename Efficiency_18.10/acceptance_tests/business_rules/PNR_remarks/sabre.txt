@@ -1,0 +1,81 @@
+*** Settings ***
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Rules for CDR will be executed when Rule Logic is from PNR
+    [Tags]    us4929
+    [Template]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Comment    Set Test Variable    ${GDS_switch}    Sabre
+    Comment    Set Test Variable    ${locale}    en-US
+    Comment    Set Test Variable    ${syex_env}    Test
+    Comment    Set Test Variable    ${gds}    Sabre
+    Select GDS    Sabre
+    Comment    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 15 - Auto ¦ US1433    AutoOneFiveEight    NoramTrvlrOne
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Matrix DP Code    G101
+    Set CDR Value    T-Booking Date    112233
+    Verify CDR Is Mandatory    TS-Business Unit Name
+    Set CDR Value    TS-Business Unit Name    BSNUN
+    Verify CDR Is Enabled And Text Value is Correct    TS-Employee ID    860123
+    Set CDR Value    TS-Trip Reason    G101
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Update PNR
+    Book Flight X Months From Now    DENORD    01Y1    WPRQ    8
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value is Correct    Matrix DP Code    G101
+    Verify CDR Is Enabled And Text Value is Correct    TS-Employee ID    860123
+    Verify CDR Is Not Visible    TS-Trip Reason
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+
+[AB] Verify That Rules for CDR will be executed when Rule Logic is from PNR
+    [Tags]    us4929
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Matrix DP Code    G101
+    Set CDR Value    T-Booking Date    112233
+    Set CDR Value    TS-Business Unit Name    ${EMPTY}
+    Verify CDR Is Mandatory    TS-Business Unit Name
+    Verify CDR Is Enabled And Text Value is Correct    TS-Employee ID    860123
+    Set CDR Value    TS-Trip Reason    G101
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Update PNR
+    Book Flight X Months From Now    DENORD    01Y1    WPRQ    8
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify CDR Is Enabled And Text Value is Correct    Matrix DP Code    G101
+    Verify CDR Is Enabled And Text Value is Correct    TS-Employee ID    860123
+    Verify CDR Is Not Visible    TS-Trip Reason
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Department Code    SET
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Department Code    SET
+    Click Control Button    ${cdr_value2_locator}
+    Verify CDR Value Is Correct    T-Matrix DP Code    CONFIRM
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *P9    1
+    Verify Specific Line Is Not Written In The PNR    EAH PExpress Test
+    Verify Specific Line Is Not Written In The PNR    EAH 1234567
+    Verify Specific Line Is Written In The PNR    EAH 88888889
+    Click Finish PNR

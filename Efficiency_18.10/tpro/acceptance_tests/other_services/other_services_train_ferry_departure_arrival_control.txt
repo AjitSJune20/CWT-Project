@@ -1,0 +1,142 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Get Class Cabin
+    ${class_cabin}    Get Control Text Value    [NAME:ClassCabinTextBox]
+    Set Test Variable    ${class_cabin}
+
+Get Depart Date
+    ${depart_date}    Get Control Text Value    [NAME:DepartDateTimeDatePicker]
+    Comment    ${depart_date}    Convert Date To Gds Format    ${depart_date}    %m/%d/%Y    true
+    Set Test Variable    ${depart_date}
+
+Get Depart Destination
+    ${depart_destination}    Get Control Text Value    [NAME:DepartDestinationTextBox]
+    Set Test Variable    ${depart_destination}
+
+Get Depart Origin
+    ${depart_origin}    Get Control Text Value    [NAME:DepartOriginTextBox]
+    Set Test Variable    ${depart_origin}
+
+Get Depart Routing Description
+    ${depart_routing}    Get Control Text Value    [NAME:DepartRoutingTextBox]
+    Set Test Variable    ${depart_routing}
+
+Get Return Date
+    ${return_date}    Get Control Text Value    [NAME:ReturnDateTimeDatePicker]
+    Comment    ${return_date}    Convert Date To Gds Format    ${return_date}    %m/%d/%Y    true
+    Set Test Variable    ${return_date}
+
+Get Return Destination
+    ${return_destination}    Get Control Text Value    [NAME:ReturnDestinationTextBox]
+    Set Test Variable    ${return_destination}
+
+Get Return Origin
+    ${return_origin}    Get Control Text Value    [NAME:ReturnOriginTextBox]
+    Set Test Variable    ${return_origin}
+
+Get Return Routing Description
+    ${return_routing}    Get Control Text Value    [NAME:ReturnRoutingTextBox]
+    Set Test Variable    ${return_routing}
+
+Get Routing Details
+    Get Depart Origin
+    Get Depart Destination
+    Get Depart Routing Description
+    Get Depart Date
+    Get Return Origin
+    Get Return Destination
+    Get Return Routing Description
+    Get Return Date
+    Get Class Cabin
+    Get Passenger ID Value
+
+Populate Departure Routing
+    [Arguments]    ${origin}    ${destination}    ${description1}
+    Set Depart Origin    ${origin}
+    Set Depart Destination    ${destination}
+    Set Depart Routing Description    ${description1}
+
+Populate Return Routing
+    [Arguments]    ${origin}    ${destination}    ${description1}    ${class_cabin}=Economy
+    Set Return Origin    ${origin}
+    Set Return Destination    ${destination}
+    Set Return Routing Description    ${description1}
+    Set Class Cabin    ${class_cabin}
+
+Set Class Cabin
+    [Arguments]    ${class_cabin}
+    Set Control Text Value    [NAME:ClassCabinTextBox]    ${class_cabin}
+    Send    {TAB}
+    Take Screenshot
+
+Set Depart Date
+    [Arguments]    ${actual_ticketing_date}
+    ${month} =    Fetch From Left    ${actual_ticketing_date}    /
+    ${year} =    Fetch From Right    ${actual_ticketing_date}    /
+    ${day} =    Fetch From Left    ${actual_ticketing_date}    /${year}
+    ${day} =    Fetch From Right    ${day}    /
+    Click Control Button    [NAME:DepartDateTimeDatePicker]    ${title_power_express}
+    Send    ${year}    1
+    Send    {LEFT}
+    Send    ${day}    1
+    Send    {LEFT}
+    Send    ${month}    1
+    Sleep    1
+    Send    {TAB}
+    Sleep    1
+    Take Screenshot
+
+Set Depart Destination
+    [Arguments]    ${destination}
+    Set Control Text Value    [NAME:DepartDestinationTextBox]    ${destination}
+    Send    {TAB}
+    Take Screenshot
+
+Set Depart Origin
+    [Arguments]    ${origin}
+    Set Control Text Value    [NAME:DepartOriginTextBox]    ${origin}
+    Send    {TAB}
+    Take Screenshot
+
+Set Depart Routing Description
+    [Arguments]    ${description1}
+    Set Control Text Value    [NAME:DepartRoutingTextBox]    ${description1}
+    Send    {TAB}
+    Take Screenshot
+
+Set Return Date
+    [Arguments]    ${actual_ticketing_date}
+    ${month} =    Fetch From Left    ${actual_ticketing_date}    /
+    ${year} =    Fetch From Right    ${actual_ticketing_date}    /
+    ${day} =    Fetch From Left    ${actual_ticketing_date}    /${year}
+    ${day} =    Fetch From Right    ${day}    /
+    Click Control Button    [NAME:ReturnDateTimeDatePicker]    ${title_power_express}
+    Send    ${year}    1
+    Send    {LEFT}
+    Send    ${day}    1
+    Send    {LEFT}
+    Send    ${month}    1
+    Sleep    1
+    Send    {TAB}
+    Sleep    1
+    Take Screenshot
+
+Set Return Destination
+    [Arguments]    ${destination}
+    Set Control Text Value    [NAME:ReturnDestinationTextBox]    ${destination}
+    Send    {TAB}
+    Take Screenshot
+
+Set Return Origin
+    [Arguments]    ${origin}
+    Set Control Text Value    [NAME:ReturnOriginTextBox]    ${origin}
+    Send    {TAB}
+    Take Screenshot
+
+Set Return Routing Description
+    [Arguments]    ${description1}
+    Set Control Text Value    [NAME:ReturnRoutingTextBox]    ${description1}
+    Send    {TAB}
+    Take Screenshot

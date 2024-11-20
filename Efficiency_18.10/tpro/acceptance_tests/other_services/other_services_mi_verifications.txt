@@ -1,0 +1,71 @@
+*** Settings ***
+Resource          ../../../acceptance_tests/gds/gds_verification.txt
+
+*** Keywords ***
+Verify Default Value Of Reference Fare Field
+    ${ref_fare}    Get Control Text Value    [NAME:ReferenceFareTextbox]
+    ${val}    Evaluate    ${total_taxes}+${total_sell_fare}
+    Run Keyword And Continue On Failure    Run Keyword If    "${ref_fare}"!="${val}"    FAIL
+
+Verify Default Value Of Low Fare Field
+    ${object}    Determine Multiple Object Name Based On Active Tab    LowFareTextBox    FALSE
+    ${low_fare}    Get Control Text Value    ${object}
+    Run Keyword And Continue On Failure    Run Keyword If    "${low_fare}"!="${EMPTY}"    FAIL
+
+Verify Default Value Of Class Of Service Field
+    ${class_service}    Get Control Text Value    [NAME:ClassOfServiceComboBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${class_service}"!="${EMPTY}"    FAIL
+
+Verify Default Value Of Low fare Carrier Field
+    ${object}    Determine Multiple Object Name Based On Active Tab    LowFareCarrierTextBox    FALSE
+    ${low_fare_carrier}    Get Control Text Value    ${object}
+    Run Keyword And Continue On Failure    Run Keyword If    "${low_fare_carrier}"!="${EMPTY}"    FAIL
+
+Verify Default Value Of Booking Action Field
+    ${booking_action}    Get Control Text Value    [NAME:BookingActionComboBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${booking_action}"!="${EMPTY}"    FAIL
+
+Verify Default Value Of Realised Saving Code Field
+    ${realise_saving_code}    Get Control Text Value    [NAME:RealisedSavingCodeComboBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${realise_saving_code}"!="${EMPTY}"    FAIL
+
+Verify Default Value Of Declined Airline 1
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedAirline1Textbox    FALSE
+    ${declined_airline_1}    Get Control Text Value    ${object}
+    Run Keyword And Continue On Failure    Run Keyword If    "${declined_airline_1}"!="${EMPTY}"    FAIL
+
+Verify Default Value Of Declined Fare 1
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedFare1Textbox    FALSE
+    ${declined_fare_1}    Get Control Text Value    ${object}
+    Run Keyword And Continue On Failure    Run Keyword If    "${declined_fare_1}"!="${EMPTY}"    FAIL
+
+Verify Default Value Of Declined Airline 2
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedAirline2Textbox    FALSE
+    ${declined_airline_2}    Get Control Text Value    ${object}
+    Run Keyword And Continue On Failure    Run Keyword If    "${declined_airline_2}"!="${EMPTY}"    FAIL
+
+Verify Default Value Of Declined Fare 2
+    ${object}    Determine Multiple Object Name Based On Active Tab    DeclinedFare2Textbox    FALSE
+    ${declined_fare_2}    Get Control Text Value    ${object}
+    Run Keyword And Continue On Failure    Run Keyword If    "${declined_fare_2}"!="${EMPTY}"    FAIL
+
+Verify Default Value Of Missed Saving Code
+    ${missed_saving_code}    Get Control Text Value    [NAME:MissedSavingCodeComboBox]
+    Run Keyword And Continue On Failure    Run Keyword If    "${missed_saving_code}"!="${EMPTY}"    FAIL
+
+Verify Field Values In MI On Amend Eo When Product Is Air
+    [Arguments]    ${identifier1}    ${identifier2}
+    Run Keyword And Continue On Failure    Should Be Equal    ${miscellaneous_collection${identifier1}}    ${miscellaneous_collection${identifier2}}
+
+Verify Default Values Of MI Tab When Product Is Air
+    Comment    Verify Default Value Of Reference Fare Field
+    Verify Default Value Of Low Fare Field
+    Verify Default Value Of Class Of Service Field
+    Verify Default Value Of Low fare Carrier Field
+    Verify Default Value Of Booking Action Field
+    Verify Default Value Of Realised Saving Code Field
+    Verify Default Value Of Missed Saving Code
+    Verify Default Value Of Declined Airline 1
+    Verify Default Value Of Declined Fare 1
+    Verify Default Value Of Declined Airline 2
+    Verify Default Value Of Declined Fare 2

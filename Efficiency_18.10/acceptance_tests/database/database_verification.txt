@@ -1,0 +1,454 @@
+*** Settings ***
+Resource          ../../resources/variables/db_variables.txt
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../sanity_tests/resource_sanity.txt
+Resource          ../pspt_and_visa/pspt_and_visa_verification.txt
+Resource          ../air_fare/air_fare_verification.txt
+Resource          ../recap/recap_verification.txt
+
+*** Keywords ***
+Get ApplicationOverallTransactionTimeId From ApplicationOverallTransactionTime Table
+    Run Keyword If    '${current_pnr}' != '${EMPTY}'    Set Test Variable    ${sql_query}    select ApplicationOverallTransactionTimeId from ApplicationOverallTransactionTime where PNRLocator = '${current_pnr}' order by overalltransactionendtime desc
+    Run Keyword If    '${current_pnr}' == '${EMPTY}'    Set Test Variable    ${sql_query}    select ApplicationOverallTransactionTimeId from ApplicationOverallTransactionTime where PNRLocator is NULL and GDSCode = '${db_gds}' order by overalltransactionendtime desc
+    @{queryResults}    Execute Query    ${sql_query}    ApplicationUsage_Test
+    [Return]    ${queryResults[0][0]}
+
+Get ApplicationOverallTransactionTimeId From ApplicationUsage Table
+    [Arguments]    ${event_description}
+    ${computer_name} =    Get Environment Variable    COMPUTERNAME
+    @{queryResults}    Execute Query    Select ApplicationOverallTransactionTimeId from ApplicationUsage INNER JOIN ApplicationEvent ON ApplicationUsage.ApplicationEventId = ApplicationEvent.ApplicationEventId where ApplicationEvent.ApplicationEventDescription = '${event_description}' and ApplicationUsage.ComputerName like '%${computer_name}%' and ApplicationUsage.GDSCode = '${db_gds}' order by ApplicationUsageDate DESC    ApplicationUsage_Test
+    [Return]    ${queryResults[0][0]}
+
+Get Value From Database Table
+    [Arguments]    ${schema}    ${sql_query}    ${column_no}    ${row_no}
+    @{queryResults}    Execute Query    ${sql_query}    ${schema}
+    LOG    ${queryResults}
+    Set Test Variable    @{queryResults}
+    ${length} =    Get Length    ${queryResults}
+    Run Keyword If    "${length}" == "0"    Run Keyword And Continue On Failure    Fail    Failed: No query results found!
+    Set Test Variable    ${actual_column_value}    ${queryResults[${row_no}][${column_no}]}
+
+Validate Database Value in BookingContentID ContentDescription And BookingContent For ApplicationOverallTransactionTimeBookingContentType
+    [Arguments]    ${booking_content_id}    ${content_description}    ${booking_content}
+    Set Test Variable    ${actual_applicationoveralltransactiontimeid}    select top 1 * from ApplicationOverallTransactionTime where PNRLocator = '${current_pnr}' order by overalltransactionendtime desc
+    Get Value From Database Table    ApplicationUsage_Test    ${actual_applicationoveralltransactiontimeid}    ${col_aab_applicationoveralltransactiontimeid}    0
+    Set Test Variable    ${schema}    ApplicationUsage_Test
+    Set Test Variable    ${sql_query}    SELECT ApplicationOverallTransactionTimeBookingContentType.ApplicationOverallTransactionTimeId,ApplicationOverallTransactionTime.PNRLocator,ApplicationOverallTransactionTimeBookingContentType.BookingContentTypeId,BookingContentType.BookingContentTypeDescription,ApplicationOverallTransactionTimeBookingContentType.BookingContent,ApplicationOverallTransactionTimeBookingContentType.CreationTimestamp,ApplicationOverallTransactionTimeBookingContentType.CreationUserIdentifier,ApplicationOverallTransactionTimeBookingContentType.LastUpdateTimestamp FROM [ApplicationUsage_Test].[dbo].[ApplicationOverallTransactionTimeBookingContentType] JOIN [ApplicationUsage_Test].[dbo].[BookingContentType] ON ApplicationOverallTransactionTimeBookingContentType.BookingContentTypeId = BookingContentType.BookingContentTypeId JOIN [ApplicationUsage_Test].[dbo].[ApplicationOverallTransactionTime] ON ApplicationOverallTransactionTimeBookingContentType.ApplicationOverallTransactionTimeId = ApplicationOverallTransactionTime.ApplicationOverallTransactionTimeId WHERE ApplicationOverallTransactionTimeBookingContentType.CreationUserIdentifier = 'U003WXR' AND ApplicationOverallTransactionTime.PNRLocator = '${current_pnr}' And ApplicationOverallTransactionTimeBookingContentType.ApplicationOverallTransactionTimeID = '${actual_column_value}' Order By ApplicationOverallTransactionTimeID Desc
+    @{query_results}    Execute Query    ${sql_query}    ${schema}
+    ${length_query_result} =    Get Length    ${query_results}
+    : FOR    ${index}    IN RANGE    0    ${length_query_result}
+    \    ${actual_booking_content_id}    Run Keyword And Return Status    Verify Correct Value Is Reflected In OTT Table    ${col_aab_bookingcontentid}    ${booking_content_id}    ${index}
+    \    ${actual_content_description}    Run Keyword And Return Status    Verify Correct Value Is Reflected In OTT Table    ${col_aab_bookingcontenttypedescription}    ${content_description}    ${index}
+    \    ${actual_booking_content}    Run Keyword And Return Status    Verify Correct Value Is Reflected In OTT Table    ${col_aab_bookingcontent}    ${booking_content}    ${index}
+    \    Run Keyword If    "${actual_booking_content_id}" == "True" and "${actual_content_description}" == "True" and "${actual_booking_content}" == "True"    Exit For Loop
+    \    ...    ELSE    Continue For Loop
+    Run Keyword And Continue On Failure    Should Be True    "${actual_booking_content_id}" == "True" and "${actual_content_description}" == "True" and "${actual_booking_content}" == "True"    Correct Transction Details (Booking Contend ID: ${booking_content_id}, Content Description: ${content_description} And Booking Contend: ${booking_content}) should be logged
+
+Validate Database Value in BookingContentID ContentDescription And BookingContent For ApplicationOverallTransactionTimeBookingContentType Are Not Logged
+    [Arguments]    ${booking_content_id}    ${content_description}    ${booking_content}
+    Set Test Variable    ${actual_applicationoveralltransactiontimeid}    select top 1 * from ApplicationOverallTransactionTime where PNRLocator = '${current_pnr}' order by overalltransactionendtime desc
+    Get Value From Database Table    ApplicationUsage_Test    ${actual_applicationoveralltransactiontimeid}    ${col_aab_applicationoveralltransactiontimeid}    0
+    Set Test Variable    ${schema}    ApplicationUsage_Test
+    Set Test Variable    ${sql_query}    SELECT ApplicationOverallTransactionTimeBookingContentType.ApplicationOverallTransactionTimeId,ApplicationOverallTransactionTime.PNRLocator,ApplicationOverallTransactionTimeBookingContentType.BookingContentTypeId,BookingContentType.BookingContentTypeDescription,ApplicationOverallTransactionTimeBookingContentType.BookingContent,ApplicationOverallTransactionTimeBookingContentType.CreationTimestamp,ApplicationOverallTransactionTimeBookingContentType.CreationUserIdentifier,ApplicationOverallTransactionTimeBookingContentType.LastUpdateTimestamp FROM [ApplicationUsage_Test].[dbo].[ApplicationOverallTransactionTimeBookingContentType] JOIN [ApplicationUsage_Test].[dbo].[BookingContentType] ON ApplicationOverallTransactionTimeBookingContentType.BookingContentTypeId = BookingContentType.BookingContentTypeId JOIN [ApplicationUsage_Test].[dbo].[ApplicationOverallTransactionTime] ON ApplicationOverallTransactionTimeBookingContentType.ApplicationOverallTransactionTimeId = ApplicationOverallTransactionTime.ApplicationOverallTransactionTimeId WHERE ApplicationOverallTransactionTimeBookingContentType.CreationUserIdentifier = 'U003WXR' AND ApplicationOverallTransactionTime.PNRLocator = '${current_pnr}' And ApplicationOverallTransactionTimeBookingContentType.ApplicationOverallTransactionTimeID = '${actual_column_value}' Order By ApplicationOverallTransactionTimeID Desc
+    @{query_results}    Execute Query    ${sql_query}    ${schema}
+    ${length_query_result} =    Get Length    ${query_results}
+    : FOR    ${index}    IN RANGE    0    ${length_query_result}
+    \    ${actual_booking_content_id}    Run Keyword And Return Status    Verify Correct Value Is Reflected In OTT Table    ${col_aab_bookingcontentid}    ${booking_content_id}    ${index}
+    \    ${actual_content_description}    Run Keyword And Return Status    Verify Correct Value Is Reflected In OTT Table    ${col_aab_bookingcontenttypedescription}    ${content_description}    ${index}
+    \    ${actual_booking_content}    Run Keyword And Return Status    Verify Correct Value Is Reflected In OTT Table    ${col_aab_bookingcontent}    ${booking_content}    ${index}
+    \    Run Keyword If    "${actual_booking_content_id}" == "True" and "${actual_content_description}" == "True" and "${actual_booking_content}" == "True"    Exit For Loop
+    \    ...    ELSE    Continue For Loop
+    Run Keyword And Continue On Failure    Should Not Be True    "${actual_booking_content_id}" == "True" and "${actual_content_description}" == "True" and "${actual_booking_content}" == "True"    Correct Transction Details (Booking Contend ID: ${booking_content_id}, Content Description: ${content_description} And Booking Contend: ${booking_content}) should NOT be logged
+
+Verify ${workflow} Transaction Is Reflected In OTT Table
+    ${expected_value}    Set Variable If    "${workflow.upper()}" == "NEW BOOKING"    1    "${workflow.upper()}" == "AMEND BOOKING"    2    "${workflow.upper()}" == "SEND ITINERARY"
+    ...    4    "${workflow.upper()}" == "CANCEL BOOKING"    3
+    Set Test Variable    ${schema}    ApplicationUsage_Test
+    Set Test Variable    ${sql_query}    select top 1 * from ApplicationOverallTransactionTime where PNRLocator = '${current_pnr}' order by overalltransactionendtime desc
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_booking_type_id}    ${expected_value}
+
+Verify Application Usage Table Has Correct Values
+    [Arguments]    ${sql_query}    ${row_num}    ${schema}    ${col_index}
+    @{queryResults}    Execute Query    ${sql_query}    ${schema}
+    Set Test Variable    ${col_index}    0
+    Set Test Variable    ${ctr}    0
+    Set Test Variable    @{queryResults}
+    ${length} =    Get Length    ${queryResults}
+    : FOR    ${index}    IN    @{application_usage_table}
+    \    Run Keyword If    "${length}" == "0"    Run Keyword And Continue On Failure    Fail    Failed: No query results found!
+    \    Run Keyword If    "${length}" == "0"    Exit For Loop
+    \    Comment    ${col_index} =    Get Table Column    ${dm_table_name}    12
+    \    Log    ${queryResults[${row_num}][${col_index}]}
+    \    ${IsDatetime}    Verify If Value is Datetime    ${queryResults[${row_num}][${col_index}]}
+    \    Run Keyword If    "${index}" == "OverallTransactionLengthInMilliseconds"    Verify Overall Transaction Length In Millisec Field Contains Correct Value    ${queryResults[${row_num}][${col_index}]}    ${verification_format[${ctr}]}
+    \    ...    ELSE IF    "${IsDatetime}" == "True"    Verify That Database Datetime Field Contains Correct Value    ${queryResults[${row_num}][${col_index}]}    ${verification_format[${ctr}]}
+    \    ...    ELSE    Verify That Database Field Contains Correct Value    ${queryResults[${row_num}][${col_index}]}    ${verification_format[${ctr}]}
+    \    ${ctr}    evaluate    ${ctr} + 1
+
+Verify Application Usage Table Has Correct Values For Specific Field Column
+    [Arguments]    ${sql_query}    ${row_num}    ${schema}    ${expected_col_value}
+    @{queryResults}    Execute Query    ${sql_query}    ${schema}
+    ${actual_value}    Set Variable    ${queryResults[0][0]}
+    ${IsDatetime}    Check If Value is Datetime    ${actual_value}
+    Run Keyword If    "${expected_col_value}" == "exp_OverallTransactionLengthInMilliseconds"    Verify Overall Transaction Length In Millisec Field Contains Correct Value    ${actual_value}    ${expected_col_value}
+    ...    ELSE IF    "${IsDatetime}" == "True"    Verify Database Datetime Field Contains Correct Value    ${actual_value}    ${expected_col_value}
+    ...    ELSE    Verify Database Field Contains Correct Value    ${actual_value}    ${expected_col_value}
+
+Verify Application Usage Table Has Correct Values ver2
+    [Arguments]    ${sql_query}    ${row_num}    ${schema}    ${col_index}
+    @{queryResults}    Execute Query    ${sql_query}    ${schema}
+    Comment    Set Test Variable    ${col_index}    0
+    Comment    Set Test Variable    ${ctr}    0
+    Log    ${col_index}
+    Set Test Variable    @{queryResults}
+    ${length} =    Get Length    ${queryResults}
+    Run Keyword If    "${length}" == "0"    Run Keyword And Continue On Failure    Fail    Failed: No query results found!
+    Comment    ${col_index} =    Get Table Column    ${dm_table_name}    12
+    Log    ${queryResults[${row_num}][${col_index}]}
+    ${IsDatetime}    Verify If Value is Datetime    ${queryResults[${row_num}][${col_index}]}
+    Run Keyword If    "${col_index}" == "10"    Verify Overall Transaction Length In Millisec Field Contains Correct Value    ${queryResults[${row_num}][${col_index}]}    ${verification_format[${ctr}]}
+    ...    ELSE IF    "${IsDatetime}" == "True"    Verify Database Datetime Field Contains Correct Value    ${queryResults[${row_num}][${col_index}]}    ${expected_value}
+    ...    ELSE    Verify Database Field Contains Correct Value    ${queryResults[${row_num}][${col_index}]}    ${expected_value}
+
+Verify ApplicationOverallTransactionTimeId For Clear All Event Is NULL
+    ${ott_id_clear_all}    Get ApplicationOverallTransactionTimeId From ApplicationUsage Table    Clear All
+    Verify Actual Value Matches Expected Value    ${ott_id_clear_all}    None
+
+Verify ApplicationOverallTransactionTimeId Is Same For ApplicationUsage And ApplicationOverallTransactionTime Tables
+    ${ott_id_select_traveller}    Get ApplicationOverallTransactionTimeId From ApplicationUsage Table    Select Traveller
+    ${ott_id_app_ott}    Get ApplicationOverallTransactionTimeId From ApplicationOverallTransactionTime Table
+    Verify Actual Value Matches Expected Value    ${ott_id_select_traveller}    ${ott_id_app_ott}
+
+Verify CDR Update Details Are Recorded In ApplicationTransactionCDRUpdate Table
+    [Arguments]    ${expected_cdr_name}    ${expected_original_value}    ${expected_updated_value}
+    ${ott_id} =    Get ApplicationOverallTransactionTimeId From ApplicationOverallTransactionTime Table
+    Set Test Variable    ${sql_query}    select * from ApplicationTransactionCDRUpdate where ApplicationOverallTransactionTimeId = '${ott_id}' and CDRName = '${expected_cdr_name}' and OriginalValue = '${expected_original_value}' and UpdatedValue = '${expected_updated_value}'
+    Verify Row Count Is Correct    ${sql_query}    ApplicationUsage_Test    1
+
+Verify Correct Transaction Details Are Logged In ApplicationOverallTransactionTimeBookingContentType
+    [Arguments]    @{db_data}
+    : FOR    ${element}    IN    @{db_data}
+    \    Log    ${element}
+    \    @{actual_obj_list}    Split String    ${element}    ,
+    \    Validate Database Value In BookingContentID ContentDescription And BookingContent For ApplicationOverallTransactionTimeBookingContentType    ${actual_obj_list[0]}    ${actual_obj_list[1]}    ${actual_obj_list[2]}
+
+Verify Correct Value Is Reflected In OTT Table
+    [Arguments]    ${column}    ${expected_value}    ${row}=0    ${operation}=${EMPTY}
+    Get Value From Database Table    ${schema}    ${sql_query}    ${column}    ${row}
+    ${actual_column_value}    Convert To String    ${actual_column_value}
+    Log    Actual: ${actual_column_value}
+    Log    Expected: ${expected_value}
+    Run Keyword If    '${operation}' == '${EMPTY}'    Run Keyword And Continue On Failure    Should Be Equal    ${actual_column_value}    ${expected_value}
+    Run Keyword If    '${operation}' == 'contains'    Run Keyword And Continue On Failure    Should Contain    ${actual_column_value}    ${expected_value}
+
+Verify Database Datetime Field Contains Correct Value
+    [Arguments]    ${actual_col_val}    ${expected_col_val}
+    Log    Actual: ${actual_col_val}
+    Log    Expected: ${expected_col_val}
+    ${expected_date}    Fetch From Left    ${expected_col_val}    ${SPACE}
+    ${actual_col_val}    Convert To String    ${actual_col_val}
+    ${actual_date}    Fetch From Left    ${actual_col_val}    ${SPACE}
+    Should Be Equal As Strings    ${expected_date}    ${actual_date}
+    Comment    ${time_diff}    Subtract Date From Date    ${actual_col_val}    ${expected_col_val}
+    Comment    ${time_diff_abs}    Evaluate    abs(${time_diff})
+    Comment    ${match}    Evaluate    ${time_diff_abs} < ${variance}
+    Comment    Run Keyword If    "${match}" == "True"    Log    Passed: Database datetime field contains value... Actual: ${actual_col_val}, Expected: ${expected_col_val}
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    Failed: Database datetime field does not contain value... Actual: ${actual_col_val}, Expected: ${expected_col_val}
+    Comment    Set Test Variable    ${match}
+
+Verify Database Datetime Field Contains InCorrect Value
+    [Arguments]    ${actual_col_val}    ${expected_col_val}
+    ${variance}    Evaluate    ${variance} + 20
+    Log    Expected: ${${expected_col_val}} with acceptable variance of ${variance} seconds
+    Log    Actual: ${actual_col_val}
+    ${time_diff}    Subtract Date From Date    ${actual_col_val}    ${${expected_col_val}}
+    ${time_diff_abs}    Evaluate    abs(${time_diff})
+    ${match}    Evaluate    ${time_diff_abs} < ${variance}
+    Run Keyword If    "${match}" == "True"    Run Keyword And Continue On Failure    Fail    Failed for ${expected_col_val}: Database column has correct value: Actual: ${actual_col_val}
+    ...    ELSE    Log    Passed for ${expected_col_val}: Incorrect database column value. Actual: ${actual_col_val}, Expected: ${${expected_col_val}}
+    Run Keyword If    "${match}" == "True"    Set Test Variable    ${verification_status}    Failed
+    ...    ELSE    Set Test Variable    ${verification_status}    Passed
+    [Return]    ${verification_status}
+
+Verify Database Datetime Field Does Not Contain Value
+    [Arguments]    ${actual_col_val}    ${expected_col_val}
+    Log    Actual: ${actual_col_val}
+    Log    Expected: ${expected_col_val}
+    ${time_diff}    Subtract Date From Date    ${actual_col_val}    ${expected_col_val}
+    ${time_diff_abs}    Evaluate    abs(${time_diff})
+    ${match}    Evaluate    ${time_diff_abs} < ${variance}
+    Run Keyword If    "${match}" == "True"    Fail    Failed: Database datetime field does not contain value... Actual: ${actual_col_val}, Expected: ${expected_col_val}
+    ...    ELSE    Run Keyword And Continue On Failure    Log    Passed: Database datetime field contains value... Actual: ${actual_col_val}, Expected: ${expected_col_val}
+    Set Test Variable    ${match}
+
+Verify Database Field Contains Correct Value
+    [Arguments]    ${actual_col_val}    ${expected_col_val}
+    Log    Expected: ${${expected_col_val}}
+    Log    Actual: ${actual_col_val}
+    ${match}    Run Keyword And Return Status    Should Be Equal As Strings    ${actual_col_val}    ${${expected_col_val}}
+    Run Keyword If    "${match}" == "True"    Log    Passed for ${expected_col_val}: Database column has correct value: Actual:${actual_col_val}
+    ...    ELSE    Run Keyword And Continue on Failure    Fail    Failed for ${expected_col_val}: Incorrect database column value. Actual: ${actual_col_val}, Expected: ${${expected_col_val}}
+
+Verify Entry Is Not Present In Application Usage DB
+    [Arguments]    ${event_Description}    ${exp_time}
+    ${computer_name} =    Get Environment Variable    COMPUTERNAME
+    @{queryResults}    Execute Query    Select ApplicationUsageDate from ApplicationUsage INNER JOIN ApplicationEvent ON ApplicationUsage.ApplicationEventId = ApplicationEvent.ApplicationEventId where ApplicationEvent.ApplicationEventDescription = '${event_description}' and ApplicationUsage.ComputerName like '%${computer_name}%' and ApplicationUsage.GDSCode = '${db_gds}' order by ApplicationUsageDate DESC    ApplicationUsage_Test
+    Set Test Variable    ${col_index}    0
+    Set Test Variable    ${ctr}    0
+    Set Test Variable    @{queryResults}
+    ${length} =    Get Length    ${queryResults}
+    Run Keyword If    "${length}" != "0"    Verify Database Datetime Field Does Not Contain Value    ${queryResults[0][0]}    ${exp_time}
+    Run Keyword If    "${length}" != "0" and "${match}" == "False"    Log    Passed: ${event_Description} is NOT Present in Application Usage DB
+    ...    ELSE IF    "${length}" != "0" and "${match}" != "False"    Run Keyword and Continue On Failure    FAIL    Failed: ${event_Description} is Present in Application Usage DB
+
+Verify Entry Is Not Present In Perf Log File
+    [Arguments]    ${str_value}
+    ${perf_file}    Determine Log File Name and Path    SyExPerfLog
+    ${perf_file_value}    OperatingSystem.Get File    ${perf_file}
+    ${value_exist}    Run Keyword and Return Status    Should Not Contain    ${perf_file_value}    ${str_value}
+    Run Keyword If    "${value_exist}" == "True"    Log    PASSED: "${str_value}" Does Not Exist in Perf Log: ${perf_file}
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    FAILED: "${str_value}" Exists in Perf Log: ${perf_file}
+
+Verify Entry Is Present In Application Usage DB
+    [Arguments]    ${event_Description}    ${exp_time}=trigger_CTI_traveller_search_time
+    ${computer_name} =    Get Environment Variable    COMPUTERNAME
+    @{queryResults}    Execute Query    Select ApplicationUsageDate from ApplicationUsage INNER JOIN ApplicationEvent ON ApplicationUsage.ApplicationEventId = ApplicationEvent.ApplicationEventId where ApplicationEvent.ApplicationEventDescription = '${event_description}' and ApplicationUsage.ComputerName like '%${computer_name}%' and ApplicationUsage.GDSCode = '${db_gds}' order by ApplicationUsageDate DESC    ApplicationUsage_Test
+    Set Test Variable    ${col_index}    0
+    Set Test Variable    ${ctr}    0
+    Set Test Variable    @{queryResults}
+    ${length} =    Get Length    ${queryResults}
+    Run Keyword If    ${length} == 0    Run Keyword And Continue On Failure    Fail    Failed: No query results found!
+    Set Test Variable    ${event_Description}
+    Run Keyword If    ${length} != 0    Verify Database Datetime Field Contains Correct Value    ${queryResults[0][0]}    ${exp_time}
+    Comment    Run Keyword If    "${length}" != "0" and "${match}" == "True"    Log    Passed: ${event_Description} is Present in Application Usage DB
+    ...    ELSE    Run Keyword and Continue On Failure    FAIL    Failed: ${event_Description} is NOT Present in Application Usage DB
+
+Verify Entry Is Present In Perf Log File
+    [Arguments]    ${str_value}
+    ${perf_file}    Determine Log File Name and Path    SyExPerfLog
+    ${perf_file_value}    OperatingSystem.Get File    ${perf_file}
+    ${value_exist}    Run Keyword and Return Status    Should Contain    ${perf_file_value}    ${str_value}
+    Should Be True    ${value_exist} == True    "${str_value}" should EXISTS in Perf Log: ${perf_file}
+    Comment    Run Keyword If    "${value_exist}" == "True"    Log    PASSED: "${str_value}" Exists in Perf Log: ${perf_file}
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    FAILED: "${str_value}" Does Not Exist in Perf Log: ${perf_file}
+
+Verify Entry is Present in Perf Log File X number of times
+    [Arguments]    ${str_value}    ${str_value_count}=1
+    ${perf_file}    Determine Log File Name and Path    SyExPerfLog
+    ${perf_file_value}    OperatingSystem.Get File    ${perf_file}
+    ${value_exist}    Run Keyword and Return Status    Should Contain X Times    ${perf_file_value}    ${str_value}    ${str_value_count}
+    Run Keyword If    "${value_exist}" == "True"    Log    PASSED: "${str_value}" Exists in Perf Log: ${perf_file}
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    FAILED: "${str_value}" Does Not Exist in Perf Log: ${perf_file}
+
+Verify Entry is Present in Queue Minder Application Usage DB
+    [Arguments]    ${event_Description}    ${exp_time}=trigger_CTI_traveller_search_time
+    ${computer_name} =    Get Environment Variable    COMPUTERNAME
+    @{queryResults}    Execute Query    SELECT TOP 1 [QueueMinderPCC],[QueueMinderNumber],[QueueMinderCategory],[QueueMinderMessage],[QueueMinderDate],[CreationTimestamp] FROM [ApplicationUsage_Test].[dbo].[ApplicationOverallTransactionTimeQueueMinder] where queueminderpcc = '${queue_pcc}' and queuemindernumber = '${queue_number}' and queuemindermessage = '${queue_message}' and creationtimestamp >= getutcdate() order by creationtimestamp desc    ApplicationUsage_Test
+    Set Test Variable    ${col_index}    0
+    Set Test Variable    ${ctr}    0
+    Set Test Variable    @{queryResults}
+    ${length} =    Get Length    ${queryResults}
+    Run Keyword If    "${length}" == "0"    Run Keyword And Continue On Failure    Fail    Failed: No query results found!
+    ${entry_exist}    Run Keyword If    "${length}" != "0"    Verify Database Datetime Field Contains Correct Value    ${queryResults[0][0]}    ${exp_time}
+    Run Keyword If    "${length}" != "0" and "${entry_exist}" == "Passed"    Log    Passed: ${event_Description} is Present in Application Usage DB
+    ...    ELSE IF    "${length}" != "0" and "${entry_exist}" == "Failed"    Run Keyword and Continue On Failure    FAIL    Failed: ${event_Description} is NOT Present in Application Usage DB
+
+Verify If Value is Datetime
+    [Arguments]    ${value}
+    ${IsDatetime}    Run Keyword And Return Status    Should Match Regexp    "${value}"    \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.*
+
+Verify No OTT Entry is created for the transaction
+    [Arguments]    ${startTime}    ${loginID}    ${clientSubunitGuid}    ${travelerGuid}
+    @{queryResults}    Execute Query    select OverallTransactionStartTime from ApplicationOverallTransactionTime where SystemUserLoginIdentifier = '${loginID}' and PNRLocator is NULL and TravelerGuid = '${travelerGuid}' and ClientSubUnitGuid = '${clientSubunitGuid}' order by overalltransactionendtime desc    ApplicationUsage_Test
+    Set Test Variable    ${col_index}    0
+    Set Test Variable    ${ctr}    0
+    Set Test Variable    @{queryResults}
+    ${length} =    Get Length    ${queryResults}
+    Run Keyword If    "${length}" == "0"    Log    Passed: No query results found! No OTT Entry Generated!
+    ${entry_exist}    Run Keyword If    "${length}" != "0"    Verify Database Datetime Field Contains InCorrect Value    ${queryResults[0][0]}    startTime
+    Run Keyword If    "${entry_exist}" == "Failed"    Run Keyword and Continue On Failure    FAIL    Failed: OTT Entry is created for the transaction
+    ...    ELSE    Log    Passed: No OTT Entry is created for the transaction
+
+Verify OTT Entry Value for transaction is correct
+    [Arguments]    ${col_index}    ${exp_val}
+    Comment    @{application_usage_table}    Create List    ${columnName}
+    Comment    @{verification_format}    Create List    exp_${columnName}
+    Comment    Set Test Variable    ${exp_${columnName}}    ${exp_val}
+    Set Test Variable    ${expected_value}    ${exp_val}
+    Verify Application Usage Table Has Correct Values ver 2    ${sql_query}    0    ApplicationUsage_Test    ${col_index}
+
+Verify Overall Transaction Length In Millisec Field Contains Correct Value
+    Get Value From Database Table    ${schema}    ${sql_query}    ${col_ott_overall_trans_length}    0
+    ${exp_time_length}    Subtract Date From Date    ${exp_overalltransaction_start_time}    ${exp_overalltransaction_end_time}
+    ${exp_time_length_abs}    Evaluate    abs(${exp_time_length}*1000)
+    Log    Actual: ${actual_column_value}
+    Log    Expected: ${exp_time_length_abs}
+    ${time_diff}    Evaluate    ${actual_column_value} - ${exp_time_length_abs}
+    ${time_diff_abs}    Evaluate    abs(${time_diff})
+    ${match}    Evaluate    ${time_diff_abs} < ${variance}*1000
+    Run Keyword If    "${match}" == "True"    Log    Passed: Database column has correct value: Actual: ${actual_column_value}
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    Failed: Incorrect database column value. Actual: ${actual_column_value}, Expected: ${exp_time_length_abs}
+
+Verify Overalltransaction End Time Is Correct In OTT Table
+    Get Value From Database Table    ${schema}    ${sql_query}    ${col_ott_overall_trans_end_time}    0
+    Verify Database Datetime Field Contains Correct Value    ${actual_column_value}    ${exp_overalltransaction_end_time}
+
+Verify Overalltransaction Start Time Is Correct In OTT Table
+    Get Value From Database Table    ${schema}    ${sql_query}    ${col_ott_overall_trans_start_time}    0
+    Verify Database Datetime Field Contains Correct Value    ${actual_column_value}    ${exp_overalltransaction_start_time}
+
+Verify Risk Destination Tab in Client Info Panel is Displayed
+    ${risk_destination1} =    Run Keyword And Return Status    Object Exists    ${data_path}\\risk_destination_selected_FR.png    ${similarity}    ${timeout}
+    ${risk_destination2} =    Run Keyword And Return Status    Object Exists    ${data_path}\\risk_destination_unselected_FR.png    ${similarity}    ${timeout}
+    Run Keyword If    "${risk_destination1}" == "False" and "${risk_destination2}" == "False"    Run Keyword And Continue On Failure    Fail    FAILED: Risk Destination tab was not visible
+    ...    ELSE    Log    PASSED: Verified that Risk Destination is visible.
+    Take Screenshot
+
+Verify Row Count Is Correct
+    [Arguments]    ${sql_query}    ${schema}    ${expected_row_count}
+    Connect To Power Express Database
+    Log    Expected Row Count: ${expected_row_count}
+    Run Keyword And Continue On Failure    Row Count Is Equal To X    ${sql_query}    ${expected_row_count}
+    Disconnect From Database
+
+Verify That Traveller Checkbox Is Ticked
+    ${status}    Get checkbox status    ${chk_traveller}
+    Run Keyword If    "${status}" == "True"    Log    Passed: Verified that Traveller checkbox was ticked
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    Failed: Traveller check box was not ticked.
+    Take Screenshot
+
+Verify Transaction Details Are Not Logged In ApplicationOverallTransactionTimeBookingContentType
+    [Arguments]    @{db_data}
+    : FOR    ${element}    IN    @{db_data}
+    \    Log    ${element}
+    \    @{actual_obj_list}    Split String    ${element}    ,
+    \    Validate Database Value in BookingContentID ContentDescription And BookingContent For ApplicationOverallTransactionTimeBookingContentType Are Not Logged    ${actual_obj_list[0]}    ${actual_obj_list[1]}    ${actual_obj_list[2]}
+
+Verify Transaction Is Reflected In OTT Table
+    [Arguments]    ${exp_location_name}    ${exp_sys_user_guid}    ${exp_sys_user_login}    ${exp_global_region_code}    ${exp_global_subregion_code}    ${exp_country_code}
+    ...    ${exp_gds_code}    ${exp_booking_type_id}    ${exp_client_subunit_guid}    ${exp_traveler_guid}    ${exp_exchange_flag}    ${exp_pnr_locator}
+    ...    ${exp_moxie_incident}    ${exp_end_flag}    ${exp_message}
+    Set Test Variable    ${schema}    ApplicationUsage_Test
+    Run Keyword If    '${current_pnr}' != '${EMPTY}'    Set Test Variable    ${sql_query}    select top 1 * from ApplicationOverallTransactionTime where PNRLocator = '${current_pnr}' order by overalltransactionendtime desc
+    Run Keyword If    '${current_pnr}' == '${EMPTY}'    Set Test Variable    ${sql_query}    select top 1 * from ApplicationOverallTransactionTime where PNRLocator is NULL and GDSCode = '${db_gds}' order by overalltransactionendtime desc
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_location_name}    ${exp_location_name}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_sys_user_guid}    ${exp_sys_user_guid}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_sys_user_login}    ${exp_sys_user_login}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_global_region_code}    ${exp_global_region_code}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_global_subregion_code}    ${exp_global_subregion_code}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_country_code}    ${exp_country_code}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_gds_code}    ${exp_gds_code}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_booking_type_id}    ${exp_booking_type_id}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_client_subunit_guid}    ${exp_client_subunit_guid}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_traveler_guid}    ${exp_traveler_guid}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_exchange_flag}    ${exp_exchange_flag}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_pnr_locator}    ${exp_pnr_locator}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_moxie_incident_id}    ${exp_moxie_incident}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_overall_trans_end_flag}    ${exp_end_flag}
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_message_from_gds}    ${exp_message}    0    contains
+    Verify Overalltransaction Start Time Is Correct In OTT Table
+    Verify Overalltransaction End Time Is Correct In OTT Table
+    Verify Overall Transaction Length In Millisec Field Contains Correct Value
+    Verify Correct Value Is Reflected In OTT Table    ${col_ott_app_version}    ${version}    0    contains
+
+Verify Valid Count Of CDR Update Rows Are Recorded In ApplicationTransactionCDRUpdate Table
+    [Arguments]    ${expected_row_count}
+    ${ott_id} =    Get ApplicationOverallTransactionTimeId From ApplicationOverallTransactionTime Table
+    Set Test Variable    ${sql_query}    select * from ApplicationTransactionCDRUpdate where ApplicationOverallTransactionTimeId = '${ott_id}'
+    Verify Row Count Is Correct    ${sql_query}    ApplicationUsage_Test    ${expected_row_count}
+
+Verify the Correct Traveler is IDed
+    [Arguments]    ${client_unit}    ${lastname}    ${firstname}
+    ${fName} =    Control Get Text    ${title_Main}    ${EMPTY}    ${add_firstname_TravContact}
+    ${lName} =    Control Get Text    ${title_Main}    ${EMPTY}    ${add_lastname_TravContact}
+    ${cUnit} =    Control Get Text    ${title_Main}    ${EMPTY}    ${cbo_Client}
+    ${firstname_match}    Run Keyword and Return Status    Should Match    ${fName.upper()}    ${firstname.upper()}
+    ${lastname_match}    Run Keyword and Return Status    Should Match    ${lName.upper()}    ${lastname.upper()}
+    ${clientunit_match}    Run Keyword and Return Status    Should Match    ${cUnit}    ${client_unit}
+    Run Keyword If    "${clientunit_match}" == "True"    Log    Client Unit is Correct.
+    ...    ELSE    FAIL    Client Unit is not correct.
+    Run Keyword If    "${firstname_match}" == "True"    Log    First Name is correct.
+    ...    ELSE    FAIL    First Name is not correct.
+    Run Keyword If    "${lastname_match}" == "True"    Log    Last Name is correct.
+    ...    ELSE    FAIL    Last Name is not correct.
+
+Verify the exp_ApplicationVersionNumber Field Contains Correct Value
+    [Arguments]    ${actual_col_val}    ${expected_col_val}
+    Log    Expected: ${${expected_col_val}}
+    Log    Actual: ${actual_col_val}
+    ${match}    Run Keyword And Return Status    Should Contain    ${actual_col_val}    ${${expected_col_val}}
+    Run Keyword If    "${match}" == "True"    Log    Passed for ${expected_col_val}: Database column has correct value: Actual:${actual_col_val}
+    ...    ELSE    Run Keyword And Continue on Failure    Fail    Failed for ${expected_col_val}: Incorrect database column value. Actual: ${actual_col_val}, Expected: ${${expected_col_val}}
+
+Verify Application Usage Additional Information Was Logged
+    [Arguments]    ${actual_application_usage_additionalinfo}=${EMPTY}    ${row_result}=1    ${expected_row_number}=${EMPTY}
+    [Documentation]    \#verifies the FIRST/TOP application usage event logged
+    Set Test Variable    ${schema}    ApplicationUsage_Test
+    ${username}    Get UserName
+    Set Test Variable    ${sql_query}    SELECT top ${row_result} b.*, a.ComputerName, a.ApplicationUsageDate, a.AdditionalInformation FROM APPLICATIONUSAGE a join applicationevent b on b.applicationeventid = a.applicationeventid WHERE a.COMPUTERNAME like '%${username}%' and a.applicationeventid not in (102,103) ORDER BY a.applicationusageid DESC
+    Verify Correct Value Is Reflected In OTT Table    4    ${actual_application_usage_additionalinfo}    ${expected_row_number}
+
+Verify Error(Expected) In Status Strip Text
+    [Arguments]    ${status_strip_text}
+    Activate Power Express Window
+    Take Screenshot
+    Set Test Variable    ${status}    ${EMPTY}
+    ${status}    Get Status Strip Text
+    Should Be Equal    ${status.upper()}    ${status_strip_text.upper()}
+
+Verify CTI \ Translation Message In The Pop Up
+    [Arguments]    ${pendingcall_message}    ${popup_title}
+    Wait Until Window Exists    ${popup_title}
+    ${call_message}    Get Control Text Value    [Name:txtMessage]    ${popup_title}
+    Run Keyword If    ${does_window_exists} == 1    Should Be Equal    ${pendingcall_message}    ${call_message}
+    [Teardown]    Take Screenshot
+
+Click Auto Clear All Button
+    [Arguments]    ${popup_title}
+    Wait Until Control Object Is Enabled    [NAME:btnAutoClear]    ${popup_title}    true
+    Click Control Button    [NAME:btnAutoClear]    ${popup_title}
+    Wait Until Progress Info is Completed
+    Set Test Variable    ${bln_CoordsKnown}    False
+
+Click Auto Clear All And Retrieve Profile Button
+    [Arguments]    ${popup_title}
+    Wait Until Control Object Is Enabled    [NAME:btnAutoClear]    ${popup_title}
+    Click Control Button    [NAME:btnAutoClear]    ${popup_title}
+    Wait Until Progress Info is Completed
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Handle Generic Window Popup
+
+Click Remain in Current State Button
+    [Arguments]    ${popup_title}
+    Wait Until Control Object Is Enabled    [NAME:btnRemain]    ${popup_title}    true
+    Click Control Button    [NAME:btnRemain]    ${popup_title}
+    Wait Until Progress Info is Completed
+    Set Test Variable    ${bln_CoordsKnown}    False
+
+Verify OTT Start Time Is Logged Correctly And Search Traveller Value Is Not NULL
+    [Arguments]    ${application_event_description}
+    &{application_event_dict}    Create Dictionary    Search By EMail=41    Search Traveller=42    Search Traveller CTI Guid=48    Search Traveller CTI No Guid=49    CTI Pending Call - Clear All=111
+    ...    CTI Pending Call - Remain in Current State=112    CTI Pending Call - Auto Closed on New Call=113    Search Traveller Failure-No Match from CTI Server=110
+    ${application_event_id}    Get From Dictionary    ${application_event_dict}    ${application_event_description}
+    ${computer_name}    Evaluate    os.environ['COMPUTERNAME']    os
+    @{search_traveller}    Execute Query    select top 2 * from applicationusage where computername = '${computer_name}' and ApplicationEventId = 42 order by applicationusageid desc    ApplicationUsage_Test
+    Log List    ${search_traveller}
+    Should Be True    ${search_traveller[0][-1]} != ${None}
+    Should Be True    ${search_traveller[1][-1]} != ${None}
+    @{application_event_result}    Execute Query    select top 1 * from applicationusage where computername = '${computer_name}' and ApplicationEventId = ${application_event_id} order by applicationusageid desc    ApplicationUsage_Test
+    Should Be True    ${application_event_result[0][-1]} != ${None}
+    ${application_usage_id}    Set Variable    ${application_event_result[0][0]}
+    @{actual_time}    Execute Query    select * from applicationusagedetail where applicationusageid = ${application_usage_id}    ApplicationUsage_Test
+    Should Be True    ${actual_time[0][-1]} != ${None}
+
+Verify Application Event Is Logged In Database
+    [Arguments]    ${application_event_description}
+    &{application_event_dict}    Create Dictionary    Search By EMail=41    Search Traveller=42    Search Traveller CTI Guid=48    Search Traveller CTI No Guid=49    CTI Pending Call - Clear All=111
+    ...    CTI Pending Call - Remain in Current State=112    CTI Pending Call - Auto Closed on New Call=113    Search Traveller Failure-No Match from CTI Server=110
+    ${application_event_id}    Get From Dictionary    ${application_event_dict}    ${application_event_description}
+    ${computer_name}    Evaluate    os.environ['COMPUTERNAME']    os
+    @{application_event_result}    Execute Query    select top 3 * from ApplicationUsage u \ join ApplicationEvent e on e.ApplicationEventId = u.ApplicationEventId where ComputerName = '${computer_name}' order by 1 desc    ApplicationUsage_Test
+    Run Keyword If    ${application_event_id} == 110    Should Be Equal    ${application_event_result[2][-1]}    ${application_event_description}
+    Run Keyword If    ${application_event_id} == 111    Should Be Equal    ${application_event_result[1][-1]}    ${application_event_description}
+    Run Keyword If    ${application_event_id} == 112    Should Be Equal    ${application_event_result[0][-1]}    ${application_event_description}
+    Run Keyword If    ${application_event_id} == 113    Should Be Equal    ${application_event_result[0][-1]}    ${application_event_description}

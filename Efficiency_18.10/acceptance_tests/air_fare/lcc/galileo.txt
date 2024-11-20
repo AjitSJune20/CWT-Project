@@ -1,0 +1,117 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../air_fare_verification.txt
+Resource          ../../delivery/delivery_verification.txt
+
+*** Test Cases ***
+[1G EMEA] [NB] Verify That Combination Of LCC With ZK And BSP Carrier Will Read And Write Fare Remarks Correctly
+    [Tags]    us4912
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    galileo
+    Set Client And Traveler    Galileo 15 - Auto ¦ US2643    AutoFifteenTen    OptimizeTrvlrThirty
+    Click New Booking
+    Update PNR for EN or GB
+    Book Air Segment With ZK Status    LTNMAD*U2    6    01Y2
+    Enter Galileo LCC Remarks For Specific Airline Code    U2
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Verify LCC Fare Tab Details    ${expected_routing}    104.49    104.49    104.49    ${EMPTY}    ${EMPTY}
+    Verify Fare Not Finalised Is Unticked
+    Select Missed Saving Code Value    PI - Outside Of Travel Policy - Traveller Allowed
+    Select Realised Saving Code Value    D1 - Route Deal Accepted
+    Select Class Code Value    FF - First Full Fare
+    Select Fare Restriction    FULLY FLEXIBLE
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    LCC-U2*SERVICEFEE TOTAL GBP 19.00
+    Verify Specific Line Is Written In The PNR    LCC-U2*CREDITCARD CHARGE GBP 5.00
+    Verify Specific Line Is Written In The PNR    LCC-U2*NUMBER OF PAX 1
+    Verify Specific Line Is Written In The PNR    LCC-U2*PAID BY ************3404/EXP 0918
+    Verify Specific Line Is Written In The PNR    LCC-U2*FARE TOTAL GBP 75.48
+    Verify Specific Line Is Written In The PNR    LCC-U2*TAXES TOTAL GBP 29.01
+    Verify Specific Line Is Written In The PNR    LCC-U2*GRAND TOTAL GBP 104.49
+    [Teardown]
+
+[1G EMEA] [AB] Verify That Combination Of LCC With AK AND BSP Carrier Will Read And Write Fare Remarks Correctly
+    [Tags]    us4912
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Enter GDS Command    XI
+    Book Air Segment With AK Status    FR    8901    Y    7    MADLGW    0750
+    ...    0910
+    Enter Galileo LCC Remarks For Specific Airline Code    FR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Verify LCC Fare Tab Details    MAD-LGW    104.49    104.49    104.49    ${EMPTY}    ${EMPTY}
+    Verify Fare Not Finalised Is Unticked
+    Select Missed Saving Code Value    A6 - Alternative Carrier Declined
+    Select Realised Saving Code Value    C1 - Client Special Fare Accepted
+    Select Class Code Value    FF - First Full Fare
+    Select Fare Restriction    FULLY FLEXIBLE
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Run Keyword And Continue On Failure    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Combination Of LCC With AK And BSP Carrier
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    LCC-U2*SERVICEFEE TOTAL GBP 19.00
+    Verify Specific Line Is Written In The PNR    LCC-U2*CREDITCARD CHARGE GBP 5.00
+    Verify Specific Line Is Written In The PNR    LCC-U2*NUMBER OF PAX 1
+    Verify Specific Line Is Written In The PNR    LCC-U2*PAID BY ************3404/EXP 0918
+    Verify Specific Line Is Written In The PNR    LCC-U2*FARE TOTAL GBP 75.48
+    Verify Specific Line Is Written In The PNR    LCC-U2*TAXES TOTAL GBP 29.01
+    Verify Specific Line Is Written In The PNR    LCC-U2*GRAND TOTAL GBP 104.49
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Book Air Segment With ZK Status
+    [Arguments]    ${itinerary}    ${zk_months}    ${seat_select}
+    ${departure_date} =    Set Departure Date X Months From Now In Gds Format    ${zk_months}    0
+    Set Test Variable    ${departure_date}
+    Enter GDS Command    A${departure_date}${itinerary}
+    Get Data From GDS Screen    ${seat_select}    True
+    ${expected_routing_line}    Get Lines Containing String    ${gds_screen_data}    STANDARD FARE
+    ${expected_routing_line}    Get Substring    ${expected_routing_line}    \    7
+    ${expected_routing}    Replace String    ${expected_routing_line}    ${SPACE}    -
+    Set Test Variable    ${expected_routing}
+
+Book Air Segment With AK Status
+    [Arguments]    ${airline_carrier}    ${flight_number}    ${class}    ${ak_months}    ${ak_itinerary}    ${departure_time}
+    ...    ${arrival_time}
+    ${departure_date} =    Set Departure Date X Months From Now In Gds Format    ${ak_months}    0
+    Set Test Variable    ${departure_date}
+    Enter GDS Command    N ${airline_carrier} ${flight_number} ${class} ${departure_date} ${ak_itinerary} AK1 /${departure_time}${arrival_time}
+
+Enter Galileo LCC Remarks For Specific Airline Code
+    [Arguments]    ${airline_code}
+    Enter GDS Command    np.HF*LCC-${airline_code}*SERVICEFEE TOTAL GBP 19.00
+    Enter GDS Command    np.HF*LCC-${airline_code}*CREDITCARD CHARGE GBP 5.00
+    Enter GDS Command    np.HF*LCC-${airline_code}*NUMBER OF PAX 1
+    Enter GDS Command    np.HF*LCC-${airline_code}*PAID BY ************3404/EXP 0918
+    Enter GDS Command    np.HF*LCC-${airline_code}*FARE TOTAL GBP 75.48
+    Enter GDS Command    np.HF*LCC-${airline_code}*TAXES TOTAL GBP 29.01
+    Enter GDS Command    np.HF*LCC-${airline_code}*GRAND TOTAL GBP 104.49
+
+Amend Booking For Combination Of LCC With AK And BSP Carrier
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Enter GDS Command    XI
+    Book Air Segment With AK Status    FR    8901    Y    7    MADLGW    0750
+    ...    0910
+    Enter Galileo LCC Remarks For Specific Airline Code    FR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Verify LCC Fare Tab Details    MAD-LGW    104.49    104.49    104.49    ${EMPTY}    ${EMPTY}
+    Verify Fare Not Finalised Is Unticked
+    Select Missed Saving Code Value    A6 - Alternative Carrier Declined
+    Select Realised Saving Code Value    C1 - Client Special Fare Accepted
+    Select Class Code Value    FF - First Full Fare
+    Select Fare Restriction    FULLY FLEXIBLE
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR

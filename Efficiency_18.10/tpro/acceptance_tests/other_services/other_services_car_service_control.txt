@@ -1,0 +1,300 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Get Current Segments From The PNR
+    ${segments}    Get Lines Using Regexp    ${pnr_details}    \\\s{2}\\\d{1,2}\\\s{2}\\\w+(\\\s)?\\\d+
+    ${segments}    Split To Lines    ${segments}
+    ${segments_list}    Create List
+    : FOR    ${segment}    IN    @{segments}
+    \    ${detail_1}    Get String Matching Regexp    \\\d{1,2}\\\s+?(\\\w{2}\\\s+?\\\d+|\\\w{2}\\\d+)    ${segment}
+    \    ${detail_2}    Get String Matching Regexp    ((\\\s+\\\w\\\s+|\\\s\\\w\\\s)(\\\d+\\\w+))    ${segment}
+    \    ${detail_3}    Get String Matching Regexp    ((\\\s+\\\d\\\s*?\\*\\\w{6})|(\\\s+\\\d\\\s+\\\w{6}))    ${segment}
+    \    ${detail_4}    Get String Matching Regexp    (\\\s+\\\w{2}\\\d{1}\\\s+)(\\\d{4}\\\s+\\\d{4})    ${segment}
+    \    Append To List    ${segments_list}    ${detail_1.strip()}${detail_2}${detail_3.replace("*", " ")}${detail_4}
+    Set Test Variable    ${segments_list}
+
+Get Date & Time Value
+    [Arguments]    ${identifier}=${EMPTY}
+    ${object}    Determine Multiple Object Name Based On Active Tab    ArrivalDateTimePicker,DepartureDateTimePicker    False
+    ${date_and_time}    Get Control Text Value    ${object}
+    Set Test Variable    ${date_and_time}
+    Set Test Variable    ${date_and_time_${identifier.lower()}}    ${date_and_time}
+    Set Suite Variable    ${date_and_time_${identifier.lower()}}
+
+Get Description Value
+    [Arguments]    ${identifier}=${EMPTY}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFromDescTextBox,DepartureToDescTextBox,ArrivalFromDescTextBox,ArrivalToDescTextBox    False
+    ${description_value}    Get Control Text Value    ${object}
+    Set Test Variable    ${description_value}
+    Set Test Variable    ${description_value_${identifier.lower()}}    ${description_value}
+    Set Suite Variable    ${description_value_${identifier.lower()}}
+    [Return]    ${description_value}
+
+Get Flight Value
+    [Arguments]    ${identifier}=${EMPTY}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFlightSegmentsComboBox,ArrivalFlightSegmentsComboBox    False
+    ${actual_default_flight_value}    Get Control Text Value    ${object}
+    ${actual_flight_list}    Get Dropdown Values    ${object}
+    Set Test Variable    ${actual_flight_list}
+    Set Test Variable    ${actual_default_flight_value}
+    Set Suite Variable    ${actual_default_flight_value_${identifier.lower()}}    ${actual_default_flight_value}
+
+Get Location Value
+    [Arguments]    ${identifier}=${EMPTY}
+    ${location}    Determine Multiple Object Name Based On Active Tab    DepartureFromLocationComboBox,DepartureToLocationComboBox,ArrivalFromLocationComboBox,ArrivalToLocationComboBox    False
+    ${location_value}    Get Control Text Value    ${location}
+    Set Test Variable    ${location_value}
+    Set Test Variable    ${location_value_${identifier.lower()}}    ${location_value}
+    Set Suite Variable    ${location_value_${identifier.lower()}}
+    Log    Get Location Value KW output: \n\n ${location_value_${identifier.lower()}}
+    [Return]    ${location_value}
+
+Get Other Value
+    ${other_field}    Determine Multiple Object Name Based On Active Tab    DepartureFromOtherTextBox,DepartureToOtherTextBox,ArrivalFromOtherTextBox,ArrivalToOtherTextBox    False
+    ${other_value}    Get Control Text Value    ${other_field}
+    Set Test Variable    ${other_value}
+
+Get Tel Value
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFromTelTextBox,ArrivalFromTelTextBox    False
+    ${tel_value}    Get Control Text Value    ${object}
+    Set Test Variable    ${tel_value}
+
+Select Flight Value
+    [Arguments]    ${segment_number}=${EMPTY}
+    [Documentation]    Note:
+    ...
+    ...    Must run 'Get Current Segments From The PNR' in order to the segments.
+    ...
+    ...    Currently supports flight dropdown controls in car tab panel (HK SG) and request tab (IN)
+    ...
+    ...
+    ...    Ideal Usage:
+    ...
+    ...
+    ...
+    ...    * segment_number should be a digit number,
+    ...
+    ...    - Ideally give this parameter a value from 1 going up. When it is 1, it will mean the first available flight (not the segment number).
+    ...    - When it is 0, it will select nothing (the empty option in the list).
+    ...    - Otherwise it has to be specific like this "2 SQ 910 Y 15DEC 6 SINMNL HK1 0920 1300"
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFlightSegmentsComboBox,ArrivalFlightSegmentsComboBox,Request_AirSegmentsComboBox    False
+    ${is_by_index}    Evaluate    "${segment_number}".isdigit()
+    Select Value From Dropdown List    ${object}    ${segment_number}    by_index=${is_by_index}
+    ${eo_selected_flight}    Get Control Text Value    ${object}
+    Set Test Variable    ${segment_to_be_selected }    ${eo_selected_flight}    #some other keyword may have dependencies to the segment_to_be_selected variable hence keeping it
+    Set Test Variable    ${eo_selected_flight}
+    Log    Keyword: Select Flight Value\n Selected flight value:${eo_selected_flight}\n
+    Take Screenshot
+
+Select Location Value
+    [Arguments]    ${location_value}
+    ${location}    Determine Multiple Object Name Based On Active Tab    DepartureFromLocationComboBox,DepartureToLocationComboBox,ArrivalFromLocationComboBox,ArrivalToLocationComboBox    False
+    Select Value From Dropdown List    ${location}    ${location_value}
+    Take Screenshot
+
+Set Description Value
+    [Arguments]    ${description_value}=${EMPTY}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFromDescTextBox,DepartureToDescTextBox,ArrivalFromDescTextBox,ArrivalToDescTextBox    False
+    Set Control Text Value    ${object}    ${description_value}
+    Take Screenshot
+
+Set Other Value
+    [Arguments]    ${other_value}=${EMPTY}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFromOtherTextBox,DepartureToOtherTextBox,ArrivalFromOtherTextBox,ArrivalToOtherTextBox    False
+    Set Control Text Value    ${object}    ${other_value}
+    Take Screenshot
+
+Set Product and Vendor Related Values For India
+    [Arguments]    ${product_code}    ${vendor_code}    ${gst}    ${ot1}    ${ot2}    ${merchant_fee_percent}
+    [Documentation]    This is a temporary keyword used to define values of the following:
+    ...    Product Code
+    ...    Vendor Code
+    ...    GST Percent
+    ...    OT1 Percent
+    ...    OT2 Percent
+    ...    Note: Use this on Setup of Test Case
+    Set Test Variable    ${product_code}
+    Set Test Variable    ${vendor_code}
+    Set Test Variable    ${gst}
+    Set Test Variable    ${ot1}
+    Set Test Variable    ${ot2}
+    Set Test Variable    ${ot2}
+    Set Test Variable    ${merchant_fee_percent}
+
+Set Tel Value
+    [Arguments]    ${tel_value}=${EMPTY}
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFromTelTextBox,ArrivalFromTelTextBox    False
+    Set Control Text Value    ${object}    ${tel_value}
+    Take Screenshot
+
+Tick Date & Time Checkbox
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureDateTimeCheckBox,ArrivalDateTimeCheckBox    False
+    Tick Checkbox    ${object}
+
+Untick Date & Time Checkbox
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureDateTimeCheckBox,ArrivalDateTimeCheckBox    False
+    Untick Checkbox    ${object}
+
+Verify An Error Icon Is Displayed For Date & Time Of Arrival To
+    [Arguments]    ${expected_tooltip}
+    ${actual_tool_tip}    Get Tooltip From Error Icon    ArrivalToTabPage
+    Verify Actual Value Matches Expected Value    ${actual_tool_tip}    ${expected_tooltip}
+    Take Screenshot
+
+Verify An Error Icon Is Displayed For Date & Time Of Departure To
+    [Arguments]    ${expected_tooltip}
+    ${actual_tool_tip}    Get Tooltip From Error Icon    DepartureToTabPage
+    Verify Actual Value Matches Expected Value    ${actual_tool_tip}    ${expected_tooltip}
+    Take Screenshot
+
+Verify An Error Icon Is Displayed For Nett Cost
+    [Arguments]    ${expected_tooltip}
+    ${actual_tool_tip}    Get Tooltip From Error Icon    panelNettCost
+    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_tool_tip}    ${expected_tooltip}
+    Take Screenshot
+
+Verify An Error Icon Is Displayed For Selling Price
+    [Arguments]    ${expected_tooltip}
+    ${actual_tool_tip}    Get Tooltip From Error Icon    panelSellingPrice
+    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_tool_tip}    ${expected_tooltip}
+    Take Screenshot
+
+Verify Arrival From Fields Are Displayed
+    Verify Control Object Is Visible    [NAME:ArrivalFromLocationComboBox]
+    Verify Control Object Is Visible    [NAME:ArrivalFromDescTextBox]
+    Verify Control Object Is Visible    [NAME:ArrivalFromTelTextBox]
+    Take Screenshot
+
+Verify Arrival From Fields Default Values Are Correct
+    Get Location Value
+    Get Description Value
+    Get Tel Value
+    Verify Actual Value Matches Expected Value    ${location_value}    Airport
+    Verify Actual Value Matches Expected Value    ${description_value}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${tel_value}    ${EMPTY}
+    Take Screenshot
+
+Verify Arrival To Fields Are Displayed
+    Verify Control Object Is Visible    [NAME:ArrivalToLocationComboBox]
+    Verify Control Object Is Visible    [NAME:ArrivalToDescTextBox]
+    Verify Control Object Is Visible    [NAME:ArrivalFlightSegmentsComboBox]
+    Verify Control Object Is Visible    [NAME:ArrivalDateTimePicker]
+    Take Screenshot
+
+Verify Arrival To Fields Default Values Are Correct
+    Get Location Value
+    Get Description Value
+    Get Flight Value
+    Get Date & Time Value
+    Verify Actual Value Matches Expected Value    ${location_value}    Airport
+    Verify Actual Value Matches Expected Value    ${description_value}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${actual_default_flight_value}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${date_and_time}    ${current_datetime}
+    Take Screenshot
+
+Verify Date & Time Is Disabled
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureDateTimePicker,ArrivalDateTimePicker
+    Verify Control Object Is Disabled    ${object}
+    Take Screenshot
+
+Verify Departure From Fields Are Displayed
+    Verify Control Object Is Visible    [NAME:DepartureFromLocationComboBox]
+    Verify Control Object Is Visible    [NAME:DepartureFromDescTextBox]
+    Verify Control Object Is Visible    [NAME:DepartureFromTelTextBox]
+    Take Screenshot
+
+Verify Departure From Fields Default Values Are Correct
+    Get Location Value
+    Get Description Value
+    Get Tel Value
+    Verify Actual Value Matches Expected Value    ${location_value}    Airport
+    Verify Actual Value Matches Expected Value    ${description_value}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${tel_value}    ${EMPTY}
+    Take Screenshot
+
+Verify Departure To Fields Are Displayed
+    Verify Control Object Is Visible    [NAME:DepartureToLocationComboBox]
+    Verify Control Object Is Visible    [NAME:DepartureToDescTextBox]
+    Verify Control Object Is Visible    [NAME:DepartureFlightSegmentsComboBox]
+    Verify Control Object Is Visible    [NAME:DepartureDateTimePicker]
+    Take Screenshot
+
+Verify Departure To Fields Default Values Are Correct
+    Get Location Value
+    Get Description Value
+    Get Flight Value
+    Get Date & Time Value
+    Verify Actual Value Matches Expected Value    ${location_value}    Airport
+    Verify Actual Value Matches Expected Value    ${description_value}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${actual_default_flight_value}    ${EMPTY}
+    Verify Actual Value Matches Expected Value    ${date_and_time}    ${current_datetime}
+    Take Screenshot
+
+Verify Description Field Is Mandatory
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFromDescTextBox,DepartureToDescTextBox,ArrivalFromDescTextBox,ArrivalToDescTextBox    False
+    Verify Control Object Field Is Mandatory    ${object}
+    Take Screenshot
+
+Verify Description Field Is Optional
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFromDescTextBox,DepartureToDescTextBox,ArrivalFromDescTextBox,ArrivalToDescTextBox    False
+    Verify Control Object Field Is Not Mandatory    ${object}
+    Take Screenshot
+
+Verify Description Value Is Correct
+    [Arguments]    ${expected_desc_value}
+    Get Description Value
+    Verify Actual Value Matches Expected Value    ${description_value}    ${expected_desc_value}
+    Take Screenshot
+
+Verify Flight Dropdown Values Are Correct
+    Get Flight Value
+    ${expected_segments_list}    Evaluate    [flight.replace("\ \ ", " ") for flight in ${segments_list}]
+    Log List    ${actual_flight_list}
+    Log List    ${expected_segments_list}
+    : FOR    ${expected_flight}    IN    @{expected_segments_list}
+    \    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_flight_list}    ${expected_flight}
+
+Verify Location Dropdown Values Are Correct
+    [Arguments]    @{expected_location_values}
+    ${location_object}    Determine Multiple Object Name Based On Active Tab    DepartureFromLocationComboBox,DepartureToLocationComboBox,ArrivalFromLocationComboBox,ArrivalToLocationComboBox    False
+    ${actual_location_values}    Get Dropdown Values    ${location_object}
+    : FOR    ${location}    IN    @{expected_location_values}
+    \    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_location_values}    ${location}
+
+Verify Location Value Is Correct
+    [Arguments]    ${expected_location}
+    Get Location Value
+    Verify Actual Value Matches Expected Value    ${location_value}    ${expected_location}
+
+Verify No Error Icon Is Displayed For Date & Time Of Arrival To
+    ${is_icon_visible}    Run Keyword And Return Status    Get Tooltip From Error Icon    ArrivalToTabPage
+    Verify Actual Value Matches Expected Value    ${is_icon_visible}    False
+    Take Screenshot
+
+Verify No Error Icon Is Displayed For Date & Time Of Departure To
+    ${is_icon_visible}    Run Keyword And Return Status    Get Tooltip From Error Icon    DepartureToTabPage
+    Verify Actual Value Matches Expected Value    ${is_icon_visible}    False
+    Take Screenshot
+
+Verify Other Text Field Is Displayed
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFromOtherTextBox,DepartureToOtherTextBox,ArrivalFromOtherTextBox,ArrivalToOtherTextBox    False
+    Verify Control Object Is Visible    ${object}
+    Take Screenshot
+
+Verify Other Text Field Is Not Displayed
+    ${object}    Determine Multiple Object Name Based On Active Tab    DepartureFromOtherTextBox,DepartureToOtherTextBox,ArrivalFromOtherTextBox,ArrivalToOtherTextBox    False
+    Verify Control Object Is Not Visible    ${object}
+    Take Screenshot
+
+Verify Other Value Is Correct
+    [Arguments]    ${expected_other_value}
+    Get Other Value
+    Verify Actual Value Matches Expected Value    ${other_value}    ${expected_other_value}
+    Take Screenshot
+
+Verify Tel Value Is Correct
+    [Arguments]    ${expected_tel_value}
+    Get Tel Value
+    Verify Actual Value Matches Expected Value    ${tel_value}    ${expected_tel_value}
+    Take Screenshot

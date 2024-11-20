@@ -1,0 +1,30 @@
+*** Settings ***
+Library           Screenshot
+Library           Collections
+Library           OperatingSystem
+Library           String
+Library           XML
+Library           DatabaseLibrary
+Library           DateTime
+Library           ../libraries/SyexUiaLibrary.py
+Library           ../libraries/SyexCustomLibrary.py
+Library           ../libraries/SyexDateTimeLibrary.py
+Library           ../libraries/TravelportLibrary.py
+Library           ../libraries/OtherServicesFormula.py
+Library           ExtendedSelenium2Library
+Library           ExcelLibrary
+Library           AutoItLibrary
+
+*** Variables ***
+${port}           8270
+${bln_CoordsKnown}    False
+${public_documents_path}    C:\\Users\\Public\\Documents
+${is_new_booking_worflow}    ${False}
+${amadeus_env}    classic
+${use_mock_env}    False
+${syex_env}       Test
+${use_local_dev_build}    False
+${product_vendor_sg_hk_in}    ${CURDIR}/../test_data/Product_Vendor_List_Field_Differences_HKSGIN.xls
+${city_codes_and_names}    ${CURDIR}/../test_data/City_code_and_city_names.xlsx
+
+*** Keywords ***

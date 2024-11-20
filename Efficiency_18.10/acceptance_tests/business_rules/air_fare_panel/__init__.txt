@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        air_fare_panel

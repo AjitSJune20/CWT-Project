@@ -1,0 +1,223 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          pspt_and_visa_verification.txt
+Resource          ../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[NB FR] Verify That Pspt & Visa And APIS/SFPD Panels Are Shown For FR Non-Mindef
+    [Tags]    us3575    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight And One Alternate Offer Using Default Values    Amadeus FR Legacy - Auto ¦ US681    AutoLegacy    EmeaTrvlrOneFive    LAXCDG/AAF    SS1Y1    FXB
+    ...    ${EMPTY}    AIR FARE
+    Verify Pspt & Visa And APIS/SFPD Panels Are Shown For Non-Mindef
+    [Teardown]    Click Clear All
+
+[NB UK] Verify That Domestic Trip Checkbox Is Unchecked For Domestic Flight Different From Traveler's Nationality Timatic Off
+    [Tags]    us5155    US5695    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With Round Trip Air Flight Using Default Values    UK Amadeus 1 - SyEx ¦ Power Hotel Integration    Edwards    Cory    YYZYVR/AAC    SS1Y1    ${EMPTY}
+    ...    YVRYYZ/AAC    SS1Y1    FXP    ${EMPTY}    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Verify Domestic Trip Checkbox Is Unticked
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Click Check Visa Requirements
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    A09876543    10/30/2020    Yes
+    Verify Countries Visited    Canada
+    Tick Use Document
+    Click Check Visa Requirements No ESTA
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    must have an Electronic Travel Authorization (eTA)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RIR TRAVELLERS NATIONALITY: UNITED KINGDOM
+    Verify Specific Line Is Written In The PNR    A09876543
+    Verify Specific Line Is Written In The PNR    10/30/2020
+    [Teardown]
+
+[AB UK] Verify That Domestic Trip Checkbox Is Unchecked For Domestic Flight Different From Traveler's Nationality Timatic Off
+    [Tags]    us5155    US5695    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    DENBOS    SS1Y1    FXP/S4    6    10
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    A09876543    10/30/2020    Yes
+    Verify Countries Visited    Canada    United States
+    Tick Use Document
+    Click Check Visa Requirements No ESTA
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    must have an Electronic Travel Authorization (eTA)
+    Click Finish PNR    Amend Booking Workflow For Domestic Trip Checkbox Unticked Timatic Off
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Domestic Trip Checkbox Unticked Timatic Off
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    RIR TRAVELLERS NATIONALITY: UNITED KINGDOM
+    Verify Specific Line Is Written In The PNR    A09876543
+    Verify Specific Line Is Written In The PNR    10/30/2020
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify Countries Are Captured With Correct Visa Information In Domestic RT Flight With Diff Nationality Docs For Timatic On
+    [Tags]    US5337    US5696    US5695    US3844    DE6819    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With Round Trip Air Flight Using Default Values    Amadeus FR 16 - Auto ¦ US1423    AutoSixteenTwo    NoramTrvlrFive    NCEORY    SS1Y1    ${EMPTY}
+    ...    ORYNCE    SS1Y1    FXP    ${EMPTY}    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Verify Domestic Trip Checkbox Is Ticked
+    Untick Domestic Trip
+    Populate Pspt And Visa With Values    Passport: Normal    Philippines    EB0987654    12/20/2020    ${EMPTY}
+    Click Check Visa Requirements No ESTA
+    Verify Travel Document Details Are Correct    Passport: Normal    Philippines    EB0987654    12/20/2020    Oui
+    Get Passport & Visa Info Panel Text
+    Verify That Countries Visited And Visa Status Is Correct    France    Obligatoire
+    Click GDS Screen Tab
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    NATIONALITE DU VOYAGEUR: PH
+    Comment    Verify Specific Line Is Written In The PNR    VALIDITE DU PASSEPORT: NON
+    Verify Specific Line Is Written In The PNR    CONTROLE DE VISA: FRANCE OBLIGATOIRE
+
+[AB FR] Verify Countries Are Captured With Correct Visa Information In International Multi Flight With Diff Nationality Docs For Timatic On
+    [Tags]    US5337    US5696    US5695    US3844    DE6819    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter Command In Native GDS    XI    XT
+    Book Flight X Months From Now    TLSMRS    SS1Y1    ${EMPTY}    5    1
+    Book Flight X Months From Now    MRSTLS    SS1Y1    ${EMPTY}    5    5
+    Book Flight X Months From Now    FRAMUC    SS1Y1    ${EMPTY}    5    8
+    Book Flight X Months From Now    MUCFRA    SS1Y1    ${EMPTY}    5    13
+    Book Flight X Months From Now    MNLSIN    SS1Y1    ${EMPTY}    5    20
+    Book Flight X Months From Now    JFKMUC    SS1Y1    ${EMPTY}    5    25
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Domestic Trip Checkbox Is Unticked
+    Populate Pspt And Visa With Values    Passport: Normal    Philippines    EB0987654    12/20/2020    ${EMPTY}
+    Click Check Visa Requirements No ESTA
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Travel Document Details Are Correct    Passport: Normal    Philippines    EB0987654    12/20/2020    Oui
+    Verify That Countries Visited And Visa Status Is Correct    France    Obligatoire
+    Verify That Countries Visited And Visa Status Is Correct    Allemagne    Obligatoire
+    Verify That Countries Visited And Visa Status Is Correct    Etats-Unis    Obligatoire
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That Domestic Trip Box Is Unchecked For Nationality Different From Domestic Flights
+    [Tags]    canada    us3627    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrSix
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Personal
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YYCYTO/AAC    SS1Y1    FXP    4
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Field Value    DOM
+    Click Panel    Pspt and Visa
+    Verify Pspt and Visa Panel is Enabled
+    Verify Domestic Trip Checkbox Is Unticked
+    Verify Check Visa Requirements Button is Enabled
+    Verify Visa Requirements Fields Are Displayed
+    Verify Passport & Visa Info Panel Is Displayed
+    [Teardown]    Click Clear All
+
+[NB CA] Verify That Pspt & Visa Panel is Enabled if Routing is DOM/ INTL/ TRANS,Domestic Trip Box Is checked by default For Nationality Same As Domestic Flights and Check Requirement Box is Disabled and Visa Requirement Section in Pspt & Visa Panel is Not Visible
+    [Tags]    canada    us3627    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Personal
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now Without Pricing    YYCYTO/AAC    SS1Y1    4
+    Book Flight X Months From Now Without Pricing    YTOORD/AAC    SS1Y1    4    2
+    Book Flight X Months From Now Without Pricing    MANAMS/AKL    SS1Y1    4    4
+    Enter GDS Command    FXP/S2    FXT01/P1    FXP/S3    FXT01/P1    FXP/S4    FXT01/P1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Route Code Field Value    DOM
+    Click Fare Tab    Fare 2
+    Verify Route Code Field Value    TRANS
+    Click Fare Tab    Fare 3
+    Verify Route Code Field Value    INTL
+    Click Panel    Pspt and Visa
+    Verify Pspt and Visa Panel is Enabled
+    #TC8992
+    Click GDS Screen Tab
+    Enter GDS Command    XE3    RT    XE3    RT
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Field Value    DOM
+    Click Panel    Pspt and Visa
+    Verify Pspt and Visa Panel is Enabled
+    Verify Domestic Trip Checkbox Is Ticked
+    Verify Visa Requirements Section Is Not Displayed
+    Click Check Visa Requirements Button
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Untick Domestic Trip
+    Verify Visa Requirements Fields Are Displayed
+    [Teardown]    Click Clear All
+
+[NB CA] Verify That Domestic Trip Box Is checked For Traveler With Multiple Documents
+    [Tags]    canada    us3627    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrFour
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Personal
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MNLCEB/APR    SS1Y1    FXP    4
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Route Code Field Value    DOM
+    Click Panel    Pspt and Visa
+    Verify Pspt and Visa Panel is Enabled
+    Verify Domestic Trip Checkbox Is Ticked
+    Verify Check Visa Requirements Button Is Disabled
+    Verify Visa Requirements Section Is Not Displayed
+    Verify Passport & Visa Info Panel Is Not Displayed
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Amend Booking Workflow For Domestic Trip Checkbox Unticked Timatic Off
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    DENBOS    SS1Y1    FXP/S4    6    10
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Verify Travel Document Details Are Correct    British Citizen passport    United Kingdom    A09876543    10/30/2020    Yes
+    Verify Countries Visited    Canada    United States
+    Tick Use Document
+    Click Check Visa Requirements No ESTA
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    must have an Electronic Travel Authorization (eTA)
+    Click Finish PNR    Amend Booking Workflow For Domestic Trip Checkbox Unticked Timatic Off
+
+Amend Booking Workflow For Domestic Trip Checkbox Same Nationality
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Ticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Click Finish PNR    Amend Booking Workflow For Domestic Trip Checkbox Same Nationality
+
+Verify Pspt and Visa Panel is Disabled
+    Verify Control Object Is Disabled    Pspt and Visa
+
+Verify Pspt and Visa Panel is Enabled
+    Verify Control Object Is Enabled    Pspt and Visa
+
+Click Check Visa Requirements Button
+    Click Control Button    [NAME:cmdRefreshTimatic]

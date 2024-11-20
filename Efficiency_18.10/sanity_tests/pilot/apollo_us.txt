@@ -1,0 +1,129 @@
+*** Settings ***
+Force Tags        apollo
+Resource          ../resource_sanity.txt
+
+*** Test Cases ***
+New Booking
+    Open Power Express And Retrieve Profile    ${version}    NORAM    U001RTM    en-US    rmartinez    US User Acceptance Testing
+    Select GDS    Apollo
+    Set Client And Traveler    Jet Inc 02 - Express Test Apollo ¦ Jet 2 - Sub1    CAIN    MICHELLE
+    Select PCC/CompanyProfile/TravellerProfile    1V/24LY/EXPROD/CAIN MICHELLE67225955
+    Select Client Account    U1TST ¦ TRAINING E CLIENT ¦ Jet2-Sub1
+    Click New Booking And Handle CDR Driving Account Popup    CDR Driving Account/FOP
+    Click Panel    Cust Refs
+    Comment    Set CDR Value    Cost Center    ${EMPTY}
+    Tick Not known at time of booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book One Way Flight X Months From Now    DENLAX+UA    6
+    Click Read Booking
+    Comment    Populate Fare Tab With Default Values    Fare 1
+    Comment    Select Panel    Recap
+    Comment    Verify Masked Credit Card Is Displayed By Default In Recap Panel    AX***********1101/D1120/CVV****
+    Comment    Verify Unmasked Credit Card Has Correct Details In Recap Panel    CWT BTA/CA5478993471542405/D0720/CVV***
+    Comment    Select Panel    Delivery
+    Comment    Take Screenshot
+    Comment    Select Panel    Air Fare
+    Comment    Sleep    5
+    Comment    Take Screenshot
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Populate All Panels (Except Given Panels if Any)    Client Info    Cust Refs    Air Fare
+    Click Panel    Cust Refs
+    Comment    Set CDR Value    Cost Center    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Click Panel    Air Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Select Realised Saving Code Value    L - Lowest fare available accepted
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Ticketing Line In Remarks
+    Verify TET Code Line In Remarks    U59-MUS
+    Verify SYEX GVS Line In Remarks    A/SYEXGV
+
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book Flight X Months From Now    LAXDEN+UA    01Y1    T:$B
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info    Cust Refs    Air Fare
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Cust Refs
+    Comment    Set CDR Value    Cost Center    ${EMPTY}
+    Tick Not Known At Time Of Booking
+    Comment    Populate Fare Tab With Default Values    Fare 1
+    Comment    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Amend Booking
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Ticketing Line In Remarks
+    Verify TET Code Line In Remarks    U59-MUS
+    Verify SYEX GVS Line In Remarks    A/SYEXGV
+
+Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Send Itinerary
+    Retrieve PNR Details from Travelport    ${current_pnr}
+    Verify TET Code Line In Remarks    U59-MUS
+
+Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Cancel Booking
+    Verify Requested Booking File Segments Is Cancelled
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify TET Code Line In Remarks    U59-MUS
+    Verify SYEX GVS Line In Remarks    A/SYEXGV
+
+*** Keywords ***
+Simultaneous Change Handling For Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book Flight X Months From Now    DENLAX    01Y1    T:$B
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+
+Simultaneous Change Handling For Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+
+Simultaneous Change Handling For Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+
+Handle CDR Driving Account FOP Popup
+    [Arguments]    ${popup_title}
+    Win Activate    ${popup_title}    ${EMPTY}
+    Click Control Button    [NAME:btnOK]    ${popup_title}
+    Click Control Button    [NAME:btnOK]    ${popup_title}
+
+Click New Booking And Handle CDR Driving Account Popup
+    [Arguments]    ${popup_title}
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Wait Until Control Object Is Enabled    ${btn_newBooking}    ${title_power_express}
+    Click Control Button    ${btn_newBooking}    ${title_power_express}
+    Handle CDR Driving Account FOP Popup    ${popup_title}
+    Wait Until Window Exists    [REGEXPTITLE:Progress Information|Information sur l'avancement]
+    Wait Until Progress Info is Completed
+    Verify Error In Status Strip Text    Error while reading values from PNR

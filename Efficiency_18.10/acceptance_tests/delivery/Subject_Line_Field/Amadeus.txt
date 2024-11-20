@@ -1,0 +1,111 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    amadeus
+Force Tags        amadeus    US6510
+Resource          ../delivery_verification.txt
+
+*** Test Cases ***
+[1A EMEA][NB][de-DE] Verify That No Dynamic Subject Line Are Available To Choose From When SO: Itinerary - Enable Subject Line Has Value No
+    [Tags]    US6510
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus DE 15 - Auto ¦ US2447    AutoSeventeenFive    PerfEight    LHRCDG/AAF    ${EMPTY}    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Amadeus TKOK
+    Verify That Subject Line Dropdown is Not Visible
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][NB][AB][fr-FR] Verify That Dynamin Subject Line Are Available To Select And Retained In Amend When SO: Ttinerary - Enable Subject Line Has Value Yes
+    [Tags]    US6510
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne    LHRCDG/AAF    ${EMPTY}
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible
+    Set Subject Line Value    LISTE D ATTENTE CONFIRMEE
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify Subject Line Option Is Retain Same    LISTE D ATTENTE CONFIRMEE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][NB][fr-FR] Verify That Dynamic Subject Line Field Is Mandatory When SO: Itinerary - Enable Subject Line Has Value Mandatory
+    [Tags]    US6510
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 15 - Auto ¦ US2954    AutoFifteenTwo    EmeaTrvlrFour    LHRCDG/AAF    ${EMPTY}    Air Fare
+    Click Panel    Air Fare
+    Populate Air Fare Savings Code    ABN - ABONNEMENT    CID - CLASSE IMPERATIVE DEMANDEE    YC - Economy Tarif Negocie
+    Select Radio Button Value    Modifiable
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Verify That Subject Line Dropdown Is Visible, Empty And Mandatory
+    Set Subject Line Value    LISTE D ATTENTE CONFIRMEE
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:16*
+
+[1A EMEA][AB][fr-FR] Verify That Dynamic Subject Lines Field Is Mandatory When SO: Itinerary -Enable Subject Line Has Value Mandatory
+    [Tags]    US6510
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible, Empty And Mandatory
+    Set Subject Line Value    VOTRE BILLET ELECTRONIQUE EST A PRESENT MODIFIE
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Amadeus Subject Line
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:23*
+
+[1A EMEA][SI][fr-FR] Verify That Dynamic Subject Lines Field Is Mandatory When SO: Itinerary -Enable Subject Line Has Value Mandatory
+    [Tags]    US6510
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible, Empty And Mandatory
+    Set Subject Line Value    ABONNEMENT CONFIRME
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Send Itinerary Subject Line
+    Execute Simultaneous Change Handling    Send Itinerary Subject Line
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:12*
+    Verify Specific Line Is Written In The PNR Only Once    RMZ CONF*SUBJECT:
+
+[1A EMEA][QA][fr-FR] Verify That Dynamic Subject Lines Field Is Mandatory When SO: Itinerary -Enable Subject Line Has Value Mandatory
+    [Tags]    US6510
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible, Empty And Mandatory
+    Set Subject Line Value    ABONNEMENT CONFIRME
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SUBJECT:12*
+    Verify Specific Line Is Written In The PNR Only Once    RMZ CONF*SUBJECT:
+
+[1A EMEA][CB][fr-FR] Verify That Dynamic Subject Lines Field Is Not Mandatory When SO: Itinerary- Enable Subject Line Has Value Mandatory
+    [Tags]    US6510
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Delivery
+    Verify Subject Line Field Is Not Mandatory
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Line Is Not Written In The PNR    RMZ CONF*SUBJECT:12*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Amadeus Subject Line
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible, Empty And Mandatory
+    Set Subject Line Value    VOTRE BILLET ELECTRONIQUE EST A PRESENT MODIFIE

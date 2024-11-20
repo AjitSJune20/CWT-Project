@@ -1,0 +1,165 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    sabre
+Force Tags        sabre    noram
+Resource          ../database_verification.txt
+
+*** Test Cases ***
+Verify Application Usage And Performance Log Are Recorded When Power Express Failed To Connect To Avaya One-X After Clear All : SO To Yes - AT TOPUNIT LEVEL
+    [Tags]    us5664
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Delete Current Specific Log File    SyExPerfLog
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4363    auto    name
+    Click Clear All Without Pop-up Handle
+    Handle Generic Window Popup
+    Verify Avaya One-X Warning Window Displays
+    Verify Application Usage Event Was Logged    Avaya One-X Not Connected
+    Handle Generic Window Popup
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AvayaOne-XPopup
+    Comment    Verify Telephone Is Disconnected
+
+[NB US] Verify That A Pop Up With Name Will Displayed For Pending Call In Not Ready State Using CTI SO Set To Yes
+    [Tags]    us    us6726
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4363    auto    name
+    Click New Booking
+    Click Panel    Client Info
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MSPORD¥UA    01Y1    WPRQ
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Drop Test Data To TestDropFolder    1-sabre-testcall-auto-name.notification.xml
+    Verify CTI \ Translation Message In The Pop Up    You have received a call from Mr name auto at Sabre 16 - Auto    Pending call
+    Click Auto Clear All And Retrieve Profile Button    Pending call
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Verify Application Event Is Logged In Database    CTI Pending Call - Clear All
+
+[AB US] Verify That A Pop Up With Name Will Displayed For Pending Call In Not Ready State Using CTI SO Set To Yes
+    [Tags]    us    us6726
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Drop Test Data To TestDropFolder    1-sabre-testcall-auto-name.notification.xml
+    Sleep    20
+    Verify CTI \ Translation Message In The Pop Up    You have received a call from Mr name auto at Sabre 16 - Auto    Pending call
+    Click Remain in Current State Button    Pending call
+    Sleep    20
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Verify Application Event Is Logged In Database    CTI Pending Call - Remain in Current State
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB US] Verify That Pop Up With No Match Will Displayed For Pending Call in Not Ready State Using CTI SO Set To Yes
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Set Client And Traveler    Sabre 15 - Auto ¦ US2928    AutoOneFiveOneTwo    NoramTrvlrOne
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MSPORD¥UA    01Y1    WPRQ¥S1
+    Book Flight X Months From Now    ORDMSP¥UA    01Y1    WPRQ¥S2
+    Click Read Booking
+    Drop Test Data To TestDropFolder    2-sabre-testcall-no-match.notification.xml
+    Verify Error(Expected) In Status Strip Text    Pending call....
+    Click Clear All
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Verify Application Event Is Logged In Database    Search Traveller Failure-No Match from CTI Server
+
+[NB US] Verify That CTI Search Returns Results For Caller In Same Subclient As Counselor
+    [Tags]    us6705
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Drop Test Data To TestDropFolder And Verify Message In Status Strip    1-sabre-testcall-auto-name.notification.xml    Pending call....
+    Click Clear All
+    Comment    Set Client And Traveler    Sabre 15 - Auto ¦ US2928    AutoOneFiveOneTwo    NoramTrvlrOne
+    Comment    Click New Booking
+    Comment    Update PNR for EN or GB
+    Comment    Book Flight X Months From Now    MSPORD¥UA    01Y1    WPRQ¥S1
+    Comment    Book Flight X Months From Now    ORDMSP¥UA    01Y1    WPRQ¥S2
+    Comment    Click Read Booking
+    Comment    Drop Test Data To TestDropFolder    1-sabre-testcall-no-match.notification.xml
+    Comment    Verify Error(Expected) In Status Strip Text    Pending call
+    Comment    Click Clear All
+    Comment    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Comment    Verify Application Event Is Logged In Database    Search Traveller Failure-No Match from CTI Server
+
+[NB FR] Verify That CTI Search Returns Results For Caller In Same Top Client As Counselor
+    [Tags]    us6705
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Drop Test Data To TestDropFolder And Verify Message In Status Strip    1-sabre-testcall-auto-name.notification.xml    APPEL EN ATTENTE
+    Click Clear All
+    Comment    Set Client And Traveler    Sabre 15 - Auto ¦ US2928    AutoOneFiveOneTwo    NoramTrvlrOne
+    Comment    Click New Booking
+    Comment    Update PNR for EN or GB
+    Comment    Book Flight X Months From Now    MSPORD¥UA    01Y1    WPRQ¥S1
+    Comment    Book Flight X Months From Now    ORDMSP¥UA    01Y1    WPRQ¥S2
+    Comment    Click Read Booking
+    Comment    Drop Test Data To TestDropFolder    1-sabre-testcall-no-match.notification.xml
+    Comment    Verify Error(Expected) In Status Strip Text    Pending call
+    Comment    Click Clear All
+    Comment    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Comment    Verify Application Event Is Logged In Database    Search Traveller Failure-No Match from CTI Server
+
+*** Keywords ***
+Verify Window Is Avaya Warning Message
+    [Arguments]    ${window_title}=Power Express    ${warning_message}=Unable to connect to Avaya One-X Agent
+    Wait Until Window Exists    Power Express
+    ${message}    Control Get Text    Power Express    ${EMPTY}    [NAME:txtMessageTextBox]
+    ${is_avaya_window}    Run Keyword And Continue On Failure    Should Contain    ${message}    Unable to connect to Avaya One-X Agent
+    Verify Application Usage Event Was Logged    Avaya One-X Not Connected
+    Confirm Popup Window
+    [Teardown]    Take Screenshot
+
+Wait Until Avaya One-X Warning Window Displays
+    Wait Until Keyword Succeeds    10    5    Verify Window Is Avaya Warning Message
+
+Verify Avaya One-X Warning Window Displays
+    Wait Until Avaya One-X Warning Window Displays
+
+Click Clear All Without Pop-up Handle
+    Activate Power Express Window
+    Wait Until Control Object Is Enabled    ${btn_clearAll}    ${title_power_express}    true
+    Control Focus    ${title_power_express}    ${EMPTY}    ${btn_clearAll}
+    Control Click    ${title_power_express}    ${EMPTY}    ${btn_clearAll}
+
+Verify Application Usage Event Was Logged
+    [Arguments]    ${actual_application_usage_event}
+    [Documentation]    \#verifies the FIRST/TOP application usage event logged
+    Set Test Variable    ${schema}    ApplicationUsage_Test
+    ${username}    Get UserName
+    Set Test Variable    ${sql_query}    SELECT TOP 1 b.*, a.ComputerName, a.ApplicationUsageDate FROM APPLICATIONUSAGE a join applicationevent b on b.applicationeventid = a.applicationeventid WHERE a.COMPUTERNAME like '%${username}%' ORDER BY a.applicationusageid DESC
+    Set Column Names
+    Verify Correct Value Is Reflected In OTT Table    ${column_applicationeventdescription}    ${actual_application_usage_event}
+
+Set Column Names
+    [Documentation]    necessary because query is by column ids not column names
+    Set Test Variable    ${column_applicationeventid}    0
+    Set Test Variable    ${column_applicationeventdescription}    1
+    Set Test Variable    ${column_computername}    2
+    Set Test Variable    ${column_applicationusagedate}    3
+
+Verify Telephony Is Inactive
+    Verify Image Does Exists    telephone_black.png
+
+Verify Telephone Is Disconnected
+    Comment    Verify Image Does Exists    telephone_red.png
+    ${avaya_color}    Get Pixel Color    Telephony
+    Should Be Equal    ${avaya_color}    FF0000
+
+Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    ${cti_integration_usage_id}    ${application_usage_id}    Get CTI Integration Usage Id
+    @{resultset_application_usage}    Execute Query    select top 1 * from ApplicationUsage where ApplicationUsageId = ${application_usage_id} order by 1 desc    ApplicationUsage_Test
+    Should Be Equal    ${resultset_cti_integration_usage[0][6]}    ${resultset_application_usage[0][9]}    CTI Usage Subunit is NOT the same as Application Usage Subunit
+    Should Be Equal    ${resultset_cti_integration_usage[0][8]}    ${resultset_application_usage[0][6]}    CTI Usage System User Guid is NOT the same as Application Usage System User Guid
+    Should Be Equal    ${resultset_cti_integration_usage[0][4]}    ${resultset_application_usage[0][5]}    CTI Usage Computer Name is NOT the same as Application Usage Computer Name
+
+Get CTI Integration Usage Id
+    ${computer_name}    Evaluate    os.environ['COMPUTERNAME']    os
+    @{resultset_cti_integration_usage}    Execute Query    select top 1 * from CTIIntegrationUsage where ComputerName = '${computer_name}' order by 1 desc    ApplicationUsage_Test
+    Set Test Variable    ${resultset_cti_integration_usage}
+    ${cti_integration_usage_id}    Set Variable    ${resultset_cti_integration_usage[0][0]}
+    ${application_usage_id}    Set Variable    ${resultset_cti_integration_usage[0][19]}
+    [Return]    ${cti_integration_usage_id}    ${application_usage_id}
+
+Drop Test Data To TestDropFolder And Verify Message In Status Strip
+    [Arguments]    ${test_data_file}    ${message}
+    Sleep    5
+    Copy File    ${CURDIR}/../../../resources/test_data/${test_data_file}    C:\\Program Files (x86)\\Carlson Wagonlit Travel\\Power Express ${version}\\TestDropFolder
+    Verify Error(Expected) In Status Strip Text    ${message}
+    Wait Until Progress Info is Completed

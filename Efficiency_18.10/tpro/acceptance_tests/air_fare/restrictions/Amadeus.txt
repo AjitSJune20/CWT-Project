@@ -1,0 +1,260 @@
+*** Settings ***
+Resource          ../air_fare_verification.txt
+
+*** Test Cases ***
+[NB HK] Verify That Air Fare Restrictions Is Selected In Restriction Panel Under Fare Tab And Correct Remarks Are Written
+    [Tags]    us491    us297    hk
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ HK POLICY    BEAR    JARED HK
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGMNL/ACX    SS1Y1    FXP/S2    6    3
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    FXP/S3    6    5
+    Book Amadeus Offer Retain Flight    S2    1
+    Book Amadeus Offer Retain Flight    S3    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Click Fare Tab    Fare Quote 1
+    Select Air Fare Restrictions Radio Button    Fare Quote 1
+    Verify Air Fare Restrictions Dropdown Values    Fare Quote 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Fare Quote 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Fare Quote 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions Radio Button    Alternate Fare 1
+    Verify Air Fare Restrictions Dropdown Values    Alternate Fare 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Alternate Fare 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Add Customized Templates In Fare Quote Restriction Panel    Alternate Fare 1    CUSTOM
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Alternate Fare 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES    CUSTOM
+    Click Fare Tab    Fare Quote 2
+    Select Default Restricions in Fare Tab    Fare Quote 2
+    Verfiy Default Restrictions Are Selected In Fare Tab    Fare Quote 2
+    Verify Default UI Display In The Restrictions Tab    Fare Quote 2
+    Select Default Restricions in Fare Tab    Alternate Fare 2
+    Verfiy Default Restrictions Are Selected In Fare Tab    Alternate Fare 2
+    Verify Default UI Display In The Restrictions Tab    Alternate Fare 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify Air Fare Restriction Remarks on Amadeus    Fare Quote 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restriction Remarks on Amadeus    Alternate Fare 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES    CUSTOM
+    Verify Default Restriction Remarks Are Written    1
+    Verify Default Alternate Restrictions Are Written In PNR
+
+[AB HK] Verify That Air Fare Restrictions Is Selected In Restriction Panel Under Fare Tab And Correct Remarks Are Written
+    [Tags]    us491    us297    hk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Select Default Restricions in Fare Tab    Fare Quote 1
+    Verfiy Default Restrictions Are Selected In Fare Tab    Fare Quote 1
+    Verify Default UI Display In The Restrictions Tab    Fare Quote 1
+    Select Default Restricions in Fare Tab    Alternate Fare 1
+    Verfiy Default Restrictions Are Selected In Fare Tab    Alternate Fare 1
+    Verify Default UI Display In The Restrictions Tab    Alternate Fare 1
+    Select Air Fare Restrictions Radio Button    Fare Quote 2
+    Verify Air Fare Restrictions Dropdown Values    Fare Quote 2    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Fare Quote 2    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Fare Quote 2    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions Radio Button    Alternate Fare 2
+    Verify Air Fare Restrictions Dropdown Values    Alternate Fare 2    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Alternate Fare 2    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Alternate Fare 2    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For HK Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+    Execute Simultaneous Change Handling    Amend Booking For HK Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+    Retrieve PNR Details from Amadeus
+    Verify Air Fare Restriction Remarks on Amadeus    Fare Quote 2    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restriction Remarks on Amadeus    Alternate Fare 2    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Default Restriction Remarks Are Written    1
+    Verify Default Alternate Restrictions Are Written In PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Air Fare Restrictions Is Selected In Restriction Panel Under Fare Tab And Correct Remarks Are Written
+    [Tags]    us491    us297    sg
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ SG POLICY    BEAR    REN SG
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINKUL/AMH    SS1Y1    FXP/S2    6    3
+    Book Amadeus Offer Retain Flight    S2    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Select Air Fare Restrictions Radio Button    Fare Quote 1
+    Verify Air Fare Restrictions Dropdown Values    Fare Quote 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Fare Quote 1    FARE VALID ONLY ON <Airline>
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Fare Quote 1    FARE VALID ONLY ON <Airline>
+    Click Panel    Air Fare
+    Select Air Fare Restrictions Radio Button    Alternate Fare 1
+    Verify Air Fare Restrictions Dropdown Values    Alternate Fare 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Alternate Fare 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Alternate Fare 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify Air Fare Restriction Remarks on Amadeus    Fare Quote 1    FARE VALID ONLY ON <Airline>
+    Verify Air Fare Restriction Remarks on Amadeus    Alternate Fare 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+
+[AB SG] Verify That Air Fare Restrictions Is Selected In Restriction Panel Under Fare Tab And Correct Remarks Are Written - When Additional Flight Segment Is Added
+    [Tags]    us491    us297    sg
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S3    6    5
+    Book Amadeus Offer Retain Flight    S3    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Select Air Fare Restrictions Radio Button    Fare Quote 1
+    Verify Air Fare Restrictions Dropdown Values    Fare Quote 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Delete Air Fare Restrictions In Fare Quote Restriction Panel    Fare Quote 1    FARE VALID ONLY ON <AIRLINE>
+    Select Air Fare Restrictions In Fare Quote    Fare Quote 1    NO SHOW PENALTY APPLIES
+    Add Customized Templates In Fare Quote Restriction Panel    Fare Quote 1    YELLOW FEVER    MALARIA FEVER
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Fare Quote 1    NO SHOW PENALTY APPLIES    YELLOW FEVER    MALARIA FEVER
+    Select Air Fare Restrictions Radio Button    Alternate Fare 1
+    Verify Air Fare Restrictions Dropdown Values    Alternate Fare 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Delete Air Fare Restrictions In Fare Quote Restriction Panel    Alternate Fare 1    FARE VALID ONLY ON <AIRLINE>    NO SHOW PENALTY APPLIES
+    Add Customized Templates In Fare Quote Restriction Panel    Alternate Fare 1    CITY PROHIBITED    AIRLINE ADVICE
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Alternate Fare 1    CITY PROHIBITED    AIRLINE ADVICE
+    Select Default Restricions in Fare Tab    Fare Quote 2
+    Verfiy Default Restrictions Are Selected In Fare Tab    Fare Quote 2
+    Verify Default UI Display In The Restrictions Tab    Fare Quote 2
+    Select Air Fare Restrictions Radio Button    Alternate Fare 2
+    Verify Air Fare Restrictions Dropdown Values    Alternate Fare 2    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Add Customized Templates In Fare Quote Restriction Panel    Alternate Fare 2    CUSTOM 1    CUSTOM 2
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Alternate Fare 2    CUSTOM 1    CUSTOM 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For SG Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+    Execute Simultaneous Change Handling    Amend Booking For SG Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+    Retrieve PNR Details from Amadeus
+    Verify Air Fare Restriction Remarks on Amadeus    Fare Quote 1    NO SHOW PENALTY APPLIES    YELLOW FEVER    MALARIA FEVER
+    Verify Air Fare Restriction Remarks on Amadeus    Alternate Fare 1    CITY PROHIBITED    AIRLINE ADVICE
+    Verify Air Fare Restriction Remarks on Amadeus    Alternate Fare 2    CUSTOM 1    CUSTOM 2
+    Verify Default Restriction Remarks Are Written    1
+    Verify Default Alternate Restrictions Are Written In PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That Air Fare Restrictions Is Selected In Restriction Panel Under Fare Tab And Correct Remarks Are Written
+    [Tags]    us491    us297    in
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ IN POLICY    BEAR    REN IN
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    BOMSIN/ASQ    SS1Y1    FXP/S2    6    3
+    Book Flight X Months From Now    BLRBKK/ATG    SS1Y1    FXP/S3    6    4
+    Book Amadeus Offer Retain Flight    S2    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Select Air Fare Restrictions Radio Button    Fare Quote 1
+    Verify Air Fare Restrictions Dropdown Values    Fare Quote 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Fare Quote 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Fare Quote 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions Radio Button    Alternate Fare 1
+    Verify Air Fare Restrictions Dropdown Values    Alternate Fare 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Add Customized Templates In Fare Quote Restriction Panel    Alternate Fare 1    YELLOW FEVER    MALARIA FEVER
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Alternate Fare 1    YELLOW FEVER    MALARIA FEVER
+    Select Air Fare Restrictions Radio Button    Fare Quote 2
+    Verify Air Fare Restrictions Dropdown Values    Fare Quote 2    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Fare Quote 2    FARE VALID ONLY ON <Airline>
+    Add Customized Templates In Fare Quote Restriction Panel    Fare Quote 2    YELLOW FEVER
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Fare Quote 2    FARE VALID ONLY ON <Airline>    YELLOW FEVER
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify Air Fare Restriction Remarks on Amadeus    Fare Quote 1    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restriction Remarks on Amadeus    Alternate Fare 1    YELLOW FEVER    MALARIA FEVER
+    Verify Air Fare Restriction Remarks on Amadeus    Fare Quote 2    FARE VALID ONLY ON <Airline>    YELLOW FEVER
+
+[AB IN] Verify That Air Fare Restrictions Is Selected In Restriction Panel Under Fare Tab And Correct Remarks Are Written - When Removed A Flight Segment
+    [Tags]    us297    us491    in
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    3
+    Delete Amadeus Offer    XE1
+    Click Read Booking
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 1
+    Populate Fare Details And Fees Tab With Default Values
+    Select Air Fare Restrictions Radio Button    Fare Quote 1
+    Delete Air Fare Restrictions In Fare Quote Restriction Panel    Fare Quote 1    FARE VALID ONLY ON <AIRLINE>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restrictions Dropdown Values    Fare Quote 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Fare Quote 1    NO SHOW PENALTY APPLIES
+    Add Customized Templates In Fare Quote Restriction Panel    Fare Quote 1    ARRIVAL NOTICE
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Fare Quote 1    NO SHOW PENALTY APPLIES    ARRIVAL NOTICE
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For IN Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+    Execute Simultaneous Change Handling    Amend Booking For IN Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+    Retrieve PNR Details from Amadeus
+    Verify Air Fare Restriction Remarks on Amadeus    Fare Quote 1    NO SHOW PENALTY APPLIES    ARRIVAL NOTICE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For HK Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Select Default Restricions in Fare Tab    Fare Quote 1
+    Verfiy Default Restrictions Are Selected In Fare Tab    Fare Quote 1
+    Select Default Restricions in Fare Tab    Alternate Fare 1
+    Verfiy Default Restrictions Are Selected In Fare Tab    Alternate Fare 1
+    Select Air Fare Restrictions Radio Button    Fare Quote 2
+    Verify Air Fare Restrictions Dropdown Values    Fare Quote 2    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Fare Quote 2    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Fare Quote 2    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions Radio Button    Alternate Fare 2
+    Verify Air Fare Restrictions Dropdown Values    Alternate Fare 2    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Alternate Fare 2    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Alternate Fare 2    FARE VALID ONLY ON <Airline>    NO SHOW PENALTY APPLIES
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For HK Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+
+Amend Booking For SG Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S3    6    5
+    Book Amadeus Offer Retain Flight    S3    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Select Air Fare Restrictions Radio Button    Fare Quote 1
+    Verify Air Fare Restrictions Dropdown Values    Fare Quote 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Delete Air Fare Restrictions In Fare Quote Restriction Panel    Fare Quote 1    FARE VALID ONLY ON <AIRLINE>
+    Select Air Fare Restrictions In Fare Quote    Fare Quote 1    NO SHOW PENALTY APPLIES
+    Add Customized Templates In Fare Quote Restriction Panel    Fare Quote 1    YELLOW FEVER    MALARIA FEVER
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Fare Quote 1    NO SHOW PENALTY APPLIES    YELLOW FEVER    MALARIA FEVER
+    Select Air Fare Restrictions Radio Button    Alternate Fare 1
+    Verify Air Fare Restrictions Dropdown Values    Alternate Fare 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Delete Air Fare Restrictions In Fare Quote Restriction Panel    Alternate Fare 1    FARE VALID ONLY ON <AIRLINE>    NO SHOW PENALTY APPLIES
+    Add Customized Templates In Fare Quote Restriction Panel    Alternate Fare 1    CITY PROHIBITED    AIRLINE ADVICE
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Alternate Fare 1    CITY PROHIBITED    AIRLINE ADVICE
+    Select Default Restricions in Fare Tab    Fare Quote 2
+    Verfiy Default Restrictions Are Selected In Fare Tab    Fare Quote 2
+    Select Air Fare Restrictions Radio Button    Alternate Fare 2
+    Verify Air Fare Restrictions Dropdown Values    Alternate Fare 2    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Add Customized Templates In Fare Quote Restriction Panel    Alternate Fare 2    CUSTOM 1    CUSTOM 2
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Alternate Fare 2    CUSTOM 1    CUSTOM 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For SG Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+
+Amend Booking For IN Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    3
+    Delete Amadeus Offer    XE1
+    Click Read Booking
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 1
+    Populate Fare Details And Fees Tab With Default Values
+    Select Air Fare Restrictions Radio Button    Fare Quote 1
+    Delete Air Fare Restrictions In Fare Quote Restriction Panel    Fare Quote 1    FARE VALID ONLY ON <AIRLINE>    NO SHOW PENALTY APPLIES
+    Verify Air Fare Restrictions Dropdown Values    Fare Quote 1    FARE VALID ONLY ON <Airline>    IN CASE OF NO SHOW, TICKET IS NONREFUNDABLE AND NOT    NO SHOW PENALTY APPLIES
+    Select Air Fare Restrictions In Fare Quote    Fare Quote 1    NO SHOW PENALTY APPLIES
+    Add Customized Templates In Fare Quote Restriction Panel    Fare Quote 1    ARRIVAL NOTICE
+    Verify Air Fare Restrictions Present In Itinerary Remarks Panel    Fare Quote 1    NO SHOW PENALTY APPLIES    ARRIVAL NOTICE
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For IN Verify That Changed Restrictions In Restrictions Panel Are Written In Remarks

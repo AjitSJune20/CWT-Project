@@ -1,0 +1,824 @@
+*** Settings ***
+Force Tags        amadeus    apac
+Resource          ../../../../resources/common/global_resources.txt
+Resource          ../../../../acceptance_tests/gds/gds_verification.txt
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../../../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          ../delivery_verification.txt
+
+*** Test Cases ***
+[NB SG] Verify That Correct Remarks Are Written When Delivery Method Is Non-TKOK And On Hold Reason Is Ticked
+    [Tags]    us711    team_c    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    Select GDS    Amadeus
+    Activate Power Express Window
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 3    BEAR    MONT
+    Click New Booking
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Department    QA
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Set On Hold Reasons    SIN-HKG    Awaiting Approval    Awaiting Itinerary Segment
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Ticketing RIR Remarks    TLXL
+    Verify Ticketing RMM Remarks
+
+[AB SG] Verify That Correct Remarks Are Written When Delivery Method Is Non-TKOK And No On Hold Reason Is Ticked
+    [Tags]    us711    team_c    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    CWT
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Department    QA
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Untick On Hold Reason    Awaiting Approval    Awaiting Itinerary Segment
+    Click Panel    Recap
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Correct Remarks Are Written When Delivery Method Is Non-TKOK And No On Hold Reason Is Ticked (SG) If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Amadeus
+    Verify Ticketing RIR Remarks    TLIS
+    Verify Ticketing RMM Remarks
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Correct Remarks Are Written When Delivery Method Is TKOK and On Hold Reason Is Ticked
+    [Tags]    us711    team_c    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    Select GDS    Amadeus
+    Activate Power Express Window
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN HK    BEAR    HONG
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSIN/ACX    SS1Y1    FXP
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Department    QA
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Delivery.Tick Receive Invoice Checkbox
+    Select Delivery Method    No Queue Placement
+    Set On Hold Reasons    HKG-SIN    Awaiting Approval    Awaiting Itinerary Segment
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify RIR On Hold Reason Remarks Are Not Written
+    Verify Ticketing RMM Remarks
+
+[AB HK] Verify That Correct Remarks Are Written When Delivery Method Is TKOK And No On Hold Reason Is Ticked
+    [Tags]    us711    team_c    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    CWT
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Department    QA
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Select Delivery Method    No Queue Placement
+    Untick On Hold Reason    Awaiting Approval    Awaiting Itinerary Segment
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Correct Remarks Are Written When Delivery Method Is TKOK And No On Hold Reason Is Ticked (HK) If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Amadeus
+    Verify RIR On Hold Reason Remarks Are Not Written
+    Verify Ticketing RMM Remarks
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That Correct Remarks Are Written When Delivery Method Is Non-TKOK And On Hold Reason Is Ticked
+    [Tags]    us711    team_c    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    Select GDS    Amadeus
+    Activate Power Express Window
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN IN 3    BEAR    NIYAK
+    Click New Booking
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    DELSIN    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery    Cust Refs
+    Click Panel    Air Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Cust Refs
+    Set CDR Value    Department    QA
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Set On Hold Reasons    DEL-SIN    Awaiting Approval    Awaiting Itinerary Segment
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Ticketing RIR Remarks    TLXL
+    Verify Ticketing RMM Remarks
+
+[AB IN] Verify That Correct Remarks Are Written When Delivery Method Is Non-TKOK And No On Hold Reason Is Ticked
+    [Tags]    us711    team_c    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    CWT
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs
+    Click Panel    Cust Refs
+    Set CDR Value    Department    QA
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Untick On Hold Reason    Awaiting Approval    Awaiting Itinerary Segment
+    Click Panel    Recap
+    Click Finish PNR    Amend Booking For Verify That Correct Remarks Are Written When Delivery Method Is Non-TKOK And No On Hold Reason Is Ticked (IN)
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Correct Remarks Are Written When Delivery Method Is Non-TKOK And No On Hold Reason Is Ticked (IN)
+    Retrieve PNR Details From Amadeus
+    Verify Ticketing RIR Remarks    TLIS
+    Verify Ticketing RMM Remarks
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Ticketing Element Is Written When Delivery Method Is TK TL (Auto Ticket) With No On Hold Selected
+    [Tags]    us304    sg    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US304    BEAR    SGTHREEZEROFOUR
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXJFK/AAA    SS1Y1    FXP    6    3
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    False
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    False
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    Auto Ticket
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    0
+    Get Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify TK TL Is Written In The PNR    SINWL2101    62    1
+
+[AB SG] Verify That Ticketing Element Is Written When Delivery Method Is TK TL (Auto Ticket) With No On Hold Selected
+    [Tags]    us304    sg    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    False
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    Auto Ticket
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    2
+    Get Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Ticketing Element Is Written When Delivery Method Is TK TL (Auto Ticket) With No On Hold Selected For SG If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify TK TL Is Written In The PNR    SINWL2101    62    1    True
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Ticketing Element Is Written When Delivery Method Is TK XL (Auto Cancel) With No On Hold Selected
+    [Tags]    us304    hk    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US304    BEAR    HKTHREEZEROFOUR
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP    6    3
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    False
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    False
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    Auto Cancel
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    0
+    Get Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify TK XL Is Written In The PNR    HKGWL2102    2200
+
+[AB HK] Verify That Ticketing Element Is Written When Delivery Method Is TK OK (No Queue Placement) With Multiple On Hold Selected
+    [Tags]    us304    hk    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Select Policy Status    Philippine Airlines Prohibited    NV - Not going to affected area
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    True
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    No Queue Placement
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    2
+    Get Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Policy Check    Cust Refs    Delivery
+    Click Panel    Recap
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Ticketing Element Is Written When Delivery Method Is TK OK (No Queue Placement) With Multiple On Hold Selected For HK If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify TK OK Is Written In The PNR    HKGWL2102
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That Ticketing Element Is Written When Delivery Method Is TK OK (No Queue Placement) With Multiple On Hold Selected
+    [Tags]    us304    in    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US304    BEAR    INTHREEZEROFOUR
+    Click New Booking
+    Click Panel    Cust Refs
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXJFK/AAA    SS1Y1    FXP    6    3
+    Click Read Booking
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Select On Hold Booking Reasons    Awaiting Itinerary Segment
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    False
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    True
+    Select Delivery Method    No Queue Placement
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    0
+    Get Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify TK OK Is Written In The PNR    BLRWL22MS
+
+[AB IN] Verify That Ticketing Element Is Written When Delivery Method Is TK XL (Auto Cancel) With Single On Hold Selected
+    [Tags]    us304    in    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Untick On Hold Reasons    Awaiting Approval
+    Untick On Hold Reasons    Awaiting Itinerary Segment
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    True
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    False
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    Auto Cancel
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    2
+    Get Ticketing Date
+    Click Panel    Recap
+    Click Finish PNR    Amend Booking For Verify That Ticketing Element Is Written When Delivery Method Is TK XL (Auto Cancel) With Single On Hold Selected For IN
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Ticketing Element Is Written When Delivery Method Is TK XL (Auto Cancel) With Single On Hold Selected For IN
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify TK XL Is Written In The PNR    BLRWL22MS    2100
+    [Teardown]
+
+[AB IN] Verify That Ticketing Element Is Written When Delivery Method Is TK TL (Auto Ticket) With Multiple On Hold Selected
+    [Tags]    us304    in    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Select On Hold Booking Reasons    Awaiting Itinerary Segment
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    True
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    True
+    Select Delivery Method    Auto Ticket
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    2
+    Get Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Policy Check    Cust Refs    Delivery
+    Click Panel    Recap
+    Click Finish PNR    Amend Booking For Verify That Ticketing Element Is Written When Delivery Method Is TK TL (Auto Ticket) With Multiple On Hold Selected For IN
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Ticketing Element Is Written When Delivery Method Is TK TL (Auto Ticket) With Multiple On Hold Selected For IN
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify TK TL Is Written In The PNR    BLRWL22MS    62    1    True
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That PNR Is Queued In Aqua When Follow Up Date Is Set To Future Date And Awaiting Itinerary Segment Is Selected
+    [Tags]    us710    hk    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US710    BEAR    HKSEVENONEZERO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MNLHKG/APR    SS1Y1    FXP    0    2
+    Click Read Booking
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel
+    Select On Hold Booking Reasons    Awaiting Itinerary Segment
+    Set Follow Up Date X Day Ahead    1
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Get Follow Update Value
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify Aqua Queue Place Is Not Written In the PNR    SINWL2101    63    C1
+    Verify On Hold Queue Place Is Not Written In The PNR    HKGWL2102    62    C4    0
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify Aqua Queue Minder Is Written In the PNR    SINWL2101    63    C1
+    Verify On Hold Queue Minder Is Written In The PNR    HKGWL2102    62    C3
+
+[AB HK] Verify That PNR Is Queued In Aqua When Follow Up Date Is Set Today And Awaiting Customer References Is Selected
+    [Tags]    us710    hk    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2
+    Book Flight X Months From Now    SINLAX/ASQ    SS1Y1    FXP    6    2
+    Click Read Booking
+    Click Panel    Delivery
+    Select Delivery Method    Auto Ticket
+    Untick On Hold Reasons    Awaiting Itinerary Segment
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    True
+    Verify Specific On Hold Reason Status    Awaiting Customer References    True
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Set Follow Up Date X Day Ahead    0
+    Set Ticketing Date    0
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Get Follow Update Value
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Amend Booking For Verify That PNR Is Queued In Aqua When Follow Up Date Is Set Today And Awaiting Customer References Is Selected For HK
+    Execute Simultaneous Change Handling    Amend Booking For Verify That PNR Is Queued In Aqua When Follow Up Date Is Set Today And Awaiting Customer References Is Selected For HK
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify Aqua Queue Place Is Written In the PNR    SINWL2101    63    C2
+    Verify On Hold Queue Place Is Written In The PNR    HKGWL2102    62    C3
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify Aqua Queue Minder Is Written In the PNR    SINWL2101    63    C2
+    Verify On Hold Queue Minder Is Written In The PNR    HKGWL2102    62    C3
+
+[AB HK] Verify That PNR Is Queued In Aqua When No Onhold Is Selected
+    [Tags]    us710    hk    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2
+    Book Flight X Months From Now    SINLAX/ASQ    SS1Y1    FXP    6    2
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Tick Address Not Unknown
+    Click Panel    Delivery
+    Untick On Hold Reasons    Awaiting Approval
+    Select Delivery Method    No Queue Placement
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    False
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    False
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Set Ticketing Date    3
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs    APIS/SFPD
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That PNR Is Queued In Aqua When No Onhold Is Selected If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify Aqua Queue Place Is Not Written In the PNR    SINWL2101    63    C1    1
+    Verify On Hold Queue Place Is Not Written In The PNR    HKGWL2102    62    C3    1
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify Aqua Queue Minder Is Not Written In the PNR    SINWL2101    63    C1    2
+    Verify On Hold Queue Minder Is Not Written In The PNR    HKGWL2102    62    C3    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB] Verify That PNR Is Queued In Aqua When Follow Up Date Is Set Today And Awaiting Approval Is Selected
+    [Tags]    us710    in    howan    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US710    BEAR    INSEVENONEZERO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGLAX/ACX    SS1Y1    FXP    6    3
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Address    Street    City    Guam    New York    100
+    Click Panel    Delivery
+    Select Delivery Method    No Queue Placement
+    Tick On Hold Reasons    Awaiting Approval
+    Set Follow Up Date X Day Ahead    0
+    Set Ticketing Date    1
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Get Follow Update Value
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD    Delivery
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify Aqua Queue Place Is Not Written In the PNR    SINWL2101    63    C2    0
+    Verify On Hold Queue Place Is Written In The PNR    BLRWL22MS    64    C11
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify Aqua Queue Minder Is Not Written In the PNR    SINWL2101    63    C2    0
+    Verify On Hold Queue Minder Is Written In The PNR    BLRWL22MS    64    C11
+
+[IN AB] Verify That PNR Is Queued In Aqua When Follow Up Date Is Set To Today And Multiple OnHold Is Selected
+    [Tags]    us710    in    howan    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE2
+    Book Flight X Months From Now    HKGLAX/ACX    SS1Y1    FXP    6    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Address    Street    City    Guam    New York    100
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Delivery
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    True
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    Auto Cancel
+    Set Follow Up Date X Day Ahead    0
+    Set Ticketing Date    1
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Get Follow Update Value
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD    Delivery
+    Click Panel    Recap
+    Click Finish PNR    Amend Booking For Verify That PNR Is Queued In Aqua When Follow Up Date Is Set To Today And Multiple OnHold Is Selected
+    Execute Simultaneous Change Handling    Amend Booking For Verify That PNR Is Queued In Aqua When Follow Up Date Is Set To Today And Multiple OnHold Is Selected
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify Aqua Queue Place Is Written In the PNR    SINWL2101    63    C2
+    Verify On Hold Queue Place Is Written In The PNR    BLRWL22MS    64    C11
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify Aqua Queue Minder Is Written In the PNR    SINWL2101    63    C2
+    Verify On Hold Queue Minder Is Written In The PNR    BLRWL22MS    64    C11
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That PNR Is Queued In Aqua When Follow Up Date Is Set Today And No Onhold Selected
+    [Tags]    us710    sg    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US710    BEAR    SGSEVENONEZERO
+    Click New Booking
+    Update PNR for EN or GB    Cust Refs
+    Book Flight X Months From Now    HKGLAX/ACX    SS1Y1    FXP    6    3
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Tick Use Document
+    Select Is Doc Valid    No
+    Select Visa Requirement    Not Required    0
+    Select Visa Requirement    Not Required    1
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Address    Street    City    Guam    New York    100
+    Click Panel    Delivery
+    Set Ticketing Date Using Current Date
+    Select Delivery Method    Auto Ticket
+    Set Email Address In Delivery Panel    bear@test.com
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD    Delivery
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify Aqua Queue Place Is Written in The PNR    SINWL2101    63    C2
+    Verify On Hold Queue Place Is Not Written In The PNR    SINWL2101    62    C2    0
+    Verify On Hold Queue Place Is Not Written In The PNR    SINWL2101    62    C3    0
+    Verify On Hold Queue Place Is Not Written In The PNR    SINWL2101    62    C4    0
+    Verify On Hold Queue Place Is Not Written In The PNR    SINWL2101    62    C5    0
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify Aqua Queue Minder Is Written In The PNR    SINWL2101    63    C2
+
+[AB SG] Verify That PNR Is Queued In Aqua When Follow Up Date Is Set To Future Date And Awaiting Secure Flight Data Is Selected
+    [Tags]    us710    sg    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE2
+    Book Flight X Months From Now    HKGLAX/ACX    SS1Y1    FXP    0    2
+    Click Read Booking
+    Click Panel    Delivery
+    Select Delivery Method    Auto Ticket
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Set Follow Up Date X Day Ahead    1
+    Get Follow Update Value
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That PNR Is Queued In Aqua When Follow Up Date Is Set To Future Date And Awaiting Secure Flight Data Is Selected For SG
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify Aqua Queue Place Is Written in The PNR    SINWL2101    63    C1
+    Verify On Hold Queue Place Is Not Written In The PNR    SINWL2101    62    C5    0
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify Aqua Queue Minder Is Written In The PNR    SINWL2101    63    C1
+    Verify On Hold Queue Minder Is Written In The PNR    SINWL2101    62    C5
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That PNR Is Queued In Aqua When No Onhold Is Selected
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2
+    Book Flight X Months From Now    SINLAX/ASQ    SS1Y1    FXP    6    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery    Air Fare    APIS/SFPD
+    Click Panel    APIS/SFPD
+    Tick Address Not Unknown
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    Delivery
+    Select Delivery Method    No Queue Placement
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    False
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    False
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Set Ticketing Date    3
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Get Follow Update Value
+    Click Panel    Recap
+    Click Finish PNR
+
+Amend Booking For Verify That PNR Is Queued In Aqua When Follow Up Date Is Set Today And Awaiting Customer References Is Selected For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2
+    Book Flight X Months From Now    SINLAX/ASQ    SS1Y1    FXP    6    2
+    Click Read Booking
+    Click Panel    Delivery
+    Select Delivery Method    Auto Ticket
+    Untick On Hold Reasons    Awaiting Itinerary Segment
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    True
+    Verify Specific On Hold Reason Status    Awaiting Customer References    True
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Set Follow Up Date X Day Ahead    0
+    Set Ticketing Date    0
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Get Follow Update Value
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Amend Booking For Verify That PNR Is Queued In Aqua When Follow Up Date Is Set Today And Awaiting Customer References Is Selected For HK
+
+Amend Booking For Verify That Correct Remarks Are Written When Delivery Method Is Non-TKOK And No On Hold Reason Is Ticked (SG)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    CWT
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery    Cust Refs
+    Click Panel    Cust Refs
+    Enter CDR Value    QA
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Untick On Hold Reason    Awaiting Approval    Awaiting Itinerary Segment
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Ticketing RIR Remarks    TLIS
+    Verify Ticketing RMM Remarks
+
+Amend Booking For Verify That Correct Remarks Are Written When Delivery Method Is TKOK And No On Hold Reason Is Ticked (HK)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    CWT
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Select Delivery Method    No Queue Placement
+    Untick On Hold Reason    Awaiting Approval    Awaiting Itinerary Segment
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify RIR On Hold Reason Remarks Are Not Written
+    Verify Ticketing RMM Remarks
+
+Amend Booking For Verify That Correct Remarks Are Written When Delivery Method Is Non-TKOK And No On Hold Reason Is Ticked (IN)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    CWT
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Select Delivery Method    Amadeus edited TKXL
+    Untick On Hold Reason    Awaiting Approval    Awaiting Itinerary Segment
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Ticketing RIR Remarks    TLIS
+    Verify Ticketing RMM Remarks
+
+Amend Booking For Verify That Ticketing Element Is Written When Delivery Method Is TK TL (Auto Ticket) With Multiple On Hold Selected For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Tick Not Known    Tick
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    False
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    Auto Cancel
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    2
+    Get Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Policy Check    Cust Refs    Delivery
+    Click Panel    Recap
+    Click Finish PNR
+
+Amend Booking For Verify That Ticketing Element Is Written When Delivery Method Is TK XL (Auto Cancel) With Single On Hold Selected For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    APIS/SFPD
+    Tick Not Known    Tick
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    False
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    Auto Cancel
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    2
+    Get Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Policy Check    Cust Refs    Delivery
+    Click Panel    Recap
+    Click Finish PNR
+
+Amend Booking For Verify That Ticketing Element Is Written When Delivery Method Is TK OK (No Queue Placement) With Multiple On Hold Selected For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Select Policy Status    Philippine Airlines Prohibited    NV - Not going to affected area
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    True
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    No Queue Placement
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    2
+    Get Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Policy Check    Cust Refs    Delivery
+    Click Panel    Recap
+    Click Finish PNR
+
+Amend Booking For Verify That Ticketing Element Is Written When Delivery Method Is TK TL (Auto Ticket) With No On Hold Selected For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Department    YY
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    False
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    Auto Ticket
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Set Ticketing Date    2
+    Click Panel    Recap
+    Click Finish PNR
+
+Amend Booking For Verify That PNR Is Queued In Aqua When Follow Up Date Is Set To Future Date And Awaiting Secure Flight Data Is Selected For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE2
+    Book Flight X Months From Now    HKGLAX/ACX    SS1Y1    FXP    0    2
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 1
+    Click Panel    Delivery
+    Select Delivery Method    Auto Ticket
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Set Follow Up Date X Day Ahead    1
+    Get Follow Update Value
+    Click Panel    Recap
+    Click Finish PNR
+
+Amend Booking For Verify That PNR Is Queued In Aqua When Follow Up Date Is Set To Today And Multiple OnHold Is Selected
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE2
+    Book Flight X Months From Now    HKGLAX/ACX    SS1Y1    FXP    6    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Address    Street    City    Guam    New York    100
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Delivery
+    Verify Specific On Hold Reason Status    Awaiting Secure Flight Data    False
+    Verify Specific On Hold Reason Status    Awaiting Customer References    True
+    Verify Specific On Hold Reason Status    Awaiting Fare Details    False
+    Verify Specific On Hold Reason Status    Awaiting Approval    True
+    Verify Specific On Hold Reason Status    Awaiting Itinerary Segment    False
+    Select Delivery Method    Auto Cancel
+    Set Follow Up Date X Day Ahead    0
+    Set Ticketing Date    1
+    Set Email Address in Delivery Panel    automation@carlsonwagonlit.com
+    Get Follow Update Value
+    Populate All Panels (Except Given Panels If Any)    APIS/SFPD    Delivery
+    Click Panel    Recap
+    Click Finish PNR
+
+Verify Aqua Queue Place Is Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}
+    Verify Specific Remark Is Written In The PNR    QE/${pcc}/${queue_number}${queue_category}
+
+Verify Aqua Queue Minder Is Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}
+    Verify Specific Remark Is Written In The PNR    OP ${pcc}/${current_date}/${queue_number}${queue_category}/AQUA QUEUING
+
+Verify On Hold Queue Minder Is Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}
+    ${followup_date}    Convert Date To GDS Format    ${followup_date}    %m/%d/%Y
+    Verify Specific Remark Is Written In The PNR    OP ${pcc}/${follow_up_date}/${queue_number}${queue_category}/PNR ON HOLD SEE REMARKS
+
+Verify On Hold Queue Place Is Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}
+    Verify Specific Remark Is Written In The PNR    QE/${pcc}/${queue_number}${queue_category}
+
+Verify Aqua Queue Place Is Not Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${occurence}=1
+    Verify Specific Remark Is Not Written X Times In The PNR    QE/${pcc}/${queue_number}${queue_category}    ${occurence}
+
+Verify Aqua Queue Minder Is Not Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${occurence}=1
+    Verify Specific Remark Is Not Written X Times In The PNR    OP ${pcc}/${current_date}/${queue_number}${queue_category}/AQUA QUEUING    ${occurence}
+
+Verify On Hold Queue Minder Is Not Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${occurence}=1
+    Set Test Variable    ${current_date}
+    ${current_date}    SyexDateTimeLibrary.Get Current Date
+    ${current_date}    Convert Date To GDS Format    ${current_date}    %m/%d/%Y
+    Verify Specific Remark Is Not Written X Times In The PNR    OP ${pcc}/${current_date}/${queue_number}${queue_category}/PNR ON HOLD SEE REMARKS    ${occurence}
+
+Verify On Hold Queue Place Is Not Written In The PNR
+    [Arguments]    ${pcc}    ${queue_number}    ${queue_category}    ${occurence}=1
+    Verify Specific Remark Is Not Written X Times In The PNR    QE/${pcc}/${queue_number}${queue_category}    ${occurence}
+
+Verify Specific Remark Is Not Written X Times In The PNR
+    [Arguments]    ${expected_remark}    ${occurence}
+    ${actual_count_match}    Get Count    ${pnr_details}    ${expected_remark}
+    Run Keyword And Continue On Failure    Run Keyword If    ${actual_count_match} <= ${occurence}    Log    PASS: "${expected_remark}" was not written more than "${occurence}" times in the PNR.
+    ...    ELSE    FAIL    "${expected_remark}" was written "${actual_count_match}" times in the PNR and not the expected count: " ${occurence}"
+
+Get Follow Update Value
+    ${follow_up_date}    Get Control Text Value    ${date_followup}
+    Set Suite Variable    ${follow_up_date}
+
+Populate Cust Refs Panel With Mandatory Values
+    Click Panel    Cust Refs
+    Set CDR Value    DEPARTMENT    AD
+    Set CDR Value    DIVISON E.G. GLOBAL FINANCE    4
+    Set CDR Value    DP Code    33
+    Set CDR Value    PERSONNEL ID OR STAFF ID    11
+    Set CDR Value    TRAVEL REASON E.G. INTERNA MEETING    MEETING
+    [Teardown]    Take Screenshot

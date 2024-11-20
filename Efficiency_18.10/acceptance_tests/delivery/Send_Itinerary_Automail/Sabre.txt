@@ -1,0 +1,57 @@
+*** Settings ***
+Resource          ../delivery_verification.txt
+
+*** Test Cases ***
+[1S NORAM][NB_SI] Verify that the value of the AUTOMAIL remark is retained as Yes during Send Itin when SO Itinerary Product is set to CWT Itinerary
+    [Tags]    US6368
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US1426    AutoOneFifteenEight    NoramTrvlrFour    MSPORD‡UA
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Untick Do Not Send Itinerary Checkbox
+    Sleep    1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${pt_pnr}
+    Verify Specific Remark Is Written In The PNR    AUTOMAIL-YES
+    Verify Duplicate Remarks Does not Exists In PNR
+    Click Clear All
+    Sleep    1
+    Retrieve PNR    ${pt_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Send Itinerary
+    Verify Specific Remark Is Written In The PNR    AUTOMAIL-YES
+
+[1S NORAM] [AB_SI] Verify that the value of the AUTOMAIL remark is updated to No during Amend then retained as No during Send Itin when SO Itinerary Product is set to CWT Itinerary
+    [Tags]    US6368
+    Retrieve PNR    ${pt_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Tick Do Not Send Itinerary
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking
+    Verify Specific Remark Is Written In The PNR    AUTOMAIL-NO
+    Verify Duplicate Remarks Does not Exists In PNR
+    Click Clear All
+    Sleep    1
+    Retrieve PNR    ${pt_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Send Itinerary
+    Verify Specific Remark Is Written In The PNR    AUTOMAIL-NO
+    Click Clear All
+    Sleep    1
+    Retrieve PNR    ${pt_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Verify Specific Remark Is Written In The PNR    AUTOMAIL-NO
+
+*** Keywords ***
+Tick Do Not Send Itinerary
+    Tick Checkbox    [NAME:chkDoNotSendItinerary]

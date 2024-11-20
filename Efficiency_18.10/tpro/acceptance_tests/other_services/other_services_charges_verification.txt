@@ -1,0 +1,73 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verify Charges Fields Are Mandatory
+    Verify Control Object Is Visible    [NAME:Charges_NetCostTextBox]    ${title_power_express}
+    Run Keyword And Continue On Failure    Verify Control Object Field Is Mandatory    [NAME:Charges_NetCostTextBox]
+    Verify Control Object Is Visible    [NAME:Charges_DiscountTextBox]    ${title_power_express}
+    Run Keyword And Continue On Failure    Verify Control Object Field Is Mandatory    [NAME:Charges_DiscountTextBox]
+    Verify Control Object Is Visible    [NAME:Charges_CommisionTextBox]    ${title_power_express}
+    Run Keyword And Continue On Failure    Verify Control Object Field Is Mandatory    [NAME:Charges_CommisionTextBox]
+
+Verify Charges Fields Are Optional
+    Verify Control Object Is Visible    [NAME:Charges_DescriptionTextBox]    ${title_power_express}
+    Run Keyword And Continue On Failure    Verify Control Object Field Is Not Mandatory    [NAME:Charges_DescriptionTextBox]
+    Verify Control Object Is Visible    [NAME:Charges_CWTReferenceNoTextBox]    ${title_power_express}
+    Run Keyword And Continue On Failure    Verify Control Object Field Is Not Mandatory    [NAME:Charges_CWTReferenceNoTextBox]
+    Verify Control Object Is Visible    [NAME:Charges_OtherRelatedNoTextBox]    ${title_power_express}
+    Run Keyword And Continue On Failure    Verify Control Object Field Is Not Mandatory    [NAME:Charges_OtherRelatedNoTextBox]
+    Verify Control Object Is Visible    [NAME:Charges_VendorReferenceNoTextBox]    ${title_power_express}
+    Run Keyword And Continue On Failure    Verify Control Object Field Is Not Mandatory    [NAME:Charges_VendorReferenceNoTextBox]
+
+Verify Default Values Of Charges Fields
+    Verify Default Value Of Cost Amount In Charges
+    Verify Default Value Of Commission In Charges
+    Verify Default Value Of Discount In Charges
+    Verify Default Value Of Gross Sell In Charges
+    Verify Default Value Of Merchant Fee In Charges
+    Verify Default Value Of Total Selling Price In Charges
+    Verify Default Value Of Description In Charges On Load Of Tab
+    Verify Default Value Of CWT Reference No (TK) In Charges
+    Verify Default Value Of Vendor Reference No (GSA) In Charges
+    Verify Default Value Of Other Related No (PO) In Charges
+
+Verify Default Value Of Cost Amount In Charges
+    ${charges_cost_amount}    Get Control Text Value    [NAME:Charges_NetCostTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${charges_cost_amount}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Commission In Charges
+    ${charges_commission}    Get Control Text Value    [NAME:Charges_CommisionTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${charges_commission}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Discount In Charges
+    ${charges_discount}    Get Control Text Value    [NAME:Charges_DiscountTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${charges_discount}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Gross Sell In Charges
+    ${charges_gross_sell}    Get Control Text Value    [NAME:Charges_GrossSellTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${charges_gross_sell}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Merchant Fee In Charges
+    ${charges_merchant_fee}    Get Control Text Value    [NAME:Charges_MerchantFeeTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${charges_merchant_fee}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Total Selling Price In Charges
+    ${charges_total_selling_price}    Get Control Text Value    [NAME:Charges_DiSellingPriceTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${charges_total_selling_price}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Description In Charges On Load Of Tab
+    ${charges_description}    Get Control Text Value    [NAME:Charges_DescriptionTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${charges_description}'!='${product}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of CWT Reference No (TK) In Charges
+    ${charges_cwt_ref_no}    Get Control Text Value    [NAME:Charges_CWTReferenceNoTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${charges_cwt_ref_no}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Vendor Reference No (GSA) In Charges
+    ${charges_vendor_ref_no}    Get Control Text Value    [NAME:Charges_VendorReferenceNoTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${charges_vendor_ref_no}'!='${EMPTY}'    FAIL    Incorrect Default Value
+
+Verify Default Value Of Other Related No (PO) In Charges
+    ${charges_other_related_no}    Get Control Text Value    [NAME:Charges_OtherRelatedNoTextBox]
+    Run Keyword And Continue On Failure    Run Keyword If    '${charges_other_related_no}'!='${EMPTY}'    FAIL    Incorrect Default Value

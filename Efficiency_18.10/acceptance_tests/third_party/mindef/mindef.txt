@@ -1,0 +1,508 @@
+*** Settings ***
+Resource          mindef_verification.txt
+
+*** Keywords ***
+Add Alternate Rail Details
+    [Arguments]    ${num}    ${tab_name}
+    ${tab_num}    Fetch From Right    ${tab_name}    ${SPACE}
+    ${range} =    Evaluate    ${num}+1
+    : FOR    ${index}    IN RANGE    1    ${range}
+    \    Populate Rail Fields    ${tab_num}    ${index}
+    \    Click Add Details
+    \    Take Screenshot
+
+Add Variables
+    [Arguments]    ${first_num}    ${second_num}
+    ${totalamount} =    Evaluate    ${first_num}+${second_num}
+    Set Test Variable    ${id_num}    ${totalamount}
+
+Book Mindef Passenger For Option 1 To 3
+    [Arguments]    ${option_num}
+    Enter GDS Command    NM1${lastname}/${firstname1_option${option_num}}${SPACE}${prefix1_option${option_num}}    ${firstname1_option${option_num}}${SPACE}${prefix1_option${option_num}}    RU1AHK1HDQ${mindef_date}-/RESA
+    Enter GDS Command    TKOK    RFTEST    ER    ER    RT
+
+Book Mindef Passenger For Option 4
+    [Arguments]    ${add_fare_keyword}
+    Enter GDS Command    NM2${lastname}/${firstname1_option4}${SPACE}${prefix1_option4}/${firstname2_option4}${SPACE}${prefix2_option4}    RU1AHK2HDQ${mindef_date}-/RESA    TKOK    RFTEST
+    Enter GDS Command    ER    ER    RT
+
+Book Mindef Passenger For Option 5 To 6
+    [Arguments]    ${option_num}
+    Enter GDS Command    NM3${lastname}/${firstname1_option${option_num}}${SPACE}${prefix1_option${option_num}}/${firstname2_option${option_num}}${SPACE}${prefix2_option${option_num}}/${firstname3_option${option_num}}${SPACE}${prefix3_option${option_num}}    NM3${lastname}/${firstname4_option${option_num}}${SPACE}${prefix4_option${option_num}}/${firstname5_option${option_num}}${SPACE}${prefix5_option${option_num}}/${firstname6_option${option_num}}${SPACE}${prefix6_option${option_num}}    NM3${lastname}/${firstname7_option${option_num}}${SPACE}${prefix7_option${option_num}}/${firstname8_option${option_num}}${SPACE}${prefix8_option${option_num}}/${firstname9_option${option_num}}${SPACE}${prefix9_option${option_num}}    RU1AHK9HDQ${mindef_date}-/RESA
+    Enter GDS Command    TKOK    RFTEST    ER    ER    RT
+
+Book Mindef Passenger For Option 7
+    [Arguments]    ${option_num}
+    Enter GDS Command    NM2${lastname}/${firstname11_option${option_num}}${SPACE}${prefix11_option${option_num}}/${firstname10_option${option_num}}${SPACE}${prefix10_option${option_num}}    RU1AHK2HDQ${mindef_date}-/RESA    TKOK    RMP/NAME-${firstname11_option${option_num}}/${middlename1}/${lastname}/P1
+    Enter GDS Command    RMP/DOB-28APR75/GENDER-F/P1    RMP/CO-FR/NR-1234566/EX-12DEC20/CI-FR/P1    RMP/NAME-${firstname10_option${option_num}}/${middlename2}/${lastname}/P2    RMP/DOB-28APR70/GENDER-M/P2
+    Enter GDS Command    RMP/CO-FR/NR-654321/EX-12MAR21/CI-FR/P2    RFTEST    ER    ER    RT
+
+Book Mindef SSLT Passenger For Option 4
+    [Arguments]    ${option_num}
+    Enter GDS Command    NM2${lastname}/${firstname11_option${option_num}}${SPACE}${prefix11_option${option_num}}/${firstname10_option${option_num}}${SPACE}${prefix10_option${option_num}}    RU1AHK2HDQ${mindef_date}-/RESA    TKOK    RMP/NAME-${firstname11_option${option_num}}//${lastname}/P1
+    Enter GDS Command    RMP/DOB-28APR75/GENDER-F/P1    RMP/CO-FR/NR-1234566/EX-12DEC20/CI-FR/P1    RMP/NAME-${firstname10_option${option_num}}//${lastname}/P2    RMP/DOB-28APR70/GENDER-M/P2
+    Enter GDS Command    RMP/CO-FR/NR-654321/EX-12MAR21/CI-FR/P2    RFTEST    ER    ER    RT
+
+Click Add Details
+    ${add_button}    Determine Multiple Object Name Based On Active Tab    AddDetailButton
+    Click Control Button    ${add_button}
+
+Click Alternate Rail Button
+    [Arguments]    ${tab_name}
+    Click Fare Tab    ${tab_name}
+    Click Control    AddAlternateRailButton
+
+Click Remove Details And Verify If Details Are Removed
+    [Arguments]    ${tab_name}
+    ${remove_button}    Determine Multiple Object Name Based On Active Tab    RemoveDetailButton
+    Click Control Button    ${remove_button}
+    ${details_value} =    Get Alternate Rail Details    ${tab_name}
+    Should Be Equal    ${details_value}    ${EMPTY}
+
+Convert Fare Values To Mindef CPx Air Remarks
+    [Arguments]    ${fare_tab_name}
+    ${alternate_num} =    Fetch From Right    ${fare_tab_name}    ${SPACE}
+    Click Fare Tab    ${fare_tab_name}
+    Get Alternate Fare Routing And Fare Details X Tab Values For CPX    ${fare_tab_name}
+    Get Details Offer    ${fare_tab_name}
+
+Convert Fare Values To Mindef CPx TAir Remarks
+    [Arguments]    ${tab_name}    ${restrictions_num}
+    Get Alternate Fare Routing And Fare Details X Tab Values For TAIR    ${tab_name}
+    ${alternate_num} =    Fetch From Right    ${tab_name}    ${SPACE}
+    ${res_num}    Set Variable If    "${restrictions_num}"=="1"    SR    AR
+    ${ct_1}    Set Variable If    "${restrictions_num}"=="1" or "${restrictions_num}"=="2" and "${changes_value_alt_${alternate_num}}" == "SANS FRAIS"    M    "${restrictions_num}"=="3"    NM    MAVD
+    ${changes_penal}    Set Variable If    "${restrictions_num}"=="1"    SP    "${restrictions_num}"=="2"    AP    ${EMPTY}
+    ${monti_penal}    Set Variable If    "${restrictions_num}"=="1" or "${restrictions_num}"=="3"    ${EMPTY}    ${changes_value_alt_${alternate_num}}
+    ${ct_A}    Set Variable If    "${restrictions_num}"=="1"    R    ${None}
+    ${ct_B}    Set Variable If    "${restrictions_num}"=="3"    NR    ${None}
+    ${ct_C}    Set Variable If    "${restrictions_num}"=="2" and "${cancellation_value_alt_${alternate_num}}" == "NON"    NR    ${None}
+    ${ct_D}    Set Variable If    "${restrictions_num}"=="2" and "${cancellation_value_alt_${alternate_num}}" != "NON"    RAVD    ${None}
+    Run Keyword If    "${ct_A}"!="${None}"    Set Test Variable    ${ct_2}    ${ct_A}
+    Run Keyword If    "${ct_B}"!="${None}"    Set Test Variable    ${ct_2}    ${ct_B}
+    Run Keyword If    "${ct_C}"!="${None}"    Set Test Variable    ${ct_2}    ${ct_C}
+    Run Keyword If    "${ct_D}"!="${None}"    Set Test Variable    ${ct_2}    ${ct_D}
+    ${canc_penal}    Set Variable If    "${restrictions_num}"=="1"    SP    "${restrictions_num}"=="2"    AP    ${EMPTY}
+    ${monti_pena2}    Set Variable If    "${restrictions_num}"=="1" or "${restrictions_num}"=="3"    ${EMPTY}    ${cancellation_value_alt_${alternate_num}}
+    ${pnr_remarks} =    Set Variable    RM${SPACE}CP${alternate_num}${SPACE}TAIR/${total_fare_alt_${alternate_num}}EUR/${alternate_class_code_tair}/Y/${res_num}/${ct_1}/${changes_penal}/${monti_penal}/${ct_2}/${canc_penal}/${monti_pena2}/${min_stay_alt_${alternate_num}}${SPACE}${max_stay_alt_${alternate_num}}
+    Set Test Variable    ${tair_pnr_remarks${alternate_num}}    ${pnr_remarks.rstrip()}
+
+Create Amadeus Offer For Multiple Passengers
+    [Arguments]    ${itinerary}    ${seat_select}    ${store_fare}    ${number_of_months}=6    ${number_of_days}=0    ${store_offer}=OFS/A
+    ${departure_date} =    Set Departure Date X Months From Now In Gds Format    ${number_of_months}    ${number_of_days}
+    Set Test Variable    ${departure_date}
+    Enter GDS Command    AN${departure_date}${itinerary}    ${seat_select}    ${store_fare}    FQN01
+    Select Offer Automatically Based On Recommended List
+
+Create And Populate Alternate Fare With Default Values
+    [Arguments]    ${tab}    ${amount}
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Set Alternate Fare Details With New Line Details    ${EMPTY}
+    Set Alternate Fare Amount    ${amount}
+    Populate Alternate Fare With Default Values    ${tab}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtFareBasisOffer_alt
+    Set Control Text Value    ${object_name}    TEST    ${title_power_express}
+
+Create Mindef PNR In Amadeus GDS
+    [Arguments]    ${pcc}    ${passenger_option}    ${number_of_months}=3    ${number_of_days}=1
+    Activate Amadeus Selling Platform
+    ${mindef_date} =    Set Departure Date X Months From Now In Gds Format    ${number_of_months}    ${number_of_days}
+    Set Test Variable    ${mindef_date}
+    Enter Amadeus GDS Mindef Commands    ${passenger_option}
+    Get Current Mindef PNR    ${pcc}
+
+Create Mindef PNR In Amadeus Screen
+    [Arguments]    ${pcc}    ${passenger_option}    ${number_of_months}=3    ${number_of_days}=1
+    Comment    Activate Amadeus Selling Platform
+    Wait Until Progress Info is Completed
+    ${mindef_date} =    Set Departure Date X Months From Now In Gds Format    ${number_of_months}    ${number_of_days}
+    Set Test Variable    ${mindef_date}
+    Enter Amadeus GDS Mindef Commands    ${passenger_option}
+    Get Current Mindef PNR    ${pcc}
+
+Create Mindef SSLT PNR In Amadeus Screen
+    [Arguments]    ${pcc}    ${passenger_option}    ${number_of_months}=3    ${number_of_days}=1
+    Wait Until Progress Info is Completed
+    ${mindef_date} =    Set Departure Date X Months From Now In Gds Format    ${number_of_months}    ${number_of_days}
+    Set Test Variable    ${mindef_date}
+    Enter Amadeus GDS Mindef SSLT Commands    ${passenger_option}
+    Get Current Mindef PNR    ${pcc}
+
+Create Round Trip Single Booked and Single Unbooked
+    Activate Power Express Window
+    Book Flight X Months From Now Without Pricing    ORYMRS    SS2Y2
+    Enter GDS Command    ACR5    SS2Y2
+    Comment    Book Flight X Months From Now Without Pricing    MRSORY    SS2Y2    6    7
+    GDS Pricing Per Pax Type    S4-5    P1    P2    0
+    Book Flight X Months From Now Without Pricing    ORYBOD    SS2Y2    7
+    Enter GDS Command    ACR5    SS2Y2
+    Comment    Book Flight X Months From Now Without Pricing    BODORY    SS2Y2    7    7
+    Comment    Create Amadeus Offer Remove Flight    S6
+    Enter GDS Command    FXD/S6    OFS/A1
+    Verify Amadeus Offer Is Created
+
+Enter Amadeus GDS Mindef Commands
+    [Arguments]    ${passenger_option}
+    Enter GDS Command    IG    JUM/O-PARWL210G    PDN/MINDEF    PT*
+    Run Keyword If    "${passenger_option}"<="3"    Book Mindef Passenger For Option 1 To 3    ${passenger_option}
+    Run Keyword If    "${passenger_option}"=="4"    Book Mindef Passenger For Option 4    ${passenger_option}
+    Run Keyword If    "${passenger_option}"=="5"    Book Mindef Passenger For Option 5 To 6    ${passenger_option}
+    Run Keyword If    "${passenger_option}"=="6"    Book Mindef Passenger For Option 5 To 6    ${passenger_option}
+
+Enter Amadeus GDS Mindef SSLT Commands
+    [Arguments]    ${passenger_option}
+    Enter GDS Command    IG    JUM/O-PARWL210G
+    Enter GDS Command    PDN/MINDEF    PT*
+    Run Keyword If    "${passenger_option}"<="3"    Book Mindef Passenger For Option 1 To 3    ${passenger_option}
+    Run Keyword If    "${passenger_option}"=="4"    Book Mindef SSLT Passenger For Option 4    ${passenger_option}
+    Run Keyword If    "${passenger_option}"=="5"    Book Mindef Passenger For Option 5 To 6    ${passenger_option}
+    Run Keyword If    "${passenger_option}"=="6"    Book Mindef Passenger For Option 5 To 6    ${passenger_option}
+    Run Keyword If    "${passenger_option}"=="7"    Book Mindef Passenger For Option 7    ${passenger_option}
+
+GDS Pricing Per Pax Type
+    [Arguments]    ${segment_number}    ${adult_name_number}    ${child_name_number}    ${infant_name_number}
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Run Keyword If    "${adult_name_number}" != "0"    Enter GDS Command    FXP/${segment_number}/${adult_name_number}
+    Run Keyword If    "${adult_name_number}" != "0"    Enter GDS Command    FXT01/${adult_name_number}    FXT01/${adult_name_number}
+    Run Keyword If    "${child_name_number}" != "0"    Enter GDS Command    FXP/${segment_number}/${child_name_number}
+    Run Keyword If    "${child_name_number}" != "0"    Enter GDS Command    FXT01/${child_name_number}    FXT01/${child_name_number}
+    Run Keyword If    "${infant_name_number}" != "0"    Enter GDS Command    FXP/${segment_number}/INF/${infant_name_number}
+    Run Keyword If    "${infant_name_number}" != "0"    Enter GDS Command    FXT02/${infant_name_number}    FXT02/${infant_name_number}
+
+Get Airline Code Per Segment
+    [Arguments]    ${passenger_type}=${EMPTY}    ${segment_number}=${EMPTY}
+    Activate Amadeus Selling Platform
+    Enter GDS Command    RT    RTF
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${get_validating_airline}=    Get Lines Containing String    ${data_clipboard}    FV
+    ${passenger_type}    Remove String    ${passenger_type}    INF/
+    ${get_airline_segment}    Get Lines Containing String    ${get_validating_airline}    ${segment_number}/${passenger_type}
+    Log    ${get_validating_airline}
+    Log    ${segment_number}/${passenger_type}
+    ${airline_code}    Get String Matching Regexp    (?<=[PAX|INF]\\s).*?(?=/)    ${get_airline_segment}
+    Set Test Variable    ${segment_airline_code}    ${airline_code}
+
+Get Alternate Fare Routing And Fare Details X Tab Values For CPX
+    [Arguments]    ${tab_name}
+    ${fare_tab_index}    Fetch From Right    ${tab_name}    ${SPACE}
+    ${class_code}    Determine Multiple Object Name Based On Active Tab    ccboFareClassOffer_alt
+    ${altternate_class_code} =    Get Control Text Value    ${class_code}
+    ${class_code_sub} =    Get Substring    ${altternate_class_code}    0    1
+    ${class_code}    Set Variable If    "${class_code_sub}"=="W"    P    ${class_code_sub}
+    Set Test Variable    ${alternate_class_code${fare_tab_index}}    ${class_code}
+
+Get Alternate Fare Routing And Fare Details X Tab Values For TAIR
+    [Arguments]    ${tab_name}
+    Get Air Line Offer    ${tab_name}
+    Get Total Fare Offer    ${tab_name}
+    Get Air Fare Restrictions    ${tab_name}
+    ${class_code}    Determine Multiple Object Name Based On Active Tab    ccboFareClassOffer_alt
+    ${class_code_text}    Get Control Text Value    ${class_code}
+    ${class_code_sub} =    Get Substring    ${class_code_text}    1    2
+    Comment    ${class_code1}    Set Variable If    "${class_code_sub}"=="W"    N
+    Comment    ${class_code2}    Set Variable If    "${class_code_sub}"=="A" or "${class_code_sub}"=="D" or "${class_code_sub}"=="F"    P
+    Comment    ${class_code3}    Set Variable If    "${class_code_sub}"=="N" or "${class_code_sub}"=="M"    ${EMPTY}
+    ${class_code}    Set Variable If    "${class_code_sub}"=="W"    N    "${class_code_sub}"=="A" or "${class_code_sub}"=="D" or "${class_code_sub}"=="F"    P    "${class_code_sub}"=="N" or "${class_code_sub}"=="M"
+    ...    ${EMPTY}    ${class_code_sub}
+    Comment    ${class_code}    Set Variable If    "${class_code1}" != "${None}"    ${class_code1}    "${class_code2}" != "${None}"    ${class_code2}
+    ...    "${class_code3}" != "${None}"    ${class_code3}
+    Comment    ${class_code}    Set Variable If    "${class_code1}"!="${EMPTY}"    ${class_code1}    "${class_code2}"!="${EMPTY}"    ${class_code2}
+    ...    "${class_code3}"!="${EMPTY}"    ${class_code3}
+    Set Test Variable    ${alternate_class_code_tair}    ${class_code}
+
+Get Alternate Rail Details
+    [Arguments]    ${tab_name}
+    ${alt_rail_details_field}    Determine Multiple Object Name Based On Active Tab    txtAlternateRailDetails
+    ${alt_rail_details}    Get Control Text Value    ${alt_rail_details_field}
+    Set Suite Variable    ${alt_rail_details_${tab_name}}    ${alt_rail_details}
+    [Return]    ${alt_rail_details}
+
+Get Base Tarifaire
+    ${base_tarifaire_field}    Determine Multiple Object Name Based On Active Tab    BasePriceComboBox
+    ${base_tarifaire}    Get Control Text Value    ${base_tarifaire_field}
+    ${base_tarifaire}    Set Variable    ${base_tarifaire[0:3]}
+    [Return]    ${base_tarifaire}
+
+Get Counter Proposal Rail Details
+    [Arguments]    ${tab_name}
+    ${visible_tabs}    Get Visible Tab
+    : FOR    ${tab}    IN    @{visible_tabs}
+    \    ${is_not_fare_tab}    Run Keyword And Return Status    Should Contain Any    ${tab}    Alternate    Rail
+    \    Run Keyword If    ${is_not_fare_tab} == False    Remove Values From List    ${visible_tabs}    ${tab}
+    ${tab_index}    Get Index From List    ${visible_tabs}    ${tab_name}
+    ${tab_index}    Evaluate    ${tab_index} + 1
+    Convert To String    ${tab_index}
+    ${alt_rail_details}    Get Alternate Rail Details    ${tab_name}
+    ${alt_rail_details}    Replace String    ${alt_rail_details}    TRN    RM CP${tab_index} TRN
+    Set Suite Variable    ${cp_details_remarks_${tab_name}}    ${alt_rail_details}
+    ${tarif_total}    Get Tarif Total
+    ${base_tarifaire}    Get Base Tarifaire
+    ${ct1}    Set Variable If    "${base_tarifaire}" == "Pro"    M    MAVD
+    ${penal}    Set Variable If    "${base_tarifaire}" == "Pro"    SP    AP
+    ${ct2}    Set Variable If    "${base_tarifaire}" == "Pro"    R    RAVD
+    Set Suite Variable    ${cp_details_ttrn_remarks_${tab_name}}    RM CP${tab_index} TTRN/${tarif_total}EUR/P/Y/${base_tarifaire.upper()}/${ct1}/${penal}//${ct2}/${penal}//
+
+Get Current Mindef PNR
+    [Arguments]    ${pcc}
+    Clear Data From Clipboard
+    Activate Amadeus Selling Platform
+    Enter GDS Command    RT
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${pnr_line} =    Get Lines Containing String    ${data_clipboard}    RP/${pcc}
+    @{splitted_pnr_line}    Split String    ${pnr_line.strip()}    ${SPACE}
+    Set Suite Variable    ${current_pnr}    ${splitted_pnr_line[-1]}
+    Run Keyword And Continue On Failure    Append To File    ${public_documents_path}\\pnr_created.txt    ${\n}${current_pnr} - mindef
+
+Get Mindef Details From Fare Tab
+    [Arguments]    ${fare_tab}    ${passenger_type}=${EMPTY}    ${segment_number}=${EMPTY}    ${tst_number}=${EMPTY}    ${include_other_fare_details}=False
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Run Keyword If    "${include_other_fare_details}" == "True"    Get Fare Details    ${fare_tab}    False
+    Get High, Charged And Low Fare In Fare Tab    ${fare_tab}
+    Get TST Details From Amadeus    ${fare_tab}    ${passenger_type}    ${segment_number}
+    Prepare Mindef Air Booked Remark    ${fare_tab}    ${passenger_type}    ${segment_number}
+    ${passenger_type}    Remove String    ${passenger_type}    INF/
+    Comment    ${segment_number}    Replace String    ${segment_number}    -    ,
+    Set Test Variable    ${destination_remarks${fare_tab_index}}    RM *7105*${point_of_${fare_tab_index}}/${segment_number}/${passenger_type}
+    Set Test Variable    ${classcode_remarks${fare_tab_index}}    RM *7110*${class_code_value_${fare_tab_index}}/${segment_number}/${passenger_type}
+    Set Test Variable    ${realised_remarks${fare_tab_index}}    RM *7305*${realised_code_value_${fare_tab_index}}/${segment_number}/${passenger_type}
+    Set Test Variable    ${missed_remarks${fare_tab_index}}    RM *7306*${missed_code_value_${fare_tab_index}}/${segment_number}/${passenger_type}
+    Set Test Variable    ${high_remarks${fare_tab_index}}    RM *7302*${high_fare_${fare_tab_index}}/${segment_number}/${passenger_type}
+    Set Test Variable    ${low_remarks${fare_tab_index}}    RM *7303*${low_fare_${fare_tab_index}}/${segment_number}/${passenger_type}
+
+Get Mindef Fare Tab Details
+    [Arguments]    ${fare_tab}
+    Click Fare Tab    ${fare_tab}
+    Get Air Fare Restrictions    ${fare_tab}
+    Get Routing Name    ${fare_tab}
+    Get Savings Code    ${fare_tab}
+    Get Point Of Turnaround    ${fare_tab}
+
+Get Rail Quote Rule From Amadeus GDS
+    [Arguments]    ${segment_number}
+    ${index} =    Set Variable    1
+    Activate Amadeus Selling Platform
+    Clear Data From Clipboard
+    Enter GDS Command    TQT/T${segment_number}{ENTER}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${quote_details} =    Get Lines Containing String    ${data_clipboard}    QUOT RULE
+    ${lines} =    Split To Lines    ${quote_details}
+    : FOR    ${str_line}    IN    @{lines}
+    \    Set Test Variable    ${line${index}}    ${str_line}
+    \    ${index} =    Evaluate    ${index}+1
+    ${index} =    Evaluate    ${index} - 1
+    Set Test Variable    ${quoterule}    ${line${index}}
+    ${quote_nospace} =    Remove All Spaces    ${quoterule}
+    ${quotelength} =    Get Length    ${quote_nospace}
+    ${quotestring} =    Get Substring    ${quote_nospace}    9    ${quotelength}
+    Set Test Variable    ${quotestring${segment_number}}
+
+Get Tarif Total
+    ${tarif_total_field}    Determine Multiple Object Name Based On Active Tab    TotalPriceTextBox
+    ${tarif_total}    Get Control Text Value    ${tarif_total_field}
+    ${tarif_total}    Replace String    ${tarif_total}    ,    .
+    [Return]    ${tarif_total}
+
+Get Total Fare Per Segment From GDS Screen
+    [Arguments]    ${segment_number}
+    Activate Amadeus Selling Platform
+    ${total_price}=    Set Variable    0
+    Enter GDS Command    TQT/S${segment_number}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${tqt_details} =    Get Lines Containing String    ${data_clipboard}    POLO
+    ${lines} =    Split To Lines    ${tqt_details}
+    : FOR    ${str_line}    IN    @{lines}
+    \    ${fare_line} =    Split String    ${str_line}    ${SPACE}
+    \    ${fare_price} =    Get From List    ${fare_line}    -24
+    \    ${total_price}=    Evaluate    ${total_price}+${fare_price}
+    Set Test Variable    ${total_price${segment_number}}
+
+Get Values on Flight Details
+    [Arguments]    ${alternate_airline_details}    ${alternate_num}
+    @{alternate_flightnumber} =    Split String    ${alternate_airline_details}    ${SPACE}
+    ${flightnum} =    Get From List    ${alternate_flightnumber}    0
+    ${flightnum_length} =    Get Length    ${flightnum}
+    ${number}    Run Keyword If    "${flightnum_length}" == "6"    Get Substring    ${flightnum}    2    ${flightnum_length}
+    ${air_code}    Run Keyword If    "${flightnum_length}" == "6"    Get Substring    ${flightnum}    0    2
+    ${airline_code}    Run Keyword If    "${flightnum_length}" == "6"    Set Variable    ${air_code}
+    ...    ELSE    Get From List    ${alternate_flightnumber}    0
+    ${flightnumber}    Run Keyword If    "${flightnum_length}" == "6"    Set Variable    ${number}
+    ...    ELSE    Get From List    ${alternate_flightnumber}    1
+    ${month}    Run Keyword If    "${flightnum_length}" == "6"    Get From List    ${alternate_flightnumber}    2
+    ...    ELSE    Get From List    ${alternate_flightnumber}    3
+    ${inbound}    Run Keyword If    "${flightnum_length}" == "6"    Get From List    ${alternate_flightnumber}    3
+    ...    ELSE    Get From List    ${alternate_flightnumber}    4
+    ${outbound}    Run Keyword If    "${flightnum_length}" == "6"    Get From List    ${alternate_flightnumber}    4
+    ...    ELSE    Get From List    ${alternate_flightnumber}    5
+    ${deptime}    Run Keyword If    "${flightnum_length}" == "6"    Get From List    ${alternate_flightnumber}    5
+    ...    ELSE    Get From List    ${alternate_flightnumber}    6
+    ${arrtime}    Run Keyword If    "${flightnum_length}" == "6"    Get From List    ${alternate_flightnumber}    6
+    ...    ELSE    Get From List    ${alternate_flightnumber}    7
+    Comment    Set Test Variable    ${airlinecode${index}_${alternate_num}}    ${airline_code}
+    Comment    Set Test Variable    ${flightnumber${index}${underscore}${alternate_num}}    ${flightnumber}
+    Comment    Set Test Variable    ${month${index}${underscore}${alternate_num}}    ${month}
+    Comment    Set Test Variable    ${inbound${index}${underscore}${alternate_num}}    ${inbound}
+    Comment    Set Test Variable    ${outbound${index}${underscore}${alternate_num}}    ${outbound}
+    Comment    Set Test Variable    ${deptime${index}${underscore}${alternate_num}}    ${deptime}
+    Comment    Set Test Variable    ${arrtime${index}${underscore}${alternate_num}}    ${arrtime}
+    Set Test Variable    ${airline_code}
+    Set Test Variable    ${flightnumber}
+    Set Test Variable    ${month}
+    Set Test Variable    ${inbound}
+    Set Test Variable    ${outbound}
+    Set Test Variable    ${deptime}
+    Set Test Variable    ${arrtime}
+
+Populate Alternate Fare With Values
+    [Arguments]    ${fare_tab_name}    ${fare_class}    ${fare_restriction}
+    Click Panel    Air Fare
+    Click Fare Tab    ${fare_tab_name}
+    Select Fare Restriction    ${fare_restriction}
+    Select Alternate Fare Class Code    ${fare_class}
+
+Populate Fare Tab For Mindef
+    [Arguments]    ${fare_tab}    ${realised_code}    ${missed_code}    ${class_code}    ${fare_restriction}    ${changes}=${EMPTY}
+    ...    ${cancellation}=${EMPTY}    ${minimum_stay}=${EMPTY}    ${maximum_stay}=${EMPTY}
+    Populate Fare Tab With Default Values    ${fare_tab}    true    true
+    Populate Air Fare Savings Code    ${realised_code}    ${missed_code}    ${class_code}
+    Select Fare Restriction    ${fare_restriction}
+    Run Keyword If    "${changes}" != "${EMPTY}"    Select Changes Dropdown Value    ${changes}
+    Run Keyword If    "${cancellation}" != "${EMPTY}"    Select Cancellation Dropdown Value    ${cancellation}
+    Run Keyword If    "${minimum_stay}" != "${EMPTY}"    Select Min Stay Dropdown Value    ${minimum_stay}
+    Run Keyword If    "${maximum_stay}" != "${EMPTY}"    Select Max Stay Dropdown Value    ${maximum_stay}
+    [Teardown]    Take Screenshot
+
+Populate Rail Fields
+    [Arguments]    ${tab_num}    ${index}
+    ${company}    Determine Multiple Object Name Based On Active Tab    CompanyComboBox
+    ${class_tarif}    Determine Multiple Object Name Based On Active Tab    ClassTariffComboBox
+    ${tarif_total}    Determine Multiple Object Name Based On Active Tab    TotalPriceTextBox
+    ${base_tarif}    Determine Multiple Object Name Based On Active Tab    BasePriceComboBox
+    ${train_number}    Determine Multiple Object Name Based On Active Tab    TrainNumberTextBox
+    ${dep_text}    Determine Multiple Object Name Based On Active Tab    DepartureStationTextBox
+    ${arr_text}    Determine Multiple Object Name Based On Active Tab    ArrivalStationTextBox
+    ${dep_time}    Determine Multiple Object Name Based On Active Tab    DepartureTimeTextBox
+    ${arr_time}    Determine Multiple Object Name Based On Active Tab    ArrivalTimeTextBox
+    ${rep_segment}    Determine Multiple Object Name Based On Active Tab    ReplacesSegmentTextBox
+    ${dep_date_text}    Determine Multiple Object Name Based On Active Tab    DepartureDateTextBox
+    Select Value From Dropdown List    ${company}    ${company${index}}
+    Select Value From Dropdown List    ${class_tarif}    ${class_tariff${index}}
+    Select Value From Combobox    Base Tarifaire    ${base_tariff${index}}
+    Control Set Text    ${title_power_express}    ${EMPTY}    ${tarif_total}    ${tarif_total${index}}
+    Control Set Text    ${title_power_express}    ${EMPTY}    ${train_number}    ${train_num${index}}
+    Set Rail Date    ${tab_num}    ${index}
+    Control Set Text    ${title_power_express}    ${EMPTY}    ${dep_time}    ${dep_time${index}}
+    Control Set Text    ${title_power_express}    ${EMPTY}    ${arr_time}    ${arr_time${index}}
+    Control Set Text    ${title_power_express}    ${EMPTY}    ${dep_text}    ${dep_city${index}}
+    Control Set Text    ${title_power_express}    ${EMPTY}    ${arr_text}    ${arr_city${index}}
+    Control Set Text    ${title_power_express}    ${EMPTY}    ${rep_segment}    ${seg_rep${index}}
+    [Teardown]    Take Screenshot
+
+Prepare Mindef Air Booked Remark
+    [Arguments]    ${fare_tab}    ${passenger_type}    ${segment_number}    ${fare_tab_of_adult}=${EMPTY}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_restriction}    Get Fare Restriction Currently Selected Value    ${fare_tab}    False
+    ${min_max}    Set Variable If    "${min_stay_${fare_tab_index}}" != "${EMPTY}" or "${max_stay_${fare_tab_index}}" != "${EMPTY}"    ${min_stay_${fare_tab_index}}/${max_stay_${fare_tab_index}}    ${EMPTY}
+    ${air_booked_proposal_line}    Set Variable If    "${fare_restriction}" == "Modifiable"    BILLET ${segment_airline_code_${fare_tab_index}} VALIDITE ${min_max}-BILLET ${changes_value_${fare_tab_index}} ET ${cancellation_value_${fare_tab_index}}/${segment_number}    "${fare_restriction}" == "Partiellement modifiable"    BILLET ${segment_airline_code_${fare_tab_index}} VALIDITE ${min_max}-BILLET MODIFICATION ${changes_value_${fare_tab_index}} - ANNULATION ${cancellation_value_${fare_tab_index}}/${segment_number}    "${fare_restriction}" == "Non modifiable"
+    ...    BILLET ${segment_airline_code_${fare_tab_index}} VALIDITE ${min_max}-BILLET ${changes_value_${fare_tab_index}} ${cancellation_value_${fare_tab_index}}/${segment_number}
+    Set Test Variable    ${air_booked_proposal_line_1_${fare_tab_index}}    COMMENT${fare_tab_index}${SPACE}
+    Set Test Variable    ${air_booked_proposal_line_2_${fare_tab_index}}    ${air_booked_proposal_line}
+
+Select Mindef Workflow Value
+    [Arguments]    ${value}
+    Select Value From Dropdown List    [NAME:ccboMindefWorkflow]    ${value}
+
+Set High Fare Field Greater Than Charged Fare
+    ${charged_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtChargedFare
+    ${high_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    ${charged_fare_value}    Get Control Text Value    ${charged_fare_field}
+    ${charged_fare}    Replace String    ${charged_fare_value}    ,    .
+    ${evaluate_high_fare}    Evaluate    ${charged_fare}+10
+    ${high_fare_string}    Convert To String    ${evaluate_high_fare}
+    ${fetch_fare_string}    Fetch From Right    ${high_fare_string}    .
+    ${high_fare_lenght}    Get Length    ${fetch_fare_string}
+    ${high_fare_string}    Run Keyword If    "${high_fare_lenght}" < "2"    Set Variable    ${high_fare_string}0
+    ...    ELSE    Set Variable    ${high_fare_string}
+    ${high_fare}    Replace String    ${high_fare_string}    .    ,
+    Set Control Text Value    ${high_fare_field}    ${high_fare}
+
+Set Low Fare Field Lower Than Charged Fare
+    [Timeout]
+    ${charged_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtChargedFare
+    ${low_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtLowFare
+    ${charged_fare_value}    Get Control Text Value    ${charged_fare_field}
+    ${charged_fare}    Replace String    ${charged_fare_value}    ,    .
+    ${evaluate_low_fare}    Run Keyword If    "${charged_fare}" != "0.00"    Evaluate    ${charged_fare}-2
+    ...    ELSE    Evaluate    ${charged_fare}
+    ${low_fare_string}    Convert To String    ${evaluate_low_fare}
+    ${fetch_fare_string}    Fetch From Right    ${low_fare_string}    .
+    ${low_fare_lenght}    Get Length    ${fetch_fare_string}
+    ${low_fare_string}    Run Keyword If    "${low_fare_lenght}" < "2"    Set Variable    ${low_fare_string}0
+    ...    ELSE    Set Variable    ${low_fare_string}
+    ${low_fare}    Replace String    ${low_fare_string}    .    ,
+    Set Control Text Value    ${low_fare_field}    ${low_fare}
+
+Set RIR Mindef Remarks
+    [Arguments]    ${segment_number}
+    Set Test Variable    ${rir_remarks_tariff${segment_number}}    RIR <B>TARIF APPLIQUE: ${quotestring${segment_number}}</B>
+    Set Test Variable    ${rir_remarks_totalprice${segment_number}}    RIR <B>PRIX TTC EN EUR: ${totalprice} - HORS FRAIS DE SERVICE</B>
+
+Set Rail Date
+    [Arguments]    ${tab_num}    ${index}
+    ${date}    Generate Date X Months From Now    2    ${index}
+    @{rail_date}    Split String    ${date}    /
+    Click Control Button    [NAME:DepartureDatePicker${tab_num}]    ${title_power_express}
+    Send    ${rail_date[1]}
+    Send    {RIGHT}
+    Send    ${rail_date[0]}
+    Send    {RIGHT}
+    Send    ${rail_date[2]}
+    Sleep    1
+    Send    {TAB}
+    Sleep    1
+
+Split Fare Details and Set X Tab Values
+    [Arguments]    ${tab_name}
+    ${counter} =    Set Variable    1
+    ${airline_details}    Determine Multiple Object Name Based On Active Tab    ctxtDetailsOffer_alt
+    ${altternate_airline_details} =    Get Control Text Value    ${airline_details}
+    ${alternate_flightnumber} =    Split String    ${altternate_airline_details}    ${SPACE}
+    : FOR    ${line}    IN    @{alternate_flightnumber}
+    \    Run Keyword If    "${counter}" == "1"    Set Test Variable    ${flightnumber${counter}}    ${line}
+    \    Run Keyword If    "${counter}" == "4"    Set Test Variable    ${inbound${counter}}    ${line}
+    \    Run Keyword If    "${counter}" == "5"    Set Test Variable    ${outbound${counter}}    ${line}
+    \    Run Keyword If    "${counter}" == "6"    Set Test Variable    ${dep_time${counter}}    ${line}
+    \    Run Keyword If    "${counter}" == "7"    Set Test Variable    ${arrive_time${counter}}    ${line}
+    \    ${counter} =    Evaluate    ${counter}+1
+    ${flight_length} =    Get Length    ${flightnumber1}
+    ${number} =    Get Substring    ${flightnumber1}    2    ${flight_length}
+    Set Test Variable    ${flight_number}    ${number}
+
+Update Sub Unit GUID
+    [Arguments]    ${line_name}    ${guid_id}
+    Activate Amadeus Selling Platform
+    Enter GDS Command    RT{ENTER}
+    Set Test Variable    ${pnr_details}    ${EMPTY}
+    Set Test Variable    ${previous_clipboard}    ${EMPTY}
+    : FOR    ${INDEX}    IN RANGE    0    50
+    \    ${data_clipboard} =    Get Clipboard Data Amadeus
+    \    Run Keyword If    """${data_clipboard}""" == """${previous_clipboard}"""    Exit For Loop
+    \    ...    ELSE    Set Test Variable    ${previous_clipboard}    ${data_clipboard}
+    \    ${pnr_details} =    Catenate    ${pnr_details}    ${previous_clipboard}
+    \    Enter GDS Command    MD{ENTER}
+    ${guid_line} =    Get Lines Containing String    ${pnr_details}    ${line_name}
+    ${guid_trim} =    Remove All Spaces    ${guid_line}
+    ${line_number} =    Fetch From Left    ${guid_trim}    RMP
+    Enter GDS Command    RT{ENTER}    ${line_number}/${guid_id}{ENTER}    RFTEST{ENTER}
+    Enter GDS Command    ER{ENTER}    ER{ENTER}    RT{ENTER}
+
+Select Offer For Verify Alternate Rail Remark For Multiple Alternate Rail Fare
+    ${offer_number}    Set Variable    1
+    ${number_of_offers_counter}    Set Variable    1
+    Convert To Integer    ${offer_number}
+    Convert To Integer    ${number_of_offers_counter}
+    :FOR    ${INDEX}    IN RANGE    10
+    \    ${gds_resp}    Get Clipboard Data Amadeus    OFS/A
+    \    ${is_unable_to_price}    Run Keyword And Return Status    Should Contain    ${gds_resp}    NO FARE FOR BOOKING CODE-TRY OTHER PRICING OPTIONS
+    \    Exit For Loop If    ${is_unable_to_price} == False
+    \    ${offer_number}    Evaluate    ${offer_number} + 1

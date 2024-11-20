@@ -1,0 +1,104 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Get Country
+    ${country_other_services}    Get Control Text Value    [NAME:CountryTextBox]
+    Set Suite Variable    ${country_other_services}
+    [Return]    ${country_other_services}
+
+Get Entries
+    ${entries}    Get Control Text Value    [NAME:EntriesComboBox]
+    ${entries_remark}    Run Keyword If    "${entries.lower()}" == "single"    Set Variable    SGL
+    ...    ELSE IF    "${entries.lower()}" == "double"    Set Variable    DBL
+    ...    ELSE IF    "${entries.lower()}" == "multiple"    Set Variable    MUL
+    Set Suite Variable    ${entries}
+    Set Suite Variable    ${entries_remark}
+    [Return]    ${entries}
+
+Get Other Service Visa Processing Country Details
+    Get Country
+    Get Type
+    Get Entries
+    Get Processing
+    Get Passenger ID Value
+
+Get Processing
+    ${processing}    Get Control Text Value    [NAME:ProcessingComboBox]
+    ${processing_remark}    Run Keyword If    "${processing.lower()}" == "normal"    Set Variable    NOR
+    ...    ELSE IF    "${processing.lower()}" == "express"    Set Variable    URG
+    Set Suite Variable    ${processing}
+    Set Suite Variable    ${processing_remark}
+    [Return]    ${processing}
+
+Get Processing Days Numeric Up Down
+    ${processing_numeric}    Get Control Text Value    [NAME:ProcessingDaysNumericUpDown]
+    Set Suite Variable    ${processing_numeric}
+    [Return]    ${processing_numeric}
+
+Get Type
+    ${type}    Get Control Text Value    [NAME:TypeComboBox]
+    Set Suite Variable    ${type}
+    [Return]    ${type}
+
+Get Validity
+    ${object}    Determine Multiple Object Name Based On Active Tab    ValidityTextBox1,ValidityTextBox2,ValidityComboBox    False
+    ${validity}    Get Control Text Value    ${object}
+    Set Suite Variable    ${validity}
+    [Return]    ${validity}
+
+Get Validity Numeric Up Down
+    ${validy_numeric_updown}    Get Control Text Value    [NAME:ValidityNumericUpDown]
+    Set Suite Variable    ${validy_numeric_updown}
+    [Return]    ${validy_numeric_updown}
+
+Populate Visa Processing Country Details
+    [Arguments]    ${country}    ${type}    ${entries}    ${validity_type}    ${processing}    ${visa_number}=${EMPTY}
+    Set Country    ${country}
+    Select Type    ${type}
+    Select Entries    ${entries}
+    Select Validity Type    ${validity_type}
+    Select Processing    ${processing}
+    ${is_visa_number_visible}    Is Control Edit Visible    VisaNumberTextBox
+    Run Keyword If    ${is_visa_number_visible} == 1    Set Visa Number    ${visa_number}
+    [Teardown]    Take Screenshot
+
+Select Entries
+    [Arguments]    ${entries}
+    Select Value From Dropdown List    [NAME:EntriesComboBox]    ${entries}
+    [Teardown]    Take Screenshot
+
+Select Processing
+    [Arguments]    ${processing}
+    Select Value From Dropdown List    [NAME:ProcessingComboBox]    ${processing}
+    [Teardown]    Take Screenshot
+
+Select Type
+    [Arguments]    ${type}
+    Select Value From Dropdown List    [NAME:TypeComboBox]    ${type}
+    [Teardown]    Take Screenshot
+
+Select Validity Type
+    [Arguments]    ${validity_type}
+    Select Value From Dropdown List    [NAME:ValidityComboBox]    ${validity_type}
+    [Teardown]    Take Screenshot
+
+Set Country
+    [Arguments]    ${country}
+    Set Control Text Value    [NAME:CountryTextBox]    ${country}
+
+Set Processing Days
+    [Arguments]    ${processing_day}
+    Click Control Button    [NAME:ProcessingDaysNumericUpDown]
+    Send    ^a
+    Send Control Text Value    [NAME:ProcessingDaysNumericUpDown]    ${processing_day}
+    Send    {TAB}
+    [Teardown]    Take Screenshot
+
+Get Visa Number
+    ${visa_number_other_services}    Get Control Text Value    [NAME:VisaNumberTextBox]
+    Set Suite Variable    ${visa_number_other_services}
+
+Set Visa Number
+    [Arguments]    ${visa_number}
+    Set Control Text Value    [NAME:VisaNumberTextBox]    ${visa_number}

@@ -1,0 +1,127 @@
+*** Settings ***
+Resource          ../../../acceptance_tests/gds/gds_verification.txt
+
+*** Keywords ***
+Compute Visa Processing Fees
+    [Arguments]    ${merchant_fee_percentage}    ${country}=hk
+    ${is_merchant_fee_nett_cost_check}    Get Checkbox Status    [NAME:NetCostMerchantCheckBox]
+    ${is_merchant_fee_cwt_handling_check}    Get Checkbox Status    [NAME:CwtHandlingMerchantCheckBox]
+    ${computed_mf_nett_cost}    Run Keyword If    ${is_merchant_fee_nett_cost_check}    Evaluate    ${nett_cost}*(${merchant_fee_percentage}*0.01)
+    ...    ELSE    Set Variable    0
+    ${computed_mf_nett_cost}    Round Apac    ${computed_mf_nett_cost}    ${country}
+    ${computed_mf_cwt_handling}    Run Keyword If    ${is_merchant_fee_cwt_handling_check}    Evaluate    (${cwt_handling}+${vendor_handling})*(${merchant_fee_percentage}*0.01)
+    ...    ELSE    Set Variable    0
+    ${computed_mf_cwt_handling}    Round Apac    ${computed_mf_cwt_handling}    ${country}
+    ${computed_selling_price}    Evaluate    ${nett_cost} + ${vendor_handling} + ${cwt_handling} + ${computed_mf_nett_cost} + ${computed_mf_cwt_handling}
+    ${computed_selling_price}    Round Apac    ${computed_selling_price}    ${country}
+    ${computed_commission}    Run Keyword If    ${computed_selling_price} > ${nett_cost}    Evaluate    ${computed_selling_price}-${nett_cost}-${vendor_handling}
+    ...    ELSE    Set Variable    0
+    ${computed_commission}    Round Apac    ${computed_commission}    ${country}
+    ${computed_total_selling_price}    Set Variable    ${computed_selling_price}
+    Set Suite Variable    ${computed_mf_nett_cost}
+    Set Suite Variable    ${computed_mf_cwt_handling}
+    Set Suite Variable    ${computed_total_selling_price}
+    Set Suite Variable    ${computed_commission}
+    Set Suite Variable    ${computed_selling_price}
+
+Get CWT Handling Value
+    ${cwt_handling}    Get Control Text Value    [NAME:CwtHandlingTextBox]
+    Set Test Variable    ${cwt_handling}
+
+Get Commision Value
+    ${commission_object}    Determine Multiple Object Name Based On Active Tab    CommisionTextBox,CommissionTextBox    False
+    ${commission}    Get Control Text Value    ${commission_object}
+    Set Suite Variable    ${commission}
+    [Return]    ${commission}
+
+Get GST Amount Value
+    ${gst_amount}    Get Control Text Value    [NAME:GSTTextBox]
+    Set Suite Variable    ${gst_amount}
+    [Return]    ${gst_amount}
+
+Get Merchant Fee Value
+    ${merchant_fee}    Get Control Text Value    [NAME:MerchantFeeTextBox]
+    Set Suite Variable    ${merchant_fee}
+    [Return]    ${merchant_fee}
+
+Get Nett Cost Value
+    ${nett_cost}    Get Control Text Value    [NAME:NetCostTextBox]
+    Set Suite Variable    ${nett_cost}
+    [Return]    ${nett_cost}
+
+Get Other Services Cost Details
+    Get Vendor Contact Value
+    Get Nett Cost Value
+    Get Selling Price
+    Get Commision Value
+    ${is_gst_control_present}    Is Control Visible    GSTTextBox
+    Run Keyword If    ${is_gst_control_present} == True    Get GST Amount Value
+    Get Merchant Fee Value
+    Get Total Selling Price Value
+    [Teardown]    Take Screenshot
+
+Get Other Services Visa Processing Cost
+    Get Vendor Contact Value
+    Get Nett Cost Value
+    Get Vendor Handling Value
+    Get CWT Handling Value
+    Get Selling Price
+    Get Commision Value
+    Get Total Selling price Value
+    [Teardown]    Take Screenshot
+
+Get Total Selling Price Value
+    ${total_selling_price}    Get Control Text Value    [NAME:DiSellingPriceTextBox]
+    Set Suite Variable    ${total_selling_price}
+    [Return]    ${total_selling_price}
+
+Get Vendor Contact Value
+    ${vendor_contact}    Get Control Text Value    [NAME:VendorContactTextBox]
+    Set Suite Variable    ${vendor_contact}
+    [Return]    ${vendor_contact}
+
+Get Vendor Handling Value
+    ${vendor_handling}    Get Control Text Value    [NAME:VendorHandlingTextBox]
+    Set Test Variable    ${vendor_handling}
+
+Populate Other Services Visa Processing Cost
+    [Arguments]    ${vendor_contact}    ${nett_cost}    ${vendor_handling}    ${cwt_handling}
+    Set Vendor Contact    ${vendor_contact}
+    Populate Other Services Visa Processing Fees    ${nett_cost}    ${vendor_handling}    ${cwt_handling}
+    [Teardown]    Take Screenshot
+
+Populate Other Services Visa Processing Fees
+    [Arguments]    ${nett_cost}    ${vendor_handling}    ${cwt_handling}
+    Set Nett Cost    ${nett_cost}
+    Set Vendor Handling Fee    ${vendor_handling}
+    Set CWT Handling Fee    ${cwt_handling}
+    [Teardown]    Take Screenshot
+
+Populate Service Info Cost Details
+    [Arguments]    ${vendor_contact}    ${nett_cost}    ${selling_price}
+    Set Vendor Contact    ${vendor_contact}
+    Set Nett Cost    ${nett_cost}
+    Set Selling Price    ${selling_price}
+    [Teardown]    Take Screenshot
+
+Populate Visa Processing Panel Details
+    [Arguments]    ${vendor_contact}    ${country}    ${type}    ${entry}    ${validy}    ${validity_day}
+    ...    ${processing}    ${processing_days}    ${passenger_id}
+    Set Vendor Contact    ${vendor_contact}
+    Set Test Variable    ${vendor_contact}
+    Set Country    ${country}
+    Set Test Variable    ${country}
+    Select Value From Dropdown List    [NAME:TypeComboBox]    ${type}
+    Set Test Variable    ${type}
+    Select Value From Dropdown List    [NAME:EntriesComboBox]    ${entry}
+    Set Test Variable    ${entry}
+    Select Value From Dropdown List    [NAME:ValidityComboBox]    ${validy}
+    Set Test Variable    ${validy}
+    Set Control Text Value    [NAME:ValidityNumericUpDown]    ${validity_day}
+    Set Test Variable    ${validity_day}
+    Select Value From Dropdown List    [NAME:ProcessingComboBox]    ${processing}
+    Set Test Variable    ${processing}
+    Set Control Text Value    [NAME:ProcessingDaysNumericUpDown]    ${processing_days}
+    Set Test Variable    ${processing_days}
+    Set Control Text Value    [NAME:PassengerIdTextBox]    ${passenger_id}
+    Set Test Variable    ${passenger_id}

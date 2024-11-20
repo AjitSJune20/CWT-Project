@@ -1,0 +1,3717 @@
+*** Settings ***
+Suite Setup
+Force Tags        amadeus
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../other_services_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+Resource          ../other_services.txt
+
+*** Test Cases ***
+[SG NB] Verify That Other Services With GST Fields Are Displayed In Service Info Tab
+    [Documentation]    US686 [SG, HK] [TECH][TEST] Create Automated Scripts for "US624 [TECH] Create Other Services UI for SG and HK"
+    ...
+    ...    US668 [TECH] Integrate Raise Type Service - \ If Raise Type is NULL, assign '0000000000' as exchange order number
+    [Tags]    US686    US624    us668    backlog    not_ready
+    Comment    Set Suite Variable    ${locale}    en-GB
+    Comment    Set Suite Variable    ${gds_switch}    amadeus
+    Open Power Express And Retrieve Profile    ${version}    Test    u003jdc    en-GB    jcabela    APAC QA
+    Select GDS    Amadeus
+    Handle Generic Window Popup
+    Click Clear All
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SG OS AUTOMATION    BEAR    SGOTHERS
+    Handle Generic Window Popup
+    Click New Booking
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP    3    3
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Click Panel    Cust Refs
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Invoice
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL    #SG: Amadeus edited TKXL    #HK: Amadeus edited TKXL
+    Set Ticketing Date One Day Ahead
+    Click Finish PNR
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DESPATCH DEPARTMENT
+    Click Continue In Other Svcs
+    Comment    Click Service Info Tab
+    Verify Service Info Fields Are Displayed Depending On Country    sg    true
+    Verify Service Info Fields Are Enabled Depending On Country    sg    true
+    Verify Service Info Fields Are Disabled Depending On Country    sg    true
+    Verify Generated Exchange Order Is A Number
+    Comment    Populate Service Info With Default Values
+    Click Calculate
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Click Clear All
+
+[SG AB] Verify That Other Services Without GST Fields Are Displayed In Service Info Tab
+    [Documentation]    US686 [SG, HK] [TECH][TEST] Create Automated Scripts for "US624 [TECH] Create Other Services UI for SG and HK"
+    [Tags]    US686    US624    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Populate Air Fare Savings Code    RF - Restricted Fare Accepted    P - Passenger Declined Restricted Fare    CW - Business CWT Nett Fare
+    Click Panel    Client Info
+    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Other Services Without GST Fields Are Displayed In Service Info Tab For SG If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DHL INTERNATIONAL (S) PTE LTD
+    Click Continue In Other Svcs
+    Comment    Click Service Info Tab
+    Verify Service Info Fields Are Displayed Depending On Country    sg    false
+    Verify Service Info Fields Are Enabled Depending On Country    sg    false
+    Verify Service Info Fields Are Disabled Depending On Country    sg    false
+    Populate Service Info With Default Values
+    Click Calculate
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    [Teardown]
+
+[SG OS] Verify That Other Services Without GST Fields Are Displayed In Service Info Tab
+    [Tags]    US686    US624    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DHL INTERNATIONAL (S) PTE LTD
+    Click Continue In Other Svcs
+    Comment    Click Service Info Tab
+    Verify Service Info Fields Are Displayed Depending On Country    sg    false
+    Verify Service Info Fields Are Enabled Depending On Country    sg    false
+    Verify Service Info Fields Are Disabled Depending On Country    sg    false
+    Populate Service Info With Default Values
+    Click Calculate
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK NB] Verify That Other Services Without GST Fields Are Displayed In Service Info Tab
+    [Documentation]    US686 [SG, HK] [TECH][TEST] Create Automated Scripts for "US624 [TECH] Create Other Services UI for SG and HK"
+    [Tags]    US686    US624    backlog    not_ready
+    Comment    Set Suite Variable    ${locale}    en-GB
+    Comment    Set Suite Variable    ${gds_switch}    amadeus
+    Open Power Express And Retrieve Profile    ${version}    Test    u003jdc    en-GB    jcabela    APAC QA
+    Select GDS    Amadeus
+    Handle Generic Window Popup
+    Click Clear All
+    Set Client And Traveler    APAC SYN CORP ¦ APAC HK OS AUTOMATION    BEAR    HKOTHERS
+    Handle Generic Window Popup
+    Click New Booking
+    Book Flight X Months From Now    HKGMNL/ASQ    SS1Y1    FXP    3    3
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Click Panel    Cust Refs
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Invoice
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL    #SG: Amadeus edited TKXL    #HK: Amadeus edited TKXL
+    Set Ticketing Date One Day Ahead
+    Click Finish PNR
+    Click Other Services
+    Select Product    Documentation Fee
+    Select Vendor    CARLSON WAGONLIT TRAVEL
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Verify Service Info Fields Are Displayed Depending On Country    hk    false
+    Verify Service Info Fields Are Enabled Depending On Country    hk    false
+    Verify Service Info Fields Are Disabled Depending On Country    hk    false
+    Comment    Populate Service Info With Default Values
+    Click Calculate
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Click Clear All
+
+[HK AB] Verify That Other Services Without GST Fields Are Displayed In Service Info Tab
+    [Documentation]    US686 [SG, HK] [TECH][TEST] Create Automated Scripts for "US624 [TECH] Create Other Services UI for SG and HK"
+    [Tags]    US686    US624    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Populate Air Fare Savings Code    RF - Restricted Fare Accepted    P - Passenger Declined Restricted Fare    CW - Business CWT Nett Fare
+    Click Panel    Client Info
+    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Other Services Without GST Fields Are Displayed In Service Info Tab For SG If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Select Product    Documentation Fee
+    Select Vendor    CARLSON WAGONLIT TRAVEL
+    Click Continue In Other Svcs
+    Comment    Click Service Info Tab
+    Verify Service Info Fields Are Displayed Depending On Country    hk    false
+    Verify Service Info Fields Are Enabled Depending On Country    hk    false
+    Verify Service Info Fields Are Disabled Depending On Country    hk    false
+    Populate Service Info With Default Values
+    Click Calculate
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+
+[HK OS] Verify That Other Services Without GST Fields Are Displayed In Service Info Tab
+    [Tags]    US686    US624    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Documentation Fee
+    Select Vendor    CARLSON WAGONLIT TRAVEL
+    Click Continue In Other Svcs
+    Comment    Click Service Info Tab
+    Verify Service Info Fields Are Displayed Depending On Country    hk    false
+    Verify Service Info Fields Are Enabled Depending On Country    hk    false
+    Verify Service Info Fields Are Disabled Depending On Country    hk    false
+    Populate Service Info With Default Values
+    Click Calculate
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG NB] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Cash or Invoice And BTA Description Is Not Blank
+    [Tags]    us456    us723    backlog    not_ready    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    u003jdc    en-GB    jcabela    APAC QA
+    Select GDS    Amadeus
+    Handle Generic Window Popup
+    Click Clear All
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SG OS AUTOMATION    BEAR    SGOTHERS
+    Handle Generic Window Popup
+    Click New Booking
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP    3    3
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Click Panel    Cust Refs
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Invoice
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL    #SG: Amadeus edited TKXL    #HK: Amadeus edited TKXL
+    Set Ticketing Date One Day Ahead
+    Click Finish PNR
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DESPATCH DEPARTMENT
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    300    400    Cash or Invoice    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    Description 1    bta description1
+    Click Calculate
+    Get Service Info Field Values
+    Comment    Get Product Code    sg    ${product}
+    Comment    Get GST Percentage    sg    ${product}
+    Comment    Get Vendor Code    sg    ${product}    ${vendor}
+    Comment    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Comment    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Comment    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    true
+
+[SG AB] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank
+    [Tags]    us456    us723    backlog    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Populate Air Fare Savings Code    RF - Restricted Fare Accepted    P - Passenger Declined Restricted Fare    CW - Business CWT Nett Fare
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Comment    Click Panel    Client Info
+    Comment    Select Merchant Fee Type    Airline
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DESPATCH DEPARTMENT
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    400.5    500.5    Cash or Invoice    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    Description 1    ${EMPTY}
+    Click Calculate
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    true
+
+[SG OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card (CC) And BTA Description Is Not Blank
+    [Tags]    us456    us723    backlog    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DESPATCH DEPARTMENT
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    500.55    600.55    Credit Card (CC)    VI    4444333322221111
+    ...    01    2023    Description 1    BTA description 2
+    Click Calculate
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    true
+
+[SG OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card (CC) And BTA Description Is Blank
+    [Tags]    us456    us723    backlog    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DESPATCH DEPARTMENT
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    600.0    700.0    Credit Card (CC)    AX    371449635398431
+    ...    02    2024    Description 1    ${EMPTY}
+    Click Calculate
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    true
+    [Teardown]
+
+[SG OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card (CX) And BTA Description Is Not Blank
+    [Tags]    us456    us723    backlog    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DESPATCH DEPARTMENT
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    MC    5105105105105100
+    ...    03    2025    Description 1    BTA Description 3
+    Click Calculate
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    true
+    [Teardown]
+
+[SG OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card (CX) And BTA Description Is Blank
+    [Tags]    us456    us723    backlog    not_ready    obsolete
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DESPATCH DEPARTMENT
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    MC    5105105105105100
+    ...    03    2025    Description 1    ${EMPTY}
+    Click Calculate
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG NB] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Not Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003jdc    en-GB    jcabela    APAC QA
+    Select GDS    Amadeus
+    Handle Generic Window Popup
+    Click Clear All
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SG OS AUTOMATION    BEAR    SGOTHERS
+    Handle Generic Window Popup
+    Click New Booking
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP    3    3
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Click Panel    Cust Refs
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Invoice
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL    #SG: Amadeus edited TKXL    #HK: Amadeus edited TKXL
+    Set Ticketing Date One Day Ahead
+    Click Finish PNR
+    Click Other Services
+    Select Product    Air Commission Returned
+    Select Vendor    REBATE
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    300    400    Cash or Invoice    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    Description 1    bta description1
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Set Merchant Fee Percentage    2
+    Verify Computed Commission Displayed In Power Express Is Correct    sg
+    Compute Merchant Fee    sg    false
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    sg    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    false
+
+[SG AB] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Air Fare Savings Code    RF - Restricted Fare Accepted    P - Passenger Declined Restricted Fare    CW - Business CWT Nett Fare
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Comment    Click Panel    Client Info
+    Comment    Select Merchant Fee Type    Airline
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Re-Execute Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Select Product    Air Commission Returned
+    Select Vendor    REBATE
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    400.5    500.5    Cash or Invoice    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    Description 1    ${EMPTY}
+    Tick Merchant Fee CWT Absorb
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Set Merchant Fee Percentage    2
+    Verify Computed Commission Displayed In Power Express Is Correct    sg
+    Compute Merchant Fee    sg    true
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    sg    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    false
+
+[SG OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card (CC) And BTA Description Is Not Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Air Commission Returned
+    Select Vendor    REBATE
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    500.55    600.55    Credit Card (CC)    VI    4444333322221111
+    ...    01    2023    Description 1    BTA description 2
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Set Merchant Fee Percentage    2
+    Verify Computed Commission Displayed In Power Express Is Correct    sg
+    Compute Merchant Fee    sg    false
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    sg    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    false
+
+[SG OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card (CC) And BTA Description Is Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Air Commission Returned
+    Select Vendor    REBATE
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    600.0    700.0    Credit Card (CC)    AX    371449635398431
+    ...    02    2024    Description 1    ${EMPTY}
+    Tick Merchant Fee CWT Absorb
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Set Merchant Fee Percentage    2
+    Verify Computed Commission Displayed In Power Express Is Correct    sg
+    Compute Merchant Fee    sg    true
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    sg    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    false
+    [Teardown]
+
+[SG OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card (CX) And BTA Description Is Not Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    AIG
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Comment    Scenario (Selling Price < Nett Cost)
+    Populate Service Info With Values    Vendor Contact    500    400    Credit Card (CX)    MC    5105105105105100
+    ...    03    2025    Description 1    BTA Description 3
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Set Merchant Fee Percentage    2
+    Verify Computed Commission Displayed In Power Express Is Correct    sg
+    Compute Merchant Fee    sg    false
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    sg    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Comment    Scenario (Selling Price < Nett Cost)
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    MC    5105105105105100
+    ...    03    2025    Description 1    BTA Description 3
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Set Merchant Fee Percentage    2
+    Verify Computed Commission Displayed In Power Express Is Correct    sg
+    Compute Merchant Fee    sg    false
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    sg    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    false
+    [Teardown]
+
+[SG OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card (CX) And BTA Description Is Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Click Other Services
+    Select Product    Air Commission Returned
+    Select Vendor    REBATE
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    MC    5105105105105100
+    ...    03    2025    Description 1    ${EMPTY}
+    Tick Merchant Fee CWT Absorb
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Set Merchant Fee Percentage    2
+    Verify Computed Commission Displayed In Power Express Is Correct    sg
+    Compute Merchant Fee    sg    true
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    sg    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    false
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK NB] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Not Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003jdc    en-GB    jcabela    APAC QA
+    Select GDS    Amadeus
+    Handle Generic Window Popup
+    Click Clear All
+    Set Client And Traveler    APAC SYN CORP ¦ APAC HK OS AUTOMATION    BEAR    HKOTHERS
+    Handle Generic Window Popup
+    Click New Booking
+    Book Flight X Months From Now    HKGMNL/ASQ    SS1Y1    FXP    3    3
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Click Panel    Cust Refs
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Invoice
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL    #SG: Amadeus edited TKXL    #HK: Amadeus edited TKXL
+    Set Ticketing Date One Day Ahead
+    Click Finish PNR
+    Click Other Services
+    Select Product    AIR REFUND
+    Select Vendor    AIR FRANCE
+    Set Merchant Fee Percentage    2
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    500    600    Cash or Invoice    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    Description 1    bta description1
+    Get Service Info Field Values
+    Comment    Compute Other Services Charges    IN
+    Get Product Code    hk    ${product}
+    Get GST Percentage    hk    ${product}
+    Get Vendor Code    hk    ${product}    ${vendor}
+    Verify Computed Commission Displayed In Power Express Is Correct    hk
+    Compute Merchant Fee    hk    ${merchant_fee_absorb_checkbox_status}
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    hk    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    hk    false
+
+[HK AB] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Populate Air Fare Savings Code    RF - Restricted Fare Accepted    P - PASSENGER DECLINED RESTRICTED FARE    CW - Business Class CWT Negotiated Fare
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Comment    Click Panel    Client Info
+    Comment    Select Merchant Fee Type    Airline
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank For HK If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Select Product    AIR REFUND
+    Select Vendor    AIR FRANCE
+    Set Merchant Fee Percentage    2
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    470.6    570.1    Cash or Invoice    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    Description 1    ${EMPTY}
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Get Service Info Field Values
+    Get Product Code    hk    ${product}
+    Get GST Percentage    hk    ${product}
+    Get Vendor Code    hk    ${product}    ${vendor}
+    Verify Computed Commission Displayed In Power Express Is Correct    hk
+    Compute Merchant Fee    hk    ${merchant_fee_absorb_checkbox_status}
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    hk    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    hk    false
+
+[HK OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card (CC) And BTA Description Is Not Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    AIR REFUND
+    Select Vendor    AIR FRANCE
+    Set Merchant Fee Percentage    2
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    581.45    681.45    Credit Card (CC)    VI    4444333322221111
+    ...    01    2023    Description 1    BTA description 2
+    Get Service Info Field Values
+    Get Product Code    hk    ${product}
+    Get GST Percentage    hk    ${product}
+    Get Vendor Code    hk    ${product}    ${vendor}
+    Verify Computed Commission Displayed In Power Express Is Correct    hk
+    Compute Merchant Fee    hk    ${merchant_fee_absorb_checkbox_status}
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    hk    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    hk    false
+
+[HK OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card (CC) And BTA Description Is Blank
+    [Tags]    us457    us724    backlog    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    AIR REFUND
+    Select Vendor    AIR FRANCE
+    Set Merchant Fee Percentage    2
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    604.0    704.0    Credit Card (CC)    AX    371449635398431
+    ...    02    2024    Description 1    ${EMPTY}
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Get Service Info Field Values
+    Get Product Code    hk    ${product}
+    Get GST Percentage    hk    ${product}
+    Get Vendor Code    hk    ${product}    ${vendor}
+    Verify Computed Commission Displayed In Power Express Is Correct    hk
+    Compute Merchant Fee    hk    ${merchant_fee_absorb_checkbox_status}
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    hk    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    hk    false
+    [Teardown]
+
+[HK OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card (CX) And BTA Description Is Not Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Set Suite Variable    ${current_pnr}    WPTK35
+    Set Suite Variable    ${gds_switch}    amadeus
+    Set Suite Variable    ${locale}    en-GB
+    Comment    Retrieve PNR    ${current_pnr}
+    Comment    Click Other Services
+    Select Product    AIR REFUND
+    Select Vendor    AIR FRANCE
+    Set Merchant Fee Percentage    2
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Get Product Code    hk    ${product}
+    Get GST Percentage    hk    ${product}
+    Get Vendor Code    hk    ${product}    ${vendor}
+    Populate Service Info With Values    Vendor Contact    714.04    814.01    Credit Card (CX)    MC    5105105105105100
+    ...    03    2025    Description 1    BTA Description 3
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Get Service Info Field Values
+    Verify Computed Commission Displayed In Power Express Is Correct    hk
+    Compute Merchant Fee    hk    ${merchant_fee_absorb_checkbox_status}
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    hk    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Populate Service Info With Values    Vendor Contact    710.01    810.01    Credit Card (CX)    MC    5105105105105100
+    ...    03    2025    Description 1    BTA Description 3
+    Untick CWT Absorb Checkbox For Merchant Fee
+    Get Service Info Field Values
+    Verify Computed Commission Displayed In Power Express Is Correct    hk
+    Compute Merchant Fee    hk    ${merchant_fee_absorb_checkbox_status}
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    hk    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    hk    false
+    [Teardown]
+
+[HK OS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card (CX) And BTA Description Blank
+    [Tags]    us457    us724    backlog    not_ready
+    Click Other Services
+    Select Product    AIR REFUND
+    Select Vendor    AIR FRANCE
+    Set Merchant Fee Percentage    2
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Get Product Code    hk    ${product}
+    Get GST Percentage    hk    ${product}
+    Get Vendor Code    hk    ${product}    ${vendor}
+    Populate Service Info With Values    Vendor Contact    830.01    730.01    Credit Card (CX)    MC    5105105105105100
+    ...    03    2025    Description 1    ${EMPTY}
+    Get Service Info Field Values
+    Verify Computed Commission Displayed In Power Express Is Correct    hk
+    Compute Merchant Fee    hk    ${merchant_fee_absorb_checkbox_status}
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    hk    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Populate Service Info With Values    Vendor Contact    730.01    730.01    Credit Card (CX)    MC    5105105105105100
+    ...    03    2025    Description 1    ${EMPTY}
+    Get Service Info Field Values
+    Verify Computed Commission Displayed In Power Express Is Correct    hk
+    Compute Merchant Fee    hk    ${merchant_fee_absorb_checkbox_status}
+    Verify Merchant Fee Displayed In Power Express Is Correct    ${computed_merchant_fee}    ${merchant_fee}
+    Compute Total Selling Price    hk    ${selling_price}    ${gst_percent}    ${merchant_fee}
+    Verify Computed Total Selling Price Displayed In Power Express Is Correct    ${computed_total_selling_price}    ${total_selling_price}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    hk    false
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB] Verify That Correct Remarks Will Be Written Using Amount FOP Type is Cash or Invoice
+    [Tags]    backlog    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003jdc    en-GB    jcabela    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN IN    BEAR    SING
+    Click New Booking
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S2    6    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    Carlson Wagonlit GST
+    Click Continue In Other Svcs
+    Populate Service Info With Values (IN)    QA Vendor    200    5    6    QA Description    QA Details
+    Get Service Info Fields
+    Verify Calculations In Other Services    ${tab}    ${country}
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    ${set_of_remarks}
+
+[IN AB] Verify That Correct Remarks Will Be Written Using Amount FOP Type is CX
+    [Tags]    backlog    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    Carlson Wagonlit GST
+    Click Continue In Other Svcs
+    Populate Service Info With Values (IN)    QA Vendor    200    5    6    QA Description    QA Details
+
+[IN NB] Verify That Correct Remarks Will Be Written Using Percentage FOP Type is BTC.
+    [Tags]    backlog    not_ready
+    [Setup]    Set Product and Vendor Related Values For India    8    00800361    14    0.5    0.5
+    ...    2
+    ${discount_amount}=    Set Variable    400
+    ${commission_amount}=    Set Variable    200
+    ${nett_cost}=    Set Variable    500
+    Set Test Variable    ${discount_amount}
+    Set Test Variable    ${commission_amount}
+    Set Test Variable    ${nett_cost}
+    Comment    Verify Calculations In Other Services    Service Info    IN
+    Click Control    [NAME:PaymentButton]    1
+    Click Menuitem Control    Cash
+
+[IN AB] Verify That Correct Remarks Will Be Written Using Percentage FOP Type is CC
+    [Tags]    backlog    not_ready
+    Create PNR Using FOP Type CC
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    Carlson Wagonlit GST
+    Click Continue In Other Svcs
+    Populate Service Info With Values (IN)    QA Vendor    200    5%    6%    QA Description    QA Details
+    Get Service Info Fields
+    Verify Calculations In Other Services    ${tab}    ${country}
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    CC
+
+[SG NB OS] Verify That Accounting Lines For Other Services Is Written With CX2 Fee Code When Credit Card Type Is AX
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    not_ready    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG    BEAR    ARIS
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP    6
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel (TKXL)
+    Click Finish PNR
+    Click Other Services
+    Select Product    Documentation Fee
+    Select Vendor    CARLSON WAGONLIT TRAVEL
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    AX    378282246310005
+    ...    12    2022    Documentation Fee    Documentation Fee
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EARLY CHECKIN IS ALLOWED
+    Select Itinerary Remarks    AATEST REMARK
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    Documentation Fee    70    021007
+
+[SG AB OS] Verify That Accounting Lines For Other Services Is Written With CX3 Fee Code When Credit Card Type Is DC
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel (TKXL)
+    Click Finish PNR
+    Click Other Services
+    Select Product    24 Hours Emergency Svcs
+    Select Vendor    Carlson Wagonlit GST
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    DC    378282246310005
+    ...    12    2022    24 Hours Emergency Svcs    24 Hours Emergency S
+    Get Commission
+    Get Total Selling Price
+    Get GST
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EARLY CHECKIN IS ALLOWED
+    Select Itinerary Remarks    AATEST REMARK
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    24 Hours Emergency Svcs    18    021238
+
+[SG OS] Verify That Accounting Lines For Other Services Is Written With CX4 Fee Code When Credit Card Type Is VI
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DESPATCH DEPARTMENT
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    VI    4444333322221111
+    ...    12    2022    Despatch Charge    Despatch Charge
+    Get Commission
+    Get Total Selling Price
+    Get GST
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EARLY CHECKIN IS ALLOWED
+    Select Itinerary Remarks    AATEST REMARK
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    Despatch Charge    08    024000
+
+[SG OS] Verify That Accounting Lines For Other Services Is Written With CX4 Fee Code When Credit Card Type Is CA
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    CWT Refund Admin Fee
+    Select Vendor    Carlson Wagonlit GST
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    CA    9999888877776666
+    ...    12    2022    CWT Refund Admin Fee    CWT Refund Admin Fee
+    Get Commission
+    Get Total Selling Price
+    Get GST
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EARLY CHECKIN IS ALLOWED
+    Select Itinerary Remarks    AATEST REMARK
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    CWT Refund Admin Fee    39    021238
+
+[SG OS] Verify That Accounting Lines For Other Services Is Written With CX4 Fee Code When Credit Card Type Is MC
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Management Fee
+    Select Vendor    Carlson Wagonlit GST
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    MC    5100000000000008
+    ...    12    2022    Management Fee    Management Fee
+    Get Commission
+    Get Total Selling Price
+    Get GST
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EARLY CHECKIN IS ALLOWED
+    Select Itinerary Remarks    AATEST REMARK
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    Management Fee    36    021238
+
+[SG OS] Verify That Accounting Lines For Other Services Is Written With CX5 Fee Code When Credit Card Type Is TP
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Transaction Fee
+    Select Vendor    CARLSON WAGONLIT TRAVEL
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    TP    5555000044440000
+    ...    12    2022    Transaction Fee    Transaction Fee
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EARLY CHECKIN IS ALLOWED
+    Select Itinerary Remarks    AATEST REMARK
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    Transaction Fee    35    021007
+
+[SG OS] Verify That Accounting Lines For Other Services Is Written With CX4 Fee Code When Credit Card Type Is JC
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Meet And Greet
+    Select Vendor    MEET & GREET
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Comment    ***************************    Verify if Expiry Date < Current Date    ***************************
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    VI    4444333322221111
+    ...    07    2018    Meet And Greet    Meet And Greet
+    Verify Tooltip Text Is Correct Using Coords    433    712    Please enter valid credit card expiry date
+    Comment    ***************************    Verify if Expiry Date > Current Date    ***************************
+    Click Service Info Tab
+    Select Expiry Month    07
+    Select Expiry Year    2019
+    Verify ToolTip Is Not Displayed    433    712
+    Comment    ***************************    Verify if Expiry Date = Current Date    ***************************
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700.01    800.01    Credit Card (CX)    JC    3530111333300000
+    ...    08    2018    Meet And Greet    Meet And Greet
+    Select Expiry Year    2018
+    Verify ToolTip Is Not Displayed    433    712
+    Get Commission
+    Get Total Selling Price
+    Get GST
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EARLY CHECKIN IS ALLOWED
+    Select Itinerary Remarks    AATEST REMARK
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    Meet And Greet    12    029000
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK NB OS] Verify That Accounting Lines For Other Services Is Written With CX4 Fee Code When Credit Card Type Is VI
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN HK    BEAR    Hong
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    1222
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP    6
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel (TKXL)
+    Click Finish PNR
+    Click Other Services
+    Select Product    AIR REFUND
+    Select Vendor    AIR FRANCE
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700    800    Credit Card (CX)    VI    4444333322221111
+    ...    12    2022    AIR REFUND    AIR REFUND
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EXCHANGE ORDER PREDEFINED REMARK
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    AIR REFUND    03    000247    HK
+
+[HK AB OS] Verify That Accounting Lines For Other Services Is Written With CX5 Fee Code When Credit Card Type Is TP
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel (TKXL)
+    Click Finish PNR
+    Click Other Services
+    Select Product    24 EMERGENCY SERVICE FEE
+    Select Vendor    CWT
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700    800    Credit Card (CX)    TP    5555000044440000
+    ...    12    2022    24 EMERGENCY SERVICE FEE    24 EMERGENCY SERVICE FEE
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EXCHANGE ORDER PREDEFINED REMARK
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    24 EMERGENCY SERVICE FEE    18    000001    HK
+
+[HK OS] Verify That Accounting Lines For Other Services Is Written With CX2 Fee Code When Credit Card Type Is AX
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    LOCAL EMERGENCY SVC
+    Select Vendor    CWT
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700    800    Credit Card (CX)    AX    378282246310005
+    ...    12    2022    LOCAL EMERGENCY SVC    LOCAL EMERGENCY SVC
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EXCHANGE ORDER PREDEFINED REMARK
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    LOCAL EMERGENCY SVC    22    000001    HK
+
+[HK OS] Verify That Accounting Lines For Other Services Is Written With CX4 Fee Code When Credit Card Type Is MC
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    OTHER
+    Select Vendor    THE MARCO POLO PRINCE
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700    800    Credit Card (CX)    MC    5100000000000008
+    ...    12    2022    OTHER    ${EMPTY}
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EXCHANGE ORDER PREDEFINED REMARK
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    OTHER    08    000205    HK
+
+[HK OS] Verify That Accounting Lines For Other Services Is Written With CX3 Fee Code When Credit Card Type Is DC
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    SVC Fee for Surcharges
+    Select Vendor    CWT
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700    800    Credit Card (CX)    DC    378282246310005
+    ...    12    2022    SVC Fee for Surcharges    SVC Fee for Surcharges
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EXCHANGE ORDER PREDEFINED REMARK
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    SVC Fee for Surcharges    41    000001    HK
+
+[HK OS] Verify That Accounting Lines For Other Services Is Written With CX4 Fee Code When Credit Card Type Is CA
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    TRANSACTION FEE
+    Select Vendor    AIRLINE MERCHANT
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Comment    ***************************    Verify if Expiry Date < Current Date    ***************************
+    Populate Service Info With Values    Vendor Contact    700    800    Credit Card (CX)    VI    4444333322221111
+    ...    07    2018    Transaction Fee    Transaction Fee
+    Verify Tooltip Text Is Correct Using Coords    433    712    Please enter valid credit card expiry date
+    Comment    ***************************    Verify if Expiry Date > Current Date    ***************************
+    Click Service Info Tab
+    Select Expiry Month    07
+    Select Expiry Year    2019
+    Verify ToolTip Is Not Displayed    433    712
+    Comment    ***************************    Verify if Expiry Date = Current Date    ***************************
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700    800    Credit Card (CX)    CA    9999888877776666
+    ...    08    2018    Transaction Fee    Transaction Fee
+    Verify ToolTip Is Not Displayed    433    712
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EXCHANGE ORDER PREDEFINED REMARK
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    TRANSACTION FEE    35    000031    HK
+
+[HK OS] Verify That Accounting Lines For Other Services Is Written With CX4 Fee Code When Credit Card Type Is JC
+    [Documentation]    Test case may fail due to masking/unmasking of Credit card number during Remarks verification
+    [Tags]    us857    expected_to_fail    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    MEET AND GREET SERVICE
+    Select Vendor    MEET AND GREET SERVICES
+    Click Continue In Other Svcs
+    Click Service Info Tab
+    Populate Service Info With Values    Vendor Contact    700    800    Credit Card (CX)    JC    3530111333300000
+    ...    12    2022    Meet And Greet    Meet And Greet
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Remarks Tab
+    Select Exchange Order Remarks    EXCHANGE ORDER PREDEFINED REMARK
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services Remarks Are Written In The PNR When Credit Card    Transaction Fee    12    000610    HK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB OS SG] Verify That Service Info Fields Of Insurance Behave Correctly And Written In The PNR When FOP Is CC
+    [Tags]    US462    not_ready    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG    BEAR    DOS
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Select Delivery Method    Auto Cancel (TKXL)
+    Click Finish PNR
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    AXA INSURANCE
+    Click Continue In Other Svcs
+    Select Plan    Single Trip Plan
+    Set Selling Price    500.00
+    Select Form Of Payment (FOP)    Credit Card (CC)    VI    4444333322221111    12    2026
+    Get Selling Price
+    Get Form Of Payment
+    Compute Nett Cost Value    35
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Nett Cost Value    35
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2    false    true
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Selling Price
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Tab In Other Services Panel    Insurance
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Click Remarks Tab
+    Select Itinerary Remarks    AATEST REMARK
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Insurance Remarks Are Written When FOP Is Credit Card In The PNR    Insurance    9    025006
+    Verify Specific Remark Is Written In The PNR    RIR AATEST REMARK
+
+[AB OS SG] Verify That Service Info Fields Of Insurance Behave Correctly And Written In The PNR When FOP Is CX
+    [Tags]    US462    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Select Delivery Method    Auto Cancel (TKXL)
+    Click Finish PNR
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    AXA INSURANCE
+    Click Continue In Other Svcs
+    Select Plan    Single Trip Plan
+    Set Selling Price    1000.00
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    378282246310005    12    2026
+    Get Selling Price
+    Get Form Of Payment
+    Compute Nett Cost Value    35
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Plan    Annual Plan
+    Compute Nett Cost Value    20
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Selling Price
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get BTA Description
+    Click Tab In Other Services Panel    Insurance
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Click Remarks Tab
+    Select Itinerary Remarks    AATEST REMARK
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Insurance Remarks Are Written When FOP Is Credit Card In The PNR    Insurance    9    025006
+    Verify Specific Remark Is Written In The PNR    RIR AATEST REMARK
+
+[OS SG] Verify That Service Info Fields Of Insurance Behave Correctly And Written In The PNR When FOP Is Cash or Invoice
+    [Tags]    US462    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    AXA INSURANCE
+    Click Continue In Other Svcs
+    Select Plan    Single Trip Plan
+    Set Selling Price    800
+    Select Form Of Payment (FOP)    Credit Card (CC)    AX    378282246310005    12    2026
+    Get Selling Price
+    Get Form Of Payment
+    Compute Nett Cost Value    35
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Compute Nett Cost Value    35
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Plan    Annual Plan
+    Compute Nett Cost Value    20
+    Verify Nett Cost Value Is Correct
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Selling Price
+    Get Commission
+    Get Total Selling Price
+    Get Form Of Payment
+    Get BTA Description
+    Click Tab In Other Services Panel    Insurance
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Click Remarks Tab
+    Select Itinerary Remarks    AATEST REMARK
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Insurance Remarks Are Written When FOP Is Cash Or Invoice In The PNR    Insurance    9    025006
+    Verify Specific Remark Is Written In The PNR    RIR AATEST REMARK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG NB OS] Verify That Train Tickets Product Behaves Correctly In Other Services Panel And Written in PNR When FOP is CX
+    [Documentation]    Expected to fail due to Masking/Unmasking of Credit Card
+    [Tags]    horton    sg    US461    us764    valid_fail
+    Create PNR Using Cash As FOP
+    Click Other Services
+    Select Product And Vendor    Train Tickets    DINERS WORLD TRAVEL PTE LTD
+    Click Service Info Tab
+    Verify Default Form Of Payment Is Correct    Cash or Invoice
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2026
+    Verify Nett Cost Value Is Correct    0.00
+    Verify Selling Price Value Is Correct    0.00
+    Verify Commission Fee Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    0.00
+    Verify Default Value For Departure Fields Are Correct
+    Verify Default Value For Return Fields Are Correct
+    Populate Departure Routing    Singapore    Philippines    Train Ride
+    Populate Return Routing    Philippines    Singapore    Train Ride
+    Set Passenger ID Value    AA
+    Populate Service Info Cost Details    Vendor Contact    344.23    566.00
+    Get Other Services Cost Details
+    Unmask Credit Card Number
+    Get Other Services Form Of Payment Details
+    Get Passenger ID Value
+    Get Routing Details
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number    identifier=train
+    Generate Data For Specific Product    False    P1    15    Train Tickets    TR    021014
+    ...    ${EMPTY}    New
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Train And Ferry Remarks Are Written In PNR When FOP Is Credit Card    Train Ticket    15    021014
+    Verify Specific Remark Is Written In The PNR    RIR ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Verify Other Services General Notepad Remarks    Train Tickets
+
+[SG AOS] Verify That Train Tickets Product Behaves Correctly In Other Services Panel And Written in PNR When FOP is CX
+    [Tags]    sg    horton    us832    valid_fail
+    Click Other Services
+    Click Amend EO    ${eo_number_train}
+    Get Other Services Cost Details
+    Verify Vendor Contact Value Is Correct    Vendor Contact
+    Verify Nett Cost Value Is Correct    344.23
+    Verify Selling Price Value Is Correct    566.00
+    Verify Commission Fee Value Is Correct    233.09
+    Verify Merchant Fee Value Is Correct    11.32
+    Verify Total Selling Price Value Is Correct    577.32
+    Verify Form Of Payment Details Are Correct    Credit Card (CX)    VI    ************1111    12    2026
+    Verify Departure Routing Details Are Correct    Singapore    Philippines    Train Ride
+    Verify Return Routing Details Are Correct    Philippines    Singapore    Train Ride
+    Verify Exchange Order Number    ${eo_number_train}
+    Populate Service Info Cost Details    Vendor Contact Test    500.00    1500.00
+    Populate Departure Routing    Philippines    Singapore    Train Ride 2y
+    Populate Return Routing    Singapore    Philippines    Train Ride 2x
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Routing Details
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    DINERS WORLD TRAVEL PTE LTD
+    Verify Address 1 Value Is Correct    7500E BEACH ROAD
+    Verify Address 2 Value Is Correct    \#02-201 THE PLAZA
+    Verify City Value Is Correct    SINGAPORE
+    Verify Country Value Is Correct    SINGAPORE
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    15    Train Tickets    TR    021014
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_train}
+    Retrieve PNR Details From Amadeus
+    Verify That Train And Ferry Remarks Are Written In PNR When FOP Is Credit Card    Train Ticket    15    021014
+    Verify Specific Remark Is Written In The PNR    RIR ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+
+[SG AB OS] Verify That Ferry Tickets Product Behaves Correctly In Other Services Panel And Written in PNR When FOP is CX
+    [Documentation]    Expected to fail due to Masking/Unmasking of Credit Card
+    [Tags]    horton    sg    US461    us764    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    1222
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Click Other Services
+    Select Product    FERRY
+    Select Vendor    Batam Fast Ferry Pte Ltd
+    Click Continue In Other Svcs
+    Verify FOP Details Are Correct    Credit Card (CX)    AX    ************0005    12    2022
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    378282246310005    12    2026
+    Verify Nett Cost Value Is Correct    0.00
+    Verify Selling Price Value Is Correct    0.00
+    Verify Commission Fee Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    0.00
+    Set Nett Cost    350.25
+    Set Selling Price    680.23
+    Verify Default Value For Departure Fields Are Correct
+    Verify Default Value For Return Fields Are Correct
+    Populate Departure Routing    ${EMPTY}    Philippines    Ferry Ride
+    Populate Return Routing    Philippines    Singapore    Ferry Ride
+    Set Passenger ID Value    ${EMPTY}
+    Unmask Credit Card Number
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Passenger ID Value
+    Get Routing Details
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Train And Ferry Remarks Are Written In PNR When FOP Is Credit Card    FERRY    14    021006
+    Verify Specific Remark Is Written In The PNR    RIR ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Verify Other Services General Notepad Remarks    FERRY
+    [Teardown]
+
+[SG OS] Verify That Train Tickets Product Behaves Correctly In Other Services Panel And Written in PNR When FOP is Cash or Invoice
+    [Tags]    horton    sg    US461
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Train Tickets
+    Select Vendor    CARLSON WAGONLIT TRAVEL
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2026
+    Set Vendor Contact    CWT Vendor
+    Set Nett Cost    350.25
+    Set Selling Price    680.23
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Form Of Payment
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    0    2    True    True
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Cash or Invoice    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Compute Other Services Fees    0    2    True    True
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Selling Price
+    Get Commission
+    Get Total Selling Price
+    Populate Departure Routing    Singapore    Philippines    Train Ride
+    Populate Return Routing    Philippines    Singapore    Train Ride
+    Set Passenger ID Value    AA
+    Get Routing Details
+    Get Passenger ID Value
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Train And Ferry Remarks Are Written In PNR When FOP Is Cash Or Invoice    Train Ticket    15    021007
+    Verify Specific Remark Is Written In The PNR    RIR ENTRY VISA CAN BE SECURED AT ARRIVAL
+
+[SG OS 2nd] Verify That Ferry Tickets Product Behaves Correctly In Other Services Panel And Written in PNR When FOP is Cash or Invoice
+    [Tags]    horton    sg    US461
+    Click Other Services
+    Select Product    FERRY
+    Select Vendor    CARLSON WAGONLIT TRAVEL
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    378282246310005    12    2026
+    Set Vendor Contact    CWT Vendor
+    Set Nett Cost    350.25
+    Set Selling Price    680.23
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Form Of Payment
+    Compute Other Services Fees    0    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    0    2    True    True
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Cash or Invoice    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Compute Other Services Fees    0    2    True    True
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Selling Price
+    Get Commission
+    Get Total Selling Price
+    Set Return Date    3/3/2019
+    Populate Departure Routing    ${EMPTY}    ${EMPTY}    Ferry Ride
+    Populate Return Routing    ${EMPTY}    ${EMPTY}    Ferry Ride
+    Set Passenger ID Value    AA
+    Get Routing Details
+    Get Passenger ID Value
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Train And Ferry Remarks Are Written In PNR When FOP Is Cash Or Invoice    FERRY    14    021007
+    Verify Specific Remark Is Written In The PNR    RIR ENTRY VISA CAN BE SECURED AT ARRIVAL
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK NB OS] Verify That Train Ticket Product Behaves Correctly In Other Services Panel And Written in PNR When FOP is CX
+    [Documentation]    Expected to fail due to Masking/Unmasking of Credit Card
+    [Tags]    horton    hk    US461
+    Create PNR Using Cash As FOP    HK
+    Click Other Services
+    Select Product And Vendor    TRAIN TICKET    CWT CHINA JV-BEIJING
+    Click Service Info Tab
+    Verify Default Form Of Payment Is Correct    Cash or Invoice
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2026
+    Verify Nett Cost Value Is Correct    0
+    Verify Selling Price Value Is Correct    0
+    Verify Commission Fee Value Is Correct    0
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    0
+    Verify Default Value For Departure Fields Are Correct
+    Verify Default Value For Return Fields Are Correct
+    Populate Departure Routing    Hongkong    \    Train Ride
+    Populate Return Routing    \    \    Train Ride
+    Set Passenger ID Value    AA
+    Get Other Services Cost Details
+    Unmask Credit Card Number
+    Get Other Services Form Of Payment Details
+    Get Passenger ID Value
+    Get Routing Details
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number    identifier=hktrain
+    Generate Data For Specific Product    False    P1    15    Train Ticket    TR    000296
+    ...    ${EMPTY}    New
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Train And Ferry Remarks Are Written In PNR When FOP Is Credit Card    TRAIN TICKET    15    000296    HK
+    Verify Specific Remark Is Written In The PNR    RIR ENTRY VISA CAN BE SECURED AT ARRIVAL
+
+[HK AOS] Verify That Train Ticket Product Behaves Correctly In Other Services Panel And Written in PNR When FOP is CX
+    [Tags]    hk    horton    us832
+    Click Other Services
+    Click Amend EO    ${eo_number_hktrain}
+    Get Other Services Cost Details
+    Verify Vendor Contact Value Is Correct    ${EMPTY}
+    Verify Nett Cost Value Is Correct    0
+    Verify Selling Price Value Is Correct    0
+    Verify Commission Fee Value Is Correct    0
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    0
+    Verify Form Of Payment Details Are Correct    Credit Card (CX)    VI    ************1111    12    2026
+    Verify Departure Routing Details Are Correct    Hongkong    \    Train Ride
+    Verify Return Routing Details Are Correct    \    \    Train Ride
+    Verify Exchange Order Number    ${eo_number_hktrain}
+    Populate Service Info Cost Details    Vendor Contact Test    500.00    1500.00
+    Populate Departure Routing    Philippines    Singapore    Train Ride 2y
+    Populate Return Routing    Singapore    Philippines    Train Ride 2x
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Routing Details
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    CWT CHINA JV-BEIJING
+    Verify Address 1 Value Is Correct
+    Verify Address 2 Value Is Correct
+    Verify City Value Is Correct
+    Verify Country Value Is Correct
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    15    Train Ticket    TR    000296
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_hktrain}
+    Retrieve PNR Details From Amadeus
+    Verify That Train And Ferry Remarks Are Written In PNR When FOP Is Credit Card    TRAIN TICKET    15    000296    HK
+    Verify Specific Remark Is Written In The PNR    RIR ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+
+[HK AB OS] Verify That Ferry Ticket Product Behaves Correctly In Other Services Panel And Written in PNR When FOP is CX
+    [Documentation]    Expected to fail due to Masking/Unmasking of Credit Card
+    [Tags]    horton    hk    US461
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    1222
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Air Fare Savings Code Using Default Values
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Click Other Services
+    Select Product    FERRY TICKET
+    Select Vendor    ONE OFF VENDER
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Comment    Verify Default Form Of Payment Is Correct    Credit Card (CC)    AX    378282246310005    12/22
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    378282246310005    12    2022
+    Verify Nett Cost Value Is Correct    0
+    Verify Selling Price Value Is Correct    0
+    Verify Commission Fee Value Is Correct    0
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    0
+    Verify Default Value For Departure Fields Are Correct
+    Verify Default Value For Return Fields Are Correct
+    Set Return Date    3/3/2019
+    Populate Departure Routing    \    \    Ferry Ride
+    Populate Return Routing    \    \    Ferry Ride
+    Set Passenger ID Value    AA
+    Get Commission
+    Get Total Selling Price
+    Unmask Credit Card Number
+    Get Other Services Form Of Payment Details
+    Get Passenger ID Value
+    Get Routing Details
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Train And Ferry Remarks Are Written In PNR When FOP Is Credit Card    FERRY TICKET    14    000810    HK
+    Verify Specific Remark Is Written In The PNR    RIR ENTRY VISA CAN BE SECURED AT ARRIVAL
+
+[HK OS] Verify That Train Ticket Product Behaves Correctly In Other Services Panel And Written in PNR When FOP is Cash or Invoice
+    [Tags]    horton    hk    US461
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    TRAIN TICKET
+    Select Vendor    EGL Tours Company Ltd
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2026
+    Set Vendor Contact    CWT Vendor
+    Set Nett Cost    300
+    Set Selling Price    500
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Form Of Payment
+    Compute Other Services Fees    0    2    False    False    HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    0    2    True    True    HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Cash or Invoice    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Compute Other Services Fees    0    2    True    True    HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Selling Price
+    Get Commission
+    Get Total Selling Price
+    Set Return Date    3/3/2019
+    Populate Departure Routing    ${EMPTY}    ${EMPTY}    Train Ride
+    Populate Return Routing    ${EMPTY}    ${EMPTY}    Train Ride
+    Set Passenger ID Value    ${EMPTY}
+    Get Routing Details
+    Get Passenger ID Value
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Train And Ferry Remarks Are Written In PNR When FOP Is Cash Or Invoice    TRAIN TICKET    15    000317    HK
+    Verify Specific Remark Is Written In The PNR    RIR ENTRY VISA CAN BE SECURED AT ARRIVAL
+
+[HK OS 2nd] Verify That Ferry Ticket Product Behaves Correctly In Other Services Panel And Written in PNR When FOP is Cash or Invoice
+    [Tags]    horton    hk    US461
+    Click Other Services
+    Select Product    FERRY TICKET
+    Select Vendor    JUBILEE INTERNATIONAL TOUR CENTRE LIMITED
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    378282246310005    12    2026
+    Set Vendor Contact    CWT Vendor
+    Set Nett Cost    350
+    Set Selling Price    680
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Form Of Payment
+    Compute Other Services Fees    0    2    False    False    HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    0    2    True    True    HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Cash or Invoice    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Compute Other Services Fees    0    2    True    True    HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Selling Price
+    Get Commission
+    Get Total Selling Price
+    Populate Departure Routing    HongKong111    Philippines111    Ferry Ride
+    Populate Return Routing    ${EMPTY}    ${EMPTY}    Ferry Ride
+    Set Passenger ID Value    AA
+    Get Routing Details
+    Get Passenger ID Value
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Train And Ferry Remarks Are Written In PNR When FOP Is Cash Or Invoice    FERRY TICKET    14    000702    HK
+    Verify Specific Remark Is Written In The PNR    RIR ENTRY VISA CAN BE SECURED AT ARRIVAL
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB OS SG] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments
+    [Tags]    horton    sg    US510    us764
+    Create PNR Using Cash As FOP
+    Retrieve PNR Details From Amadeus    ${current_pnr}    \    False
+    Click Other Services
+    Select Product And Vendor    Car Transfer    BUDGET
+    Verify Service Info Fields    Cash or Invoice    True    SG
+    Verify Nett Cost Value Is Correct    0.00
+    Verify Commission Fee Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    0.00
+    Click Tab In Other Services Panel    Departure From
+    Verify Location Value Is Correct    Airport
+    Verify Description Field Is Optional
+    Verify Location Dropdown Values Are Correct    Airport    Office    Home    Other
+    Verify Departure From Fields Are Displayed
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Description Field Is Mandatory
+    Set Description Value    Harold Test
+    Click Tab In Other Services Panel    Departure To
+    Verify Location Value Is Correct    Airport
+    Verify Description Field Is Optional
+    Verify Location Dropdown Values Are Correct    Airport    Office    Home    Other
+    Verify Departure To Fields Are Displayed
+    Verify Date & Time Is Disabled
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Description Field Is Mandatory
+    Select Location Value    Home
+    Verify Other Text Field Is Not Displayed
+    Verify Description Field Is Mandatory
+    Verify An Error Icon Is Displayed For Date & Time Of Departure To    Please enter Pickup or Return Date and Time
+    Set Description Value    Harold Test
+    Get Current Segments From The PNR
+    Select Flight Value    1
+    Click Tab In Other Services Panel    Arrival From
+    Verify Location Value Is Correct    Airport
+    Verify Description Field Is Optional
+    Verify Location Dropdown Values Are Correct    Airport    Office    Home    Other
+    Verify Arrival From Fields Are Displayed
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Description Field Is Mandatory
+    Select Location Value    Office
+    Verify Other Text Field Is Not Displayed
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Click Tab In Other Services Panel    Arrival To
+    Verify Location Value Is Correct    Airport
+    Verify Description Field Is Optional
+    Verify Location Dropdown Values Are Correct    Airport    Office    Home    Other
+    Verify Arrival To Fields Are Displayed
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Description Field Is Mandatory
+    Verify Date & Time Is Disabled
+    Set Description Value    Harold Test
+    Verify An Error Icon Is Displayed For Date & Time Of Arrival To    Please enter Pickup or Return Date and Time
+    Tick Date & Time Checkbox
+    Get Current Segments From The PNR
+    Select Flight Value    1
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    ${current_pnr}    \    False
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Verify Other Services General Notepad Remarks    Car Transfer
+
+[AB OS SG] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments
+    [Tags]    horton    sg    US510
+    Comment    Set Suite Variable    ${locale}    en-GB
+    Comment    Set Suite Variable    ${gds_switch}    amadeus
+    Comment    Set Suite Variable    ${current_pnr}    UL8FKA
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    MNLDBO    SS1Y1    FXP/S4-5    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Car Transfer    UTS SARA PTE LTD
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTA
+    Get Current Segments From The PNR
+    Click Tab In Other Services Panel    Departure From
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Departure From Fields Are Displayed
+    Set Other Value    j3j3Mown 1$ n0t mY taL3nt - k1nd@
+    Set Description Value    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721
+    Set Tel Value    ABC1234@#$%^&*(
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Verify Tel Value Is Correct    ABC1234@#$%^&*(
+    Select Location Value    Airport
+    Verify Other Text Field Is Not Displayed
+    Verify Description Field Is Optional
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Other Value Is Correct    ${EMPTY}
+    Set Other Value    Other Text
+    Set Description Value    Description Text
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Set Description Value    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721
+    Select Location Value    Other
+    Verify Description Value Is Correct    ${EMPTY}
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Verify Flight Dropdown Values Are Correct
+    Verify Date & Time Is Disabled
+    Verify An Error Icon Is Displayed For Date & Time Of Departure To    Please enter Pickup or Return Date and Time
+    Select Flight Value    ${EMPTY}
+    Click Tab In Other Services Panel    Arrival From
+    Select Location Value    Other
+    Set Other Value    j3j3Mown 1$ n0t mY taL3nt - k1nd@
+    Set Description Value    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721
+    Set Tel Value    ABC1234@#$%^&*(
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Select Location Value    Airport
+    Verify Other Text Field Is Not Displayed
+    Verify Description Field Is Optional
+    Select Location Value    Home
+    Verify Other Text Field Is Not Displayed
+    Verify Description Field Is Mandatory
+    Set Description Value    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721
+    Set Tel Value    ABC1234@#$%^&*(
+    Click Tab In Other Services Panel    Arrival To
+    Select Location Value    Other
+    Set Other Value    j3j3Mown 1$ n0t mY taL3nt - k1nd@
+    Set Description Value    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Verify Flight Dropdown Values Are Correct
+    Verify Date & Time Is Disabled
+    Verify An Error Icon Is Displayed For Date & Time Of Arrival To    Please enter Pickup or Return Date and Time
+    Tick Date & Time Checkbox
+    Verify No Error Icon Is Displayed For Date & Time Of Arrival To
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTA
+    Select Flight Value    ${EMPTY}
+    Click Tab In Other Services Panel    Departure To
+    Verify No Error Icon Is Displayed For Date & Time Of Departure To
+    Click Tab In Other Services Panel    Arrival To
+    Untick Date & Time Checkbox
+    Verify An Error Icon Is Displayed For Date & Time Of Arrival To    Please enter Pickup or Return Date and Time
+    Click Tab In Other Services Panel    Departure To
+    Verify An Error Icon Is Displayed For Date & Time Of Departure To    Please enter Pickup or Return Date and Time
+    Tick Date & Time Checkbox
+    Verify No Error Icon Is Displayed For Date & Time Of Departure To
+    Click Tab In Other Services Panel    Arrival To
+    Verify No Error Icon Is Displayed For Date & Time Of Arrival To
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2020
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+
+[OS SG] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments
+    [Tags]    horton    sg    US510    US764
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Car Transfer    UTS SARA PTE LTD
+    Set Vendor Contact    Test Automation
+    Set Nett Cost    taL3nt - k1nd@
+    Set Selling Price    j3j3Mown 1$ n0t
+    Verify An Error Icon Is Displayed For Selling Price    Not a valid decimal number
+    Verify An Error Icon Is Displayed For Nett Cost    Not a valid decimal number
+    Set Nett Cost    500.00
+    Set Selling Price    1500.99
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    7    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For GST
+    Compute Other Services Fees    7    2    true
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Compute Other Services Fees    7    2    true
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    7    2    true    true
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Untick CWT Absorb Checkbox For GST
+    Untick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    7    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Tick Date & Time Checkbox
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Verify Other Services General Notepad Remarks    Car Transfer
+
+[OS 2nd SG] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments
+    [Tags]    horton    sg    US510
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Car Transfer    Imperial Chauffeur Services Pte Ltd
+    Populate service info cost details    TestAutomation1    200    250
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Get Other Services Cost Details
+    Compute Other Services Fees    7    2
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For GST
+    Set Nett Cost    200
+    Set Selling Price    2500.99
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    7    2    true
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    7    2    true    true
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Set Nett Cost    200
+    Set Selling Price    250
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    7    2    true    true
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Click Tab In Other Services Panel    Departure From
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Set Tel Value    9994442221
+    Get Location Value    identifier=departure_from
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Select Flight Value
+    Get Flight Value    identifier=departure_to
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=departure_to
+    Get Location Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival From
+    Select Location Value    Office
+    Set Tel Value    9994442225
+    Get Location Value    identifier=arrival_from
+    Click Tab In Other Services Panel    Arrival To
+    Select Location Value    Office
+    Select Flight Value
+    Get Flight Value    identifier=arrival_to
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=arrival_to
+    Get GST Amount Value
+    Get Location Value    identifier=departure_from
+    Set Passenger ID    P1
+    Click Tab In Other Services Panel    Vendor Info
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    DRIVER TO CALL PASSENGER TO RECONFIRM TRANSFER
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify That Car Remarks Are Written In PNR When FOP is Cash Or Invoice    Car Transfer    Imperial Chauffeur Services Pte Ltd    Cash or Invoice    SG
+    [Teardown]    Comment    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG AOS] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments When FOP is Cash or Invoice
+    [Tags]    sg    horton    us935
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    Service Info
+    Verify Vendor Contact Value Is Correct    TestAutomation1
+    Verify Nett Cost Value Is Correct    200.00
+    Verify Selling Price Value Is Correct    250.00
+    Verify Commission Fee Value Is Correct    33.64
+    Verify GST Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    233.64
+    Verify Form Of Payment Details Are Correct    Cash or Invoice
+    Click Tab In Other Services Panel    Departure From
+    Verify Departure From Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010    9994442221
+    Get Location Value    identifier=departure_from
+    Click Tab In Other Services Panel    Departure To
+    Verify Departure To Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010
+    Get Location Value    identifier=departure_to
+    Get Date & Time Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival From
+    Verify Arrival From Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010    9994442225
+    Click Tab In Other Services Panel    Arrival To
+    Verify Arrival To Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010
+    Verify Exchange Order Number    ${eo_number}
+    Verify Passenger Id    P1
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    Imperial Chauffeur Services Pte Ltd
+    Verify Address 1 Value Is Correct    317 Outram Road #02-40/41/42 \
+    Verify Address 2 Value Is Correct    Concorde Shopping Centre Singapore 169075
+    Verify City Value Is Correct    singapore
+    Verify Country Value Is Correct    SG
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    DRIVER TO CALL PASSENGER TO RECONFIRM TRANSFER
+    Click Service Info Tab
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Commission
+    Get GST
+    Get Merchant Fee In Other Services
+    Get Total Selling Price
+    Get Form Of Payment
+    Get Passenger ID Value
+    Get Checkbox Status of CWT Absorb For Mechant Fee
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify That Car Remarks Are Written In PNR When FOP is Cash Or Invoice    Car Transfer    Imperial Chauffeur Services Pte Ltd    Cash or Invoice    SG
+
+[SG AOS] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments When FOP is CX
+    [Tags]    sg    horton    us935
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Service Info Tab
+    Verify Vendor Contact Value Is Correct    TestAutomation1
+    Verify Nett Cost Value Is Correct    200.00
+    Verify Selling Price Value Is Correct    250.00
+    Verify Commission Fee Value Is Correct    33.64
+    Verify GST Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    233.64
+    Verify Form Of Payment Details Are Correct    Cash or Invoice
+    Click Tab In Other Services Panel    Departure From
+    Verify Departure From Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010    9994442221
+    Get Location Value    identifier=departure_from
+    Click Tab In Other Services Panel    Departure To
+    Get Location Value    identifier=departure_to
+    Get Date & Time Value    identifier=departure_to
+    Verify Departure To Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010
+    Click Tab In Other Services Panel    Arrival From
+    Verify Arrival From Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010    9994442225
+    Click Tab In Other Services Panel    Arrival To
+    Verify Arrival To Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010
+    Verify Exchange Order Number    ${eo_number}
+    Verify Passenger Id    P1
+    Click Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Verify Vendor Value Is Correct    Imperial Chauffeur Services Pte Ltd
+    Verify Address 1 Value Is Correct    317 Outram Road #02-40/41/42 \
+    Verify Address 2 Value Is Correct    Concorde Shopping Centre Singapore 169075
+    Verify City Value Is Correct    singapore
+    Verify Country Value Is Correct    SG
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    DRIVER TO CALL PASSENGER TO RECONFIRM TRANSFER
+    Click Tab In Other Services Panel    Service Info
+    Set Nett Cost    500
+    Set Selling Price    600
+    Verify Commission Fee Value Is Correct    60.75
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    560.75
+    Set Passenger ID Value    T1
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Commission
+    Get GST
+    Get Merchant Fee In Other Services
+    Get Total Selling Price
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2020
+    Comment    Get Form Of Payment
+    Get Other Services Form Of Payment Details
+    Get Passenger ID Value
+    Get Checkbox Status of CWT Absorb For Mechant Fee
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify That Car Remarks Are Written In PNR When FOP is CX    Car Transfer    Imperial Chauffeur Services Pte Ltd    SG
+
+[NB OS HK] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments
+    [Tags]    horton    hk    US459
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC HK OS AUTOMATION    BEAR    HKOTHERS
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP    3
+    Book Active Car Segment    SYD
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Car Rental Prepaid    FAR EAST RENT A CAR LTD
+    Verify Nett Cost Value Is Correct    0
+    Verify Commission Fee Value Is Correct    0
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    0
+    Click Tab In Other Services Panel    Departure From
+    Verify Location Value Is Correct    Airport
+    Verify Description Field Is Optional
+    Verify Location Dropdown Values Are Correct    Airport    Office    Home    Other
+    Verify Departure From Fields Are Displayed
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Description Field Is Mandatory
+    Set Description Value    Harold Test
+    Click Tab In Other Services Panel    Departure To
+    Verify Location Value Is Correct    Airport
+    Verify Description Field Is Optional
+    Verify Location Dropdown Values Are Correct    Airport    Office    Home    Other
+    Verify Departure To Fields Are Displayed
+    Verify Date & Time Is Disabled
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Description Field Is Mandatory
+    Select Location Value    Home
+    Verify Other Text Field Is Not Displayed
+    Verify Description Field Is Mandatory
+    Verify An Error Icon Is Displayed For Date & Time Of Departure To    Please enter Pickup or Return Date and Time
+    Set Description Value    Harold Test
+    Select Flight Value    ${EMPTY}
+    Click Tab In Other Services Panel    Arrival From
+    Verify Location Value Is Correct    Airport
+    Verify Description Field Is Optional
+    Verify Location Dropdown Values Are Correct    Airport    Office    Home    Other
+    Verify Arrival From Fields Are Displayed
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Description Field Is Mandatory
+    Select Location Value    Office
+    Verify Other Text Field Is Not Displayed
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Click Tab In Other Services Panel    Arrival To
+    Verify Location Value Is Correct    Airport
+    Verify Description Field Is Optional
+    Verify Location Dropdown Values Are Correct    Airport    Office    Home    Other
+    Verify Arrival To Fields Are Displayed
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Description Field Is Mandatory
+    Verify Date & Time Is Disabled
+    Set Description Value    Harold Test
+    Verify An Error Icon Is Displayed For Date & Time Of Arrival To    Please enter Pickup or Return Date and Time
+    Tick Date & Time Checkbox
+    Select Flight Value    ${EMPTY}
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+
+[AB OS HK] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments
+    [Tags]    horton    hk    US459
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    MNLDBO    SS1Y1    FXP/S3-4    6    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Car Rental Prepaid    FIRST MARKETING
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTA
+    Get Current Segments From The PNR
+    Click Tab In Other Services Panel    Departure From
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Departure From Fields Are Displayed
+    Set Other Value    j3j3Mown 1$ n0t mY taL3nt - k1nd@
+    Set Description Value    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721
+    Set Tel Value    ABC1234@#$%^&*(
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Verify Tel Value Is Correct    ABC1234@#$%^&*(
+    Select Location Value    Airport
+    Verify Other Text Field Is Not Displayed
+    Verify Description Field Is Optional
+    Select Location Value    Other
+    Verify Other Text Field Is Displayed
+    Verify Other Value Is Correct    ${EMPTY}
+    Set Other Value    Other Text
+    Set Description Value    Description Text
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Set Description Value    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721
+    Select Location Value    Other
+    Verify Description Value Is Correct    ${EMPTY}
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Verify Flight Dropdown Values Are Correct
+    Verify Date & Time Is Disabled
+    Verify An Error Icon Is Displayed For Date & Time Of Departure To    Please enter Pickup or Return Date and Time
+    Select Flight Value    ${EMPTY}
+    Get Flight Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival From
+    Select Location Value    Other
+    Set Other Value    j3j3Mown 1$ n0t mY taL3nt - k1nd@
+    Set Description Value    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721
+    Set Tel Value    ABC1234@#$%^&*(
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Select Location Value    Airport
+    Verify Other Text Field Is Not Displayed
+    Verify Description Field Is Optional
+    Select Location Value    Home
+    Verify Other Text Field Is Not Displayed
+    Verify Description Field Is Mandatory
+    Set Description Value    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721
+    Set Tel Value    ABC1234@#$%^&*(
+    Click Tab In Other Services Panel    Arrival To
+    Select Location Value    Other
+    Set Other Value    j3j3Mown 1$ n0t mY taL3nt - k1nd@
+    Set Description Value    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Verify Flight Dropdown Values Are Correct
+    Verify Date & Time Is Disabled
+    Verify An Error Icon Is Displayed For Date & Time Of Arrival To    Please enter Pickup or Return Date and Time
+    Tick Date & Time Checkbox
+    Verify No Error Icon Is Displayed For Date & Time Of Arrival To
+    Select Flight Value    ${EMPTY}
+    Get Flight Value    identifier=arrival_to
+    Click Tab In Other Services Panel    Departure To
+    Verify No Error Icon Is Displayed For Date & Time Of Departure To
+    Click Tab In Other Services Panel    Arrival To
+    Untick Date & Time Checkbox
+    Verify An Error Icon Is Displayed For Date & Time Of Arrival To    Please enter Pickup or Return Date and Time
+    Click Tab In Other Services Panel    Departure To
+    Verify An Error Icon Is Displayed For Date & Time Of Departure To    Please enter Pickup or Return Date and Time
+    Tick Date & Time Checkbox
+    Get Location Value    identifier=departure_to
+    Get Date & Time Value    identifier=departure_to
+    Verify No Error Icon Is Displayed For Date & Time Of Departure To
+    Click Tab In Other Services Panel    Arrival To
+    Verify No Error Icon Is Displayed For Date & Time Of Arrival To
+    Click Service Info Tab
+    Set Vendor Contact    TestAutomation1
+    Set Nett Cost    200
+    Set Selling Price    250
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2020
+    Verify Commission Fee Value Is Correct    55
+    Verify Merchant Fee Value Is Correct    5
+    Verify Total Selling Price Value Is Correct    255
+    Set Passenger ID Value    P1
+    Get Passenger ID Value
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    PASSENGER IS VIP
+    Click Service Info Tab
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Commission
+    Get GST
+    Get Merchant Fee In Other Services
+    Get Total Selling Price
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get Checkbox Status of CWT Absorb For Mechant Fee
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+
+[HK AOS] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments When FOP is CX
+    [Tags]    sg    horton    us936
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    Service Info
+    Verify Vendor Contact Value Is Correct    TestAutomation1
+    Verify Nett Cost Value Is Correct    200
+    Verify Selling Price Value Is Correct    250
+    Verify Commission Fee Value Is Correct    55
+    Verify Merchant Fee Value Is Correct    5
+    Verify Total Selling Price Value Is Correct    255
+    Verify FOP Details Are Correct For CC Or CX    Credit Card (CX)    VI    ************1111    12    2020
+    Click Tab In Other Services Panel    Departure From
+    Verify Departure From Tab Field Values    Other    Description Text    9995559992
+    Get Location Value    identifier=departure_from
+    Click Tab In Other Services Panel    Departure To
+    Verify Departure To Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010
+    Get Location Value    identifier=departure_to
+    Get Date & Time Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival From
+    Verify Arrival From Tab Field Values    Home    j3j3Mown 1$ n0t mY taL3nt - !@#$%^&*()@#$%^&*( - 36218763218763721    ABC1234@#$%^&*(
+    Click Tab In Other Services Panel    Arrival To
+    Verify Arrival To Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010
+    Verify Exchange Order Number    ${eo_number}
+    Verify Passenger Id    P1
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    FIRST MARKETING
+    Verify Address 1 Value Is Correct    OFFICE A & B,14/F, KAM WING COMM BLDG
+    Verify Address 2 Value Is Correct    28-30 MINDEN AVENUE
+    Verify City Value Is Correct    TSIMSHATSUI
+    Verify Country Value Is Correct    KOWLOON
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    PASSENGER IS VIP
+    Click Service Info Tab
+    Set Nett Cost    300
+    Set Selling Price    350
+    Verify Commission Fee Value Is Correct    57
+    Verify Merchant Fee Value Is Correct    7
+    Verify Total Selling Price Value Is Correct    357
+    Get Passenger ID Value
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Commission
+    Get GST
+    Get Merchant Fee In Other Services
+    Get Total Selling Price
+    Get Form Of Payment
+    Get Card Vendor Type
+    Get Card Number
+    Get Expiry Month In Other Services
+    Get Expiry Year In Other Services
+    Get Checkbox Status of CWT Absorb For Mechant Fee
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify That Car Remarks Are Written In PNR When FOP is CX    Car Rental Prepaid    FIRST MARKETING    HK
+
+[OS HK] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments
+    [Tags]    horton    hk    US459
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    LIMOUSINE    UOB-SNOWDEN CHAN
+    Set Vendor Contact    Test Automation
+    Set Nett Cost    taL3nt - k1nd@
+    Set Selling Price    j3j3Mown 1$ n0t
+    Verify An Error Icon Is Displayed For Selling Price    Not a valid decimal number
+    Verify An Error Icon Is Displayed For Nett Cost    Not a valid decimal number
+    Set Nett Cost    500
+    Set Selling Price    1500
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    0    2    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Compute Other Services Fees    0    2    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    0    2    false    true    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Departure From
+    Select Location Value    Office
+    Get Location Value    identifier=departure_from
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Set Tel Value    9994442221
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Get Location Value    identifier=departure_to
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Select Flight Value
+    Get Flight Value    identifier=departure_to
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival From
+    Select Location Value    Office
+    Set Tel Value    9994442225
+    Click Tab In Other Services Panel    Arrival To
+    Select Location Value    Office
+    Select Flight Value
+    Get Flight Value    identifier=arrival_to
+    Tick Date & Time Checkbox
+    Get Location Value    identifier=arrival_to
+    Get Date & Time Value    identifier=arrival_to
+    Set Passenger ID Value    P1
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    PASSENGER IS VIP
+    Click Service Info Tab
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Commission
+    Get GST
+    Get Merchant Fee In Other Services
+    Get Total Selling Price
+    Get Form Of Payment
+    Get Passenger ID Value
+    Get Checkbox Status of CWT Absorb For Mechant Fee
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number    identifier=_car
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify That Car Remarks Are Written In PNR When FOP is Cash Or Invoice    LIMOUSINE    UOB-SNOWDEN CHAN    Cash or Invoice    HK
+
+[HK AOS] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments When FOP is Cash or Invoice
+    [Tags]    sg    horton    us936
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Service Info Tab
+    Verify Vendor Contact Value Is Correct    Test Automation
+    Verify Nett Cost Value Is Correct    500
+    Verify Selling Price Value Is Correct    1500
+    Verify Commission Fee Value Is Correct    1000
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    1500
+    Verify Form Of Payment Details Are Correct    Cash or Invoice
+    Click Tab In Other Services Panel    Departure From
+    Verify Departure From Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010    9994442221
+    Get Location Value    identifier=departure_from
+    Click Tab In Other Services Panel    Departure To
+    Verify Departure To Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010
+    Get Location Value    identifier=departure_to
+    Get Date & Time Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival From
+    Verify Arrival From Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010    9994442225
+    Click Tab In Other Services Panel    Arrival To
+    Verify Arrival To Tab Field Values    Office    31st Floor Zuellig, Philippines, 2010
+    Verify Exchange Order Number    ${eo_number}
+    Verify Passenger Id    P1
+    Click Vendor Info Tab
+    Comment    Verify Vendor Value Is Correct    Leadtime International Limousine Service Co. Ltd
+    Verify Vendor Value Is Correct    UOB-SNOWDEN CHAN
+    Comment    Verify Address 1 Value Is Correct    Unit 1410 14/F \ Hollywood Plaza
+    Verify Address 1 Value Is Correct    ${Empty}
+    Comment    Verify Address 2 Value Is Correct    610 Nathan Road Monkok
+    Verify Address 2 Value Is Correct    ${Empty}
+    Verify City Value Is Correct    HONG KONG
+    Comment    Verify City Value Is Correct    ${Empty}
+    Verify Country Value Is Correct    HONG KONG
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    PASSENGER IS VIP
+    Click Service Info Tab
+    Set Nett Cost    500
+    Set Selling Price    600
+    Verify Commission Fee Value Is Correct    100
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    600
+    Set Passenger ID Value    T1
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Commission
+    Get GST
+    Get Merchant Fee In Other Services
+    Get Total Selling Price
+    Get Form Of Payment
+    Get Passenger ID Value
+    Get Checkbox Status of CWT Absorb For Mechant Fee
+    Click Tab In Other Services Panel    Departure From
+    Select Location Value    Other
+    Set Other Value    Other
+    Set Description Value    Description Text
+    Get Location Value    identifier=departure_from
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify That Car Remarks Are Written In PNR When FOP is Cash Or Invoice    LIMOUSINE    UOB-SNOWDEN CHAN    Cash or Invoice    HK
+
+[OS 2nd HK] Verify That Service Info Fields of Car Transfer Behaves Correctly For Air, Car And Hotel Segments
+    [Tags]    horton    hk    US459
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    LIMOUSINE    Vigor Limousines Services Ltd
+    Set Vendor Contact    Test Automation
+    Set Nett Cost    500.00
+    Set Selling Price    1500.99
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    0    2    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Set Nett Cost    250
+    Set Selling Price    2500
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    0    2    false    true    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Set Nett Cost    3000
+    Set Selling Price    2500
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    0    2    false    true    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Verify Description Value Is Correct    31st Floor Zuellig, Philippines, 2010
+    Tick Date & Time Checkbox
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2020
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG][OS] Verify General Remarks Are Written for Car Transfer Product
+    [Tags]    US764
+    Create PNR Using Credit Card As FOP    SG
+    Click Other Services
+    Select Product And Vendor    Car Transfer    CITYCAB PTE LTD
+    Populate Service Info Cost Details    Test Automation    500    550
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Departure From
+    Select Location Value    Office
+    Get Location Value    identifier=departure_from
+    Get Description Value    identifier=departure_from
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Get Location Value    identifier=departure_to
+    Get Description Value    identifier=departure_to
+    Select Flight Value
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival To
+    Select Location Value    Office
+    Get Location Value    identifier=departure_from
+    Get Description Value    identifier=arrival_to
+    Select Flight Value
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=arrival_to
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=RTY
+    Validate Passive Segments    Car Transfer    CITYCAB PTE LTD    SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    Departure From
+    Select Location Value    Office
+    Get Location Value    identifier=departure_from
+    Get Description Value    identifier=departure_from
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Other
+    Set Other Value    Other
+    Set Description Value    Other Description Text
+    Get Location Value    identifier=departure_to
+    Get Description Value    identifier=departure_to
+    Select Flight Value
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival To
+    Select Location Value    Office
+    Get Location Value    identifier=departure_from
+    Get Description Value    identifier=arrival_to
+    Select Flight Value
+    UnTick Date & Time Checkbox
+    Get Date & Time Value    identifier=arrival_to
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=RTY
+    Validate Passive Segments    Car Transfer    CITYCAB PTE LTD    SG
+
+[SG][OS] Verify General Remarks Are Written for Train Ticket Product
+    [Tags]    US764
+    Create PNR Using Credit Card As FOP    SG
+    Click Other Services
+    Select Product And Vendor    Train Tickets    DYNASTY TRAVEL INTL PTE LTD
+    Populate Service Info Cost Details    Test Automation    500    550
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Verify Total Selling Price Value Is Correct    550.00
+    Populate Departure Routing    Makati    Manila    Train Journey
+    Set Depart Date    9/21/22
+    Populate Return Routing    Manila    Makati    Train Journey
+    Set Passenger ID Value    P1
+    Set Return Date    9/28/22
+    Get Routing Details
+    Get Passenger ID Value
+    Get Depart Date
+    Get Depart Origin
+    Get Depart Destination
+    Get Return Date
+    Get Class Cabin
+    Get Selling Price
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=RTY
+    Validate Passive Segments    Train Tickets    DYNASTY TRAVEL INTL PTE LTD    SG
+
+[HK][OS] Verify General Remarks Are Written for Discount Product
+    [Tags]    US764
+    Create PNR Using Cash As FOP    HK
+    Click Other Services
+    Select Product And Vendor    DISCOUNT    CWT
+    Set Vendor Contact    Test Automation
+    Set Nett Cost    500
+    Set Selling Price    1500
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Get Date Value
+    Get Total Selling Price
+    Click Ticket Type Tab
+    Select Ticket Type    BSP (with File Fare)
+    Set Fare No    67585456
+    Set Passenger ID Value    A1
+    Select Air Segment    2
+    Click Remarks Tab
+    Select Exchange Order Remarks    CANCELLATION IS NOT ALLOWED
+    Select Itinerary Remarks    REFUND NOT ALLOWED
+    Click Vendor Info Tab
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=RTR
+    Verify Other Services General Notepad Remarks    DISCOUNT
+
+[HK][OS] Verify General Remarks Are Written For Car Rental Prepaid
+    [Tags]    US764
+    Create PNR Using Credit Card As FOP    HK
+    Retrieve PNR Details    ${current_pnr}
+    Get Current Segments From The PNR
+    Click Other Services
+    Select Product And Vendor    Car Rental Prepaid    FAR EAST RENT A CAR LTD
+    Populate Service Info Cost Details    Test Automation    600    700
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Departure From
+    Select Location Value    Home
+    Set Description Value    Description1
+    Get Location Value    identifier=departure_from
+    Get Description Value    identifier=departure_from
+    Set Tel Value    9999999999
+    Set Passenger ID Value    P5
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Get Location Value    identifier=departure_to
+    Get Description Value    identifier=departure_to
+    Select Flight Value    1
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival From
+    Get Location Value    identifier=arrival_from
+    Get Description Value    identifier=arrival_from
+    Set Tel Value    8888888888
+    Click Tab In Other Services Panel    Arrival To
+    Select Location Value    Office
+    Get Location Value    identifier=arrival_to
+    Get Description Value    identifier=arrival_to
+    Select Flight Value    1
+    UnTick Date & Time Checkbox
+    Get Date & Time Value    identifier=arrival_to
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Get Total Selling Price
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Comment    Validate Passive Segments    Car Rental Prepaid    FAR EAST RENT A CAR LTD    HK
+    Verify Other Services General Notepad Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    Departure From
+    Select Location Value    Office
+    Get Location Value    identifier=departure_from
+    Get Description Value    identifier=departure_from
+    Set Tel Value    9999999999
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Get Location Value    identifier=departure_to
+    Get Description Value    identifier=departure_to
+    Select Flight Value    1
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival From
+    Get Location Value    identifier=arrival_from
+    Get Description Value    identifier=arrival_from
+    Set Tel Value    8888888888
+    Click Tab In Other Services Panel    Arrival To
+    Select Location Value    Office
+    Get Location Value    identifier=arrival_to
+    Get Description Value    identifier=arrival_to
+    Select Flight Value    1
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=arrival_to
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Get Total Selling Price
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Other Services General Notepad Remarks
+
+[HK][OS] Verify General Remarks Are Written For Limousine Product
+    [Tags]    US764
+    Create PNR Using Credit Card As FOP    HK
+    Retrieve PNR Details    ${current_pnr}
+    Get Current Segments From The PNR
+    Click Other Services
+    Select Product And Vendor    LIMOUSINE    DELUXE COMPANY
+    Populate Service Info Cost Details    Test Automation    700    800
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Departure From
+    Select Location Value    Office
+    Get Location Value    identifier=departure_from
+    Get Description Value    identifier=departure_from
+    Set Tel Value    9999999999
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Get Location Value    identifier=departure_to
+    Get Description Value    identifier=departure_to
+    Select Flight Value    1
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=departure_to
+    Click Tab In Other Services Panel    Arrival From
+    Get Location Value    identifier=arrival_from
+    Get Description Value    identifier=arrival_from
+    Set Tel Value    8888888888
+    Click Tab In Other Services Panel    Arrival To
+    Select Location Value    Office
+    Get Location Value    identifier=arrival_to
+    Get Description Value    identifier=arrival_to
+    Select Flight Value    1
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=arrival_to
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Get Total Selling Price
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Other Services General Notepad Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Tab In Other Services Panel    Departure To
+    Select Location Value    Office
+    Get Location Value    identifier=departure_to
+    Get Description Value    identifier=departure_to
+    Select Flight Value    1
+    UnTick Date & Time Checkbox
+    Click Tab In Other Services Panel    Arrival From
+    Get Location Value    identifier=arrival_from
+    Get Description Value    identifier=arrival_from
+    Set Tel Value    8888888888
+    Click Tab In Other Services Panel    Arrival To
+    Select Location Value    Airport
+    Get Location Value    identifier=arrival_to
+    Get Description Value    identifier=arrival_to
+    Select Flight Value    1
+    Tick Date & Time Checkbox
+    Get Date & Time Value    identifier=arrival_to
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Get Total Selling Price
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Other Services General Notepad Remarks
+
+[HK][OS] Verify General Remarks Are Written for Train Ticket Product
+    [Tags]    US764
+    Create PNR Using Credit Card As FOP    HK
+    Retrieve PNR Details    ${current_pnr}
+    Get Current Segments From The PNR
+    Click Other Services
+    Select Product And Vendor    TRAIN TICKET    JAL SATELLITE TRAVEL CO LTD
+    Populate Service Info Cost Details    Test Automation    1000    1100
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Verify Total Selling Price Value Is Correct    1100
+    Populate Departure Routing    Makati    Manila    Train Journey
+    Set Depart Date    10/22/18
+    Populate Return Routing    Manila    Makati    Train Journey
+    Set Passenger ID Value    P5
+    Set Return Date    10/28/18
+    Get Routing Details
+    Get Passenger ID Value
+    Get Depart Date
+    Get Depart Origin
+    Get Depart Destination
+    Get Return Date
+    Get Class Cabin
+    Get Selling Price
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Other Services General Notepad Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Set Depart Date    10/24/18
+    Populate Return Routing    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Get Passenger ID Value
+    Get Depart Date
+    Get Depart Origin
+    Get Depart Destination
+    Get Return Date
+    Get Class Cabin
+    Get Selling Price
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Other Services General Notepad Remarks
+
+[HK][OS] Verify General Remarks Are Written for Ferry Ticket product
+    [Tags]    US764
+    Create PNR Using Credit Card As FOP    HK
+    Retrieve PNR Details    ${current_pnr}
+    Get Current Segments From The PNR
+    Click Other Services
+    Select Product And Vendor    FERRY TICKET    NEW WORLD FIRST TRAVEL SERVICES LIMITED
+    Populate Service Info Cost Details    Test Automation    1000    1100
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Verify Total Selling Price Value Is Correct    1100
+    Populate Departure Routing    Makati    Manila    Train Journey
+    Set Depart Date    10/22/18
+    Populate Return Routing    Manila    Makati    Train Journey
+    Set Passenger ID Value    P5
+    Set Return Date    10/28/18
+    Get Routing Details
+    Get Passenger ID Value
+    Get Depart Date
+    Get Depart Origin
+    Get Depart Destination
+    Get Return Date
+    Get Class Cabin
+    Get Selling Price
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Other Services General Notepad Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Set Depart Date    10/24/18
+    Populate Return Routing    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Get Passenger ID Value
+    Get Depart Date
+    Get Depart Origin
+    Get Depart Destination
+    Get Return Date
+    Get Class Cabin
+    Get Selling Price
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus
+    Verify Other Services General Notepad Remarks
+
+[SG][OS] Verify General Remarks Are Written For Ferry Product
+    [Tags]    US764
+    Create PNR Using Credit Card As FOP    SG
+    Click Other Services
+    Select Product And Vendor    FERRY    CARLSON WAGONLIT TRAVEL
+    Populate Service Info Cost Details    Test Automation    1000    1200
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Verify Total Selling Price Value Is Correct    1200
+    Populate Departure Routing    Makati    Manila    Train Journey
+    Set Depart Date    9/22/18
+    Populate Return Routing    Manila    Makati    Train Journey
+    Set Passenger ID Value    P5
+    Set Return Date    9/28/18
+    Get Routing Details
+    Get Passenger ID Value
+    Get Depart Date
+    Get Depart Origin
+    Get Depart Destination
+    Get Return Date
+    Get Class Cabin
+    Get Selling Price
+    Click Remarks Tab
+    Select Itinerary Remarks    ENTRY VISA CAN BE SECURED AT ARRIVAL
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=RTY
+    Validate Passive Segments    FERRY    CARLSON WAGONLIT TRAVEL    HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Eo    ${eo_number}
+    Set Depart Date    9/24/18
+    Populate Return Routing    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Get Passenger ID Value
+    Get Depart Date
+    Get Depart Origin
+    Get Depart Destination
+    Get Return Date
+    Get Class Cabin
+    Get Selling Price
+    Click Vendor Info Tab
+    Get Contact No from Vendor Info Tab
+    Click Service Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    FALSE    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=RTY
+    Validate Passive Segments    FERRY    CARLSON WAGONLIT TRAVEL    SG
+
+[HK][OS] Validate notepad remarks generated in Account Line for Insurance product
+    [Tags]    horton    hk    us764
+    Create PNR Using Credit Card As FOP    HK
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    INSURANCE    FEDERAL INSURANCE COMPANY
+    Populate Service Info With Values    Automation Test    700    800    Credit Card (CC)    AX    378282246310005
+    ...    12    2026    Federal Insurance    Federal Insurance
+    Click Insurance Tab
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    ELLY
+    Set Relationship    Self
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT Zueling Building
+    Click Add
+    Set Name    Binay
+    Set Relationship    Friend
+    Set Premium Amount    20000.0999
+    Click Add
+    Get Plan Selected
+    Get All Names In Insured Grid
+    Get Relationship
+    Get Insuree Address
+    Get Relationship
+    Get Premium Amount
+    Get Geographical Area
+    Get Number Of Days
+    Get From Date
+    Get All Record In Insured Grid
+    Get Relation And Premium Details In Insured Grid
+    Click Service Info Tab
+    Get FOP Vendor Value
+    Get Other Services Form Of Payment Details
+    Get Total Selling Price
+    Get Commision Value
+    Calculate Cost
+    Click Remarks Tab
+    Select Itinerary Remarks    REFUND NOT ALLOWED
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=rtr
+    Verify Other Services General Notepad Remarks    INSURANCE
+    Verify Insurance General Remarks    INSURANCE
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Service Info Tab
+    Verify Vendor Contact Value Is Correct    Automation Test
+    Verify Nett Cost Value Is Correct    700
+    Verify Selling Price Value Is Correct    800
+    Verify Commission Fee Value Is Correct    100
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    800
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Get Other Services Form Of Payment Details
+    Click Insurance Tab
+    Select Geographical Area    ${EMPTY}
+    Set Number Of Days    ${EMPTY}
+    Set Insuree Address    ${EMPTY}
+    Set Name    Binay
+    Set Relationship    Friend
+    Set Premium Amount    20000.0999
+    Click Add
+    Get Plan Selected
+    Get All Names In Insured Grid
+    Get Relationship
+    Get Insuree Address
+    Get Relationship
+    Get Premium Amount
+    Get Geographical Area
+    Get Number Of Days
+    Get From Date
+    Get All Record In Insured Grid
+    Get Relation And Premium Details In Insured Grid
+    Click Service Info Tab
+    Get Total Selling Price
+    Get Commision Value
+    Calculate Cost
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=rtr
+    Verify Other Services General Notepad Remarks    INSURANCE
+    Verify Insurance General Remarks    INSURANCE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG][OS] Validate notepad remarks generated in Account Line for Insurance product
+    [Tags]    horton    sg    us764
+    Create PNR Using Credit Card As FOP    SG
+    Click Other Services
+    Select Product And Vendor    Insurance    UNITED OVERSEAS INSURANCE LTD
+    Select Plan    Single Trip Plan
+    Populate Service Info With Values    Automation Test    700.67    800.32    Credit Card (CC)    AX    378282246310005
+    ...    12    2026    Federal Insurance    Federal Insurance
+    Click Insurance Tab
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    ELLY
+    Set Relationship    Self
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT Zueling Building
+    Click Add
+    Set Name    Binay
+    Set Relationship    Friend
+    Set Premium Amount    20000.0999
+    Click Add
+    Get Plan Selected
+    Get All Names In Insured Grid
+    Get Relationship
+    Get Insuree Address
+    Get Relationship
+    Get Premium Amount
+    Get Geographical Area
+    Get Number Of Days
+    Get From Date
+    Get All Record In Insured Grid
+    Get Relation And Premium Details In Insured Grid
+    Click Service Info Tab
+    Get FOP Vendor Value
+    Get Other Services Form Of Payment Details
+    Get Total Selling Price
+    Get Commision Value
+    Calculate Cost    SG
+    Click Remarks Tab
+    Select Itinerary Remarks    AATEST REMARK
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=rtr
+    Verify Other Services General Notepad Remarks    INSURANCE
+    Verify Insurance General Remarks    INSURANCE
+    Click Other Services
+    Click Amend Eo    ${eo_number}
+    Click Service Info Tab
+    Verify Vendor Contact Value Is Correct    Automation Test
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Get Other Services Form Of Payment Details
+    Click Insurance Tab
+    Select Geographical Area    Asean
+    Set Number Of Days    11
+    Set Insuree Address    Test Address
+    Set Name    Binay
+    Set Relationship    Friend
+    Set Premium Amount    20000.0999
+    Click Add
+    Get Plan Selected
+    Get All Names In Insured Grid
+    Get Relationship
+    Get Insuree Address
+    Get Relationship
+    Get Premium Amount
+    Get Geographical Area
+    Get Number Of Days
+    Get From Date
+    Get All Record In Insured Grid
+    Get Relation And Premium Details In Insured Grid
+    Click Service Info Tab
+    Get Total Selling Price
+    Get Commision Value
+    Calculate Cost    SG
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details From Amadeus    command=rtr
+    Verify Other Services General Notepad Remarks    INSURANCE
+    Verify Insurance General Remarks    INSURANCE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That Accounting Lines For Other Services With GST Are Written When FOP Is CX And BTA Description Is Blank For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Populate Air Fare Savings Code    RF - Restricted Fare Accepted    P - Passenger Declined Restricted Fare    CW - Business CWT Nett Fare
+    Click Panel    Client Info
+    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+
+Amend Booking For Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Populate Air Fare Savings Code    RF - Restricted Fare Accepted    P - Passenger Declined Restricted Fare    CW - Business CWT Nett Fare
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Comment    Click Panel    Client Info
+    Comment    Select Merchant Fee Type    Airline
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Select Product    Despatch Charge
+    Select Vendor    DESPATCH DEPARTMENT
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    400.5    500.5    Cash or Invoice    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    Description 1    ${EMPTY}
+    Click Calculate
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    true
+
+Amend Booking For Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Populate Air Fare Savings Code    RF - Restricted Fare Accepted    P - Passenger Declined Restricted Fare    CW - Business CWT Nett Fare
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Comment    Click Panel    Client Info
+    Comment    Select Merchant Fee Type    Airline
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Re-Execute Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Select Product    Air Commission Returned
+    Select Vendor    REBATE
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    400.5    500.5    Cash or Invoice    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    Description 1    ${EMPTY}
+    Click Calculate
+    Get Service Info Field Values
+    Get Product Code    sg    ${product}
+    Get GST Percentage    sg    ${product}
+    Get Vendor Code    sg    ${product}    ${vendor}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    sg    false
+
+Amend Booking For Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Populate Air Fare Savings Code    RF - Restricted Fare Accepted    P - Passenger Declined Restricted Fare    CW - Business CWT Nett Fare
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Comment    Click Panel    Client Info
+    Comment    Select Merchant Fee Type    Airline
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Click Finish PNR
+    Re-Execute Amend Booking For Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Cash or Invoice And BTA Description Is Blank If Simultaneous Change Error Is Displayed
+    Click Other Services
+    Select Product    Airline Penalty Fee
+    Select Vendor    CARLSON WAGONLIT TRAVEL
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Populate Service Info With Values    Vendor Contact    400.5    500.5    Cash or Invoice    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    ${EMPTY}    Description 1    ${EMPTY}
+    Click Calculate
+    Get Service Info Field Values
+    Get Product Code    hk    ${product}
+    Get GST Percentage    hk    ${product}
+    Get Vendor Code    hk    ${product}    ${vendor}
+    Click Finish PNR    ${EMPTY}    5    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Accounting Remarks For Other Services Are Written in RM Lines    hk    false
+
+Create PNR Using FOP Type CC
+    Open Power Express And Retrieve Profile    ${version}    Test    u003jdc    en-GB    jcabela    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN IN    BEAR    SING
+    Click New Booking
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Merchant Fee Type    Airline
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S2    6    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Create PNR Using FOP Type BTC
+    Open Power Express And Retrieve Profile    ${version}    Test    u003jdc    en-GB    jcabela    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN IN    BEAR    SING
+    Click New Booking
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S2    6    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Get Contact No from Vendor Info Tab
+    ${contact_no}    Get Control Text Value    [NAME:ContactNumberTextBox]
+    Set Suite Variable    ${contact_no}
+
+Get DateTime And Location For Passive Segment
+    ${date_time}    Set Variable IF    ("${date_and_time_departure_to}" !="${EMPTY}" and "${date_and_time_arrival_to}" =="${EMPTY}")    ${date_and_time_departure_to}
+    ${date_time}    Set Variable IF    ("${date_and_time_departure_to}" =="${EMPTY}" and "${date_and_time_arrival_to}" !="${EMPTY}")    ${date_and_time_arrival_to}
+    ${date_and_time_to}    Split String    ${date_time}    ${SPACE}
+    ${date_temp}    Set Variable    ${date_and_time_to[0]}
+    ${time_temp}    Set Variable    ${date_and_time_to[1]}
+    ${date}    Convert Date To Gds Format    ${date_temp}    %d/%m/%Y    is_year_needed=false
+    ${time}    Set Variable    ${time_temp.replace(":","")}
+    ${location}    Set Variable IF    ("${date_and_time_departure_to}" !="${EMPTY}" and "${date_and_time_arrival_to}" =="${EMPTY}") or ("${date_and_time_departure_to}" !="${EMPTY}" and "${date_and_time_arrival_to}" !="${EMPTY}")    ${location_value_departure_to.upper()}    ${location_value_arrival_to.upper()}
+    ${location_description}    Set Variable IF    ("${date_and_time_departure_to}" !="${EMPTY}" and "${date_and_time_arrival_to}" =="${EMPTY}") or ("${date_and_time_departure_to}" !="${EMPTY}" and "${date_and_time_arrival_to}" !="${EMPTY}")    ${description_value_departure_to}    ${description_value_arrival_to}
+    Set Suite Variable    ${date}
+    Set Suite Variable    ${time}
+    Set Suite Variable    ${location}
+    Set Suite Variable    ${location_description}
+
+Validate Passive Segments
+    [Arguments]    ${product}    ${vendor}    ${country}
+    ${vendor_code_number}    Get Vendor Code    ${country}    ${product}    ${vendor}
+    Run Keyword If    ("${country}" == "SG" and "${product}" =="Car Transfer") or ("${country}" == "HK" and "${product}" =="Car Rental Prepaid") or ("${country}" == "HK" and "${product}" =="LIMOUSINE")    Get DateTime And Location For Passive Segment
+    Run Keyword If    ("${country}" == "HK" and "${product}" =="LIMOUSINE") and ("${date_and_time_departure_to}" !="${EMPTY}) and ("${date_and_time_arrival_to}" =="${EMPTY})    Verify Specific Line Is Written In The PNR    RU1AHK1HKG${date}-/TYP-LIM/SUC-${vendor_code_number}/SUN-${vendor}/SUT-${contact_no}/STP-${location_value_departure_from}${description_value_departure_from}/SD-${date}/ST-${time}/EP-${location_value_departure_to}${description_value_departure_to}/TTL-${total_selling_price}HKD/TK-${eo_number}
+    Run Keyword If    ("${country}" == "HK" and "${product}" =="LIMOUSINE") and ("${date_and_time_departure_to}" =="${EMPTY}) and ("${date_and_time_arrival_to}" !="${EMPTY})    Verify Specific Line Is Written In The PNR    RU1AHK1HKG${date}-/TYP-LIM/SUC-${vendor_code_number}/SUN-${vendor}/SUT-${contact_no}/STP-${location_value_arrival_from}${description_value_arrival_from}/SD-${date}/ST-${time}/EP-${location_value_arrival_to}${description_value_arrival_to}/TTL-${total_selling_price}HKD/TK-${eo_number}
+    Run Keyword If    ("${country}" == "SG" and "${product}" =="Car Transfer")    Verify Specific Line Is Written In The PNR    RU1AHK1DXB${date}-/TYP-TFR/SUC-${vendor_code_number}/SUN-${vendor}/SUT-${contact_no}/STP-${location}${location_description}/SD-${date}/ST-${time}/EP-${location}${location_description}/TK-${eo_number}
+    Run Keyword If    ("${country}" == "HK" and "${product}" =="Car Rental Prepaid")    Verify Specific Line Is Written In The PNR    RU1AHK1HKG${date}-/TYP-TFR/SUC-${vendor_code_number}/SUN-${vendor}/SUT-${contact_no}/STP-${location}${location_description}/SD-${date}/ST-${time}/EP-${location}${location_description}/TTL-${total_selling_price}HKD/TK-${eo_number}
+    Run Keyword If    ("${country}" == "HK" and "${product}" =="LIMOUSINE")    Verify Specific Line Is Written In The PNR    RU1AHK1HKG${date}-/TYP-LIM/SUC-${vendor_code_number}/SUN-${vendor}/SUT-${contact_no}/STP-${location}${location_description}/SD-${date}/ST-${time}/EP-${location}${location_description}/TTL-${total_selling_price}HKD/TK-${eo_number}
+    ${dep_date}    Run Keyword If    ("${country}" == "SG" and "${product}" =="Train Tickets") or ("${country}" == "HK" and "${product}" =="TRAIN TICKET") or ("${country}" == "SG" and "${product}" =="FERRY") or ("${country}" == "HK" and "${product}" =="FERRY TICKET")    Convert Date To Gds Format    ${depart_date}    %m/%d/%Y    false
+    ${ret_date}    Run Keyword If    ("${country}" == "SG" and "${product}" =="Train Tickets") or ("${country}" == "HK" and "${product}" =="TRAIN TICKET") or ("${country}" == "SG" and "${product}" =="FERRY") or ("${country}" == "HK" and "${product}" =="FERRY TICKET")    Convert Date To Gds Format    ${return_date}    %m/%d/%Y    false
+    Run Keyword If    ("${country}" == "HK" and "${product}" =="TRAIN TICKET")    Verify Specific Line Is Written In The PNR    RU1AHK1HKG${dep_date}-/TYP-TRN/SUC-${vendor_code_number}/SUN-${vendor}//SUT-${contact_no}/STS-HK/STP-${depart_origin}/SD-${dep_date}/EP-${depart_destination}/ED-${ret_date}/CL-${class_cabin}/TTL-${selling_price}${country}D/TK-${eo_number}
+    Run Keyword If    ("${country}" == "SG" and "${product}" =="Train Tickets")    Verify Specific Line Is Written In The PNR    RU1AHK1KEL${dep_date}-/TYP-TRN/SUC-${vendor_code_number}/SUN-${vendor}/SUT-${contact_no}/STS-HK/STP-${depart_origin}/SD-${dep_date}/EP-${depart_destination}/ED-${ret_date}/CL-${class_cabin}/TTL-${selling_price}${country}D/TK-${eo_number}
+    Run Keyword If    ("${country}" == "SG" and "${product}" =="FERRY")    Verify Specific Line Is Written In The PNR    RU1AHK1KEL${dep_date}-/TYP-SEA/SUC-${vendor_code_number}/SUN-${vendor}/SUT-${contact_no}/STS-HK/STP-${depart_origin}/SD-${dep_date}/EP-${depart_destination}/ED-${ret_date}/CL-${class_cabin}/TTL-${selling_price}${country}D/TK-${eo_number}
+    Run Keyword If    ("${country}" == "HK" and "${product}" =="FERRY TICKET")    Verify Specific Line Is Written In The PNR    RU1AHK1HKG${dep_date}-/TYP-SEA/SUC-${vendor_code_number}/SUN-${vendor}/SUT-${contact_no}/STS-HK/STP-${depart_origin}/SD-${dep_date}/EP-${depart_destination}/ED-${ret_date}/CL-${class_cabin}/TTL-${selling_price}${country}D/TK-${eo_number}
+    ${date1}=    Generate Date X Months From Now    3
+    ${date}    Run Keyword If    ("${country}" == "HK" and "${product}" =="DISCOUNT")    Convert Date To Gds Format    ${date1}    %d/%m/%Y    is_year_needed=false
+    Run Keyword If    ("${country}" == "HK" and "${product}" =="DISCOUNT")    Verify Specific Line Is Written In The PNR    RU1AHK1HKG${date}/TYP-OTH/SUC-${vendor_code_number}/SUN-${vendor}/TTL-${total_selling_price}HKD/TK-${eo_number}/SI-DISCOUNT
+
+Verify Arrival From Tab Field Values
+    [Arguments]    ${expected_arrivalfrom_location}    ${expected_arrivalfrom_desc}    ${expected_arrivalfrom_tel}
+    Get Location Value
+    Get Description Value
+    Verify Actual Value Matches Expected Value    ${location_value}    ${expected_arrivalfrom_location}
+    Verify Actual Value Matches Expected Value    ${description_value}    ${expected_arrivalfrom_desc}
+    Get Tel Value
+    Verify Actual Value Matches Expected Value    ${tel_value}    ${expected_arrivalfrom_tel}
+
+Verify Arrival To Tab Field Values
+    [Arguments]    ${expected_arrivalto_location}    ${expected_arrivalto_desc}
+    Get Location Value
+    Get Description Value
+    Verify Actual Value Matches Expected Value    ${location_value}    ${expected_arrivalto_location}
+    Verify Actual Value Matches Expected Value    ${description_value}    ${expected_arrivalto_desc}
+    Get Flight Value
+    Verify Actual Value Matches Expected Value    ${actual_default_flight_value}    ${actual_default_flight_value_arrival_to}
+    Get Date & Time Value
+    Comment    Verify Actual Value Matches Expected Value    ${date_and_time}    ${expected_arrivalto_date&time}
+
+Verify Departure From Tab Field Values
+    [Arguments]    ${expected_departurefrom_location}    ${expected_departurefrom_desc}    ${expected_departurefrom_tel}
+    Get Location Value
+    Get Description Value
+    Verify Actual Value Matches Expected Value    ${location_value}    ${expected_departurefrom_location}
+    Verify Actual Value Matches Expected Value    ${description_value}    ${expected_departurefrom_desc}
+    Get Tel Value
+    Verify Actual Value Matches Expected Value    ${tel_value}    ${expected_departurefrom_tel}
+
+Verify Departure To Tab Field Values
+    [Arguments]    ${expected_departureto_location}    ${expected_departureto_desc}
+    Get Location Value
+    Verify Actual Value Matches Expected Value    ${location_value}    ${expected_departureto_location}
+    Get Description Value
+    Verify Actual Value Matches Expected Value    ${description_value}    ${expected_departureto_desc}
+    Get Flight Value
+    Verify Actual Value Matches Expected Value    ${actual_default_flight_value}    ${actual_default_flight_value_departure_to}
+    Get Date & Time Value
+    Comment    Verify Actual Value Matches Expected Value    ${date_and_time}    ${expected_departureto_date&time}
+
+Verify Vendor Info Fields for Car Transfer Product
+    [Arguments]    ${expected_vendor}
+    ${vendor}    Get Control Text Value
+    Set Suite Variable    ${vendor}
+    Verify Actual Value Matches Expected Value    ${vendor}    ${expected_vendor}
+
+Obsolete_Verify That Car Remarks Are Written In PNR When FOP is Cash Or Invoice
+    [Arguments]    ${product}    ${vendor}    ${fop}    ${country}
+    Verify Other Services Generic Accounting Remarks    ${product}    ${vendor}    ${fop}    ${country}
+    Comment    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    ${country}
+    ${gst_amount}    Get Variable Value    ${gst_amount}    ${EMPTY}
+    Run Keyword If    "${gst_amount}" != "${EMPTY}" and "${country}" == "SG"    Verify Specific Line Is Written In The PNR    RM *MSX/S${total_selling_price}/SF${total_selling_price}/C${commission}/G${gst_amount}/FS
+    Run Keyword If    "${gst_amount}" == "${EMPTY}" and "${country}" == "SG"    Verify Specific Line Is Written In The PNR    RM *MSX/S${total_selling_price}/SF${total_selling_price}/C${commission}/FS
+    Run Keyword If    "${country}" == "HK"    Verify Specific Line Is Written In The PNR    RM *MSX/A${total_selling_price}/SF${total_selling_price}/C${commission}/FS/FF40-${location_value_departure_from.upper()}-${location_value_departure_to.upper()}
+    Comment    Run Keyword If    "${country}" == "SG"    Verify Specific Line Is Written In The PNR    RM *MSX/FF40-${location_value_departure_from.upper()}-${location_value_departure_to.upper()}/FF41-${date_and_time_departure_to}
+    ${date_and_time}    Split String    ${date_and_time_departure_to}    ${SPACE}
+    ${date}    Set Variable    ${date_and_time[0]}
+    ${time}    Set Variable    ${date_and_time[1]}
+    ${date_to}    Convert Date To Gds Format    ${date}    %d/%m/%Y    is_year_needed=true
+    Run Keyword If    "${country}" == "SG"    Verify Specific Line Is Written In The PNR    RM *MSX/FF40-${location_value_departure_from.upper()}-${location_value_departure_to.upper()}/FF41-${date_to} ${time.replace(":","")}
+    Run Keyword If    "${country}" == "HK"    Verify Specific Line Is Written In The PNR    RM *MSX/FF41-${date_to} ${time.replace(":","")}/FF34-AB/FF35-OTH
+    Comment    Verify Multiple Remarks Are Written In The PNR    RM *MSX/FF34-AB/FF35-OTH/FF36-M/FF47-CWT
+    Run Keyword If    "${country}" == "SG"    Verify Specific Line Is Written In The PNR    RM *MSX/FF34-AB/FF35-OTH/FF36-M/FF47-CWT
+    Run Keyword If    "${country}" == "HK"    Verify Specific Line Is Written In The PNR    RM *MSX/FF36-M/FF47-CWT
+
+Verify That Car Remarks Are Written In PNR When FOP is CX
+    [Arguments]    ${product_name}    ${vendor_name}    ${country}=SG
+    Comment    ${product_code_number}    Get Product Code    SG    ${product_name}
+    Comment    ${vendor_code_number}    Get Vendor Code    SG    ${product_name}    ${vendor_name}
+    Comment    ${fop_exp_date}    Set Variable    ${expiry_month}${short_expiry_year}
+    Comment    ${market_identifier}    Set Variable If    "${country}" == "SG"    S    A
+    Comment    ${passenger_id}    Get Variable Value    ${passenger_id}    X1
+    Comment    ${gst}    Get Variable Value    ${gst}    ${EMPTY}
+    Comment    ${bta_description}    Get Variable Value    ${bta_description}    ${EMPTY}
+    Comment    ${form_of_payment}    Get Variable Value    ${form_of_payment_vendor}    ${EMPTY}
+    Comment    ${credit_vendor_code}    Get Variable Value    ${form_of_payment_vendor}    ${EMPTY}
+    Comment    ${fop_code}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)"    Get Credit Card Vendor Code    ${card_vendor_type}
+    ...    ELSE    Set Variable    CC
+    Comment    ${selling_price_with_gst}    Run Keyword If    "${gst}" != "${EMPTY}"    Evaluate    ${total_selling_price} + ${gst}
+    ...    ELSE    Set Variable    ${total_selling_price}
+    Comment    ${selling_price_with_gst}    Round APAC    ${selling_price_with_gst}    ${country}
+    Comment    Verify Specific Remark Is Written In The PNR    RM *MS/PC${product_code}/V${vendor_code}/TK${eo_number}/PX${passenger_id}
+    Comment    Run Keyword If    "${gst}" != "${EMPTY}"    Verify Specific Remark Is Written In The PNR    RM *MSX/${total_selling_price}/SF${total_selling_price}/C${commission}/G${gst}/F${fop_code}${credit_vendor_code}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RM *MSX/${total_selling_price}/SF${total_selling_price}/C${commission}/F${fop_code}${credit_vendor_code}
+    Comment    Verify Specific Remark Is Written In The PNR    RM *MSX/CCN${card_vendor_type}${card_number}EXP${fop_exp_date}/D${selling_price_with_gst}
+    Comment    Comment    Run Keyword If    "${bta_description}" != "${EMPTY}"    Verify Specific Remark Is Written In The PNR    RM *MSX/FF8-FF/FF40-${bta_description.upper()}/FF41-
+    Comment    Verify Specific Remark Is Written In The PNR    RM *MSX/FF34-AB/FF35-OTH/FF36-M/FF47-CWT
+    Comment    Verify Specific Remark Is Written In The PNR    RM *MSX/FF ${product_name.upper()}
+    Comment    Verify Specific Line Is Written In The PNR    RM *MSX/FF40-${location_value_departure_from}-${location_value_departure_to}/FF41-${date_and_time_departure_to}
+    ${product_code_number}    Get Product Code    ${country}    ${product_name}
+    ${vendor_code_number}    Get Vendor Code    ${country}    ${product_name}    ${vendor_name}
+    ${fop_exp_date}    Set Variable    ${expiry_month}${short_expiry_year}
+    ${market_identifier}    Set Variable If    "${country}" == "SG"    S    A
+    ${passenger_id}    Get Variable Value    ${passenger_id}    ${passenger_id}
+    ${gst}    Get Variable Value    ${gst}    ${EMPTY}
+    ${card_vendor_type}    Get Variable Value    ${form_of_payment_vendor}    ${EMPTY}
+    Comment    ${bta_description}    Get Variable Value    ${bta_description}    ${EMPTY}
+    ${fop_code}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)"    Get Credit Card Vendor Code    ${card_vendor_type}
+    ...    ELSE    Set Variable    CC
+    ${selling_price_with_gst}    Run Keyword If    "${gst}" != "${EMPTY}"    Evaluate    ${total_selling_price} + ${gst}
+    ...    ELSE    Set Variable    ${total_selling_price}
+    ${selling_price_with_gst}    Round APAC    ${selling_price_with_gst}    ${country}
+    Verify Specific Remark Is Written In The PNR    RM *MS/PC${product_code_number}/V${vendor_code_number}/TK${eo_number}/PX${passenger_id}
+    Comment    Run Keyword If    "${gst}" != "${EMPTY}"    Verify Specific Remark Is Written In The PNR    RM *MSX/S${total_selling_price}/SF${total_selling_price}/C${commission}/G${gst}/F${fop_code}${card_vendor_type}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RM *MSX/A${total_selling_price}/SF${total_selling_price}/C${commission}/F${fop_code}${card_vendor_type}
+    Run Keyword If    "${country}" == "HK"    Verify Specific Remark Is Written In The PNR    RM *MSX/A${total_selling_price}/SF${total_selling_price}/C${commission}/F${fop_code}
+    Comment    Verify Specific Remark Is Written In The PNR    RM *MSX/CCN${card_vendor_type}${card_number}EXP${fop_exp_date}/D${selling_price_with_gst}
+    ${card_number}    Get Variable Value    ${cc_number}    ${EMPTY}
+    ${card_number}    Set Variable If    '${card_number}'=='${EMPTY}'    ${credit_card_number}    ${EMPTY}
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    ${card_number}    ${card_vendor_type}    ${fop_exp_date}    ${short_expiry_year}    ${form_of_payment}    ${country}
+    Comment    Run Keyword If    "${bta_description}" != "${EMPTY}"    Verify Specific Remark Is Written In The PNR    RM *MSX/FF8-FF/FF40-${bta_description.upper()}/FF41-
+    ${date_and_time}    Split String    ${date_and_time_departure_to}    ${SPACE}
+    ${date}    Set Variable    ${date_and_time[0]}
+    ${time}    Set Variable    ${date_and_time[1]}
+    ${date_to}    Convert Date To Gds Format    ${date}    %d/%m/%Y    is_year_needed=true
+    Verify Specific Line Is Written In The PNR    RM *MSX/FF40-${location_value_departure_from.upper()}-${location_value_departure_to.upper()}/FF41-${date_to} ${time.replace(":","")}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/FF34-AB/FF35-OTH/FF36-M/FF47-CWT
+    Verify Specific Remark Is Written In The PNR    RM *MSX/FF ${product_name.upper()}
+
+Verify That Car Remarks Are Written In PNR When FOP is Cash Or Invoice
+    [Arguments]    ${product}    ${vendor}    ${fop}    ${country}
+    Verify Other Services Generic Accounting Remarks    ${product}    ${vendor}    ${fop}    ${country}
+    Comment    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    ${country}
+    ${gst_amount}    Get Variable Value    ${gst_amount}    ${EMPTY}
+    Run Keyword If    "${gst_amount}" != "${EMPTY}" and "${country}" == "SG"    Verify Specific Line Is Written In The PNR    RM *MSX/S${total_selling_price}/SF${total_selling_price}/C${commission}/G${gst_amount}/FS
+    Run Keyword If    "${gst_amount}" == "${EMPTY}" and "${country}" == "SG"    Verify Specific Line Is Written In The PNR    RM *MSX/S${total_selling_price}/SF${total_selling_price}/C${commission}/FS
+    Run Keyword If    "${country}" == "HK"    Verify Specific Line Is Written In The PNR    RM *MSX/A${total_selling_price}/SF${total_selling_price}/C${commission}/FS/FF40-${location_value_departure_from.upper()}-${location_value_departure_to.upper()}
+    Comment    Run Keyword If    "${country}" == "SG"    Verify Specific Line Is Written In The PNR    RM*MSX/FF40-${location_value_departure_from.upper()}-${location_value_departure_to.upper()}/FF41-${date_and_time_departure_to}
+    ${date_and_time}    Split String    ${date_and_time_departure_to}    ${SPACE}
+    ${date}    Set Variable    ${date_and_time[0]}
+    ${time}    Set Variable    ${date_and_time[1]}
+    ${date_to}    Convert Date To Gds Format    ${date}    %d/%m/%Y    is_year_needed=true
+    Run Keyword If    "${country}" == "SG"    Verify Specific Line Is Written In The PNR    RM*MSX/FF40-${location_value_departure_from.upper()}-${location_value_departure_to.upper()}/FF41-${date_to} ${time.replace(":","")}
+    Run Keyword If    "${country}" == "HK"    Verify Specific Line Is Written In The PNR    RM *MSX/FF41-${date_to} ${time.replace(":","")}/FF34-AB/FF35-OTH
+    Comment    Verify Multiple Remarks Are Written In The PNR    RM *MSX/FF34-AB/FF35-OTH/FF36-M/FF47-CWT
+    Run Keyword If    "${country}" == "SG"    Verify Specific Line Is Written In The PNR    RM *MSX/FF34-AB/FF35-OTH/FF36-M/FF47-CWT
+    Run Keyword If    "${country}" == "HK"    Verify Specific Line Is Written In The PNR    RM *MSX/FF36-M/FF47-CWT
+
+Verify Vendor Contact Net Cost and Selling Value are correct
+    [Arguments]    ${expected vendor}
+    Verify Actual Value Matches Expected Value
+
+Get Relation And Premium Details In Insured Grid
+    ${insured_data}    Get All Cell Values In Data Grid Table    [NAME:InsuredGridView]
+    Log List    ${insured_data}
+    ${relation_collection}    Create List
+    : FOR    ${row_data}    IN    @{insured_data}
+    \    ${row_data}    Split String    ${row_data}    ;
+    \    Append To List    ${relation_collection}    ${row_data[2:4]}
+    Log List    ${relation_collection}
+    Set Suite Variable    ${relation_collection}
+
+Verify Insurance General Remarks
+    [Arguments]    ${product_name}
+    Get Agent Login ID from Amadeus
+    @{date_time}    Split String    ${date_for_eo}    ${SPACE}
+    ${eo_date}    Convert Date To Gds Format    ${date_time[0]}    %m/%d/%Y    true
+    ${eo_date}    Get Substring    ${eo_date}    \    -2
+    ${eo_time}    Split String    ${date_time[1]}    :
+    ${utc_time}    Set Variable    ${eo_time[0]}${eo_time[1]}Z
+    Verify Specific Remark Is Written In The PNR    II\\*\\*\\*\\*\\* INSURANCE INFORMATION \\*\\*\\*\\*\\*\\* ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    Log List    ${insured_collection}
+    Verify Specific Remark Is Written In The PNR    I\\*PLAN SELECTED-${actual_plan_selected.upper()} ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    Verify Specific Remark Is Written In The PNR    II\\*\\*\\*\\*\\*\\*\\* INSURED PERSONS \\*\\*\\*\\*\\*\\*\\*\\*\\* ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    : FOR    ${name}    IN    ${name_list}
+    \    Verify Specific Remark Is Written In The PNR    I\\* ${name[0].upper()} ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    Verify Specific Remark Is Written In The PNR    II\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\* ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    Run Keyword If    "${insuree_address}"!="${EMPTY}"    Verify Specific Remark Is Written In The PNR    I\\*INSURED ADDRESS -${insuree_address.upper()} ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    Run Keyword If    "${actual_geographic_area}"!="${EMPTY}"    Verify Specific Remark Is Written In The PNR    I\\*GEOGRAPHICAL AREA- ${actual_geographic_area.upper()} ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    ${from_date}    Convert Date To Gds Format    ${actual_from_date}    %d/%m/%Y    false
+    Verify Specific Remark Is Written In The PNR    I\\*INSURANCE PERIOD/DAYS- ${number_of_days}/FROM- ${from_date} ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    Run Keyword If    "${form_of_payment}" !="Cash or Invoice"    Verify Specific Remark Is Written In The PNR    I\\*FOP FROM CLIENT- ${form_of_payment_vendor} ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    Verify Specific Remark Is Written In The PNR    I\\*SELLING PRICE- ${total_selling_price} ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    Verify Specific Remark Is Written In The PNR    I\\*COST PRICE- ${cost_price} ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    Verify Specific Remark Is Written In The PNR    II\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\* ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+    Verify Specific Remark Is Written In The PNR    RM XO\\*XO NUMBER ${eo_number} ISSUED ${agent_id[4:].upper()} ${eo_date}\\s\\d{4}\\w    true
+    Verify Specific Remark Is Written In The PNR    RM XO\\*FOR SERVICE TYPE: ${product_name.upper()} ${agent_id[4:].upper()} ${eo_date}\\s\\d{4}\\w    true
+    : FOR    ${rel}    IN    @{relation_collection}
+    \    Run Keyword IF    "${rel}" != "[]"    Verify Specific Remark Is Written In The PNR    I\\*RELATION - ${rel[0].upper()}/PREMIUM - ${rel[1]} ${agent_id[4:].upper()} ${eo_date} \\d{4}\\w    true
+
+Calculate Cost
+    [Arguments]    ${country}=${EMPTY}
+    Get Total Selling Price
+    Get Commision Value
+    ${cost_price}=    Evaluate    ${total_selling_price} - ${commission}
+    Run Keyword If    "${country}"=="SG"    Convert To Float    ${cost_price}
+    Set Suite Variable    ${cost_price}

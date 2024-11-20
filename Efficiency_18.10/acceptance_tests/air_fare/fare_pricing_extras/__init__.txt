@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        fare_pricing_extras

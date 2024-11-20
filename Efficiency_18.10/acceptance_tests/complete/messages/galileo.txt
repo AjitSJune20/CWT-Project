@@ -1,0 +1,26 @@
+*** Settings ***
+Resource          ../complete_verification.txt
+
+*** Test Cases ***
+[1G EMEA][SI] Verify That CTI Clear All Message Is Visible
+    [Tags]    US6663
+    #New Booking
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo Legacy - Auto ¦ Fare Remarks    AutoLegacy    EmeaTrvlrThree
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Create Shell
+    Click Clear All
+    #Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Tick Receive Invoice Checkbox
+    Tick Receive Itinerary Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+    Verify CTI Clear All Message Is Visible

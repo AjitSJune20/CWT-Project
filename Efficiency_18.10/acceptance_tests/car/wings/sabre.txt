@@ -1,0 +1,74 @@
+*** Settings ***
+Force Tags        sabre    emea
+Resource          ../car_verification.txt
+
+*** Test Cases ***
+[NB FR] Verify That Car Remarks Are Correctly Written In The PNR When 2 Car Segments Are Added
+    [Tags]    us4429    data_dependent    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    D33H
+    Set Client And Traveler    Sabre FR 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrOne
+    Click New Booking
+    Book Flight X Months From Now    MSPORD‡UA    01Y1    ${EMPTY}    5    0
+    Book Active Car Segment    ORD    5    1    5    2    ZI
+    ...    1
+    Book Flight X Months From Now    ORDMSP‡UA    01Y1    WPRQ    5    5
+    Book Active Car Segment    MSP    5    6    5    7    ZI
+    ...    2
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *I
+    Insert Car Identifier Free Text To Car Segment    MSP    ${pickup_date_2}    TESTTWO
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *I
+    Verify Car Identifier Appended To Car Segment Is Correct    ORD    ${pickup_date_1}    SI-\*C01\*
+    Verify Car Identifier Appended To Car Segment Is Correct    MSP    ${pickup_date_2}    SI-TESTTWO\*C02\*
+
+[AB FR] Verify That Car Remarks Are Correctly Written In The PNR When 2 Car Segments Are Added
+    [Tags]    us4429    data_dependent    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Book Flight X Months From Now    MSPORD‡UA    01Y1    WPRQ    5    10
+    Book Active Car Segment    ORD    5    11    5    12    ZI
+    ...    3
+    Book Active Car Segment    ORD    5    13    5    14    ZI
+    ...    4
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *I
+    Insert Car Identifier Free Text To Car Segment    ORD    ${pickup_date_3}    TESTTHREE
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow With 2 New Car Segments Added If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *I
+    Verify Car Identifier Appended To Car Segment Is Correct    ORD    ${pickup_date_1}    SI-*C01*
+    Verify Car Identifier Appended To Car Segment Is Correct    MSP    ${pickup_date_2}    SI-TESTTWO*C02*
+    Verify Car Identifier Appended To Car Segment Is Correct    ORD    ${pickup_date_3}    SI-TESTTHREE*C03*
+    Verify Car Identifier Appended To Car Segment Is Correct    ORD    ${pickup_date_4}    SI-*C04*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow With 2 New Car Segments Added
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Book Flight X Months From Now    MSPORD‡UA    01Y1    WPRQ    5    10
+    Book Active Car Segment    ORD    5    11    5    12    ZI
+    ...    3
+    Book Active Car Segment    ORD    5    13    5    14    ZI
+    ...    4
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *I
+    Insert Car Identifier Free Text To Car Segment    ORD    ${pickup_date_3}    TESTTHREE
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+
+Insert Car Identifier Free Text To Car Segment
+    [Arguments]    ${location}    ${pickup_date}    ${free_text}
+    ${car_segment_line}    Get Lines Matching Regexp    ${pnr_details}    .*${pickup_date}.*${location}.*
+    ${car_segment_line_no}    Fetch From Left    ${car_segment_line.strip()}    CAR
+    ${car_segment_line_no}    Set Variable    ${car_segment_line_no.strip()}
+    Activate Power Express Window
+    Log    Command Entered: CM${car_segment_line_no}/SI-${free_text}
+    Enter GDS Command    CM${car_segment_line_no}/SI-${free_text}

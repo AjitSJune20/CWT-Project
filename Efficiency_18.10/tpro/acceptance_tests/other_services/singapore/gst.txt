@@ -1,0 +1,282 @@
+*** Settings ***
+Suite Setup
+Force Tags        gst    valid_fail
+Resource          ../other_services.txt
+Resource          ../../../../acceptance_tests/gds/gds_verification.txt
+
+*** Test Cases ***
+[NB OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Cash Or Invoice And BTA Description Is Not Blank
+    [Tags]    us456    us723    us960    US686    us624    us668
+    [Setup]
+    Create PNR Using Credit Card As FOP    SG
+    Click Other Services
+    Select Product And Vendor    Meet And Greet    Carlson Wagonlit GST
+    Select Form Of Payment (FOP) Value    Credit Card (CX)
+    Verify Service Info Fields    Credit Card (CX)    True    SG
+    Select Form Of Payment (FOP) Value    Credit Card (CC)
+    Verify Service Info Fields    Credit Card (CC)    True    SG
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Verify Service Info Fields    Cash or Invoice    True    SG
+    Set BTA Description    Desc 1
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services With GST Accounting General Remarks    Meet And Greet    Carlson Wagonlit GST    Cash or Invoice
+    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    SG
+    Verify Generated Exchange Order Is A Number
+
+[OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card Is CC And BTA Description Is Not Blank
+    [Tags]    us456    us723    us960
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Select Form Of Payment (FOP) Value    Credit Card (CC)
+    Select Form Of Payment (FOP) Value    Credit Card (CX)
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Populate Service Info Cost Details    Vendor Contact    222    323
+    Select Form Of Payment (FOP)    Credit Card (CC)    AX    371449635398431    12    2026
+    Set BTA Description    Sample Description
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    EARLY CHECKIN IS ALLOWED    NO SMOKING
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number    identifier=despatch
+    Generate Data For Specific Product    FALSE    P1    8    Despatch Charge    MS    24000
+    ...    ${EMPTY}    New
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services With GST Accounting General Remarks    Despatch Charge    DESPATCH DEPARTMENT    Credit Card (CC)
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    371449635398431    AX    12    2026    Credit Card (CC)    SG
+
+[AOS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card Is CC And BTA Description Is Not Blank
+    [Tags]    us832
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend EO    ${eo_number_despatch}
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Verify Vendor Contact Value Is Correct    Vendor Contact
+    Verify Nett Cost Value Is Correct    222.00
+    Verify Selling Price Value Is Correct    323.00
+    Verify Commission Fee Value Is Correct    101.00
+    Verify GST Value Is Correct    22.61
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    323.00
+    Verify Description Value From Additional Information Is Correct    Despatch Charge
+    Verify BTA Description Value Is Correct    Sample Description
+    Verify Date Value Is Correct
+    Verify Form Of Payment Details Are Correct    Credit Card (CC)    AX    ************8431    12    2026
+    Verify Exchange Order Number    ${eo_number_despatch}
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    DESPATCH DEPARTMENT
+    Verify Address 1 Value Is Correct    C/O CARLSON WAGONLIT TRAVEL
+    Verify Address 2 Value Is Correct    PTE LTD
+    Verify City Value Is Correct    SINGAPORE
+    Verify Country Value Is Correct    SINGAPORE
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    EARLY CHECKIN IS ALLOWED    NO SMOKING
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    08    Despatch Charge    MS    024000
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_despatch}
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services With GST Accounting General Remarks    Despatch Charge    DESPATCH DEPARTMENT    Credit Card (CC)
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    371449635398431    AX    12    2026    Credit Card (CC)    SG
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    [Teardown]
+
+[AB OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card Is CX (DC) And BTA Description Is Not Blank
+    [Tags]    us456    us723    us857    us960
+    Amend PNR Using Cash As FOP
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Populate Service Info Cost Details    Vendor Contact    344.23    566.00
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Verify Error Icon Is Displayed When Expiry Date Is Earlier Than Current Date    Please enter valid credit card expiry date
+    Populate Credit Card Details    30569309025904    DC    12    2026
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Finish PNR    panel=Other Svcs
+    Execute Simultaneous Change Handling    [AB OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card Is CX (DC) And BTA Description Is Not Blank
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services With GST Accounting General Remarks    Despatch Charge    DESPATCH DEPARTMENT    Credit Card (CX)
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    30569309025904    DC    12    2026    Credit Card (CX)    SG
+    [Teardown]    Click Clear All
+
+[OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card Is CC (JC) And BTA Description Is Not Blank
+    [Documentation]    [OS] Verify That Accounting Lines For Other Services Without GST Are Written
+    [Tags]    us456    us723    US902
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    24 Hours Emergency Svcs    Carlson Wagonlit GST
+    Populate Service Info Cost Details    Vendor Contact    222    323
+    Select Form Of Payment (FOP)    Credit Card (CC)
+    Populate Credit Card Details    371449635398431    JC    12    2027
+    Set BTA Description    Sample Description
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services With GST Accounting General Remarks    24 Hours Emergency Svcs    Carlson Wagonlit GST    Credit Card (CC)
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    371449635398431    JC    12    2027    Credit Card (CC)    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Cash Or Invoice And BTA Description Is Blank
+    [Tags]    us456    us723    US863    US720    US453
+    Create PNR Using Credit Card As FOP    SG
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Populate Service Info Cost Details    Vendor Contact    400.5    500.5
+    Set BTA Description    ${EMPTY}
+    Click Tab In Other Services Panel    Remarks
+    Select Exchange Order Remarks    NO SMOKING
+    Add Remarks In Exchange Order    Test EO remark 1    Test EO remark 2    Test EO remark 3    Test EO remark 4    Test EO remark 5
+    Select Itinerary Remarks    AATEST REMARK    ATEST REMARK
+    Add Remarks In Itinerary    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Other Services With GST Accounting General Remarks    Despatch Charge    DESPATCH DEPARTMENT    Cash or Invoice
+    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    SG
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    1    AATEST REMARK    ATEST REMARK    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3
+    ...    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Verify Exchange Order Remarks Are Not Written In The RIR Lines
+
+[OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card Is CC And BTA Description Is Blank
+    [Tags]    us456    us723    US863    US720    US453
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Select Form Of Payment (FOP)    Credit Card (CC)
+    Populate Service Info Cost Details    Vendor Contact    600.0    700.0
+    Populate Credit Card Details    371449635398431    AX    12    2027
+    Set BTA Description    ${EMPTY}
+    Click Tab In Other Services Panel    Remarks
+    Select Exchange Order Remarks    NO SMOKING
+    Add Remarks In Exchange Order    Test EO remark 1    Test EO remark 2    Test EO remark 3    Test EO remark 4    Test EO remark 5
+    Select Itinerary Remarks    AATEST REMARK    ATEST REMARK
+    Add Remarks In Itinerary    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Other Services With GST Accounting General Remarks    Despatch Charge    DESPATCH DEPARTMENT    Credit Card (CC)
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    371449635398431    AX    12    2027    Credit Card (CC)    SG
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    2    AATEST REMARK    ATEST REMARK    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3
+    ...    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Verify Exchange Order Remarks Are Not Written In The RIR Lines
+
+[OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card Is CX (TP) And BTA Description Is Blank
+    [Tags]    us456    us723    us857
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Management Fee    Carlson Wagonlit GST
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Verify Error Icon Is Displayed When Expiry Date Is Earlier Than Current Date    Please enter valid credit card expiry date
+    Populate Credit Card Details    5555000044440000    TP    12    2026
+    Set BTA Description    ${EMPTY}
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services With GST Accounting General Remarks    Management Fee    Carlson Wagonlit GST    Credit Card (CX)
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    5555000044440000    TP    12    2026    Credit Card (CX)    SG
+    ...    False
+    [Teardown]
+
+[OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card Is CX (JC) And BTA Description Is Blank
+    [Documentation]    [OS] Verify That Accounting Lines For Other Services Without GST Are Written
+    [Tags]    us456    us723    us857    US902    US453    US720
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    CWT Refund Admin Fee    Carlson Wagonlit GST
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Verify Error Icon Is Displayed When Expiry Date Is Earlier Than Current Date    Please enter valid credit card expiry date
+    Populate Credit Card Details    5555000044440000    JC    12    2026
+    Set BTA Description    ${EMPTY}
+    Verify Exchange And Itinerary Order Remarks Fields Are working Correctly
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Service Info Tab
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services With GST Accounting General Remarks    CWT Refund Admin Fee    Carlson Wagonlit GST    Credit Card (CX)
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    5555000044440000    JC    12    2026    Credit Card (CX)    SG
+    ...    False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Service Info Fields Are Displayed
+    @{service_info_fields}    Create List    [NAME:VendorContactTextBox]    [NAME:NetCostTextBox]    [NAME:SellingPriceTextBox]    [NAME:CommisionTextBox]    [NAME:MerchantFeeTextBox]
+    ...    [NAME:MerchantFeeAbsorbCheckBox]    [NAME:FormOfPaymentComboBox]    [NAME:FopVendorComboBox]    [NAME:CardNumberMaskedTextBox]    [NAME:ExpiryMonthComboBox]    [NAME:ExpiryYearComboBox]
+    ...    [NAME:DescriptionTextBox]    [NAME:BtaDescriptionTextBox]    [NAME:dtpDate]    [NAME:ExhangeOrderNumberTextBox]    [NAME:CancelButton]
+    @{service_info_info_cost_fields}    Create List
+    @{service_info_addtl_info_fields}    Create List    [NAME:BtaDescriptionTextBox]    [NAME:dtpDate]    [NAME:dtpDate]    [NAME:ExhangeOrderNumberTextBox]
+    @{service_info_fop_fields}    Create List    [NAME:MaskContentButton]    [NAME:ValueMaskedTextBox]    [NAME:ExpiryMonthComboBox]    [NAME:ExpiryYearComboBox]    [NAME:FormOfPaymentComboBox]
+    ...    [NAME:FopVendorComboBox]    [NAME:FopVendorComboBox]
+    @{service_info_exchange_order_fields}    Create List    [NAME:ExhangeOrderNumberTextBox]    [NAME:CancelButton]
+    : FOR    ${field}    IN    @{service_info_fop_fields}
+    \    Verify Control Object Is Visible    ${field}
+
+Create PNR Using Fop As Credit Card CC
+    [Arguments]    ${country}
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    ${country}    Convert To Uppercase    ${country}
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC ${country} OS AUTOMATION    BEAR    ${country}OTHERS    SINMNL/APR    ${EMPTY}    Client Info
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    371449635390002    1222
+    Click Finish PNR
+
+[AB OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card Is CX (DC) And BTA Description Is Not Blank
+    Amend PNR Using Cash As FOP
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Populate Service Info Cost Details    Vendor Contact    344.23    566.00
+    Select Form Of Payment (FOP)    Credit Card (CX)
+    Verify Error Icon Is Displayed When Expiry Date Is Earlier Than Current Date    Please enter valid credit card expiry date
+    Populate Credit Card Details    30569309025904    DC    12    2026
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Finish PNR    [AB OS] Verify That Accounting Lines For Other Services With GST Are Written When FOP Is Credit Card Is CX (DC) And BTA Description Is Not Blank    panel=Other Svcs

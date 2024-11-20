@@ -1,0 +1,12 @@
+*** Settings ***
+Documentation     This resource file covers all reusable actions for Recap Panel related test cases
+Resource          ../common/core.txt
+
+*** Keywords ***
+Set Value In Pop Up
+    [Arguments]    ${pop_up_title}    ${pop_up_value}
+    Wait Until Window Exists    ${pop_up_title}
+    Win Activate    ${pop_up_title}
+    Set Control Text Value    ${edit_PopUpValueSearch}    ${pop_up_value}    ${pop_up_title}
+    Send    {ENTER}
+    [Teardown]    Take Screenshot

@@ -1,0 +1,596 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          obt_verification.txt
+Resource          ../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[SG AB] Verify That For OBT PNR Amend Panel Touch Level Dropdown Values are selectable and Remarks are generated - Online Unassisted
+    [Tags]    us298    us440    us933    us966    sg    for_update
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ SG OBT AUTOMATION    BEAR    SG OBT    SINHKG/ASQ    \    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Update FF34 And FF35 And Delete Segment    GET    EB    2    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    GET    EB    2
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    ${EMPTY}
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Online Unassisted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Click Finish PNR    Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable SG
+    Execute Simultaneous Change Handling    Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable SG
+    Verify FF Remarks Are Written In PNR    GET    EB    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK AB] Verify That For OBT PNR Amend Panel Touch Level Dropdown Values are selectable and Remarks are generated - Agent Assisted
+    [Tags]    us298    us440    us933    hk
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ HK OBT AUTOMATION    BEAR    OBT HK
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    \    6    3
+    Book Flight X Months From Now    SINHKG/ASQ    SS1Y1    FXP/S2-3    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Modify Offline PNR to Online    KDS
+    Update FF34 and FF35 for Segment    KDS    EB    2-3    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    KDS    EB    2-3
+    End And Retrieve PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    ${EMPTY}
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Agent Assisted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Click Finish PNR    Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable HK
+    Execute Simultaneous Change Handling    Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable HK
+    Verify FF Remarks Are Written In PNR    AMK    AA    2-3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN AB] Verify That For OBT PNR Amend Panel Touch Level Dropdown Values are selectable and Remarks are generated - Offline
+    [Tags]    us298    us440    us933    in
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ IN OBT AUTOMATION    BEAR    OBT
+    Select Client Account Using Default Value
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    BOMSIN/ASQ    SS1Y1    FXP/S2    6    3
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    FXP/S3    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Modify Offline PNR to Online    CYT
+    Update FF34 and FF35 for Segment    CYT    EB    2    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    CYT    EB    2
+    Update FF34 and FF35 for Segment    CYT    EB    3    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    CYT    EB    3
+    End And Retrieve PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Agent Assisted
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Offline
+    Click Panel    Client Info
+    Select Form Of Payment    BTA VI/VI***********0235/D0623/CVV***
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Click Fare Tab    Fare Quote 1
+    Select Merchant On Fare Quote Tab    CWT
+    Click Fare Tab    Fare Quote 2
+    Get Transaction Fee Amount Value    Fare Quote 2
+    Select Merchant On Fare Quote Tab    CWT
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Client Info
+    Click Finish PNR    Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable IN
+    Execute Simultaneous Change Handling    Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable IN
+    Verify FF Remarks Are Written In PNR    AM6    AM    2
+    Verify FF Remarks Are Written In PNR    AM6    AM    3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG AB] Verify That Transaction Fee Is Correct Using Online Percentage When Touch Level Is Agent Assisted
+    [Tags]    us298    us440    us933    sg    us520
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 3    BEAR    MONT
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINHKG/ASQ    SS1Y1    FXP/S2    4
+    Book Flight X Months From Now    HKGLAX/ASQ    SS1Y1    FXP/S3    4    7
+    Book Flight X Months From Now    SINLAX/ASQ    SS1Y1    FXP/S4    4    15
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Modify Offline PNR to Online    GET
+    Update FF34 and FF35 for Segment    GET    EB    2    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    GET    EB    2
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    ${EMPTY}
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Agent Assisted
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    SG    Online    Assist    Percentage
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Click Fare Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Get Nett Fare Value    Fare Quote 2
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    SG    Online    Assist    Percentage
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    Airline
+    Click Fare Tab    Fare Quote 3
+    Set Nett Fare Field    Fare Quote 3    1000.00
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Get Nett Fare Value    Fare Quote 3
+    Verify Transaction Fee Value Is Correct    Fare Quote 3    SG    Online    Assist    Percentage
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 3    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Verify Online Assisted Transaction Fee is Retrieved when Touch Level Is Agent Assisted SG
+    Execute Simultaneous Change Handling    Amend Booking Verify Online Assisted Transaction Fee is Retrieved when Touch Level Is Agent Assisted SG
+    Verify Transaction Fee Is Written in Remarks    Fare Quote 1    AA    AMI    S    2
+    Verify Transaction Fee Is Written in Remarks    Fare Quote 3    AA    AMI    S    3
+    Verify Transaction Fee Is Written in Remarks    Fare Quote 3    AA    AMI    S    4
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    BTA VI/VI***********0235/D0623/CVV***    SG    True
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 3    S3    03    BTA VI/VI***********0235/D0623/CVV***    SG    True
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 3    S4    04    BTA VI/VI***********0235/D0623/CVV***    SG    True
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK AB] Verify That Transaction Fee Is Correct Using Online Amount When Touch Level Is Agent Assisted
+    [Tags]    us298    us440    us933    us520    hk
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN HK    BEAR    HONG    HKGSIN/ASQ
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Update FF34 And FF35 And Delete Segment    GET    EB    2    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    GET    EB    2
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Agent Assisted
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Online    Assisted    Amount
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    [HK AB] Verify That Transaction Fee Is Correct Using Online Amount When Touch Level Is Agent Assisted
+    Execute Simultaneous Change Handling    [HK AB] Verify That Transaction Fee Is Correct Using Online Amount When Touch Level Is Agent Assisted
+    Retrieve PNR Details From Amadeus
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    BTA VI/VI***********0235/D0623/CVV***    HK    True
+    Verify Transaction Fee Is Written in Remarks    Fare Quote 1    GET    EB    S    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK AB] Verify That Transaction Fee Is Correct Using Online Percentage When Touch Level Is Agent Unssisted
+    [Tags]    us298    us440    us933    us520    hk
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN HK 3    BEAR    PABLO    HKGSIN/ASQ
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Update FF34 And FF35 And Delete Segment    GET    EB    2    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    GET    EB    2
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Online Unassisted
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Online    Unassisted    Percentage
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***    CWT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    [HK AB] Verify That Transaction Fee Is Correct Using Online Percentage When Touch Level Is Agent Unssisted
+    Execute Simultaneous Change Handling    [HK AB] Verify That Transaction Fee Is Correct Using Online Percentage When Touch Level Is Agent Unssisted
+    Retrieve PNR Details From Amadeus
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    BTA VI/VI***********0235/D0623/CVV***    HK    True
+    Verify Transaction Fee Is Written in Remarks    Fare Quote 1    GET    EB    S    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK AB] Verify That Transaction Fee Is Correct Using Online Amount When Touch Level Is Agent Unassisted
+    [Tags]    us298    us440    us933    us520    hk
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN HK    BEAR    HONG    HKGSIN/ACX
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Update FF34 And FF35 And Delete Segment    GET    EB    2    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    GET    EB    2
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Online Unassisted
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Online    Unassisted    Amount
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***    CWT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    [HK AB] Verify That Transaction Fee Is Correct Using Online Amount When Touch Level Is Agent Unassisted
+    Execute Simultaneous Change Handling    [HK AB] Verify That Transaction Fee Is Correct Using Online Amount When Touch Level Is Agent Unassisted
+    Retrieve PNR Details From Amadeus
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    BTA VI/VI***********0235/D0623/CVV***    HK    True
+    Verify Transaction Fee Is Written in Remarks    Fare Quote 1    GET    EB    S    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN AB] Verify Online Unassisted Transaction Fee is Retrieved when Touch Level Is Agent Unassisted
+    [Tags]    us298    us440    us933    us520
+    Comment    Transaction Fee In Database For Online Fee Percentage
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDI
+    Select Client Account Using Default Value
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    BLRDEL/AAI    SS1Y1    FXP/S2    6    4
+    Book Flight X Months From Now    DELSIN/A9W    SS1Y1    FXP/S3    6    7
+    Book Flight X Months From Now    SINHKG/ACX    SS1Y1    FXP/S4    7    4
+    Book Flight X Months From Now    HKGSIN/ACX    SS1Y1    FXP/S5    7    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Modify Offline PNR to Online    EBA
+    Update FF34 and FF35 for Segment    EBA    EB    2    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    EBA    EB    2
+    End And Retrieve PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Online Unassisted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Client Info
+    Select Form Of Payment    BTA VI/VI***********0235/D0623/CVV***
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    T1
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    IN
+    Verify Online Transaction Fee Value Is Correct    Fare Quote 1    IN    Online    Unassisted    Percentage
+    Select Merchant On Fare Quote Tab    CWT
+    Click Fare Tab    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    T2
+    Get Main Fees On Fare Quote Tab    Fare Quote 2    IN
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    IN    Online    Unassisted    Percentage
+    Select Merchant On Fare Quote Tab    Airline
+    Click Fare Tab    Fare Quote 3
+    Get Base Fare From TST    Fare Quote 3    T3
+    Set Nett Fare Field    Fare Quote 3    1000.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 3    IN
+    Verify Transaction Fee Value Is Correct    Fare Quote 3    IN    Online    Unassisted    Percentage
+    Select Merchant On Fare Quote Tab    CWT
+    Click Fare Tab    Fare Quote 4
+    Get Base Fare From TST    Fare Quote 4    T4
+    Set Nett Fare Field    Fare Quote 4    0.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 4    IN
+    Verify Transaction Fee Value Is Correct    Fare Quote 4    IN    Online    Unassisted    Percentage
+    Select Merchant On Fare Quote Tab    Airline
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Verify Online Unassisted Transaction Fee is Retrieved when Touch Level Is Agent Unassisted IN
+    Execute Simultaneous Change Handling    Amend Booking Verify Online Unassisted Transaction Fee is Retrieved when Touch Level Is Agent Unassisted IN
+    Verify Transaction Fee Is Written in Remarks    Fare Quote 1    EB    EBA    S    2
+    Verify Transaction Fee Is Written in Remarks    Fare Quote 1    EB    EBA    S    3
+    Verify Transaction Fee Is Written in Remarks    Fare Quote 1    EB    EBA    S    4
+    Verify Transaction Fee Is Written in Remarks    Fare Quote 1    EB    EBA    S    5
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Verify Online Assisted Transaction Fee is Retrieved when Touch Level Is Agent Assisted SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    ${EMPTY}
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Agent Assisted
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    SG    Online    Assist    Percentage
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Click Fare Tab    Fare Quote 2
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 2    S3
+    Get Nett Fare Value    Fare Quote 2
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    SG    Online    Assist    Percentage
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    Airline
+    Click Fare Tab    Fare Quote 3
+    Set Nett Fare Field    Fare Quote 3    1000.00
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 3    S4
+    Get Nett Fare Value    Fare Quote 3
+    Verify Transaction Fee Value Is Correct    Fare Quote 3    SG    Online    Assist    Percentage
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 3    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Verify Online Assisted Transaction Fee is Retrieved when Touch Level Is Agent Assisted SG
+
+Amend Booking Verify Online Unassisted Transaction Fee is Retrieved when Touch Level Is Agent Unassisted IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Online Unassisted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Client Info
+    Select Form Of Payment    BTA VI/VI***********0235/D0623/CVV***
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    T1
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    IN
+    Verify Online Transaction Fee Value Is Correct    Fare Quote 1    IN    Online    Unassisted    Percentage
+    Select Merchant On Fare Quote Tab    CWT
+    Click Fare Tab    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    T2
+    Get Main Fees On Fare Quote Tab    Fare Quote 2    IN
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    IN    Online    Unassisted    Percentage
+    Select Merchant On Fare Quote Tab    Airline
+    Click Fare Tab    Fare Quote 3
+    Get Base Fare From TST    Fare Quote 3    T3
+    Set Nett Fare Field    Fare Quote 3    1000.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 3    IN
+    Verify Transaction Fee Value Is Correct    Fare Quote 3    IN    Online    Unassisted    Percentage
+    Select Merchant On Fare Quote Tab    CWT
+    Click Fare Tab    Fare Quote 4
+    Get Base Fare From TST    Fare Quote 4    T4
+    Set Nett Fare Field    Fare Quote 4    0.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 4    IN
+    Verify Transaction Fee Value Is Correct    Fare Quote 4    IN    Online    Unassisted    Percentage
+    Select Merchant On Fare Quote Tab    Airline
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Verify Online Unassisted Transaction Fee is Retrieved when Touch Level Is Agent Unassisted IN
+    Select Merchant On Fare Quote Tab    Airline
+    Click Finish PNR
+
+Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    ${EMPTY}
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Agent Assisted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Get Transaction Fee Amount Value    Fare Quote 1
+    Get Fuel Surcharge Value    Fare Quote 1
+    Click Finish PNR    Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable HK
+
+Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable IN
+    Retrieve PNR Details    ${current_pnr}
+    Modify Offline PNR to Online    CYT
+    Update FF34 and FF35 for Segment    CYT    EB    2    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    CYT    EB    2
+    Update FF34 and FF35 for Segment    CYT    EB    3    FF34    FF35
+    Update FF34, FF35 in PNR Remarks    CYT    EB    3
+    End And Retrieve PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Agent Assisted
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Offline
+    Click Panel    Client Info
+    Select Form Of Payment    BTA VI/VI***********0235/D0623/CVV***
+    Click Panel    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Click Fare Tab    Fare Quote 1
+    Select Merchant On Fare Quote Tab    CWT
+    Click Fare Tab    Fare Quote 2
+    Get Transaction Fee Amount Value    Fare Quote 2
+    Select Merchant On Fare Quote Tab    CWT
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Client Info
+    Click Finish PNR    Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable IN
+
+Amend Booking Verify That For OBT PNR, Amend Panel, Touch Level Dropdown and values are availabe and are selectable SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    ${EMPTY}
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Online Unassisted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Details And Fees Tab With Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Click Finish PNR
+
+Enter FF34 Code
+    [Arguments]    ${line_number}    ${obt_code}    ${touch_level_code}    ${segment}
+    : FOR    ${INDEX}    IN RANGE    10
+    \    Enter GDS Command    RT    ${line_number}/ *FF34/${touch_level_code}/S${segment}
+    \    ${clip}    Get Clipboard Data Amadeus    RFCWTPTEST
+    \    ${is_not_simult_parallel}    Run Keyword And Return Status    Should Not Contain Any    ${clip}    SIMULT    PARALLEL
+    \    Exit For Loop If    ${is_not_simult_parallel}
+    Enter GDS Command    ER    ER    IR
+
+Enter FF35 Code
+    [Arguments]    ${line_number}    ${obt_code}    ${segment}
+    : FOR    ${INDEX}    IN RANGE    10
+    \    Enter GDS Command    RT    ${line_number}/ *FF35/${obt_code}/S${segment}
+    \    ${clip}    Get Clipboard Data Amadeus    RFCWTPTEST
+    \    ${is_not_simult_parallel}    Run Keyword And Return Status    Should Not Contain Any    ${clip}    SIMULT    PARALLEL
+    \    Exit For Loop If    ${is_not_simult_parallel}
+    Enter GDS Command    ER    ER    IR
+
+Get Line Number of Remark
+    [Arguments]    ${ff}    ${segment}
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    ${number}    Run Keyword If    "${ff}" == "FF34"    Get Line Number In Amadeus PNR Remarks    ${ff}/AB/S${segment}
+    ...    ELSE IF    "${ff}" == "FF35"    Get Line Number In Amadeus PNR Remarks    ${ff}/AMA/S${segment}
+    [Return]    ${number}
+
+Modify Offline PNR to Online
+    [Arguments]    ${obt_code}
+    : FOR    ${INDEX}    IN RANGE    10
+    \    Enter GDS Command    RT    RM *BT/${obt_code}
+    \    ${clip}    Get Clipboard Data Amadeus    RFCWTPTEST
+    \    ${is_not_simult_parallel}    Run Keyword And Return Status    Should Not Contain Any    ${clip}    SIMULT    PARALLEL
+    \    Exit For Loop If    ${is_not_simult_parallel}
+    Enter GDS Command    ER    ER    IR
+
+Update FF34 and FF35 for Segment
+    [Arguments]    ${obt_code}    ${touch_level_code}    ${segment}    @{ff_value}
+    : FOR    ${ff}    IN    @{ff_value}
+    \    ${line_number}    Get Line Number of Remark    ${ff}    ${segment}
+    \    Run Keyword If    "${ff}" == "FF34"    Enter FF34 Code    ${line_number}    ${obt_code}    ${touch_level_code}
+    \    ...    ${segment}
+    \    Run Keyword If    "${ff}" == "FF35"    Enter FF35 Code    ${line_number}    ${obt_code}    ${segment}
+
+Update FF34, FF35 in PNR Remarks
+    [Arguments]    ${obt_code}    ${touch_level_code}    ${segment}
+    : FOR    ${INDEX}    IN RANGE    10
+    \    Update Multiple Lines With FF34, FF35 in PNR Remarks    ${obt_code}    ${touch_level_code}    ${segment}
+    \    ${clip}    Get Clipboard Data Amadeus    RFCWTPTEST
+    \    ${is_not_simult_parallel}    Run Keyword And Return Status    Should Not Contain Any    ${clip}    SIMULT    PARALLEL
+    \    Exit For Loop If    ${is_not_simult_parallel}
+    Enter GDS Command    ER    ER    IR
+
+Update FF34 And FF35 And Delete Segment
+    [Arguments]    ${obt_code}    ${touch_level_code}    ${segment}    @{ff_value}
+    : FOR    ${ff}    IN    @{ff_value}
+    \    ${line_number}    Get Line Number of Remark    ${ff}    ${segment}
+    \    Run Keyword If    "${ff}" == "FF34"    Enter FF34 Code Without Segment    ${line_number}    ${obt_code}    ${touch_level_code}
+    \    Run Keyword If    "${ff}" == "FF35"    Enter FF35 Code Without Segment    ${line_number}    ${obt_code}
+
+Enter FF34 Code Without Segment
+    [Arguments]    ${line_number}    ${obt_code}    ${touch_level_code}
+    : FOR    ${INDEX}    IN RANGE    10
+    \    Enter GDS Command    RT    ${line_number}/ *FF34/${touch_level_code}
+    \    ${clip}    Get Clipboard Data Amadeus    RFCWTPTEST
+    \    ${is_not_simult_parallel}    Run Keyword And Return Status    Should Not Contain Any    ${clip}    SIMULT    PARALLEL
+    \    Exit For Loop If    ${is_not_simult_parallel}
+    Enter GDS Command    ER    ER    IR
+
+Enter FF35 Code Without Segment
+    [Arguments]    ${line_number}    ${obt_code}
+    : FOR    ${INDEX}    IN RANGE    10
+    \    Enter GDS Command    RT    ${line_number}/ *FF35/${obt_code}
+    \    ${clip}    Get Clipboard Data Amadeus    RFCWTPTEST
+    \    ${is_not_simult_parallel}    Run Keyword And Return Status    Should Not Contain Any    ${clip}    SIMULT    PARALLEL
+    \    Exit For Loop If    ${is_not_simult_parallel}
+    Enter GDS Command    ER    ER    IR
+
+Update Multiple Lines With FF34, FF35 in PNR Remarks
+    [Arguments]    ${obt_code}    ${touch_level_code}    ${segment}
+    ${pnr_details}    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    ${line}    Get Lines Containing String    ${pnr_details}    MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/S${segment}
+    @{line}    Split To Lines    ${line}
+    @{line_numbers}    Create List
+    : FOR    ${each_line}    IN    @{line}
+    \    ${splitted_data}    Split String    ${each_line.strip()}    ${SPACE}
+    \    Append To List    ${line_numbers}    ${splitted_data[0]}
+    : FOR    ${each_line}    IN    @{line_numbers}
+    \    Enter GDS Command    RT    ${each_line}/ *MSX/FF34-${touch_level_code}/FF35-${obt_code}/FF36-G/FF47-CWT/S${segment}
+
+[HK AB] Verify That Transaction Fee Is Correct Using Online Amount When Touch Level Is Agent Assisted
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Agent Assisted
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Online    Assisted    Amount
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    [HK AB] Verify That Transaction Fee Is Correct Using Online Amount When Touch Level Is Agent Assisted
+
+[HK AB] Verify That Transaction Fee Is Correct Using Online Percentage When Touch Level Is Agent Unssisted
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Online Unassisted
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Online    Unassisted    Percentage
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***
+    Select Merchant On Fare Quote Tab    CWT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    [HK AB] Verify That Transaction Fee Is Correct Using Online Percentage When Touch Level Is Agent Unssisted
+
+[HK AB] Verify That Transaction Fee Is Correct Using Online Amount When Touch Level Is Agent Unassisted
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Online Unassisted
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Online    Unassisted    Amount
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 1    BTA VI/VI***********0235/D0623/CVV***    CWT
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    [HK AB] Verify That Transaction Fee Is Correct Using Online Amount When Touch Level Is Agent Unassisted

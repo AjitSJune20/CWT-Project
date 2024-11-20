@@ -1,0 +1,5 @@
+*** Settings ***
+Force Tags        galileo
+Resource          exchange_verification.txt
+
+*** Test Cases ***

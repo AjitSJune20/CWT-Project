@@ -1,0 +1,107 @@
+*** Settings ***
+Force Tags        sabre    noram
+Resource          ../database_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Successful Send To Pnr Retry Writes To Application Usage Table
+    [Tags]    us1918
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Comment    Create New Booking With Round Trip Air Flight Using Default Values    Sabre 211 - Auto ¦ US1918    AutoTwoOneOne    OptimizeTrvlrTwo    LAXIAH‡UA    01Y1
+    ...    ${EMPTY}    IAHLAX‡UA    01Y1    WPRQ
+    Create New Booking With Round Trip Air Flight Using Default Values    Sabre 15 - Auto ¦ US2928    AutoOneFiveOneTwo    NoramTrvlrOne    LAXIAH‡UA    01Y1    ${EMPTY}
+    ...    IAHLAX‡UA    01Y1    WPRQ
+    Click Finish PNR
+
+[AB] Verify That Successful Send To Pnr Retry Writes To Application Usage Table
+    [Tags]    us1918
+    Comment    Retrieve PNR with Timestamp    Sabre 211 - Auto ¦ US1918    AutoTwoOneOne    OptimizeTrvlrTwo    ${current_pnr}
+    Retrieve PNR with Timestamp    Sabre 15 - Auto ¦ US2928    AutoOneFiveOneTwo    NoramTrvlrOne    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    LAXIAH‡UA    01Y1    ${EMPTY}    6    5
+    Book Flight X Months From Now    IAHLAX‡UA    01Y1    WPRQ    6    0
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR With Timestamp
+    Re-Execute Amend Booking For Successful Send To PNR Retry If Simultaneous Change Error Is Displayed
+    Verify Transaction Is Reflected in OTT Table    US Head Office    14:3FE7E    U003WXR    NORAM    NAMER    US
+    ...    1S    2    A:88CCE    A:4030D9BF    False    ${current_pnr}
+    ...    None    True    None
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That CDR Changes Between Update and Finish PNR Are Recorded In ApplicationTransactionCDRUpdate Table And Linked To An OTT
+    [Tags]    us3124
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4363    auto    name
+    Click New Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    Bank    Bank of the Philippine Islands
+    Set CDR Value    Destination    United States
+    Set CDR Value    EmployeeID    EMP234
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    MSPORD¥AA    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Bank    Citibank
+    Set CDR Value    Destination    ${EMPTY}
+    Set CDR Value    T-Matrix DP Code    S789
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Verify CDR Update Details Are Recorded In ApplicationTransactionCDRUpdate Table    Bank    ${EMPTY}    BANK OF THE PHILIPPINE ISLANDS
+    Verify CDR Update Details Are Recorded In ApplicationTransactionCDRUpdate Table    Destination    ${EMPTY}    UNITED STATES
+    Verify CDR Update Details Are Recorded In ApplicationTransactionCDRUpdate Table    EmployeeID    EMP123    EMP234
+    Verify CDR Update Details Are Recorded In ApplicationTransactionCDRUpdate Table    Bank    BANK OF THE PHILIPPINE ISLANDS    CITIBANK
+    Verify CDR Update Details Are Recorded In ApplicationTransactionCDRUpdate Table    Destination    UNITED STATES    ${EMPTY}
+    Verify CDR Update Details Are Recorded In ApplicationTransactionCDRUpdate Table    T-Matrix DP Code    ${EMPTY}    S789
+    Verify Valid Count Of CDR Update Rows Are Recorded In ApplicationTransactionCDRUpdate Table    6
+
+[AB] Verify That CDR Changes On Finish PNR Are Recorded In ApplicationTransactionCDRUpdate Table And Linked To An OTT
+    [Tags]    us3124
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    Destination    Brazil
+    Set CDR Value    EmployeeID    ${EMPTY}
+    Set CDR Value    T-Matrix DP Code    S123
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Booking For CDR Changes If Simultaneous Change Error Is Displayed
+    Verify CDR Update Details Are Recorded In ApplicationTransactionCDRUpdate Table    Destination    ${EMPTY}    BRAZIL
+    Verify CDR Update Details Are Recorded In ApplicationTransactionCDRUpdate Table    EmployeeID    EMP234    ${EMPTY}
+    Verify CDR Update Details Are Recorded In ApplicationTransactionCDRUpdate Table    T-Matrix DP Code    S789    S123
+    Verify Valid Count Of CDR Update Rows Are Recorded In ApplicationTransactionCDRUpdate Table    3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Successful Send To PNR Retry
+    Retrieve PNR with Timestamp    Sabre 211 - Auto ¦ US1918    AutoTwoOneOne    OptimizeTrvlrTwo    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL    XI
+    Book Flight X Months From Now    LAXCDG¥AA    01Y1    WPRQ    6    3
+    Book Flight X Months From Now    CDGLAX¥AA    01Y1    WPRQ    6    0
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR With Timestamp    GDS Response: Exception Message : Error in endTransactionLLSRQClient: SEGMENTS NOT IN DATE ORDER - VERIFY AND REENTER
+
+Amend Booking For CDR Changes
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Verify Show All Client Defined References Checkbox Is Unticked
+    Tick Show All Client Defined References
+    Set CDR Value    Destination    Brazil
+    Set CDR Value    EmployeeID    ${EMPTY}
+    Set CDR Value    T-Matrix DP Code    S123
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR

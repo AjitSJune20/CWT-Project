@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        traveller_and_contact

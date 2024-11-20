@@ -1,0 +1,538 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          exchange_verification.txt
+
+*** Test Cases ***
+[1A EMEA][NB] Verify That TARIF APPLIQUE Is Written In Itinerary Remark For Single Normal Fare
+    [Tags]    US5667    US5665    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    ${EMPTY}
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP/S2    5    1
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S3    5    5
+    Book Flight X Months From Now    CDGNCE/AAF    SS1Y1    FXP/S4    5    10
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify TARIF APPLIQUE Remark Is Written    S2    Fare 1
+    [Teardown]
+
+[1A EMEA][AB] Verify That FRAIS DE MODIFICATION TARIFAIRE And FRAIS DE MODIFICATION COMPAGNIE Are Written In Itinerary Remark For Exchange Fare With EMD
+    [Tags]    US5667    US5665    de6848    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Create Exchange Booking With Tax For Amadeus    S3    T2    EUR    200.00    15.00    Fare 2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Set Changes Value    TEST FOR EXCHANGE CHANGES    Fare 2    1
+    Set Cancellation Value    TEST FOR EXCHANGE CANCELLATIONS    Fare 2    1
+    Click EMD Tab
+    Populate EMD With Default Values
+    Populate Fare Tab With Default Values    Fare 3
+    Click Finish PNR    Amend Booking Exchange With EMD
+    Execute Simultaneous Change Handling    Amend Booking Exchange With EMD
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify TARIF APPLIQUE Remark Is Written    S2    Fare 1
+    Verify TARIF APPLIQUE Remark Is Not Written    S3    Fare 2
+    Verify Exchange Itinerary Remark    Fare 2
+
+[1A EMEA][AB] Verify That FRAIS DE MODIFICATION TARIFAIRE Is Written In Itinerary Remark For Exchange Fare Without EMD
+    [Tags]    US5667    US5665    de6848    fr    de7323_validfail_18.5
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Fare 2
+    Verify Changes Field Actual Value    TEST FOR EXCHANGE CHANGES    Fare 2    1
+    Verify Cancellations Field Actual Value    TEST FOR EXCHANGE CANCELLATIONS    Fare 2    1
+    Populate Fare Tab With Default Values    Fare 2
+    Click EMD Tab
+    Untick EMD Checkbox
+    Populate Fare Tab With Default Values    Fare 3
+    Click Finish PNR    Amend Booking Exchange Without EMD
+    Execute Simultaneous Change Handling    Amend Booking Exchange Without EMD
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify TARIF APPLIQUE Remark Is Written    S2    Fare 1
+    Verify TARIF APPLIQUE Remark Is Not Written    S3    Fare 2
+    Verify FRAIS DE MODIFICATION COMPAGNIE Is Not Written    S3    Fare 2
+    Verify Exchange Itinerary Remark    Fare 2
+
+[1A EMEA][AB] Verify That FRAIS DE MODIFICATION TARIFAIRE Is Not Written In Itinerary Remark When Exchange Is Removed
+    [Tags]    DE6810    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    Enter GDS Command    FXP/S2    FXT01/P1
+    Enter GDS Command    FXP/S3    FXT01/P1
+    Enter GDS Command    FXP/S4    FXT01/P1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Click Finish PNR    Amend Booking Without Exchange
+    Execute Simultaneous Change Handling    Amend Booking Without Exchange
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Not Written In The PNR    FRAIS DE MODIFICATION TARIFAIRE: EUR 15.00
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][NB] Verify That TARIF APPLIQUE Is Written In Itinerary Remark For Single Normal Fare - Traveldoo
+    [Tags]    US5667    US5665    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ US2837 Traveldoo    AutoOneFiveTwo    EmeaTrvlrTwo
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP/S2    5
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP/S3    5    10
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify TARIF APPLIQUE Remark Is Written    S2    Fare 1
+    [Teardown]
+
+[1A EMEA][AB] Verify That FRAIS DE MODIFICATION TARIFAIRE And FRAIS DE MODIFICATION COMPAGNIE Are Written In Itinerary Remark For Exchange Fare With EMD - Traveldoo
+    [Tags]    US5667    US5665    DE6832    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Create Exchange Booking With Tax For Amadeus    S3    T2    EUR    250.00    15.00    Fare 2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Compliant Dropdown Value    Oui
+    Click EMD Tab
+    Populate EMD With Default Values
+    Click Finish PNR    Amend Booking Exchange With EMD Traveldoo
+    Execute Simultaneous Change Handling    Amend Booking Exchange With EMD Traveldoo
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify TARIF APPLIQUE Remark Is Written    S2    Fare 1
+    Verify TARIF APPLIQUE Remark Is Not Written    S3    Fare 2
+    Verify Exchange Itinerary Remark    Fare 2
+
+[1A EMEA][AB] Verify That FRAIS DE MODIFICATION TARIFAIRE Is Written In Itinerary Remark For Exchange Fare Without EMD - Traveldoo
+    [Tags]    US5667    US5665    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Compliant Dropdown Value    Oui
+    Click EMD Tab
+    Untick EMD Checkbox
+    Click Finish PNR    Amend Booking Exchange Without EMD Traveldoo
+    Execute Simultaneous Change Handling    Amend Booking Exchange Without EMD Traveldoo
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify TARIF APPLIQUE Remark Is Written    S2    Fare 1
+    Verify TARIF APPLIQUE Remark Is Not Written    S3    Fare 2
+    Verify FRAIS DE MODIFICATION COMPAGNIE Is Not Written    S3    Fare 2
+    Verify Exchange Itinerary Remark    Fare 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][NB] Verify That Air Fare Restrictions Are Pre-Populated With Values From PNR For PNR With Mixed Fares
+    [Tags]    US5601    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    ${EMPTY}
+    Click New Booking
+    Book Flight X Months From Now    CDGNCE/AAF    SS1Y1    FXP/S2    6    1
+    Book Flight X Months From Now Without Pricing    NCECDG/AAF    SS1Y1    6    10
+    Create Amadeus Offer Remove Flight    S3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Create Exchange Booking With Tax For Amadeus    S2    T1    EUR    300.00    15.00    Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify High Fare Field Value    15.00    Fare 1
+    Verify Charged Fare Field Value    15.00    Fare 1
+    Verify Low Fare Field Value    15.00    Fare 1
+    Verify Missed Savings Code Default Value    DTT - DEMANDE TROP TARDIVE
+    Verify Realised Savings Code Default Value    SPE - TARIFS SPECIAUX
+    Populate Air Fare Restrictions    Semi Flexible    changement d'horaire sans frais    remboursement integral    AF seulement    Autorise    4 semaine
+    ...    Non applicable    Fare 1    1
+    Populate Air Savings Code    ABN - ABONNEMENT    PDR - PAS DE REFUS    FN - Tarif Net Premiere
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Finish PNR    Exchange Amend 1
+    Execute Simultaneous Change Handling    Exchange Amend 1
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    IR
+    Click Amend Booking
+    Comment    Enter GDS Command    TTE/ALL    fxp/s2
+    Enter GDS Command    TTE/ALL
+    Enter GDS Command    XE2
+    Book Flight X Months From Now    CDGNCE/AAF    SS1Y1    FXP/S2    6    1
+    Create Exchange Booking With Tax For Amadeus    S2    T2    EUR    350.00    30.00    Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify High Fare Field Value    30.00    Fare 1
+    Verify Charged Fare Field Value    30.00    Fare 1
+    Verify Low Fare Field Value    30.00    Fare 1
+    Verify Missed Savings Code Default Value    DTT - DEMANDE TROP TARDIVE
+    Verify Realised Savings Code Default Value    SPE - TARIFS SPECIAUX
+    Verify Air Fare Restriction Values Are Correct    Fare 1    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}
+    Populate Air Fare Restrictions    Semi Flexible    sans frais plus la difference de tarif    moins 20% apres le depart    AF seulement    Autorise    1 jour
+    ...    6 mois    Fare 1    1
+    Populate Air Savings Code    ABN - ABONNEMENT    PDR - PAS DE REFUS    FN - Tarif Net Premiere
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Finish PNR    Exchange Amend 2
+    Execute Simultaneous Change Handling    Exchange Amend 2
+    [Teardown]
+
+[1A EMEA][AB] Verify That Air Fare Restrictions Are Pre-Populated With Values From PNR When New Fare Is Added
+    [Tags]    fr    US5601
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    IR
+    Click Amend Booking
+    Book Flight X Months From Now    ORYNCE    SS1Y1    FXP/S3    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restriction Values Are Correct    Fare 1    moins 20% apres le depart    sans frais plus la difference de tarif    AF SEULEMENT    AUTORISE    1 JOUR
+    ...    6 MOIS
+    Verify Realised Savings Code Default Value    ABN - ABONNEMENT
+    Verify Missed Savings Code Default Value    PDR - PAS DE REFUS
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 2
+    Click Finish PNR    Exchange Amend 3
+    Execute Simultaneous Change Handling    Exchange Amend 3
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    IR
+    Create Exchange Booking With Tax For Amadeus    S3    T3    EUR    150.00    50.00    Fare 2
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify High Fare Field Value    30.00    Fare 1
+    Verify Charged Fare Field Value    30.00    Fare 1
+    Verify Low Fare Field Value    30.00    Fare 1
+    Verify Air Fare Restriction Values Are Correct    Fare 1    moins 20% apres le depart    sans frais plus la difference de tarif    AF SEULEMENT    AUTORISE    1 JOUR
+    ...    6 MOIS
+    Verify Realised Savings Code Default Value    ABN - ABONNEMENT
+    Verify Missed Savings Code Default Value    PDR - PAS DE REFUS
+    Click Fare Tab    Fare 2
+    Verify High Fare Field Value    50.00    Fare 2
+    Verify Charged Fare Field Value    50.00    Fare 2
+    Verify Low Fare Field Value    50.00    Fare 2
+    Verify Missed Savings Code Default Value    DTT - DEMANDE TROP TARDIVE
+    Verify Realised Savings Code Default Value    SPE - TARIFS SPECIAUX
+    Verify Air Fare Restriction Values Are Correct    Fare 2    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][AB] Verify That Savings Codes Defaults to Blank When Fare Is Exchange
+    [Tags]    US5601    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    FR Amadeus - Mark ¦ OBT - KDS    KDS    Jane
+    Select Client Account    717171 ¦ CWT AQUA TEST ACCOUNT ¦ OBT - KDS
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    ${EMPTY}    6
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6    2
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    ${EMPTY}    6    8
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXX/S4-5    6    9
+    Enter GDS Command    OFS/A
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Create Exchange Booking With Tax For Amadeus    S2-3    T1    EUR    100.00    0.00    Fare 1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify High Fare Field Value    0.00    Fare 1
+    Verify Low Fare Field Value    0.00    Fare 1
+    Verify Charged Fare Field Value    0.00    Fare 1
+    Verify Realised Savings Code Default Value    ${EMPTY}
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Populate Air Fare Restrictions    Semi Flexible    2: Partiellement Modifiable    2: Partiellement Remboursable    AF seulement    Autorise    1 jour
+    ...    6 mois    Fare 1
+    Select Compliant Dropdown Value    Oui
+    Set Comment Value    test fare 1
+    Populate Air Savings Code    CWT - NEGOCIATION CWT    CID - CLASSE IMPERATIVE DEMANDEE    YA - Economy Tarif Public
+    Click Fare Tab    Alternate Fare 1
+    Populate Air Fare Restrictions    Fully Flexible    1: Modifiable    1: Remboursable    AF    Autorise    1 jour
+    ...    1 an    Alternate Fare 1
+    Select Compliant Dropdown Value    Oui
+    Set Comment Value    alternate fare test
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Savings Codes Defaults to Blank When Fare Is Exchange
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    CHGS-PARTIELLEMENT MODIFIABLE
+    Verify Specific Line Is Written In The PNR    CANX-PARTIELLEMENT REMBOURSABLE
+    Verify Specific Line Is Written In The PNR    MIN-1 JOUR:MAX-6 MOIS
+    [Teardown]
+
+[1A EMEA][AB] Verify That Air Fare Restrictions Are Pre-Populated Correctly When Fare Is Exchange
+    [Tags]    US5601    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/T1
+    Enter GDS Command    XE2-3
+    Book Flight X Months From Now    ORYNCE/AAF    SS1Y1    FXP/S2    5    28
+    Create Exchange Booking With Tax For Amadeus    S2    T2    EUR    80.00    0.00    Fare 1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restrictions Value    Fare 1    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}
+    Verify Realised Savings Code Default Value    ${EMPTY}
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Verify Air Fare Restriction Option Is Selected By Default    Semi Flexible
+    Populate Air Fare Restrictions    Fully Flexible    1: Modifiable    1: Remboursable    AF    Autorise    1 jour
+    ...    1 an    Fare 1
+    Select Compliant Dropdown Value    Oui
+    Set Comment Value    test fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Alternate Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Air Fare Restrictions Are Pre-Populated Correctly When Fare Is Exchange
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    CHGS-MODIFIABLE
+    Verify Specific Line Is Written In The PNR    CANX-REMBOURSABLE
+    Verify Specific Line Is Written In The PNR    MIN-1 JOUR:MAX-1 AN
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Exchange With EMD
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Create Exchange Booking With Tax For Amadeus    S3    T2    EUR    200.00    15.00    Fare 2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Set Changes Value    TEST FOR EXCHANGE CHANGES    Fare 2    1
+    Set Cancellation Value    TEST FOR EXCHANGE CANCELLATIONS    Fare 2    1
+    Click EMD Tab
+    Populate EMD With Default Values
+    Populate Fare Tab With Default Values    Fare 3
+    Click Finish PNR    Amend Booking Exchange With EMD
+
+Amend Booking Exchange With EMD Traveldoo
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Create Exchange Booking With Tax For Amadeus    S3    T2    EUR    250.00    15.00    Fare 2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Compliant Dropdown Value    Oui
+    Click EMD Tab
+    Populate EMD With Default Values
+    Click Finish PNR    Amend Booking Exchange With EMD
+
+Amend Booking Exchange Without EMD
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Fare 2
+    Verify Changes Field Actual Value    TEST FOR EXCHANGE CHANGES    Fare 2    1
+    Verify Cancellations Field Actual Value    TEST FOR EXCHANGE CANCELLATIONS    Fare 2    1
+    Populate Fare Tab With Default Values    Fare 2
+    Click EMD Tab
+    Untick EMD Checkbox
+    Populate Fare Tab With Default Values    Fare 3
+    Click Finish PNR    Amend Booking Exchange Without EMD
+
+Amend Booking Exchange Without EMD Traveldoo
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Compliant Dropdown Value    Oui
+    Click EMD Tab
+    Untick EMD Checkbox
+    Click Finish PNR    Amend Booking Exchange Without EMD
+
+Amend Booking Without Exchange
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    Enter GDS Command    FXP/S2    FXT01/P1
+    Enter GDS Command    FXP/S3    FXT01/P1
+    Enter GDS Command    FXP/S4    FXT01/P1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Click Finish PNR    Amend Booking Without Exchange
+    Execute Simultaneous Change Handling    Amend Booking Without Exchange
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Not Written In The PNR    FRAIS DE MODIFICATION TARIFAIRE:
+
+Exchange Amend 1
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Create Exchange Booking With Tax For Amadeus    S2    T1    EUR    300.00    15.00    Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify High Fare Field Value    15.00    Fare 1
+    Verify Charged Fare Field Value    15.00    Fare 1
+    Verify Low Fare Field Value    15.00    Fare 1
+    Verify Missed Savings Code Default Value    DTT - DEMANDE TROP TARDIVE
+    Verify Realised Savings Code Default Value    SPE - TARIFS SPECIAUX
+    Populate Air Fare Restrictions    Semi Flexible    changement d'horaire sans frais    remboursement integral    AF seulement    Autorise    4 semaine
+    ...    Non applicable    Fare 1    1
+    Populate Air Savings Code    ABN - ABONNEMENT    PDR - PAS DE REFUS    FN - Tarif Net Premiere
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Finish PNR    Exchange Amend 1
+
+Exchange Amend 2
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    fxp/s2
+    Create Exchange Booking With Tax For Amadeus    S2    T2    EUR    350.00    30.00    Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify High Fare Field Value    30.00    Fare 1
+    Verify Charged Fare Field Value    30.00    Fare 1
+    Verify Low Fare Field Value    30.00    Fare 1
+    Verify Missed Savings Code Default Value    DTT - DEMANDE TROP TARDIVE
+    Verify Realised Savings Code Default Value    SPE - TARIFS SPECIAUX
+    Verify Air Fare Restrictions Value    Fare 1    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}    1
+    Populate Air Fare Restrictions    Semi Flexible    sans frais plus la difference de tarif    moins 20% apres le depart    AF seulement    Autorise    1 jour
+    ...    6 mois    Fare 1    1
+    Populate Air Savings Code    ABN - ABONNEMENT    PDR - PAS DE REFUS    FN - Tarif Net Premiere
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Finish PNR    Exchange Amend 2
+
+Exchange Amend 3
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    ORYNCE    SS1Y1    FXP/S3    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restrictions Value    Fare 1    sans frais plus la difference de tarif    moins 20% apres le depart    AF seulement    Autorise    1 jour
+    ...    6 mois    1
+    Verify Realised Savings Code Default Value    ABN - ABONNEMENT
+    Verify Missed Savings Code Default Value    PDR - PAS DE REFUS
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 2
+    Click Finish PNR    Exchange Amend 3
+
+Verify Air Fare Restriction Values Are Correct
+    [Arguments]    ${fare_tab}    ${cancellations_value}    ${changes_value}    ${valid_on_value}    ${reroute_value}    ${minimum_stay_value}
+    ...    ${maximum_stay_value}
+    Verify Cancellations Field Actual Value    ${cancellations_value}    ${fare_tab}
+    Verify Changes Field Actual Value    ${changes_value}    ${fare_tab}
+    Verify Valid On Field Value    ${fare_tab}    ${valid_on_value}
+    Verify Re-Route Field Value    ${fare_tab}    ${reroute_value}
+    Verify Minimum Stay Field Value    ${fare_tab}    ${minimum_stay_value}
+    Verify Maximum Stay Field Value    ${fare_tab}    ${maximum_stay_value}
+
+Verify That Savings Codes Defaults to Blank When Fare Is Exchange
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    FR Amadeus - Mark ¦ OBT - KDS    KDS    Jane
+    Select Client Account    717171 ¦ CWT AQUA TEST ACCOUNT ¦ OBT - KDS
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    ${EMPTY}    6
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6    2
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    ${EMPTY}    6    8
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXX/S4-5    6    9
+    Enter GDS Command    OFS/A
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Create Exchange Booking With Tax For Amadeus    S2-3    T1    EUR    100.00    0.00    Fare 1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify High Fare Field Value    0.00    Fare 1
+    Verify Low Fare Field Value    0.00    Fare 1
+    Verify Charged Fare Field Value    0.00    Fare 1
+    Verify Realised Savings Code Default Value    ${EMPTY}
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Populate Air Fare Restrictions    Semi Flexible    2: Partiellement Modifiable    2: Partiellement Remboursable    AF seulement    Autorise    1 jour
+    ...    6 mois    Fare 1
+    Select Compliant Dropdown Value    Oui
+    Set Comment Value    test fare 1
+    Populate Air Savings Code    CWT - NEGOCIATION CWT    CID - CLASSE IMPERATIVE DEMANDEE    YA - Economy Tarif Public
+    Click Fare Tab    Alternate Fare 1
+    Populate Air Fare Restrictions    Fully Flexible    1: Modifiable    1: Remboursable    AF    Autorise    1 jour
+    ...    1 an    Alternate Fare 1
+    Select Compliant Dropdown Value    Oui
+    Set Comment Value    alternate fare test
+    Click Finish PNR
+    Comment    Execute Simultaneous Change Handling
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    CHGS-PARTIELLEMENT MODIFIABLE
+    Verify Specific Line Is Written In The PNR    CANX-PARTIELLEMENT REMBOURSABLE
+    Verify Specific Line Is Written In The PNR    MIN-1 JOUR:MAX-6 MOIS
+
+Verify That Air Fare Restrictions Are Pre-Populated Correctly When Fare Is Exchange
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/T1
+    Enter GDS Command    XE2-3
+    Book Flight X Months From Now    ORYNCE/AAF    SS1Y1    FXP/S2    5    28
+    Create Exchange Booking With Tax For Amadeus    S2    T2    EUR    80.00    0.00    Fare 1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Air Fare Restrictions Value    Fare 1    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}
+    Verify Realised Savings Code Default Value    ${EMPTY}
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Verify Air Fare Restriction Option Is Selected By Default    Semi Flexible
+    Populate Air Fare Restrictions    Fully Flexible    1: Modifiable    1: Remboursable    AF    Autorise    1 jour
+    ...    1 an    Fare 1
+    Select Compliant Dropdown Value    Oui
+    Set Comment Value    test fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Alternate Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That Air Fare Restrictions Are Pre-Populated Correctly When Fare Is Exchange
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    CHGS-MODIFIABLE
+    Verify Specific Line Is Written In The PNR    CANX-REMBOURSABLE
+    Verify Specific Line Is Written In The PNR    MIN-1 JOUR:MAX-1 AN

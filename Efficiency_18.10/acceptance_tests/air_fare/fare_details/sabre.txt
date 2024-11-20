@@ -1,0 +1,2108 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../air_fare_verification.txt
+Resource          ../../amend/amend_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Error Icon And Tooltip Messages Displays When Entering Invalid HF And LF
+    [Tags]    us552    de6472    valid_fail    noram    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre Legacy - Auto ¦ US552 Invalid HF and LF    AutoLegacy    NoramTrvlrOneSix    LAXJFK¥AA    ${EMPTY}    Air Fare
+    Click Panel    Air Fare
+    Verify High Fare Field Is Mandatory
+    Verify Low Fare Field Is Mandatory
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Panel Is Red    Air Fare
+    Get Charged Fare Value
+    Set High Fare Field    ${converted_charged_fare}
+    Verify High Fare Accepts Input
+    Set Low Fare Field    ${converted_charged_fare}
+    Verify Low Fare Accepts Input
+    Verify High Fare Limits To Two Decimals Only
+    Verify Low Fare Limits To Two Decimals Only
+    Replace Decimal Sign    ${charged_fare_amount}    .    ,    custom_charged_fare_amount
+    Set High Fare Field    ${custom_charged_fare_amount}
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${custom_charged_fare_amount}
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set Low Fare Field    ${converted_charged_fare}
+    Set High Fare Field    ABCDE
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    FGHIJ
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set Low Fare Field    ${converted_charged_fare}
+    Update Amount    ${charged_fare_amount}    -    30    fare_less_than_charged_fare_amount
+    Set High Fare Field    ${fare_less_than_charged_fare_amount}
+    Verify Invalid Icon And Validate High Fare Message Is Displayed
+    Update Amount    ${charged_fare_amount}    +    30    fare_more_than_charged_fare_amount
+    Set High Fare Field    ${fare_more_than_charged_fare_amount}
+    Verify High Fare Accepts Input
+    Set Low Fare Field    ${fare_more_than_charged_fare_amount}
+    Verify Invalid Icon And Validate Low Fare Message Is Displayed
+    Set Low Fare Field    ${fare_less_than_charged_fare_amount}
+    Verify Low Fare Accepts Input
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify High Fare Field Is Mandatory
+    Verify Low Fare Field Is Mandatory
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${converted_charged_fare}
+    Click Panel    Recap
+    Click Panel    Air Fare
+    Verify Panel Is Red    Air Fare
+    Verify Realised Saving Code Field Is Enabled
+    Verify Missed Savings Code Field Is Disabled
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${fare_less_than_charged_fare_amount}
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Set Low Fare Field    ${converted_charged_fare}
+    Select Realised Saving Code Value    L - Lowest fare available accepted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Get High, Charged And Low Fare In Fare Tab
+    Verify Specific Line Is Written In The PNR    X/-LP/${without_decimal_low_fare_1}
+    Verify Specific Line Is Written In The PNR    X/-FF/${without_decimal_high_fare_1}
+
+[AB] Verify That Error Icon And Tooltip Messages Displays When Entering Invalid HF And LF
+    [Tags]    us552    de6176    de6472    valid_fail    noram    not_ready
+    Sleep    30
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL    XI
+    Book Flight X Months From Now    LAXORD‡UA    01Y1    WPRQ    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify High Fare Field Is Mandatory
+    Verify Low Fare Field Is Mandatory
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Panel Is Red    Air Fare
+    Get Charged Fare Value
+    Set High Fare Field    ${converted_charged_fare}
+    Verify High Fare Accepts Input
+    Set Low Fare Field    ${converted_charged_fare}
+    Verify Low Fare Accepts Input
+    Verify High Fare Limits To Two Decimals Only
+    Verify Low Fare Limits To Two Decimals Only
+    Replace Decimal Sign    ${charged_fare_amount}    .    ,    custom_charged_fare_amount
+    Set High Fare Field    ${custom_charged_fare_amount}
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${custom_charged_fare_amount}
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set Low Fare Field    ${converted_charged_fare}
+    Set High Fare Field    ABCDE
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    FGHIJ
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set Low Fare Field    ${converted_charged_fare}
+    Update Amount    ${charged_fare_amount}    -    30    fare_less_than_charged_fare_amount
+    Set High Fare Field    ${fare_less_than_charged_fare_amount}
+    Verify Invalid Icon And Validate High Fare Message Is Displayed
+    Update Amount    ${charged_fare_amount}    +    30    fare_more_than_charged_fare_amount
+    Set High Fare Field    ${fare_more_than_charged_fare_amount}
+    Verify High Fare Accepts Input
+    Set Low Fare Field    ${fare_more_than_charged_fare_amount}
+    Verify Invalid Icon And Validate Low Fare Message Is Displayed
+    Set Low Fare Field    ${fare_less_than_charged_fare_amount}
+    Verify Low Fare Accepts Input
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify High Fare Field Is Mandatory
+    Verify Low Fare Field Is Mandatory
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${converted_charged_fare}
+    Click Panel    Recap
+    Click Panel    Air Fare
+    Verify Panel Is Red    Air Fare
+    Verify Realised Saving Code Field Is Enabled
+    Verify Missed Savings Code Field Is Disabled
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${fare_less_than_charged_fare_amount}
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Set Low Fare Field    ${converted_charged_fare}
+    Select Realised Saving Code Value    L - Lowest fare available accepted
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Invalid HF And LF If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Click Panel    Air Fare
+    Get High, Charged And Low Fare In Fare Tab
+    Verify Specific Line Is Written In The PNR    X/-LP/${without_decimal_low_fare_1}
+    Verify Specific Line Is Written In The PNR    X/-FF/${without_decimal_high_fare_1}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Hidden Stop Is Not Recognized In Air Fare Panel For Single Segment With Alternate Fare
+    [Tags]    us3779    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationAU    AU AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre AU 16 - Auto ¦ US3779    AutoSixteenSeven    NoramTrvlrSeven
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SYDLHR‡QF    01Y1    WPAQF¥FCASH¥KP5¥RQ    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    SYD-LHR
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Verify Alternate Routing Field Is Enabled
+    Verify Alternate Fare Routing Field Value    SYD-LHR
+    Verify Alternate Fare Details Does Not Include Hidden Stop    .*SYD LHR
+    [Teardown]    Click Clear All
+
+[NB] Verify That Fares Are Correct When TKT Lines Are The SF Order
+    [Tags]    de5234    de6262    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE5234    AutoSixteenSeven    NoramTrvlrThree
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MSPORD‡AA    01Y1    WPRQ‡S1    6
+    Book Flight X Months From Now    ORDDEN‡AA    01Y1    WPRQ‡S2    6    4
+    Book Flight X Months From Now    DENLAX‡AA    01Y1    WPRQ‡S3    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2    Fare 3
+    Click Fare Tab    Fare 1
+    Get High, Charged and Low Fare in Fare Tab    Fare 1
+    Verify Routing Field Value    MSP-ORD
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Click Fare Tab    Fare 2
+    Get High, Charged and Low Fare in Fare Tab    Fare 2
+    Verify Routing Field Value    ORD-DEN
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Click Fare Tab    Fare 3
+    Get High, Charged and Low Fare in Fare Tab    Fare 3
+    Verify Routing Field Value    DEN-LAX
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 1    USD    *PQ
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 2    USD    *PQ
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 3    USD    *PQ
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    T‡SPLIT3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD${fare_1_base_fare}‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT1-ETK-DIN‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ${charged_fare_1}/LP-${without_decimal_low_fare_1}/FS-A/FF-${without_decimal_high_fare_1}
+    Verify Specific Line Is Written In The PNR    T‡TKT2-BFUSD${fare_2_base_fare}‡S2
+    Verify Specific Line Is Written In The PNR    T‡TKT2-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT2-ETK-DIN‡S2
+    Verify Specific Line Is Written In The PNR    T‡TKT2-FQ${charged_fare_2}/LP-${without_decimal_low_fare_2}/FS-A/FF-${without_decimal_high_fare_2}
+    Verify Specific Line Is Written In The PNR    T‡TKT3-BFUSD${fare_3_base_fare}‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT3-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT3-ETK-DIN‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT3-FQ${charged_fare_3}/LP-${without_decimal_low_fare_3}/FS-A/FF-${without_decimal_high_fare_3}
+    Verify Specific Line Is Written In The PNR    X/-LP/${without_decimal_low_fare_1}
+    Verify Specific Line Is Written In The PNR    X/-FS/A
+    Verify Specific Line Is Written In The PNR    X/-FF/${without_decimal_high_fare_1}
+
+[AB] Verify That Exchange Is Applied To Correct Segment When TKT Lines Are Not The SF Order
+    [Tags]    de5234    noram    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    W‡D
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    WPRQ‡S3
+    Enter GDS Command    WPRQ‡S1
+    Enter GDS Command    WDS2
+    Enter GDS Command    5T‡EXCH3
+    Enter GDS Command    5T‡TKT3-IRP1/PA-200.00/CA-0.00/EA-295.00/NF-4160.95
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2    Fare 3
+    Click Fare Tab    Fare 1
+    Get High, Charged and Low Fare in Fare Tab    Fare 1
+    Verify Routing Field Value    DEN-LAX
+    Click Fare Tab    Fare 2
+    Get High, Charged and Low Fare in Fare Tab    Fare 2
+    Verify Routing Field Value    MSP-ORD
+    Click Fare Tab    Fare 3
+    Get High, Charged and Low Fare in Fare Tab    Fare 3
+    Verify Routing Field Value    ORD-DEN
+    Verify Realised Savings Code Default Value    E - Exchange
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Exchange Is Applied To Correct Segment When TKT Lines Are Not The SF Order If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    T‡EXCH3
+    Verify Specific Line Is Written In The PNR    T‡TKT3-IRP1/PA-200.00/CA-0.00/EA-295.00/NF-4160.95
+    Verify Specific Line Is Written In The PNR    T‡SPLIT3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD.*‡S3    true
+    Verify Specific Line Is Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT1-ETK-DIN‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ${charged_fare_1}/LP-${without_decimal_low_fare_1}/FS-A/FF-${without_decimal_high_fare_1}
+    Verify Specific Line Is Written In The PNR    T‡TKT2-BFUSD.*‡S1    true
+    Verify Specific Line Is Written In The PNR    T‡TKT2-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT2-ETK-DIN‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT2-FQ${charged_fare_2}/LP-${without_decimal_low_fare_2}/FS-A/FF-${without_decimal_high_fare_2}
+    Verify Specific Line Is Written In The PNR    T‡TKT3-BFUSD.*‡S2    true
+    Verify Specific Line Is Written In The PNR    T‡TKT3-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT3-ETK-DIN‡S2
+    Verify Specific Line Is Written In The PNR    T‡TKT3-FQ${charged_fare_3}/LP-${without_decimal_low_fare_3}/FS-E/FF-${without_decimal_high_fare_3}
+    Verify Specific Line Is Written In The PNR    X/-LP/${without_decimal_low_fare_1}
+    Verify Specific Line Is Written In The PNR    X/-FS/A
+    Verify Specific Line Is Written In The PNR    X/-FF/${without_decimal_high_fare_1}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Fare Remarks Are Written In The PNR
+    [Tags]    legacy    noram    notready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    D33H
+    Create New Booking With One Way Flight Using Default Values    Sabre FR Legacy - Auto ¦ Fare Remarks    AutoLegacy    PerfEight    LAXCDG‡AF    ${EMPTY}    AIR FARE
+    ...    DELIVERY
+    Click Panel    DELIVERY
+    Populate Delivery Panel With Specific Delivery Method    ETKT AIR
+    Click Panel    AIR FARE
+    Click Fare Tab    Fare 1
+    Get High, Charged And Low Fare In Fare Tab
+    Select Realised Saving Code Value    TNU - TARIF NORMAL UTILISE
+    Select Missed Saving Code Value    LOW - LOWCOST REFUSE
+    Select Class Code Value    YC - Tarif Client Classe Economique
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Finish PNR
+    Sleep    10
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Merchant Fee Is Written In The PNR
+    Verify High Fare, Charged Fare And Low Fare Remarks Are Written
+    Verify Reason Code, Destination, Ticket Type And Invoice Is Written In The PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Charged Fare, High Fare And Low Fare Amount Are Equal
+    [Tags]    legacy    us552    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Create New Booking With One Way Flight Using Default Values    Sabre Legacy - Auto ¦ US552 Charged HF and LF    AutoLegacy    NoramTrvlrOneFour    LAXJFK¥AA    ${EMPTY}    AIR FARE
+    Click Panel    Air Fare
+    Get High, Charged And Low Fare In Fare Tab
+    Verify Charged, High And Low Fare Amount Are Equal
+    Click Finish PNR
+
+[AB] Verify That Charged Fare, High Fare and Low Fare Amount Are Equal
+    [Tags]    legacy    us552    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI
+    Enter GDS Command    PQD-ALL
+    Book One Way Flight X Months From Now    LHRJFK¥AA    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Get High, Charged And Low Fare In Fare Tab
+    Verify Charged, High And Low Fare Amount Are Equal
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Turnaround Is Not Visible And Not Written In Itinerary Remarks For Single Segment
+    [Tags]    us3779    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Create New Booking With One Way Flight Using Default Values    Sabre 16 - Auto ¦ US3779    AutoSixteenSeven    NoramTrvlrFive    SYDLON‡QF    ${EMPTY}    AIR FARE
+    ...    DELIVERY
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Control Object Is Not Visible    ${cbo_Turnaround1}
+    Select Missed Saving Code Value    B - Declined Preferred Carrier
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    DXB
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Realised Savings Code Defaults To L When CF = LF And L Exists
+    [Tags]    us2029    noram    rerun
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 15 - Auto ¦ US2029    AutoFifteenTen    NoramTrvlrOne
+    Tick Traveller Checkbox
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ORDDEN¥UA    01Y1    WPRQ‡S1    3    2
+    Search Low Fare Calculation    WPNIN/T2    WC‡1    PQ    X1-2
+    Book Flight X Months From Now    DENLAX¥UA    01Y1    WPRQ‡S2    6    4
+    Enter Exchange Command X Fare    Fare 2    150.00    150.00    3059.80
+    Book Flight X Months From Now    LAXORD¥UA    01Y1    WPRQ‡S3    6    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2    Fare 3
+    Click Fare Tab    Fare 1
+    Get High, Charged and Low Fare in Fare Tab    Fare 1
+    Verify Charged Fare And Low Fare Are Equal    Fare 1
+    Verify Realised Savings Code Default Value    L - Lowest fare available accepted
+    Click Fare Tab    Fare 2
+    Get High, Charged and Low Fare in Fare Tab    Fare 2
+    Verify Charged, High And Low Fare Amount Are Equal    Fare 2
+    Verify Realised Savings Code Default Value    E - Exchange
+    Click Fare Tab    Fare 3
+    Get High, Charged and Low Fare in Fare Tab    Fare 3
+    Select Missed Saving Code Value    T - Flight Time Declined
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-FS/L
+    Verify Ticketing Remark Includes Realized Saving Code X Fare In The PNR    Fare 1    L
+    Verify Ticketing Remark Includes Realized Saving Code X Fare In The PNR    Fare 2    E
+    Verify Ticketing Remark Includes Realized Saving Code X Fare In The PNR    Fare 3    T
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That High/Charged/Low fare, Missed/Realised Savings Code Are Not Computed And Disabled When SO 'Disable Fare Calculations' Is Set To Yes For Multiple Air Segments (PQ & Phase IV)
+    [Tags]    us2542    de6231    noram    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 15 - Auto ¦ US2542    AutoFifteenTen    NoramTrvlrFive
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    PHXDEN¥UA    01Y1    WPRQ¥S1    6    3
+    Book Flight X Months From Now    FLLORD¥AA    01Y1    WDS2    6    4
+    Book Flight X Months From Now    ORDJFK¥AA    01Y1    WPRQ¥S3    6    6
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 1    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 2    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 3    USD
+    Enter Matrix Remarks
+    Enter Ticketing Remarks    ${fare_1_base_fare}    ${fare_2_base_fare}    ${fare_3_base_fare}
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2    Fare 3
+    Click Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    PHX-DEN
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    300.00    200.00    100.00    ${EMPTY}    T - Flight Time Declined    DOM
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Populate Air Fare Restrictions    Fully Flexible    Schedule change permitted free of charge    Full refund    UA    Permitted    No Minimum Stay
+    ...    One Year
+    Click Fare Tab    Fare 2
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    FLL-ORD
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    600.00    500.00    400.00    ${EMPTY}    A - Alternate Airport Declined    DOM
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Populate Air Fare Restrictions    Semi Flexible    After departure    After departure no refund    AA only    Permitted    Not applicable
+    ...    Not applicable    Fare 2
+    Click Fare Tab    Fare 3
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    ORD-JFK
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    650.00    550.00    450.00    ${EMPTY}    T - Flight Time Declined    DOM
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Select Fare Restriction    Default
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify All Panels Are Green
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-LP/100
+    Verify Specific Line Is Written In The PNR    X/-FS/B
+    Verify Specific Line Is Written In The PNR    X/-FF/300
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    X/-LP/100    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    X/-FS/B    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    X/-FF/300    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT1-BFUSD${fare_1_base_fare}‡S1    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT1-FQ200/LP-100/FS-T/FF-300    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT1-DOM    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT1-ETK-DIN‡S1    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT2-BFUSD${fare_2_base_fare}‡S2    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT2-FQ500/LP-400/FS-A/FF-600    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT2-DOM    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT2-ETK-DIN‡S2    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT3-BFUSD${fare_3_base_fare}‡S3    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT3-FQ550/LP-450/FS-T/FF-650    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT3-DOM    1
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    T‡TKT3-ETK-DIN‡S3    1
+    Verify Specific Line Is Written In The PNR    ROUTING - PHOENIX DENVER
+    Verify Specific Line Is Written In The PNR    CHANGE OF RESERVATION - SCHEDULE CHANGE PERMITTED FREE OF
+    Verify Specific Line Is Written In The PNR    CANCELLATION - FULL REFUND
+    Verify Specific Line Is Written In The PNR    ROUTING - FT LAUDERDALE CHICAGO
+    Verify Specific Line Is Written In The PNR    CHANGE OF RESERVATION - AFTER DEPARTURE
+    Verify Specific Line Is Written In The PNR    CANCELLATION - AFTER DEPARTURE NO REFUND
+    Verify Specific Line Is Written In The PNR    VALID ON - AA ONLY
+    Verify Specific Line Is Written In The PNR    ROUTING - CHICAGO NEW YORK
+    Verify Specific Line Is Written In The PNR    ‡ANY CHANGES MAY BE SUBJECT TO PENALTIES OR FARE \ \ \ \ \ \ \ \ \ \ \
+    Verify Specific Line Is Written In The PNR    ‡INCREASE UP TO AND INCLUDING THE TOTAL COST OF THE TICKET.
+    Verify Specific Line Is Written In The PNR    ‡FAILURE TO CANCEL MAY FORFEIT THE TOTAL VALUE OF THE TICKE
+    Verify Specific Line Is Written In The PNR    ‡THIS TICKET MAY BE SUBJECT TO PENALTIES OR FARE INCREASE \ \
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify Disabling of Air Fare Panel when Delivery Method Is Set To Invoice Car For PNR with Air segment and Car Segment
+    [Tags]    us4683    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4683    AutoSeventeenTwo    NoramTrvlrOne
+    Select Client Account Using Default Value
+    Click New Booking
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    LAXDEN¥AA    6
+    Book Passive Car Segment X Months From Now    DEN
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify Air Fare Main Panel Is Enabled
+    Click Panel    Delivery
+    Select Delivery Method    1 Invoice only Car
+    Click Panel    Air Fare
+    Verify Air Fare Main Panel Is Disabled
+    Verify Specific Warning In Air Fare Is Shown    Air Fare Panel disabled for Invoice Only transaction.
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line is Written in the PNR    TKT1-INV-CAR
+    Verify Specific Line is Written in the PNR    TAW3W7FQC/INV
+    Verify Specific Line is Written in the PNR    T‡SPLIT1
+    Verify Specific Line Is Not Written In The PNR    T‡TKT1-BF
+    Verify Specific Line Is Not Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Not Written In The PNR    T‡TKT1-ETK-DIN
+    Verify Specific Line Is Not Written In The PNR    T‡TKT1-FQ
+    Verify Specific Line Is Not Written In The PNR    X/-LP
+    Verify Specific Line Is Not Written In The PNR    X/-FS
+    Verify Specific Line Is Not Written In The PNR    X/-FF
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Fares Are Correct When TKT Lines Are The SF Order For Combined SF When SO Disable Fare Calc Is Yes
+    [Tags]    de5234    de6231    noram    de7319_validfail_18.5
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE5234 Disable Fare Calc    AutoSixteenSeven    NoramTrvlrTwo
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MSPORD‡AA    01Y1    ${EMPTY}    6
+    Book Flight X Months From Now    ORDDEN‡AA    01Y1    WPRQ‡S1/2    6    4
+    Book Flight X Months From Now    DENLAX‡AA    01Y1    WPRQ‡S3    6    10
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 1/2    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 3    USD
+    Enter GDS Command    5T‡SPLIT2    5T‡TKT1-BFUSD${fare_1/2_base_fare}‡S1/2§ 5T‡TKT1-FQ1500.00/LP-323/FS-A/FF-2000§ 5T‡TKT1-ETK-DIN‡S1/2§ 5T‡TKT1-DOM    5T‡TKT2-BFUSD${fare_3_base_fare}‡S3§ 5T‡TKT2-FQ1000.00/LP-425/FS-A/FF-1500§ 5T‡TKT2-ETK-DIN‡S3§ 5T‡TKT2-DOM
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2
+    Click Fare Tab    Fare 1
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    MSP-ORD-DEN    2000.00    1500.00    323.00    ${EMPTY}    A - Accepted
+    ...    DOM
+    Click Fare Tab    Fare 2
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    DEN-LAX    1500.00    1000.00    425.00    ${EMPTY}    A - Accepted
+    ...    DOM
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD${fare_1/2_base_fare}‡S1/2
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ1500.00/LP-323/FS-A/FF-2000
+    Verify Specific Line Is Written In The PNR    T‡TKT1-ETK-DIN‡S1/2
+    Verify Specific Line Is Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT2-BFUSD${fare_3_base_fare}‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT2-FQ1000.00/LP-425/FS-A/FF-1500
+    Verify Specific Line Is Written In The PNR    T‡TKT2-ETK-DIN‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT2-DOM
+    Verify Specific Line Is Written In The PNR    T‡SPLIT2
+    Verify Specific Line Is Written In The PNR    X/-LP/323
+    Verify Specific Line Is Written In The PNR    X/-FS/A
+    Verify Specific Line Is Written In The PNR    X/-FF/2000
+
+[AB] Verify That Fares Are Correct When TKT Lines Are Not The SF Order For Missing SF When SO Disable Fare Calc Is Yes
+    [Tags]    de5234    de6231    noram    de7319_validfail_18.5
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    W‡D
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    WPRQ‡S3
+    Enter GDS Command    WDS2
+    Enter GDS Command    WPRQ‡S1
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Delete Ticket Remarks in the PNR    T‡SPLIT2    T‡TKT2-DOM
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 1    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 3    USD
+    Activate Power Express Window
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    5T‡SPLIT2
+    Enter GDS Command    5T‡TKT1-BFUSD${fare_3_base_fare}‡S3§ 5T‡TKT1-FQ1000.50/LP-300/FS-A/FF-1200§ 5T‡TKT1-ETK-DIN‡S3§ 5T‡TKT1-DOM§
+    Enter GDS Command    5T‡TKT3-BFUSD${fare_1_base_fare}‡S1§ 5T‡TKT3-FQ950.00/LP-425/FS-A/FF-960§ 5T‡TKT3-ETK-DIN‡S1§ 5T‡TKT3-DOM§
+    Enter GDS Command    *PQS
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    DEN-LAX    1200.00    1000.50    300.00    ${EMPTY}    A - Accepted
+    ...    DOM
+    Verify Specific Warning In Air Fare Is Shown    Warning \- No fare found for segment 1-2. \ If necessary, please fare quote and read the PNR again.
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For TKT Lines Are Not SF Order For Disable Fare Calc If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD${fare_3_base_fare}‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ1000.50/LP-300/FS-A/FF-1200
+    Verify Specific Line Is Written In The PNR    T‡TKT1-ETK-DIN‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT3-BFUSD${fare_1_base_fare}‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT3-FQ950.00/LP-425/FS-A/FF-960
+    Verify Specific Line Is Written In The PNR    T‡TKT3-ETK-DIN‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT3-DOM
+    Verify Specific Line Is Written In The PNR    T‡SPLIT2
+    Verify Specific Line Is Written In The PNR    X/-LP/323
+    Verify Specific Line Is Written In The PNR    X/-FS/A
+    Verify Specific Line Is Written In The PNR    X/-FF/2000
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Exchange Is Applied To Correct Segment When TKT Lines Are Not The SF Order For Disable Fare Calc
+    [Tags]    de5234    noram    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE5234 Disable Fare Calc    AutoSixteenSeven    NoramTrvlrTwo
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DENLAX‡AA    01Y1    WPRQ‡S1    6
+    Book Flight X Months From Now    MSPORD‡AA    01Y1    WDS2    6    4
+    Book Flight X Months From Now    ORDDEN‡AA    01Y1    WPRQ‡S3    6    10
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 1    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 2    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 3    USD
+    Enter GDS Command    5T‡SPLIT3
+    Enter GDS Command    5T‡TKT1-BFUSD${fare_3_base_fare}‡S3§ 5T‡TKT1-FQ1054.10/LP-323/FS-A/FF-1200§ 5T‡TKT1-ETK-DIN‡S3§ 5T‡TKT1-DOM§
+    Enter GDS Command    5T‡TKT2-BFUSD${fare_1_base_fare}‡S1§ 5T‡TKT2-FQ784.10/LP-423/FS-A/FF-799§ 5T‡TKT2-ETK-DIN‡S1§ 5T‡TKT2-DOM§
+    Enter GDS Command    5T‡TKT3-BFUSD${fare_2_base_fare}‡S2§ 5T‡TKT3-FQ1011.10/LP-415/FS-A/FF-1050§ 5T‡TKT3-ETK-DIN‡S2§ 5T‡TKT3-DOM§
+    Enter GDS Command    5T‡EXCH3
+    Enter GDS Command    5T‡TKT3-IRP1/PA-300.00/CA-0.00/EA-512.00/NF-3160.95
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Panel Is Green    Air Fare
+    Verify Routing Field Is Enabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    DEN-LAX    799.00    784.10    423.00    ${EMPTY}    A - Accepted
+    ...    DOM
+    Click Fare Tab    Fare 2
+    Verify Routing Field Is Enabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    ORD-DEN    1200.00    1054.10    323.00    ${EMPTY}    A - Accepted
+    ...    DOM
+    Click Fare Tab    Fare 3
+    Verify Routing Field Is Enabled
+    Verify Fare Tab Details    MSP-ORD    512.00    512.00    512.00    E - Exchange    ${EMPTY}
+    ...    DOM
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-LP/423
+    Verify Specific Line Is Written In The PNR    X/-FS/A
+    Verify Specific Line Is Written In The PNR    X/-FF/799
+    Verify Specific Line Is Written In The PNR    T‡SPLIT3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD${fare_3_base_fare}‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ1054.10/LP-323/FS-A/FF-1200
+    Verify Specific Line Is Written In The PNR    T‡TKT1-ETK-DIN‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT2-BFUSD${fare_1_base_fare}‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT2-FQ784.10/LP-423/FS-A/FF-799
+    Verify Specific Line Is Written In The PNR    T‡TKT2-ETK-DIN‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT2-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT3-BFUSD${fare_2_base_fare}‡S2
+    Verify Specific Line Is Written In The PNR    T‡TKT3-FQ1011.10/LP-415/FS-A/FF-1050
+    Verify Specific Line Is Written In The PNR    T‡TKT3-ETK-DIN‡S2
+    Verify Specific Line Is Written In The PNR    T‡TKT3-DOM
+
+[AB] Verify That Fares Are Correct When TKT Lines Are SF Order For Disable Fare Calc
+    [Tags]    de5234    noram    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    W‡D
+    Enter GDS Command    PQD-ALL
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Delete Ticket Remarks in the PNR    T‡SPLIT3    T‡TKT3-IRP1
+    Enter GDS Command    WPRQ‡S1
+    Enter GDS Command    WDS2
+    Enter GDS Command    WPRQ‡S3
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 1    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 2    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 3    USD
+    Enter GDS Command    5T‡SPLIT3
+    Enter GDS Command    5T‡TKT1-BFUSD${fare_1_base_fare}‡S1§ 5T‡TKT1-FQ784.10/LP-423/FS-A/FF-799§ 5T‡TKT1-ETK-DIN‡S1§ 5T‡TKT1-DOM§
+    Enter GDS Command    5T‡TKT2-BFUSD${fare_2_base_fare}‡S2§ 5T‡TKT2-FQ1060.45/LP-525/FS-A/FF-1300§ 5T‡TKT2-ETK-DIN‡S2§ 5T‡TKT2-DOM§
+    Enter GDS Command    5T‡TKT3-BFUSD${fare_3_base_fare}‡S3§ 5T‡TKT3-FQ980.50/LP-515/FS-A/FF-1025§ 5T‡TKT3-ETK-DIN‡S3§ 5T‡TKT3-DOM§
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Panel Is Green    Air Fare
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    DEN-LAX    799.00    784.10    423.00    ${EMPTY}    A - Accepted
+    ...    DOM
+    Click Fare Tab    Fare 2
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    MSP-ORD    1300.00    1060.45    525.00    ${EMPTY}    A - Accepted
+    ...    DOM
+    Click Fare Tab    Fare 3
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    ORD-DEN    1025.00    980.50    515.00    ${EMPTY}    A - Accepted
+    ...    DOM
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For TKT Lines Are SF Order For Disable Fare Calc If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-LP/423
+    Verify Specific Line Is Written In The PNR    X/-FS/A
+    Verify Specific Line Is Written In The PNR    X/-FF/799
+    Verify Specific Line Is Written In The PNR    T‡SPLIT3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD${fare_1_base_fare}‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ784.10/LP-423/FS-A/FF-799
+    Verify Specific Line Is Written In The PNR    T‡TKT1-ETK-DIN‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT2-BFUSD${fare_2_base_fare}‡S2
+    Verify Specific Line Is Written In The PNR    T‡TKT2-FQ1060.45/LP-525/FS-A/FF-1300
+    Verify Specific Line Is Written In The PNR    T‡TKT2-ETK-DIN‡S2
+    Verify Specific Line Is Written In The PNR    T‡TKT2-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT3-BFUSD${fare_3_base_fare}‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT3-FQ980.50/LP-515/FS-A/FF-1025
+    Verify Specific Line Is Written In The PNR    T‡TKT3-ETK-DIN‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT3-DOM
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Fares Are Correct When TKT Lines Are Not The SF Order For Combined SF
+    [Tags]    de5234    noram    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE5234    AutoSixteenSeven    NoramTrvlrThree
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MSPORD‡AA    01Y1    WDS1    6
+    Book Flight X Months From Now    ORDDEN‡AA    01Y1    ${EMPTY}    6    4
+    Book Flight X Months From Now    DENLAX‡AA    01Y1    WPRQ‡S3    6    10
+    Book Flight X Months From Now    LAXSLC‡AA    01Y1    WPRQ‡S2/4    6    14
+    Enter GDS Command    5T‡EXCH3
+    Enter GDS Command    5T‡TKT3-IRP1/PA-300.00/CA-0.00/EA-512.00/NF-3160.95
+    Click Read Booking
+    Click Panel    Air Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 2/4    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 3    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 1    USD
+    Verify Routing Field Is Enabled
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Verify Routing Field Value    DEN-LAX
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Click Fare Tab    Fare 2
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Verify Routing Field Is Enabled
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Verify Routing Field Value    ORD-DEN-LAX-SLC
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Click Fare Tab    Fare 3
+    Get High, Charged And Low Fare In Fare Tab    Fare 3
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Enabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Routing Field Value    MSP-ORD
+    Verify Realised Savings Code Default Value    E - Exchange
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    ${expected_low_fare_1}    Remove Decimals    ${low_fare_1}
+    ${expected_high_fare_1}    Remove Decimals    ${high_fare_1}
+    Verify Specific Line Is Written In The PNR    X/-LP/${expected_low_fare_1}
+    Verify Specific Line Is Written In The PNR    X/-FS/A
+    Verify Specific Line Is Written In The PNR    X/-FF/${expected_high_fare_1}
+    Verify Specific Line Is Written In The PNR    T‡EXCH3
+    Verify Specific Line Is Written In The PNR    T‡TKT3-IRP1/PA-300.00/CA-0.00/EA-512.00/NF-3160.95
+    Verify Specific Line Is Written In The PNR    T‡SPLIT3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD${fare_3_base_fare}‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT1-ETK-DIN‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ${charged_fare_1}/LP-${expected_low_fare_1}/FS-A/FF-${expected_high_fare_1}
+    Verify Specific Line Is Written In The PNR    T‡TKT2-BFUSD${fare_2/4_base_fare}‡S2/4
+    Verify Specific Line Is Written In The PNR    T‡TKT2-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT2-ETK-DIN‡S2/4
+    ${expected_low_fare_2}    Remove Decimals    ${low_fare_2}
+    ${expected_high_fare_2}    Remove Decimals    ${high_fare_2}
+    Verify Specific Line Is Written In The PNR    T‡TKT2-FQ${charged_fare_2}/LP-${expected_low_fare_2}/FS-A/FF-${expected_high_fare_2}
+    Verify Specific Line Is Written In The PNR    T‡TKT3-BFUSD${fare_1_base_fare}‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT3-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT3-ETK-DIN‡S1
+    ${expected_low_fare_3}    Remove Decimals    ${low_fare_3}
+    ${expected_high_fare_3}    Remove Decimals    ${high_fare_3}
+    Verify Specific Line Is Written In The PNR    T‡TKT3-FQ${charged_fare_3}/LP-${expected_low_fare_3}/FS-E/FF-${expected_high_fare_3}
+
+[AB] Verify That Fares Are Correct When TKT Lines Are Not The SF Order For Missing SF
+    [Tags]    de5234    noram    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    W‡D
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    X4
+    Enter GDS Command    WDS2
+    Enter GDS Command    WPRQ‡S3
+    Click Read Booking
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 2    USD
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 3    USD
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Verify Routing Field Value    ORD-DEN
+    Verify Realised Savings Code Default Value    ${EMPTY}
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Click Fare Tab    Fare 2
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Verify Routing Field Is Enabled
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Verify Routing Field Value    DEN-LAX
+    Verify Realised Savings Code Default Value    ${EMPTY}
+    Verify Missed Savings Code Default Value    A - Alternate Airport Declined
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For TKT Lines Are Not The SF Order For Missing SF If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    ${expected_low_fare_1}    Remove Decimals    ${low_fare_1}
+    ${expected_high_fare_1}    Remove Decimals    ${high_fare_1}
+    Verify Specific Line Is Written In The PNR    X/-LP/${expected_low_fare_1}
+    Verify Specific Line Is Written In The PNR    X/-FS/A
+    Verify Specific Line Is Written In The PNR    X/-FF/${expected_high_fare_1}
+    Verify Specific Line Is Written In The PNR    T‡SPLIT2
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD${fare_2_base_fare}‡S2
+    Verify Specific Line Is Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT1-ETK-DIN‡S2
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ${charged_fare_1}/LP-${expected_low_fare_1}/FS-A/FF-${expected_high_fare_1}
+    ${expected_low_fare_2}    Remove Decimals    ${low_fare_2}
+    ${expected_high_fare_2}    Remove Decimals    ${high_fare_2}
+    Verify Specific Line Is Written In The PNR    T‡TKT2-BFUSD${fare_3_base_fare}‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT2-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT2-ETK-DIN‡S3
+    Verify Specific Line Is Written In The PNR    T‡TKT2-FQ${charged_fare_2}/LP-${expected_low_fare_2}/FS-A/FF-${expected_high_fare_2}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Fares Found In Air Fare Panel Are Written In PNR When Booking With Snap Codes
+    [Tags]    legacy    data_dependent    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre Legacy - Auto ¦ Snap Code    AutoLegacy    NoramTrvlrFour
+    Click New Booking
+    Click Panel    Client Info
+    Populate Client Info Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD8P¥AA    01Y1    ${EMPTY}    6
+    Book Flight X Months From Now    ORDMSP8P¥AA    01Y1    WPNCB¥XR¥ITST07    6    3
+    Enter GDS Command    PQ
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify No Fares Found Message Is Not Present
+    Get High, Charged And Low Fare In Fare Tab
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    WPNC'XR'ITST07
+    Verify Specific Line Is Written In The PNR    USD${high_fare}ADT
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    WPNIN/T2'ITST07
+    Verify Specific Line Is Written In The PNR    TOTAL FARE - USD\\s*${low_fare}    true    true
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *PQ
+    Verify Specific Line Is Written In The PNR    USD${charge_fare}ADT
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Hidden Stop Is Not Recognized In Air Fare Panel And Is Not Written In Itinerary Remarks For Single Segment With Alternate Fare
+    [Tags]    us3779    noram    notready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    D33H
+    Create New Booking With One Way Flight Using Default Values    Sabre FR 16 - Auto ¦ US3779    AutoSixteenSeven    NoramTrvlrSix    SYDLON‡QF    ${EMPTY}    AIR FARE
+    Click Panel    Air Fare
+    Verify Routing Field Value    SYD-LHR
+    Populate Fare Tab With Default Values    Fare 1
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Verify Alternate Fare Routing Field Value    SYD-LHR
+    Set Alternate Fare Amount    1000
+    Select Alternate Fare Class Code    YA - Economy Tarif Public
+    Select Fare Restriction    Fully Flexible
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    ROUTING \ SYDNEY LONDON
+    Verify Specific Line Is Written In The PNR    *OFFER**ROUTING SYDNEY LONDON*
+    Verify Specific Line Is Written In The PNR    *ROUTING* SYD-LHR
+    Verify Specific Line Is Written In The PNR    *ROUTE* SYDNEY LONDON
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Only Fares Related T & Matrix Remarks Are Suppressed For BSP With Exchange With Rules When Disable Fare Calc And Rules SO Is Set To Yes
+    [Tags]    us4692    de6231    data_dependent    noram    de7319_validfail_18.5    not_ready
+    ##Phase 4 was already not supported by New Sabre API
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4692    AutoSeventeenTwo    NoramTrvlrOne
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ US4692
+    Select Trip Type Value    Meetings
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Department Code    Test
+    Set CDR Value    Matrix DP Code    S123
+    Click Panel    Client Info
+    Populate Client Info Panel With Default Values
+    Click Update PNR
+    Retrieve PNR Details From Sabre Red    \    *X/
+    Verify Specific Line Is Written In The PNR    X/-CF/SOE0000000Q
+    Verify Specific Line Is Written In The PNR    X/-BB/U14057
+    Verify Specific Line Is Written In The PNR    X/-DP/S123
+    Book Flight X Months From Now    ORDLAX    01Y1    WPRQ‡S1    7
+    Book Flight X Months From Now    LAXDEN    01Y1    WDS2    8
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 1    USD    *PQ
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 2    USD    WDS
+    Enter Matrix Remarks
+    Enter Ticketing Remarks    ${fare_1_base_fare}    ${fare_2_base_fare}
+    Enter GDS Command    5T‡EXCH1§ 5X/-IRP1/PA-150.00/CA-0.00/EA-150.00/NF-100.00
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2
+    Click Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    ORD-LAX
+    Verify High/Charged/Low Fare, Realised Saving Code, Route Code Fields Are Enabled For Exchange
+    Verify Missed Savings Code Field Is Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    150.00    150.00    150.00    E - Exchange    ${EMPTY}    DOM
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Click Fare Tab    Fare 2
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    LAX-DEN
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    600.00    500.00    400.00    ${EMPTY}    A - Alternate Airport Declined    DOM
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Verify Panel Is Green    Air Fare
+    Set Mobile Number
+    Set Telephone
+    Select Trip Type Value    Personal
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    S456
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-CF/SOE0000000N
+    Verify Specific Line Is Written In The PNR    X/-BB/U22222
+    Verify Specific Line Is Written In The PNR    X/-DP/S456
+    Verify Specific Line Is Written In The PNR    T‡ADDED BY SCENARIO 1 SABRE
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD${fare_1_base_fare}‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ200/LP-100/FS-T/FF-300
+    Verify Specific Line Is Written In The PNR    T‡TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT1-ETK-DIN‡S1
+    Verify Specific Line Is Written In The PNR    T‡TKT2-BFUSD${fare_2_base_fare}‡S2
+    Verify Specific Line Is Written In The PNR    T‡TKT2-FQ500/LP-400/FS-A/FF-600
+    Verify Specific Line Is Written In The PNR    T‡TKT2-DOM
+    Verify Specific Line Is Written In The PNR    T‡TKT2-ETK-DIN‡S2
+    Verify Specific Line Is Written In The PNR    T‡EXCH1
+    Verify Specific Line Is Written In The PNR    X/-IRP1/PA-150.00/CA-0.00/EA-150.00/NF-100.00
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That High Fare And Low Fare Calculation For Non Exchange Is Correct
+    [Tags]    legacy    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre Legacy - Auto ¦ Air Fare    AutoLegacy    NoramTrvlrOne    LAXORD¥AA    ${EMPTY}
+    Click Panel    Recap
+    Set Skip Entries    AQUA: Continuity Override
+    Click Finish PNR
+
+[AB] Verify That High Fare And Low Fare Calculation For Non Exchange Is Correct
+    [Tags]    legacy    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Book Flight X Months From Now    ORDLAX¥AA    01Y1    WPRQ    6    4
+    Click Read Booking
+    Click Panel    Air Fare
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    WPNC'XR
+    Verify Specific Line Is Written In The PNR    ${converted_high_fare}
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    WPNIN/T2    Until End Of Scroll    5
+    Verify Specific Line Is Written In The PNR    ${converted_low_fare}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Exchange Is Applied To Correct Segment When Stored Fare Is QREX Combination - PQ - PQR - Phase 4
+    [Tags]    us2928    QREX    login_dependent    noram    not_ready
+    ###Login to CERT in Sabre before running this test case ###
+    Verify Sabre Is Logged In CERT
+    Open Power Express And Retrieve Profile    ${version}    Test    UWXL105    en-US    wlee    NORAM QA
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 3 - SyEx ¦ Teacher    Cain    Michelle
+    Click New Booking
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Panel    Client Info
+    Click Update PNR
+    Book Flight X Months From Now    PHXJFK¥AA    01Y2    ${EMPTY}
+    Book Flight X Months From Now    JFKCDG¥AA    01Y1    ${EMPTY}    6    3
+    Book Flight X Months From Now    CDGJFK¥AA    01Y1    ${EMPTY}    6    4
+    Book Flight X Months From Now    JFKLHR¥AA    01Y1    ${EMPTY}    6    7
+    Enter Specific Command On Native GDS    W-TESTADDRESS
+    Create PNR In Sabre GDS
+    Enter Specific Command On Native GDS    50/-*VI4111111111111111'09/19
+    Enter Specific Command On Native GDS    4DOCSA/DB/13JUL71/F/CAIN/MICHELLE-1.1
+    Issue The Ticket For X Segment    2/3    1
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Activate Power Express Window
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    110AUGPHXJFK¥AA    01Y2    ${EMPTY}
+    Book Flight X Months From Now    114AUGJFKCDG¥AA    01J1    ${EMPTY}    6    3
+    Book Flight X Months From Now    118AUGCDGJFK¥AA    01J1    ${EMPTY}    6    4
+    Book Flight X Months From Now    122AUGJFKLHR¥AA    01Y1    ${EMPTY}    6    7
+    Enter Specific Command On Native GDS    WPRQ'S1
+    Create PQR In Sabre GDS    ${ticket_number_1}    2/3    2    INTL
+    Enter Specific Command On Native GDS    WDS4
+    Activate Power Express Window
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify High Fare, Charged Fare and Low Fare Have Values
+    Select Missed Saving Code Value    7 - Low fare within policy threshold
+    Click Fare Tab    Fare 2
+    Verify High Fare Field Value    ${exchange_amount_2}
+    Verify Charged Fare Field Value    ${exchange_amount_2}
+    Verify Low Fare Field Value    ${exchange_amount_2}
+    Verify Route Code Field Value    INTL
+    Verify Realised Savings Code Default Value    E - Exchange
+    Click Fare Tab    Fare 3
+    Verify High Fare, Charged Fare and Low Fare Have Values
+    Select Missed Saving Code Value    7 - Low fare within policy threshold
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T‡
+    Verify Specific Line Is Written In The PNR    TKT2-FQ${exchange_amount_2}/LP-${exchange_amount_no_decimal_2}/FS-E/FF-${exchange_amount_no_decimal_2}
+    Verify Specific Line Is Written In The PNR    T‡TKT2-IRP1/.*/CA-0.00/EA-${exchange_amount_2}/    true
+    Verify Specific Line Is Written In The PNR    T‡TKT2-IRP1/F1-${base_fare_2}/T1-${ticket_number_1}/
+    Verify Specific Line Is Written In The PNR    T‡EXCH2
+    Verify Specific Line Is Written In The PNR    T‡TKT2-BFUSD${base_fare_2}‡S2/3
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *PQR
+    Verify Specific Line Is Written In The PNR    WFRF${ticket_number_1}‡ADT‡S2/3
+    [Teardown]    Run Keywords    Void 1 Ticket
+    ...    AND    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Exchange Is Applied To Correct Segment When Stored Fare Is QREX All PQR - 1 Segment, 1 PQR
+    [Tags]    us2928    QREX    login_dependent    noram    not_ready
+    ###Login to CERT in Sabre before running this test case ###
+    Verify Sabre Is Logged In CERT
+    Open Power Express And Retrieve Profile    ${version}    Test    UWXL105    en-US    wlee    NORAM QA
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 3 - SyEx ¦ Teacher    Cain    Michelle
+    Click New Booking
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Panel    Client Info
+    Click Update PNR
+    Book Flight X Months From Now    11DECLAXPHX¥AA    01L2    ${EMPTY}
+    Enter Specific Command On Native GDS    W-TESTADDRESS
+    Create PNR In Sabre GDS
+    Enter Specific Command On Native GDS    50/-CASH
+    Enter Specific Command On Native GDS    4DOCSA/DB/13JUL71/F/CAIN/MICHELLE-1.1
+    Issue The Ticket For X Segment    1    1
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Activate Power Express Window
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    LAXPHX¥AA    01Y1    ${EMPTY}
+    Create PQR In Sabre GDS    ${ticket_number_1}    1    1    DOM
+    Activate Power Express Window
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify High Fare Field Value    ${exchange_amount_1}
+    Verify Charged Fare Field Value    ${exchange_amount_1}
+    Verify Low Fare Field Value    ${exchange_amount_1}
+    Verify Route Code Field Value    DOM
+    Verify Realised Savings Code Default Value    E - Exchange
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-IRP1/.*/CA-0.00/EA-${exchange_amount_1}/    true
+    Verify Specific Line Is Written In The PNR    X/-IRP1/F1-${base_fare_1}/T1-${ticket_number_1}/
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ${exchange_amount_1}/LP-${exchange_amount_no_decimal_1}/FS-E/FF-${exchange_amount_no_decimal_1}
+    Verify Specific Line Is Written In The PNR    T‡EXCH1
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD${base_fare_1}‡S1
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *PQR
+    Verify Specific Line Is Written In The PNR    WFRF${ticket_number_1}‡ADT‡S1
+    [Teardown]    Run Keywords    Void 1 Ticket
+    ...    AND    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Exchange Is Applied To Correct Segment When Stored Fare Is QREX All PQR - 4 Segment, 2 PQR
+    [Tags]    us2928    QREX    login_dependent    noram    not_ready
+    ###Login to CERT in Sabre before running this test case ###
+    Verify Sabre Is Logged In CERT
+    Open Power Express And Retrieve Profile    ${version}    Test    UWXL105    en-US    wlee    NORAM QA
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 3 - SyEx ¦ Teacher    Cain    Michelle
+    Click New Booking
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Panel    Client Info
+    Click Update PNR
+    Book Flight X Months From Now    110AUGPHXJFK¥AA    01Y2    ${EMPTY}
+    Book Flight X Months From Now    114AUGJFKLAX¥AA    01Y1    ${EMPTY}    7    3
+    Book Flight X Months From Now    118AUGLAXJFK¥AA    01Y1    ${EMPTY}    7    4
+    Book Flight X Months From Now    122AUGJFKLHR¥AA    01Y1    ${EMPTY}    7    7
+    Click Read Booking
+    Enter Specific Command On Native GDS    W-TESTADDRESS
+    Create PNR In Sabre GDS
+    Enter Specific Command On Native GDS    50/-*VI4111111111111111'09/19
+    Enter Specific Command On Native GDS    4DOCSA/DB/13JUL71/F/CAIN/MICHELLE-1.1
+    Issue The Ticket For X Segment    1/2    1
+    Issue The Ticket For X Segment    3/4    2
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    110AUGPHXJFK¥AA    01Y2    ${EMPTY}
+    Book Flight X Months From Now    114AUGJFKLAX¥AA    01J1    ${EMPTY}    7    3
+    Book Flight X Months From Now    118AUGLAXJFK¥AA    01J1    ${EMPTY}    7    4
+    Book Flight X Months From Now    122AUGJFKLHR¥AA    01Y1    ${EMPTY}    7    7
+    Create PQR In Sabre GDS    ${ticket_number_2}    3/4    1    INTL
+    Create PQR In Sabre GDS    ${ticket_number_1}    1/2    2    INTL
+    Activate Power Express Window
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify High Fare Field Value    ${exchange_amount_1}
+    Verify Charged Fare Field Value    ${exchange_amount_1}
+    Verify Low Fare Field Value    ${exchange_amount_1}
+    Verify Route Code Field Value    INTL
+    Verify Realised Savings Code Default Value    E - Exchange
+    Click Fare Tab    Fare 2
+    Verify High Fare Field Value    ${exchange_amount_2}
+    Verify Charged Fare Field Value    ${exchange_amount_2}
+    Verify Low Fare Field Value    ${exchange_amount_2}
+    Verify Route Code Field Value    DOM
+    Verify Realised Savings Code Default Value    E - Exchange
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-IRP1/.*/CA-0.00/EA-${exchange_amount_1}/    true
+    Verify Specific Line Is Written In The PNR    X/-IRP1/F1-${base_fare_1}/T1-${ticket_number_2}/
+    Verify Specific Line Is Written In The PNR    T‡EXCH1
+    Verify Specific Line Is Written In The PNR    T‡TKT1-BFUSD${base_fare_1}‡S3/4
+    Verify Specific Line Is Written In The PNR    T‡TKT1-FQ${exchange_amount_1}/LP-${exchange_amount_no_decimal_1}/FS-E/FF-${exchange_amount_no_decimal_1}
+    Verify Specific Line Is Written In The PNR    T‡EXCH2
+    Verify Specific Line Is Written In The PNR    T‡TKT2-BFUSD${base_fare_2}‡S1/2
+    Verify Specific Line Is Written In The PNR    T‡TKT2-IRP1/.*/CA-0.00/EA-${exchange_amount_2}    true
+    Verify Specific Line Is Written In The PNR    T‡TKT2-IRP1/F1-${base_fare_2}/T1-${ticket_number_1}/
+    Verify Specific Line Is Written In The PNR    T‡TKT2-FQ${exchange_amount_2}/LP-${exchange_amount_no_decimal_2}/FS-E/FF-${exchange_amount_no_decimal_2}
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *PQR
+    Verify Specific Line Is Written In The PNR    WFRF${ticket_number_1}‡ADT‡S1/2
+    Verify Specific Line Is Written In The PNR    WFRF${ticket_number_2}‡ADT‡S3/4
+    [Teardown]    Run Keywords    Void 2 Ticket
+    ...    AND    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Fares Are Visible But Disabled When Disable Fare Calc SO Is Set To Yes For Domestic Flights During New Booking
+    [Tags]    de6350    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE5234 Disable Fare Calc    AutoSixteenSeven    NoramTrvlrTwo
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    TRSFCO¥AZ    01Y1    WPRQ    6
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 1    USD
+    Enter GDS Command    5X/-FS/L§5X/-FF/1028§5X/-LP/600
+    Enter GDS Command    5T‡TKT1-BFEUR${fare_1_base_fare}‡S1/2§
+    Enter GDS Command    5T‡TKT1-ETK§
+    Enter GDS Command    5T‡TKT1-DOM§
+    Enter GDS Command    5T‡TKT1-FQ600/LP-600/FS-L/FF-1028
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1
+    Click Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    TRS-FCO
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    1028.00    600.00    600.00    L - Lowest fare available accepted    ${EMPTY}    DOM
+    Verify Air Fare Restriction Fields Are Enabled
+    Verify Fare Not Finalised Is Enabled
+    Populate Air Fare Restrictions    Fully Flexible    Schedule change permitted free of charge    Full refund    AZ    Permitted    No Minimum Stay
+    ...    One Year
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify All Panels Are Green
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T‡
+    Verify Specific Line Is Written In The PNR    TKT1-BFEUR${fare_1_base_fare}
+    Verify Specific Line Is Written In The PNR    TKT1-FQ600/LP-600/FS-L/FF-1028
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/
+    Verify Specific Line Is Written In The PNR    X/-FS/L
+    [Teardown]
+
+[AB] Verify That Fares Are Visible But Disabled When Disable Fare Calc SO Is Set To Yes For Domestic Flights During New Booking
+    [Tags]    de6350    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1
+    Click Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    TRS-FCO
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    1028.00    600.00    600.00    L - Lowest fare available accepted    ${EMPTY}    DOM
+    Verify Fully Flexible Fare Restriction Field Is Enabled
+    Verify Fare Not Finalised Is Enabled
+    Populate Air Fare Restrictions    Fully Flexible    Schedule change permitted free of charge    Full refund    AZ    Permitted    No Minimum Stay
+    ...    One Year
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify All Panels Are Green
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Amend Booking Disable Fare Calculation Domestic If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T‡
+    Verify Specific Line Is Written In The PNR    TKT1-BFEUR${fare_1_base_fare}
+    Verify Specific Line Is Written In The PNR    TKT1-FQ600/LP-600/FS-L/FF-1028
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/
+    Verify Specific Line Is Written In The PNR    X/-FS/L
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Accounting Remarks (X/) For Multiple Fares Are Correctly Written In The PNR
+    [Tags]    us28    apac    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U003JDC    en-GB    jcabela    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ¥S1    6    5
+    Book Flight X Months From Now    MNLSIN‡TG    01Y1    WPRQ¥S2    6    10
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Fare Tab    Fare 1
+    Verify Route Code Default Value    INTL
+    Verify Fare Type Default Value    ${EMPTY}
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Fare Details    Fare 1
+    Click Fare Tab    Fare 2
+    Verify Route Code Default Value    INTL
+    Verify Fare Type Default Value    ${EMPTY}
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    TG
+    Get Fare Details    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Get Base Fare Of Charged Fare    Fare 1
+    Get Base Fare Of Charged Fare    Fare 2
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify That Accounting Remarks Are Written In The PNR    Fare 1    1
+    Verify That Accounting Remarks Are Written In The PNR    Fare 2    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That FF34, FF35, And FF36 Are Written In The Remarks After Finish PNR
+    [Tags]    us51    apac    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U003JDC    en-GB    jcabela    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ¥S1    6    5
+    Book Flight X Months From Now    MNLSIN‡TG    01Y1    WPRQ¥S2    6    10
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Fare Details    Fare 1
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    TG
+    Get Fare Details    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify OBT Remarks Are Written In PNR    Fare 1    AB    SAB    G
+    Verify OBT Remarks Are Written In PNR    Fare 2    AB    SAB    G
+
+[AB] Verify That FF34, FF35, And FF36 Are Written In The Remarks After Finish PNR
+    [Tags]    us51    apac    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    TG
+    Get Fare Details    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That FF34, FF35, And FF36 Are Written In The Remarks After Finish PNR If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify OBT Remarks Are Written In PNR    Fare 1    AB    SAB    G
+    Verify OBT Remarks Are Written In PNR    Fare 2    AB    SAB    G
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That FF34, FF35, And FF36 Are Not Written In The Remarks After Finish PNR When Fare Not Finalised Is Ticked
+    [Tags]    us51    apac    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U003JDC    en-GB    jcabela    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ¥S1    6    5
+    Book Flight X Months From Now    MNLSIN‡TG    01Y1    WPRQ¥S2    6    10
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify OBT Remarks Are Not Written In PNR    Fare 1    AB    SAB    G
+    Verify OBT Remarks Are Not Written In PNR    Fare 2    AB    SAB    G
+
+[AB] Verify That FF34, FF35, And FF36 Are Not Written In The Remarks After Finish PNR When Fare Not Finalised Is Ticked
+    [Tags]    us51    apac    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That FF34, FF35, And FF36 Are Not Written In The Remarks After Finish PNR When Fare Not Finalised Is Ticked If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify OBT Remarks Are Not Written In PNR    Fare 1    AB    SAB    G
+    Verify OBT Remarks Are Not Written In PNR    Fare 2    AB    SAB    G
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Fare Type, LFCC And Route Code Are NOT Pre-populated When There Are No Changes In The Vendor, Route, And Base Fare (Read From Remarks)
+    [Tags]    us29    apac    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ¥S1    6    5
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Fare Details    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Get Base Fare Of Charged Fare    Fare 1
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *F‡    use_copy_content_from_sabre=False
+    Get Fare Details In BF Remarks    Fare 1
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify That Accounting Remarks Are Written In The PNR    Fare 1    1
+
+[AB] Verify That Fare Type, LFCC And Route Code Are NOT Pre-populated When There Are No Changes In The Vendor, Route, And Base Fare (Read From Remarks)
+    [Tags]    us29    apac    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify High Fare Field Value    ${high_fare_remark_1}
+    Verify Charged Fare Field Value    ${charged_fare_remark_1}
+    Verify Low Fare Field Value    ${low_fare_remark_1}
+    Verify LFCC Field Is Mandatory
+    Verify Fare Details In Air Fare Panel    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Fare Details    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Fare Type, LFCC And Route Code Are NOT Pre-populated When There Are No Changes In The Vendor, Route, And Base Fare (Read From Remarks) If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify That Accounting Remarks Are Written In The PNR    Fare 1    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Create A Simulated Get There PNR
+    [Tags]    us29    apac    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ¥S1    6    5
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Enter GDS Command    5X/-FF34/*1/EB
+    Enter GDS Command    5X/-FF35/*1/EBI
+    Enter GDS Command    5X/-FF36/*1/S
+    Click Finish PNR
+
+[AB GetThere] Verify That Fare Type, LFCC And Route Code Are NOT Pre-populated When There Are No Changes In The Vendor, Route, And Base Fare (Read From Remarks)
+    [Tags]    us29    apac    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    XX - No Saving
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Verify Class Code Default Value Is Correct    ${EMPTY}
+    Verify LFCC Field Is Mandatory
+    Verify Air Fare Restrictions Value    Fare 1    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Fare Details    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For GetThere Fare Type, LFCC And Route Code Are NOT Pre-populated When There Are No Changes In The Vendor, Route, And Base Fare (Read From Remarks) If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify That Accounting Remarks Are Written In The PNR    Fare 1    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That BF Remarks For Air Fare Panel Are Written For Multiple Fares With Same Base Fare But Diff Flight Date
+    [Tags]    us56    for_discussion    apac    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Book Flight X Months From Now    SINSYD‡QF    01Y1    WPRQ¥S1    6    1
+    Book Flight X Months From Now    SYDSIN‡QF    01Y1    WPRQ¥S2    6    2
+    Book Flight X Months From Now    SINSYD‡QF    01Y1    WPRQ¥S3    6    3
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Select Realised Saving Code Value    CR - Intelligent Ticketing
+    Select Missed Saving Code Value    E - Exchange
+    Select Class Code Value    FC - First Client Fare
+    Populate Air Fare Restrictions    Semi Flexible    Not permitted    Not permitted    ${EMPTY}    Permitted    1 day
+    ...    1 day    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    MH
+    Get Fare Details    Fare 1
+    Click Fare Tab    Fare 2
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Select Realised Saving Code Value    RF - Restricted Fare Accepted
+    Select Missed Saving Code Value    A - Lowest Fare Accepted
+    Select Class Code Value    YC - Economy Client Fare
+    Populate Air Fare Restrictions    Semi Flexible    5 percent    5 percent    ${EMPTY}    Permitted    3 days
+    ...    1 day    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    MH
+    Get Fare Details    Fare 2
+    Click Fare Tab    Fare 3
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Select Realised Saving Code Value    CF - Client Negotiated Fare Saving Accepted
+    Select Missed Saving Code Value    A - Lowest Fare Accepted
+    Select Class Code Value    YC - Economy Client Fare
+    Populate Air Fare Restrictions    Semi Flexible    10 percent    55 percent    ${EMPTY}    Permitted    7 days
+    ...    7 days    Fare 3
+    Select Fare Type    Published Fare
+    Set LFCC Field    MH
+    Get Fare Details    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *F‡    use_copy_content_from_sabre=False
+    Verify BF Remarks Are Written In The PNR    Fare 1
+    Verify BF Remarks Are Written In The PNR    Fare 2    6    12
+    Verify BF Remarks Are Written In The PNR    Fare 3    12    18
+
+[AB] Verify That BF Remarks For Air Fare Panel Are Written For Multiple Fares With Same Base Fare But Diff Flight Date
+    [Tags]    us56    for_discussion    apac    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Verify Fare Details In Air Fare Panel    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    MH
+    Get Fare Details    Fare 1
+    Click Fare Tab    Fare 2
+    Verify No Fares Found Message Is Not Present
+    Validate Base Fare, Route And Vendor Code    Fare 1    Fare 2
+    Verify Fare Details In Air Fare Panel    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    MH
+    Get Fare Details    Fare 2
+    Click Fare Tab    Fare 3
+    Verify No Fares Found Message Is Not Present
+    Validate Base Fare, Route And Vendor Code    Fare 1    Fare 2    Fare 3
+    Verify Fare Details In Air Fare Panel    Fare 3
+    Select Fare Type    Published Fare
+    Set LFCC Field    MH
+    Get Fare Details    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For BF Remarks For Air Fare Panel Are Written For Multiple Fares With Same Base Fare But Diff Flight Date If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *F‡    use_copy_content_from_sabre=False
+    Verify BF Remarks Are Written In The PNR    Fare 1
+    Verify BF Remarks Are Written In The PNR    Fare 2    6    12
+    Verify BF Remarks Are Written In The PNR    Fare 3    12    18
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow For Amend Booking Disable Fare Calculation Domestic
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1
+    Click Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify Routing Field Value    TRS-FCO
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct    1028.00    600.00    600.00    L - Lowest fare available accepted    ${EMPTY}    DOM
+    Verify Fully Flexible Fare Restriction Field Is Enabled
+    Verify Fare Not Finalised Is Enabled
+    Populate Air Fare Restrictions    Fully Flexible    Schedule change permitted free of charge    Full refund    AZ    Permitted    No Minimum Stay
+    ...    One Year
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify All Panels Are Green
+    Click Finish PNR
+
+Amend Booking Workflow For BF Remarks For Air Fare Panel Are Written For Multiple Fares With Same Base Fare But Diff Flight Date
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify No Fares Found Message Is Not Present
+    Verify Fare Details In Air Fare Panel    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    MH
+    Get Fare Details    Fare 1
+    Click Fare Tab    Fare 2
+    Verify No Fares Found Message Is Not Present
+    Validate Base Fare, Route And Vendor Code    Fare 1    Fare 2
+    Verify Fare Details In Air Fare Panel    Fare 2
+    Select Fare Type    Published Fare
+    Set LFCC Field    MH
+    Get Fare Details    Fare 2
+    Click Fare Tab    Fare 3
+    Verify No Fares Found Message Is Not Present
+    Validate Base Fare, Route And Vendor Code    Fare 1    Fare 2    Fare 3
+    Verify Fare Details In Air Fare Panel    Fare 3
+    Select Fare Type    Published Fare
+    Set LFCC Field    MH
+    Get Fare Details    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Enter GDS Command    IR
+    Click Finish PNR
+
+Amend Booking Workflow For Exchange Is Applied To Correct Segment When TKT Lines Are Not The SF Order
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    W‡D
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    WPRQ‡S3
+    Enter GDS Command    WPRQ‡S1
+    Enter GDS Command    WDS2
+    Enter GDS Command    5T‡EXCH3
+    Enter GDS Command    5T‡TKT3-IRP1/PA-200.00/CA-0.00/EA-295.00/NF-4160.95
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2    Fare 3
+    Click Fare Tab    Fare 1
+    Get High, Charged and Low Fare in Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Verify Route Code Field Is Enabled
+    Verify Fare Tab Details    DEN-LAX    ${high_fare_1}    ${charged_fare_1}    ${low_fare_1}    ${EMPTY}    A - Alternate Airport Declined
+    ...    DOM
+    Click Fare Tab    Fare 2
+    Get High, Charged and Low Fare in Fare Tab    Fare 2
+    Verify Routing Field Is Enabled
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Verify Route Code Field Is Enabled
+    Verify Fare Tab Details    MSP-ORD    ${high_fare_2}    ${charged_fare_2}    ${low_fare_2}    ${EMPTY}    A - Alternate Airport Declined
+    ...    DOM
+    Click Fare Tab    Fare 3
+    Get High, Charged and Low Fare in Fare Tab    Fare 3
+    Verify Routing Field Is Enabled
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Enabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Route Code Field Is Enabled
+    Verify Fare Tab Details    ORD-DEN    ${high_fare_3}    ${charged_fare_3}    ${low_fare_3}    E - Exchange    ${EMPTY}
+    ...    DOM
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking Workflow For Fare Type, LFCC And Route Code Are NOT Pre-populated When There Are No Changes In The Vendor, Route, And Base Fare (Read From Remarks)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify High Fare Field Value    ${high_fare_remark_1}
+    Verify Charged Fare Field Value    ${charged_fare_remark_1}
+    Verify Low Fare Field Value    ${low_fare_remark_1}
+    Verify LFCC Field Is Mandatory
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Fare Details    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking Workflow For GetThere Fare Type, LFCC And Route Code Are NOT Pre-populated When There Are No Changes In The Vendor, Route, And Base Fare (Read From Remarks)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    XX - No Saving
+    Verify Missed Savings Code Default Value    ${EMPTY}
+    Verify Class Code Default Value Is Correct    ${EMPTY}
+    Verify LFCC Field Is Mandatory
+    Verify Air Fare Restrictions Value    Fare 1    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Fare Details    Fare 1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking Workflow For Invalid HF And LF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    LAXPAR¥AA    01Y1    WPRQ    6
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify High Fare Field Is Mandatory
+    Verify Low Fare Field Is Mandatory
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Panel Is Red    Air Fare
+    Get Charged Fare Value
+    Set High Fare Field    ${converted_charged_fare}
+    Verify High Fare Accepts Input
+    Set Low Fare Field    ${converted_charged_fare}
+    Verify Low Fare Accepts Input
+    Verify High Fare Limits To Two Decimals Only
+    Verify Low Fare Limits To Two Decimals Only
+    ${custom_charged_fare_amount}    Replace Decimal Sign    ${charged_fare_amount}    .    ,
+    Set High Fare Field    ${custom_charged_fare_amount}
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${custom_charged_fare_amount}
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set Low Fare Field    ${converted_charged_fare}
+    Set High Fare Field    ABCDE
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    FGHIJ
+    Verify Invalid Icon And Invalid Amount Message Is Displayed
+    Set Low Fare Field    ${converted_charged_fare}
+    ${fare_less_than_charged_fare_amount}    Evaluate    ${charged_fare_amount}-30
+    Set High Fare Field    ${fare_less_than_charged_fare_amount}0
+    Verify Invalid Icon And Validate High Fare Message Is Displayed
+    ${fare_more_than_charged_fare_amount}    Evaluate    ${charged_fare_amount}+100
+    Set High Fare Field    ${fare_more_than_charged_fare_amount}0
+    Verify High Fare Accepts Input
+    Set Low Fare Field    ${fare_more_than_charged_fare_amount}0
+    Verify Invalid Icon And Validate Low Fare Message Is Displayed
+    Set Low Fare Field    ${fare_less_than_charged_fare_amount}0
+    Verify Low Fare Accepts Input
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify High Fare Field Is Mandatory
+    Verify Low Fare Field Is Mandatory
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${converted_charged_fare}
+    Click Panel    Recap
+    Click Panel    Air Fare
+    Verify Panel Is Red    Air Fare
+    Verify Realised Saving Code Field Is Enabled
+    Verify Missed Savings Code Field Is Disabled
+    Set High Fare Field    ${converted_charged_fare}
+    Set Low Fare Field    ${fare_less_than_charged_fare_amount}0
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Set Low Fare Field    ${converted_charged_fare}
+    Select Realised Saving Code Value    L - Lowest fare available accepted
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking Workflow For TKT Lines Are Not SF Order For Disable Fare Calc
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    ${EMPTY}    ${EMPTY}    0.00    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    ...    ${EMPTY}
+    Verify Specific Warning In Air Fare Is Shown    Warning - No fares found in PNR. Please fare quote and read the PNR again or continue with the ‘Fare Not Finalised’ option to complete this PNR.
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking Workflow For TKT Lines Are Not The SF Order For Missing SF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Get Base Fare And Tax From Sabre For Fare X Tab    Fare 3    USD
+    Get High, Charged And Low Fare In Fare Tab    Fare 1
+    Get High, Charged And Low Fare In Fare Tab    Fare 2
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Routing Field Is Enabled
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Verify Fare Tab Details    ORD-DEN    ${high_fare_1}    ${charged_fare_1}    ${low_fare_1}    ${EMPTY}    A - Alternate Airport Declined
+    ...    DOM
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Click Fare Tab    Fare 2
+    Verify Routing Field Is Enabled
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Enabled
+    Verify Fare Tab Details    DEN-LAX    ${high_fare_1}    ${charged_fare_1}    ${low_fare_1}    ${EMPTY}    A - Alternate Airport Declined
+    ...    DOM
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking Workflow For TKT Lines Are SF Order For Disable Fare Calc
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Panel Is Green    Air Fare
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    DEN-LAX    799.00    784.10    423.00    ${EMPTY}    A - Alternate Airport Declined
+    ...    DOM
+    Click Fare Tab    Fare 2
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    MSP-ORD    1300.00    1060.45    525.00    ${EMPTY}    A - Alternate Airport Declined
+    ...    DOM
+    Click Fare Tab    Fare 3
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    ORD-DEN    1025.00    980.50    515.00    ${EMPTY}    A - Alternate Airport Declined
+    ...    DOM
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That FF34, FF35, And FF36 Are Not Written In The Remarks After Finish PNR When Fare Not Finalised Is Ticked
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That FF34, FF35, And FF36 Are Written In The Remarks After Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Fare Details    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    TG
+    Get Fare Details    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Create PNR In Sabre GDS
+    Activate Sabre Red Workspace
+    Sleep    2
+    Send    6TESTPNR{ENTER}
+    Sleep    2
+    Send    7TAW/{ENTER}
+    Sleep    2
+    Send    {CTRLDOWN}{SHIFTDOWN}{BACKSPACE}{CTRLUP}{SHIFTUP}
+    Sleep    2
+    Send    ER{ENTER}
+    Sleep    1
+    Send    ER{ENTER}
+    Sleep    1
+    Send    {ALTDOWN}EA{ALTUP}
+    Sleep    1
+    Send    {ALTDOWN}EC{ALTUP}
+    Sleep    2
+    ${content}    Get Data from Clipboard
+    @{lines}    Split to Lines    ${content}
+    ${pnr}    Get Substring    ${lines[2]}    49    55
+    Set Test Variable    ${current_pnr}    ${pnr}
+    Run Keyword If    "${current_pnr.strip()}" == "${EMPTY}"    Run Keyword And Continue On Failure    Fail    No PNR Generated.
+
+Create PQR In Sabre GDS
+    [Arguments]    ${ticket_number}    ${segment_num}    ${fare_num}    ${route_type}
+    Get Exchange Summary Details    ${ticket_number}    ${segment_num}    ${fare_num}    ${route_type}
+    Fill Out Ticketing Instructions
+    Activate Sabre Red Workspace
+    Send    5T'EXCH${fare_num}{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Run Keyword If    "${fare_num}" == "1"    Send    5X/-IRP1/PA-${charged_amount_${fare_num}}/CA-0.00/EA-${exchange_amount_${fare_num}}/NF-${charged_amount_${fare_num}}{ENTER}
+    ...    ELSE    Send    5T'TKT${fare_num}-IRP1/PA-${exchange_amount_${fare_num}}/CA-0.00/EA-${exchange_amount_${fare_num}}/NF-${charged_amount_${fare_num}}{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Run Keyword If    "${fare_num}" == "1"    Send    5X/-IRP1/F1-${base_fare_${fare_num}}/T1-${ticket_number}/C1-1{ENTER}
+    ...    ELSE    Send    5T'TKT${fare_num}-IRP1/F1-${base_fare_${fare_num}}/T1-${ticket_number}/C1-1{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Run Keyword If    "${fare_num}" == "1"    Send    5X/-IRP1/ED-03MAR{ENTER}
+    ...    ELSE    Send    5T'TKT${fare_num}-IRP1/ED-03MAR{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Run Keyword If    "${fare_num}" == "1"    Send    5X/-IRP1/MC-0.00{ENTER}
+    ...    ELSE    Send    5T'TKT${fare_num}-IRP1/MC-0.00{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Take Screenshot
+
+Enter Matrix Remarks
+    Enter GDS Command    5X/-LP/100
+    Enter GDS Command    5X/-FS/B
+    Enter GDS Command    5X/-FF/300
+
+Enter Ticketing Remarks
+    [Arguments]    ${fare_1_base_fare}    ${fare_2_base_fare}    ${fare_3_base_fare}=${EMPTY}
+    Activate Power Express Window
+    Enter GDS Command    5T‡TKT1-BFUSD${fare_1_base_fare}‡S1
+    Enter GDS Command    5T‡TKT1-FQ200/LP-100/FS-T/FF-300
+    Enter GDS Command    5T‡TKT1-DOM
+    Enter GDS Command    5T‡TKT1-ETK-DIN‡S1
+    Enter GDS Command    5T‡TKT2-BFUSD${fare_2_base_fare}‡S2
+    Enter GDS Command    5T‡TKT2-FQ500/LP-400/FS-A/FF-600
+    Enter GDS Command    5T‡TKT2-DOM
+    Enter GDS Command    5T‡TKT2-ETK-DIN‡S2
+    Run Keyword If    "${fare_3_base_fare}" != "${EMPTY}"    Enter GDS Command    5T‡TKT3-BFUSD${fare_3_base_fare}‡S3
+    Run Keyword If    "${fare_3_base_fare}" != "${EMPTY}"    Enter GDS Command    5T‡TKT3-FQ550/LP-450/FS-T/FF-650
+    Run Keyword If    "${fare_3_base_fare}" != "${EMPTY}"    Enter GDS Command    5T‡TKT3-DOM
+    Run Keyword If    "${fare_3_base_fare}" != "${EMPTY}"    Enter GDS Command    5T‡TKT3-ETK-DIN‡S3
+
+Fill Out Ticketing Instructions
+    Sleep    1
+    Send    {TAB 4}    ### ENTER NUMBER OF TIMES TAB MUST BE SENT ###
+    Sleep    2
+    Send    X{ENTER}
+    Sleep    5
+    Take Screenshot
+    Send    {ALTDOWN}EA{ALTUP}
+    Sleep    1
+    Send    {ALTDOWN}EC{ALTUP}
+    Sleep    1
+    Send    {LEFT}{RIGHT}
+    ${ticketing_instructions_content}    Get Data from Clipboard
+    ${is_comm_penalty_exists}    Run Keyword and Return Status    Should Contain    ${ticketing_instructions_content}    COMM PENALTY
+    Run Keyword If    "${is_negative}" == "False"    Send    ${exchange_amount_${fare_num}}
+    Run Keyword If    "${is_negative}" == "False"    Send    {TAB}
+    ...    ELSE    Send    0.00{TAB 6}
+    Run Keyword If    "${is_negative}" == "False" and "${is_comm_penalty_exists}" == "True"    Send    ${exchange_amount_${fare_num}}{TAB 14}
+    Run Keyword If    "${is_negative}" == "False" and "${is_comm_penalty_exists}" == "False"    Send    ${exchange_amount_${fare_num}}{TAB 12}
+    Sleep    1
+    Send    X{ENTER}
+    Sleep    1
+    Take Screenshot
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Sleep    1
+    Log    will copy and paste in 5 seconds
+    Sleep    5
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Send    {ALTDOWN}EA{ALTUP}
+    Sleep    1
+    Send    {ALTDOWN}EC{ALTUP}
+    ${ticketing_instructions_content}    Get Data from Clipboard
+    ${is_transaction_retained_visible}    Run Keyword and Return Status    Should Contain    ${ticketing_instructions_content}    TRANSACTION RETAINED
+    Run Keyword If    "${is_transaction_retained_visible}" <> "True"    FAIL    QREX Amend Booking was unsuccessful (Refer to screenshot for details)
+
+Generate Ticket Details
+    [Arguments]    ${segment_num}    ${fare_num}
+    Activate Sabre Red Workspace
+    Sleep    1
+    Send    {SHIFTDOWN}{BACKSPACE}{SHIFTUP}
+    Sleep    1
+    Send    *${current_pnr}{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Sleep    3
+    Send    PPS1{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Send    *R{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Send    WPS${segment_num}{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Send    PQ{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Sleep    20
+    Send    W'PQ${fare_num}{ENTER}
+    Sleep    3
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Send    ER{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Send    *T{ENTER}
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Take Screenshot
+
+Get Exchange Summary Details
+    [Arguments]    ${ticket_number}    ${segment_num}    ${fare_num}    ${route_type}
+    Activate Sabre Red Workspace
+    Sleep    1
+    Send    {CTRLDOWN}{SHIFTDOWN}{BACKSPACE}{SHIFTUP}{CTRLUP}
+    Sleep    1
+    Send    WFRF${ticket_number}'ADT'S${segment_num}'ETR'N1.1{ENTER}    ### INSERT TICKET NUMBER ISSUED ###
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Take Screenshot
+    Log    will copy and paste in 25 seconds
+    Sleep    25
+    Wait Until Keyword Succeeds    60    5    Object Not Exists    ${sikuli_image_path}/sabre_locked.png    0.8    ${timeout}
+    Send    {ALTDOWN}EA{ALTUP}
+    Sleep    1
+    Send    {ALTDOWN}EC{ALTUP}
+    ${exchange_summary_content}    Get Data from Clipboard
+    @{exchange_summary_line}    Split to Lines    ${exchange_summary_content}
+    ${exchange_amount}    Get Substring    ${exchange_summary_line[15]}    52    62
+    ${base_fare}    Get Substring    ${exchange_summary_line[7]}    23    34
+    ${charged_amount}    Get Substring    ${exchange_summary_line[10]}    23    34
+    ${exchange_amount}    Remove All Spaces    ${exchange_amount}
+    ${base_fare}    Remove All Spaces    ${base_fare}
+    ${charged_amount}    Remove All Spaces    ${charged_amount}
+    ${exchange_amount_no_decimal}    Fetch From Left    ${exchange_amount}    .
+    ${is_exchange_negative}    Run Keyword and Return Status    Should Contain    ${exchange_amount}    -
+    ${is_exchange_zero}    Run Keyword and Return Status    Should Match    ${exchange_amount}    0.00
+    ${is_negative}    Set Variable If    "${is_exchange_negative}" == "True" or "${is_exchange_zero}" == "True"    True    False
+    ${exchange_amount}    Set Variable If    "${is_negative}" == "True"    0.00    ${exchange_amount}
+    ${charged_amount}    Set Variable If    "${is_negative}" == "True"    0.00    ${charged_amount}
+    Set Test Variable    ${is_negative}
+    Set Test Variable    ${exchange_amount_${fare_num}}    ${exchange_amount}
+    Set Test Variable    ${exchange_amount_no_decimal_${fare_num}}    ${exchange_amount_no_decimal}
+    Set Test Variable    ${base_fare_${fare_num}}    ${base_fare}
+    Set Test Variable    ${charged_amount_${fare_num}}    ${charged_amount}
+
+Issue The Ticket For X Segment
+    [Arguments]    ${segment_num}    ${fare_num}
+    Generate Ticket Details    ${segment_num}    ${fare_num}
+    ${exp_tick__seg_num}    Evaluate    ${fare_num} + 1
+    Log    will select all and copy in 5 seconds
+    Sleep    5
+    Send    {ALTDOWN}EA{ALTUP}
+    Sleep    1
+    Send    {ALTDOWN}EC{ALTUP}
+    ${content}    Get Data from Clipboard
+    @{lines}    Remove Blank Lines And Output To List    ${content}
+    ${expected_length}    Get Length    ${lines}
+    ${expected_length}    Evaluate    ${expected_length} - 1
+    ${ticket_number}    Get String Between Strings    ${lines[${expected_length}]}    TE${SPACE}    -AT
+    ${error}    Run Keyword and Return Status    Should Contain    ${lines[${expected_length}]}    ${exp_tick__seg_num}.TE${SPACE}    -AT
+    Run Keyword If    "${error}" == "False"    Send    6TESTPNR{ENTER}
+    Run Keyword If    "${error}" == "False"    Send    ET{ENTER}
+    Run Keyword If    "${error}" == "False"    Fail    Unable to price the segment
+    ${ticket_number}    Get String Between Strings    ${lines[${expected_length}]}    ${exp_tick__seg_num}.TE${SPACE}    -AT
+    ${ticket_seg_num}    Get Substring    ${lines[${expected_length}]}    2    3
+    Set Test Variable    ${ticket_number_${fare_num}}    ${ticket_number}
+    Set Test Variable    ${ticket_seg_num_${fare_num}}    ${ticket_seg_num}
+    Activate Sabre Red Workspace
+    Send    ET{ENTER}
+    Sleep    1
+    Send    I{ENTER}
+    Sleep    1
+
+Validate Base Fare, Route And Vendor Code
+    [Arguments]    ${fare_tab}    ${fare_tab_to_comapare}    ${fare_tab_to_compare2}=Fare 3
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_to_comapare_index}    Fetch From Right    ${fare_tab_to_comapare}    ${SPACE}
+    ${fare_tab_to_compare2_index}    Fetch From Right    ${fare_tab_to_compare2}    ${SPACE}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${missed_saving_code_remark_${fare_tab_to_comapare_index}}    ${missed_saving_code_remark_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${missed_saving_code_remark_${fare_tab_to_compare2_index}}    ${missed_saving_code_remark_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${missed_saving_code_remark_${fare_tab_to_compare2_index}}    ${missed_saving_code_remark_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${realised_saving_code_remark_${fare_tab_to_comapare_index}}    ${realised_saving_code_remark_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${realised_saving_code_remark_${fare_tab_to_compare2_index}}    ${realised_saving_code_remark_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${realised_saving_code_remark_${fare_tab_to_compare2_index}}    ${realised_saving_code_remark_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${class_code_remark_${fare_tab_to_comapare_index}}    ${class_code_remark_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${class_code_remark_${fare_tab_to_compare2_index}}    ${class_code_remark_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${class_code_remark_${fare_tab_to_compare2_index}}    ${class_code_remark_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${cancellation_remark_${fare_tab_to_comapare_index}}    ${cancellation_remark_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${cancellation_remark_${fare_tab_to_compare2_index}}    ${cancellation_remark_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${cancellation_remark_${fare_tab_to_compare2_index}}    ${cancellation_remark_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${changes_remark_${fare_tab_to_comapare_index}}    ${changes_remark_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${changes_remark_${fare_tab_to_compare2_index}}    ${changes_remark_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${changes_remark_${fare_tab_to_compare2_index}}    ${changes_remark_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${min_stay_remark_${fare_tab_to_comapare_index}}    ${min_stay_remark_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${min_stay_remark_${fare_tab_to_compare2_index}}    ${min_stay_remark_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${min_stay_remark_${fare_tab_to_compare2_index}}    ${min_stay_remark_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${max_stay_remark_${fare_tab_to_comapare_index}}    ${max_stay_remark_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${max_stay_remark_${fare_tab_to_compare2_index}}    ${max_stay_remark_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${max_stay_remark_${fare_tab_to_compare2_index}}    ${max_stay_remark_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${high_fare_remark_${fare_tab_to_comapare_index}}    ${high_fare_remark_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${high_fare_remark_${fare_tab_to_compare2_index}}    ${high_fare_remark_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${high_fare_remark_${fare_tab_to_compare2_index}}    ${high_fare_remark_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${low_fare_remark_${fare_tab_to_comapare_index}}    ${low_fare_remark_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${low_fare_remark_${fare_tab_to_compare2_index}}    ${low_fare_remark_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${low_fare_remark_${fare_tab_to_compare2_index}}    ${low_fare_remark_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${charged_fare_remark_${fare_tab_to_comapare_index}}    ${charged_fare_remark_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${charged_fare_remark_${fare_tab_to_compare2_index}}    ${charged_fare_remark_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${charged_fare_remark_${fare_tab_to_compare2_index}}    ${charged_fare_remark_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${missed_text_value_${fare_tab_to_comapare_index}}    ${missed_text_value_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${missed_text_value_${fare_tab_to_compare2_index}}    ${missed_text_value_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${missed_text_value_${fare_tab_to_compare2_index}}    ${missed_text_value_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${realised_text_value_${fare_tab_to_comapare_index}}    ${realised_text_value_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${realised_text_value_${fare_tab_to_compare2_index}}    ${realised_text_value_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${realised_text_value_${fare_tab_to_compare2_index}}    ${realised_text_value_${fare_tab_index}}
+    Run Keyword If    "${criteria_line_${fare_tab_index}}" == "${criteria_line_${fare_tab_to_comapare_index}}"    Set Suite Variable    ${class_text_value_${fare_tab_to_comapare_index}}    ${class_text_value_${fare_tab_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_comapare_index}}" == "${criteria_line_${fare_tab_to_compare2_index}}"    Set Suite Variable    ${class_text_value_${fare_tab_to_compare2_index}}    ${class_text_value_${fare_tab_to_comapare_index}}
+    ...    ELSE IF    "${criteria_line_${fare_tab_to_compare2_index}}" == "${criteria_line_${fare_tab_index}}"    Set Suite Variable    ${class_text_value_${fare_tab_to_compare2_index}}    ${class_text_value_${fare_tab_index}}
+
+Verify Account Info Is Written In The PNR
+    Verify Specific Line Is Written In The PNR    *0106*0717171
+    Verify Specific Line Is Written In The PNR    *0112*EMEATRVLRTWO AUTOLEGACY
+    Verify Specific Line Is Written In The PNR    *0653*MUSSUUUUUUUS
+    Verify Specific Line Is Written In The PNR    0702*AUTOMATION¤CARLSONWAGONLIT.COM
+
+Verify Alternate Fare Details Does Not Include Hidden Stop
+    [Arguments]    ${expected_alternate_fare_details_value}
+    ${alternate_fare_details}    Determine Multiple Object Name Based On Active Tab    ctxtDetailsOffer_alt
+    ${actual_alternate_fare_details_value}    Get Control Text Value    ${alternate_fare_details}
+    Verify Text Contains Expected Value    ${actual_alternate_fare_details_value}    ${expected_alternate_fare_details_value}    true
+
+Verify Alternate Routing Field Is Enabled
+    ${alt_routing_field}    Determine Multiple Object Name Based On Active Tab    cmtxtRouting_alt
+    Verify Control Object Is Enabled    ${alt_routing_field}
+
+Verify Back Office Account Info Is Written In The PNR
+    Verify Specific Line Is Written In The PNR    7302-${high_fare}
+    Verify Specific Line Is Written In The PNR    7211-${charge_fare}
+    Verify Specific Line Is Written In The PNR    7303-${low_fare}
+    Verify Specific Line Is Written In The PNR    7305-TNU
+    Verify Specific Line Is Written In The PNR    7306-LOW
+    Verify Specific Line Is Written In The PNR    7110-YC
+    Verify Specific Line Is Written In The PNR    7109-LAX
+    Verify Specific Line Is Written In The PNR    7105-PAR
+
+Verify Back Office Account Is Written In The PNR
+    Verify Specific Line Is Written In The PNR    7302-${high_fare}
+    Verify Specific Line Is Written In The PNR    7303-${low_fare}
+    Verify Specific Line Is Written In The PNR    7302-${charge_fare}
+    Verify Specific Line Is Written In The PNR    7305-TNU
+    Verify Specific Line Is Written In The PNR    7306-LOW
+
+Verify Fare Details In Air Fare Panel
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify High Fare Field Value    ${high_fare_remark_${fare_tab_index}}    ${fare_tab}
+    Verify Charged Fare Field Value    ${charged_fare_remark_${fare_tab_index}}    ${fare_tab}
+    Verify Low Fare Field Value    ${low_fare_remark_${fare_tab_index}}    ${fare_tab}
+    Verify Realised Savings Code Default Value    ${realised_text_value_${fare_tab_index}}
+    Verify Missed Savings Code Default Value    ${missed_text_value_${fare_tab_index}}
+    Verify Class Code Default Value Is Correct    ${class_text_value_${fare_tab_index}}
+    Verify Air Fare Restrictions Value    ${fare_tab}    ${changes_remark_${fare_tab_index}}    ${cancellation_remark_${fare_tab_index}}    ${EMPTY}    ${EMPTY}    ${min_stay_remark_${fare_tab_index}}
+    ...    ${max_stay_remark_${fare_tab_index}}
+
+Verify High Fare, Charged Fare and Low Fare Have Values
+    Get High Fare Value
+    Get Charged Fare Value
+    Get Low Fare Value
+    Run Keyword And Continue On Failure    Should Not Be Empty    ${high_fare_amount}    High Fare Is Empty
+    Run Keyword And Continue On Failure    Should Not Be Empty    ${charged_fare_amount}    Charged Fare Is Empty
+    Run Keyword And Continue On Failure    Should Not Be Empty    ${low_fare_amount}    Low Fare Is Empty
+
+Verify Merchant Fee Is Written In The PNR
+    Verify Specific Line Is Written In The PNR    F‡FEES - NO POS FEES
+
+Verify Reason Code, Destination, Ticket Type And Invoice Is Written In The PNR
+    Verify Specific Line Is Written In The PNR    HC-TNU
+    Verify Specific Line Is Written In The PNR    LC-LOW
+    Verify Specific Line Is Written In The PNR    CL-YC
+    Verify Specific Line Is Written In The PNR    TK-ET
+    Verify Specific Line Is Written In The PNR    INV-1
+
+Verify Routing Field Is Enabled
+    ${routing_field}    Determine Multiple Object Name Based On Active Tab    cmtxtRouting
+    Verify Control Object Is Enabled    ${routing_field}
+
+Verify Ticketing Remark Includes Realized Saving Code X Fare In The PNR
+    [Arguments]    ${fare_tab_value}    ${realised_saving_code}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    ${expected_low_fare}    Remove Decimals    ${low_fare_${fare_tab_index}}
+    ${expected_high_fare}    Remove Decimals    ${high_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    TKT${fare_tab_index}-FQ${charged_fare_${fare_tab_index}}/LP-${expected_low_fare}/FS-${realised_saving_code}/FF-${expected_high_fare}
+
+Void ${ticket_count} Ticket
+    : FOR    ${index}    IN RANGE    1    ${ticket_count}+1
+    \    ${is_ticket_number_exist}    Get Variable Value    ${ticket_number_${index}}    Null
+    \    Run Keyword If    "${is_ticket_number_exist}" != "Null"    Void Ticket X Segment    ${current_pnr}    ${ticket_number_${index}}    ${ticket_seg_num_${index}}
+    \    ...    ELSE    FAIL    Ticket was not generated.
+
+Void Ticket X Segment
+    [Arguments]    ${pnr}    ${ticket_number}    ${seg_num}
+    Activate Sabre Red Workspace
+    Sleep    1
+    Send    ^!{BS}
+    Sleep    1
+    Send    *${pnr}{ENTER}
+    Sleep    1
+    Send    *T{ENTER}
+    Sleep    2
+    Send    WV${seg_num}{ENTER}
+    Sleep    5
+    Send    WV${seg_num}{ENTER}
+    Sleep    5
+    Send    *T{ENTER}
+    Sleep    2
+    Send    {ALTDOWN}EA{ALTUP}
+    Sleep    1
+    Send    {ALTDOWN}EC{ALTUP}
+    ${content}    Get Data from Clipboard
+    Activate Sabre Red Workspace
+    Send    ET{ENTER}
+    Sleep    1
+    Send    I{ENTER}
+    Sleep    1
+    @{lines}    Remove Blank Lines And Output To List    ${content}
+    ${expected_length}    Get Length    ${lines}
+    ${expected_length}    Evaluate    ${expected_length} - 1
+    Take Screenshot
+    ${void}    Run Keyword and Return Status    Should Contain    ${lines[${expected_length}]}    ${ticket_number}-AT${SPACE}${SPACE}*VOID
+    Run Keyword and Continue on Failure    Run Keyword If    "${void}" == "False"    Log    QREX Ticket was not voided.    WARN

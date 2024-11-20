@@ -1,0 +1,71 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Resource          ../air_fare/air_fare_verification.txt
+Resource          ../amend/amend_verification.txt
+Resource          ../client_fees/client_fees_verification.txt
+
+*** Keywords ***
+Verify ${obt_indicator_1} Is Changed To ${obt_indicator_2} In Remarks For Air, Car, Hotel And Rail
+    Verify OBT Remarks Do Not Exist In PNR    ${obt_indicator_1}
+    Verify OBT Remarks Exist In PNR    ${obt_indicator_2}
+
+Verify ${obt_indicator_1} Is Not Changed To ${obt_indicator_2} In Remarks For Air, Car, Hotel And Rail
+    Verify OBT Remarks Exist In PNR    ${obt_indicator_1}
+    Verify OBT Remarks Do Not Exist In PNR    ${obt_indicator_2}
+
+Verify Clipper Options Compliancy Dropdown Is Displayed
+    Sleep    5
+    ${clipper_compliancy_visible} =    Control Command    ${title_power_express}    ${EMPTY}    ${clipper_compliancy_options}    IsVisible    ${EMPTY}
+    Run Keyword If    "${clipper_compliancy_visible}" == "0"    Run Keyword And Continue On Failure    Fail    Clipper Compliancy dropdown is not visible
+    [Teardown]    Take Screenshot
+
+Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Verify Checkbox Is Ticked    ${check_box_do_not_send_itinerary}
+
+Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Verify Checkbox Is Unticked    ${check_box_do_not_send_to_OBT}
+
+Verify New PCC And Team ID Are Written in PNR
+    [Arguments]    ${str_pcc}    ${str_teamid}
+    Verify Specific Line Is Written In The PNR    PCC${str_pcc}
+    Verify Specific Line Is Written In The PNR    TEAM${str_teamid}
+
+Verify Total Air Fare Is Written In GDS Remarks For ${country}
+    Click Panel    Air Fare
+    Get Charged Fare Value
+    ${currency}    Get Currency    ${country}
+    ${verify_comma}    Run Keyword and Return Status    Should Contain    ${charged_fare_amount}    ,
+    ${nwcharge_fare}    Run Keyword If    "${charged_fare_amount}" != "${EMPTY}" and "${verify_comma}" == "True"    Replace String    ${charged_fare_amount}    ,    .
+    Verify Specific Line Is Written In The PNR    TARIF APPLIQUE ${currency}${nwcharge_fare}
+
+Verify Type Of Booking Is Not Present
+    Verify Control Object Is Not Visible    [NAME:lblTypeOfBooking]
+    Verify Control Object Is Not Visible    [NAME:rbKDS]
+    Verify Control Object Is Not Visible    [NAME:rbClassic]
+
+Verify KDS Remarks Are Not Present
+    Should Not Contain    ${pnr_details}    RMO CP0
+    Should Not Match Regexp    ${pnr_details}    RM\\s[*]\\d{4}[*]\\d{1}KD
+
+Verify Do Not Send To OBT Checkbox Is Ticked
+    Comment    Verify Checkbox Is Ticked    ${check_box_do_not_send_to_OBT}
+    ${checkbox_status}    Get Checkbox State    ${check_box_do_not_send_to_OBT}
+    Run Keyword And Continue On Failure    Should Be True    ${checkbox_status} == True
+
+Verify Current PCC Is Emulated
+    [Arguments]    ${pcc}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    Verify Text Contains Expected Value    ${data_clipboard}    RP/${pcc}/
+
+Verify PNR RP Line Is Not Updated
+    [Arguments]    ${pcc}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    Verify Text Does Not Contain Value    ${data_clipboard}    RP/${pcc}/ALL
+
+Verify PNR RP Line Is Updated
+    [Arguments]    ${pcc}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    Verify Text Contains Expected Value    ${data_clipboard}    RP/${pcc}/ALL
+
+Verify Update PNR Is Enabled
+    Verify Control Object Is Visible    [NAME:btnSendPNR]

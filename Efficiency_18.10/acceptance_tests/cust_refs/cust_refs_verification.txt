@@ -1,0 +1,99 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../resources/common/utilities.txt
+Resource          ../../resources/panels/cust_refs.txt
+
+*** Keywords ***
+Verify CDR Field Is Not Visible
+    [Arguments]    ${cdr_field_description}
+    ${cdr_dict}    Determine CDR Description And Index
+    Dictionary Should Not Contain Key    ${cdr_dict}    ${cdr_field_description}
+
+Verify CDR Fields Is Not Visible Upon Load In Amend Booking Flow
+    Verify Control Object Is Not Visible    ${cdr_value1_locator}
+    Verify Control Object Is Not Visible    ${cdr_value2_locator}
+    Verify Control Object Is Not Visible    ${cdr_value3_locator}
+    [Teardown]    Take Screenshot
+
+Verify CDR Value Is Correct
+    [Arguments]    ${expected_cdr}    ${expected_value}
+    ${cdr_dict}    Determine CDR Description And Index
+    ${cdr_index} =    Get From Dictionary    ${cdr_dict}    ${expected_cdr}
+    Verify Control Object Text Value Is Correct    [NAME:ctxtCDRValue${cdr_index}]    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Cust Refs Not Known Checkbox Is Unticked
+    Verify Checkbox Is Unticked    ${check_box_skip_validation}
+    [Teardown]    Take Screenshot
+
+Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Verify Checkbox Is Unticked    ${check_box_skip_validation}
+    Verify Control Object Is Disabled    ${check_box_skip_validation}
+    [Teardown]    Take Screenshot
+
+Verify Red Error Icon Existing In Selected Panel
+    [Arguments]    ${panel_name}=EMPTY
+    Click Panel    ${panel_name}
+    Sleep    1
+    ${is_error_icon_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/red_error_icon.PNG    ${similarity}    ${timeout}
+    Run Keyword If    "${is_error_icon_exist}" == "True"    Log    PASSED: Red error icon was displayed in ${panel_name} panel.
+    ...    ELSE    Log    FAILED: No Red error icon in ${panel_name} panel.
+    [Teardown]    Take Screenshot
+
+Verify Show All Client Defined References Checkbox Is Unticked
+    Wait Until Control Object Is Visible    ${label_client_defined_references}
+    ${checkbox_status}    Get checkbox status    ${check_box_show_all_cdr}
+    Should be True    '${checkbox_status}' == 'False'
+    [Teardown]    Take Screenshot
+
+Verify Specific CDR Is Not Shown Upon Load
+    [Arguments]    ${expected_cdr_field_name}
+    : FOR    ${field_index}    IN RANGE    1    15
+    \    ${clickstatus} =    Control Click    ${title_power_express}    ${EMPTY}    [NAME:ctxtCDRDescription${field_index}]
+    \    Sleep    1
+    \    ${currlabel} =    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblCDRDescription${field_index}]
+    \    Run Keyword If    '${currlabel}' == '${EMPTY}'    Continue For Loop
+    \    Run Keyword If    "${currlabel}" == "${expected_cdr_field_name}"    Fail    CDR Field ${expected_cdr_field_name} is Shown Upon Load
+    \    Run Keyword If    "${currlabel}" != "${expected_cdr_field_name}"    Exit For Loop
+    [Teardown]    Take Screenshot
+
+Verify Specific Panel Status
+    [Arguments]    ${panel_name}=EMPTY
+    Auto It Set Option    PixelCoordMode    2
+    Set Test Variable    ${x}    13
+    Comment    ${y}    Get From Dictionary    ${panel_coordinates}    ${panel_name.upper()}
+    ${actual_bgcolor}    Pixel Get Color    ${x}    ${y}
+    ${actual_bgcolor}    Convert To Hex    ${actual_bgcolor}
+    ${panel_status}    Run Keyword If    "${actual_bgcolor}" == "FF5151" or "${actual_bgcolor}" == "FF5A5A" or "${actual_bgcolor}" == "FF4A4A"    Set Variable    RED
+    ...    ELSE IF    "${actual_bgcolor}" == "7CD107" or "${actual_bgcolor}" == "78CE00"    Set Variable    GREEN
+    ...    ELSE    Set Variable    END
+    Auto It Set Option    PixelCoordMode    1
+    [Return]    ${panel_status}
+
+Verify Client Account Name Is Correct
+    [Arguments]    ${expected_value}
+    Tick Show All Client Defined References
+    ${client_account_name}    Get Client Account Name
+    Should Be Equal As Strings    ${expected_value}    ${client_account_name}
+
+Determine CDR Description And Index for Multipax
+    Wait Until Control Object Is Visible    [NAME:grpCDReferences]
+    ${cdr_dict}    Create Dictionary
+    : FOR    ${cdr_field_index}    IN RANGE    0    100
+    \    ${is_control_visible}    Run Keyword And Return Status    Verify Control Object Is Visible    [NAME:clblCDRDescription${cdr_field_index}]
+    \    Exit For Loop If    ${is_control_visible} == 0
+    \    ${cdr_field_text}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:clblCDRDescription${cdr_field_index}]
+    \    Set To Dictionary    ${cdr_dict}    ${cdr_field_text}    ${cdr_field_index}
+    Log    ${cdr_dict}
+    [Return]    ${cdr_dict}
+
+Verify CDR text
+    [Arguments]    ${expected_cdr_name}    ${expected_cdr_value}
+    Wait Until Control Object Is Visible    [NAME:grpCDReferences]
+    ${cdr_dict}    Create Dictionary
+    : FOR    ${cdr_field_index}    IN RANGE    0    100
+    \    ${is_control_visible}    Run Keyword And Return Status    Verify Control Object Is Visible    [NAME:clblCDRDescription${cdr_field_index}]
+    \    Exit For Loop If    ${is_control_visible} == 0
+    \    ${cdr_field_text}    Get Control Text Value    [NAME:clblCDRDescription${cdr_field_index}]
+    \    Set To Dictionary    ${cdr_dict}    ${cdr_field_text}    ${cdr_values${index}}
+    Log    ${cdr_dict}

@@ -1,0 +1,5 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../resource_sanity.txt
+
+*** Test Cases ***

@@ -1,0 +1,105 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../business_rules_verification.txt
+Resource          ../../../resources/panels/pop_up.txt
+
+*** Test Cases ***
+[NB] Verify That Search Remark For Itinerary Remark Will Be Written To The PNR For Both Update and Finish PNR
+    [Tags]    us4929    not_ready
+    [Template]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4618    AutoLast    AutoFirst
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Department Code    ONE
+    Set CDR Value    T-Matrix DP Code    ${EMPTY}
+    Click Panel    Client Info
+    Populate Client Info Panel With Default Values
+    Click Update PNR
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *.    1
+    Verify Specific Line Is Written In The PNR    .U*99-FOR
+    Book Flight X Months From Now    DENORD    01Y1    WPRQ    8
+    Retrieve PNR Details From Sabre Red    \    *P9    1
+    Verify Specific Line Is Written In The PNR    EAH1/*****EA ESCVIP *****
+    Verify Specific Line Is Written In The PNR    EAH PEXPRESS TEST
+    Retrieve PNR Details From Sabre Red    \    *PE    1
+    Verify Specific Line Is Written In The PNR    ‡RJUAREZ@CARLSONWAGONLIT.COM
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Department Code    ONE
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Set CDR Value    Department Code    ONE
+    Set CDR Value    T-Matrix DP Code    ${EMPTY}
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    \    *.    1
+    Verify Specific Line Is Written In The PNR    .U*98-REVIEW
+    Retrieve PNR Details From Sabre Red    \    *P9    1
+    Verify Specific Line Is Written In The PNR    EAH 88888889
+    Verify Specific Line Is Written In The PNR    JFK TESTP9FIELD
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *A
+    Verify Specific Line Is Written In The PNR    THIS IS TERENCE REMARK
+    Verify Specific Line Is Written In The PNR    X/-BB/U17676
+    Verify Specific Line Is Written In The PNR    U*89-TERTEST//TERTEST.COM
+    Verify Specific Line Is Written In The PNR    G‡THIS IS A G QUALIFIED TERENCE REMARK
+    Verify Specific Line Is Written In The PNR    THIS IS AN ITINERARY TERENCE REMARK
+    Verify Specific Line Is Written In The PNR    MNL THIS IS A PHONE TERENCE FIELD
+
+[AB] Verify That Search Remark For Any Remark Will Be Defaulted To CDR Value In Cust Refs
+    [Tags]    us4929    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Department Code    SET
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Department Code    SET
+    Click Control Button    ${cdr_value2_locator}
+    Verify CDR Value Is Correct    T-Matrix DP Code    CONFIRM
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *P9    1
+    Verify Specific Line Is Not Written In The PNR    EAH PExpress Test
+    Verify Specific Line Is Not Written In The PNR    EAH 1234567
+    Verify Specific Line Is Written In The PNR    EAH 88888889
+    Click Finish PNR
+    Re-Execute Amend Booking If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *.    1
+    Verify Specific Line Is Written In The PNR    U*97-CONFIRM
+    Verify Specific Line Is Written In The PNR    U*29-SET
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *P9    1
+    Verify Specific Line Is Not Written In The PNR    EAH1 88889999
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *A
+    Verify Specific Line Is Written In The PNR    THIS IS A G QUALIFIED AMEND REMARK
+    Verify Specific Line Is Written In The PNR    X/-BB/U17676
+    Verify Specific Line Is Written In The PNR    U*88-TEST//TEST.COMAMEND
+    Verify Specific Line Is Written In The PNR    G‡THIS IS A G QUALIFIED AMEND REMARK
+    Verify Specific Line Is Written In The PNR    ‡THIS IS AN ITINERARY AMEND REMARK
+    Verify Specific Line Is Written In The PNR    MNL THIS IS A PHONE AMEND FIELD
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *PE    1
+    Verify Specific Line Is Written In The PNR    ‡AMENDTESTEMAIL@AMENDTEST.COM‡
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Department Code    SET
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    Department Code    SET
+    Click Control Button    ${cdr_value2_locator}
+    Verify CDR Value Is Correct    T-Matrix DP Code    CONFIRM
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *P9    1
+    Verify Specific Line Is Not Written In The PNR    EAH PExpress Test
+    Verify Specific Line Is Not Written In The PNR    EAH 1234567
+    Verify Specific Line Is Written In The PNR    EAH 88888889
+    Click Finish PNR

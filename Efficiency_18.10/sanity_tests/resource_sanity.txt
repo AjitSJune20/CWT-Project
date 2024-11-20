@@ -1,0 +1,7 @@
+*** Settings ***
+Resource          ../acceptance_tests/client_info/client_info_verification.txt
+Resource          ../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          ../resources/common/global_resources.txt
+Resource          ../acceptance_tests/gds/gds_verification.txt
+
+*** Keywords ***

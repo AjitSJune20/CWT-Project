@@ -1,0 +1,657 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../other_services_verification.txt
+Resource          ../other_services.txt
+
+*** Test Cases ***
+[NB OS SG]Verify That Insurance Information Are Displayed Correctly In Insurance Tab
+    [Tags]    US575
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SG OS AUTOMATION    BEAR    SGOTHERS
+    Click New Booking
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Finish PNR
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    AIG
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Insurance
+    Verify Default Value In Number Of Days    0
+    Verify Default Value In Name    SGOTH BEAR
+    Set Number Of Days    ${EMPTY}
+    Verify Geographical Area Is Required
+    Verify Number Of Days Is Required
+    Verify Plan Selected Is Required
+    Verify Address Of First Name Insured Person Is Required
+    Verify Geographical Area Values Are Correct    Asean    Asia/AU/NZ    Worldwide exc US/CAN    Worldwide inc US/CAN    China/Macau (Non Air)    Global
+    ...    Cruise
+    Verify Selected Plan Values Are Correct    Individual Plan - Single Trip    Individual Plan - Annual    Family Budget Plan
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Set Name    BEAR DOS
+    Set Relationship    ME1
+    Set Premium Amount    20000.21
+    Set Address Of First Name Insured Person    CWT PHILIPPINES2
+    Click Add
+    Set Name    BEAR TRES
+    Set Relationship    ME2
+    Set Premium Amount    20000.22
+    Set Address Of First Name Insured Person    CWT PHILIPPINES3
+    Click Add
+    Set Name    BEAR KWATRO
+    Set Relationship    ME3
+    Set Premium Amount    20000.23
+    Set Address Of First Name Insured Person    CWT PHILIPPINES4
+    Click Add
+    Set Name    BEAR SINGKO
+    Set Relationship    ME4
+    Set Premium Amount    20000.24
+    Set Address Of First Name Insured Person    CWT PHILIPPINES5
+    Click Add
+    Set Name    BEAR DELETED
+    Set Relationship    ME5
+    Set Premium Amount    22.24
+    Set Address Of First Name Insured Person    CWT PHILIPPINES5
+    Click Add
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Displayed In The Insured Grid    HAROLD CUELLAR    ME    20000.0999
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR DOS    ME1    20000.21
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR TRES    ME2    20000.22
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR KWATRO    ME3    20000.23
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR SINGKO    ME4    20000.24
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR DELETED    ME5    22.24
+    Remove Insured Person In The Insured Grid    6    BEAR DELETED
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Not Displayed In The Insured Grid    BEAR DELETED    ME5    22.24
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+
+[AB OS SG]Verify That Insurance Information Are Displayed Correctly In Insurance Tab
+    [Tags]    US575
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Finish PNR
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    ACE INSURANCE LIMITED
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Insurance
+    Verify Default Value In Number Of Days    0
+    Verify Default Value In Name    SGOTH BEAR
+    Set Number Of Days    ${EMPTY}
+    Verify Geographical Area Is Required
+    Verify Number Of Days Is Required
+    Verify Plan Selected Is Required
+    Verify Address Of First Name Insured Person Is Required
+    Verify Geographical Area Values Are Correct    Asean    Asia/AU/NZ    Worldwide exc US/CAN    Worldwide inc US/CAN    China/Macau (Non Air)    Global
+    ...    Cruise
+    Verify Selected Plan Values Are Correct    Individual Plan - Single Trip    Individual Plan - Annual    Family Budget Plan
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Set Name    BEAR DOS
+    Set Relationship    ME1
+    Set Premium Amount    20000.21
+    Set Address Of First Name Insured Person    CWT PHILIPPINES2
+    Click Add
+    Set Name    BEAR TRES
+    Set Relationship    ME2
+    Set Premium Amount    20000.22
+    Set Address Of First Name Insured Person    CWT PHILIPPINES3
+    Click Add
+    Set Name    BEAR KWATRO
+    Set Relationship    ME3
+    Set Premium Amount    20000.23
+    Set Address Of First Name Insured Person    CWT PHILIPPINES4
+    Click Add
+    Set Name    BEAR SINGKO
+    Set Relationship    ME4
+    Set Premium Amount    20000.24
+    Set Address Of First Name Insured Person    CWT PHILIPPINES5
+    Click Add
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Displayed In The Insured Grid    HAROLD CUELLAR    ME    20000.0999
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR DOS    ME1    20000.21
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR TRES    ME2    20000.22
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR KWATRO    ME3    20000.23
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR SINGKO    ME4    20000.24
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+
+[OS SG]Verify That Insurance Information Are Displayed Correctly In Insurance Tab
+    [Tags]    US575
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    UNITED OVERSEAS INSURANCE LTD
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Insurance
+    Verify Default Value In Number Of Days    0
+    Verify Default Value In Name    SGOTH BEAR
+    Set Number Of Days    ${EMPTY}
+    Verify Geographical Area Is Required
+    Verify Number Of Days Is Required
+    Verify Plan Selected Is Required
+    Verify Address Of First Name Insured Person Is Required
+    Verify Geographical Area Values Are Correct    Asean    Asia/AU/NZ    Worldwide exc US/CAN    Worldwide inc US/CAN    China/Macau (Non Air)    Global
+    ...    Cruise
+    Verify Selected Plan Values Are Correct    Individual Plan - Single Trip    Individual Plan - Annual    Family Budget Plan
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Set Name    BEAR DOS
+    Set Relationship    ME1
+    Set Premium Amount    20000.21
+    Set Address Of First Name Insured Person    CWT PHILIPPINES2
+    Click Add
+    Set Name    BEAR TRES
+    Set Relationship    ME2
+    Set Premium Amount    20000.22
+    Set Address Of First Name Insured Person    CWT PHILIPPINES3
+    Click Add
+    Set Name    BEAR KWATRO
+    Set Relationship    ME3
+    Set Premium Amount    20000.23
+    Set Address Of First Name Insured Person    CWT PHILIPPINES4
+    Click Add
+    Set Name    BEAR SINGKO
+    Set Relationship    ME4
+    Set Premium Amount    20000.24
+    Set Address Of First Name Insured Person    CWT PHILIPPINES5
+    Click Add
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Displayed In The Insured Grid    HAROLD CUELLAR    ME    20000.0999
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR DOS    ME1    20000.21
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR TRES    ME2    20000.22
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR KWATRO    ME3    20000.23
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR SINGKO    ME4    20000.24
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+
+[OS 2nd SG] Verify That Insurance Information Are Displayed Correctly In Insurance Tab
+    [Tags]    US575
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    AIG
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Insurance
+    Verify Default Value In Number Of Days    0
+    Verify Default Value In Name    SGOTH BEAR
+    Set Number Of Days    ${EMPTY}
+    Verify Geographical Area Is Required
+    Verify Number Of Days Is Required
+    Verify Plan Selected Is Required
+    Verify Address Of First Name Insured Person Is Required
+    Verify Geographical Area Values Are Correct    Asean    Asia/AU/NZ    Worldwide exc US/CAN    Worldwide inc US/CAN    China/Macau (Non Air)    Global
+    ...    Cruise
+    Verify Selected Plan Values Are Correct    Individual Plan - Single Trip    Individual Plan - Annual    Family Budget Plan
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Set Name    BEAR DOS
+    Set Relationship    ME1
+    Set Premium Amount    20000.21
+    Set Address Of First Name Insured Person    CWT PHILIPPINES2
+    Click Add
+    Set Name    BEAR TRES
+    Set Relationship    ME2
+    Set Premium Amount    20000.22
+    Set Address Of First Name Insured Person    CWT PHILIPPINES3
+    Click Add
+    Set Name    BEAR KWATRO
+    Set Relationship    ME3
+    Set Premium Amount    20000.23
+    Set Address Of First Name Insured Person    CWT PHILIPPINES4
+    Click Add
+    Set Name    BEAR SINGKO
+    Set Relationship    ME4
+    Set Premium Amount    20000.24
+    Set Address Of First Name Insured Person    CWT PHILIPPINES5
+    Click Add
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Displayed In The Insured Grid    HAROLD CUELLAR    ME    20000.0999
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR DOS    ME1    20000.21
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR TRES    ME2    20000.22
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR KWATRO    ME3    20000.23
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR SINGKO    ME4    20000.24
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB OS HK]Verify That Insurance Information Are Displayed Correctly In Insurance Tab
+    [Tags]    US575
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC HK OS AUTOMATION    BEAR    HKOTHERS
+    Click New Booking
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Finish PNR
+    Click Other Services
+    Select Product    INSURANCE
+    Select Vendor    CWT
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Insurance
+    Verify Default Value In Number Of Days    0
+    Verify Default Value In Name    HKOTH BEAR
+    Set Number Of Days    ${EMPTY}
+    Verify Geographical Area Is Not Required
+    Verify Number Of Days Is Not Required
+    Verify Plan Selected Is Required
+    Verify Address Of First Name Insured Person Is Not Required
+    Verify Geographical Area Values Are Correct    Asean    Asia/AU/NZ    Worldwide exc US/CAN    Worldwide inc US/CAN    China/Macau (Non Air)    Global
+    ...    Cruise
+    Verify Selected Plan Values Are Correct    Individual Plan - Single Trip    Individual Plan - Annual    Family Budget Plan
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Set Name    BEAR DOS
+    Set Relationship    ME1
+    Set Premium Amount    20000.21
+    Set Address Of First Name Insured Person    CWT PHILIPPINES2
+    Click Add
+    Set Name    BEAR TRES
+    Set Relationship    ME2
+    Set Premium Amount    20000.22
+    Set Address Of First Name Insured Person    CWT PHILIPPINES3
+    Click Add
+    Set Name    BEAR KWATRO
+    Set Relationship    ME3
+    Set Premium Amount    20000.23
+    Set Address Of First Name Insured Person    CWT PHILIPPINES4
+    Click Add
+    Set Name    BEAR SINGKO
+    Set Relationship    ME4
+    Set Premium Amount    20000.24
+    Set Address Of First Name Insured Person    CWT PHILIPPINES5
+    Click Add
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Displayed In The Insured Grid    HAROLD CUELLAR    ME    20000.0999
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR DOS    ME1    20000.21
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR TRES    ME2    20000.22
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR KWATRO    ME3    20000.23
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR SINGKO    ME4    20000.24
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+
+[AB OS HK]Verify That Insurance Information Are Displayed Correctly In Insurance Tab
+    [Tags]    US575
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Finish PNR
+    Click Other Services
+    Select Product    INSURANCE
+    Select Vendor    FEDERAL INSURANCE COMPANY
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Insurance
+    Verify Default Value In Number Of Days    0
+    Verify Default Value In Name    HKOTH BEAR
+    Set Number Of Days    ${EMPTY}
+    Verify Geographical Area Is Not Required
+    Verify Number Of Days Is Not Required
+    Verify Plan Selected Is Required
+    Verify Address Of First Name Insured Person Is Not Required
+    Verify Geographical Area Values Are Correct    Asean    Asia/AU/NZ    Worldwide exc US/CAN    Worldwide inc US/CAN    China/Macau (Non Air)    Global
+    ...    Cruise
+    Verify Selected Plan Values Are Correct    Individual Plan - Single Trip    Individual Plan - Annual    Family Budget Plan
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Set Name    BEAR DOS
+    Set Relationship    ME1
+    Set Premium Amount    20000.21
+    Set Address Of First Name Insured Person    CWT PHILIPPINES2
+    Click Add
+    Set Name    BEAR TRES
+    Set Relationship    ME2
+    Set Premium Amount    20000.22
+    Set Address Of First Name Insured Person    CWT PHILIPPINES3
+    Click Add
+    Set Name    BEAR KWATRO
+    Set Relationship    ME3
+    Set Premium Amount    20000.23
+    Set Address Of First Name Insured Person    CWT PHILIPPINES4
+    Click Add
+    Set Name    BEAR SINGKO
+    Set Relationship    ME4
+    Set Premium Amount    20000.24
+    Set Address Of First Name Insured Person    CWT PHILIPPINES5
+    Click Add
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Displayed In The Insured Grid    HAROLD CUELLAR    ME    20000.0999
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR DOS    ME1    20000.21
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR TRES    ME2    20000.22
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR KWATRO    ME3    20000.23
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR SINGKO    ME4    20000.24
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+
+[OS HK]Verify That Insurance Information Are Displayed Correctly In Insurance Tab
+    [Tags]    US575
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    INSURANCE
+    Select Vendor    CWT
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Insurance
+    Select Plan Selected    Family Budget Plan
+    Verify Plan Selected Is Required
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+
+[OS 2nd HK] Verify That Insurance Information Are Displayed Correctly In Insurance Tab
+    [Tags]    US575
+    Click Other Services
+    Select Product    INSURANCE
+    Select Vendor    FEDERAL INSURANCE COMPANY
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Insurance
+    Verify Default Value In Number Of Days    0
+    Verify Default Value In Name    HKOTH BEAR
+    Set Number Of Days    ${EMPTY}
+    Verify Geographical Area Is Not Required
+    Verify Number Of Days Is Not Required
+    Verify Plan Selected Is Required
+    Verify Address Of First Name Insured Person Is Not Required
+    Verify Geographical Area Values Are Correct    Asean    Asia/AU/NZ    Worldwide exc US/CAN    Worldwide inc US/CAN    China/Macau (Non Air)    Global
+    ...    Cruise
+    Verify Selected Plan Values Are Correct    Individual Plan - Single Trip    Individual Plan - Annual    Family Budget Plan
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Add Insured Person To Insurance Grid    HAROLD CUELLAR    ME    20000.0999
+    Add Insured Person To Insurance Grid    BEAR DOS    ME1    20000.21
+    Add Insured Person To Insurance Grid    BEAR TRES    ME2    20000.22
+    Add Insured Person To Insurance Grid    BEAR KWATRO    ME3    20000.23
+    Add Insured Person To Insurance Grid    BEAR SINGKO    ME4    20000.24
+    Add Insured Person To Insurance Grid    BEAR DELETED    ME5    22.24
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Displayed In The Insured Grid    HAROLD CUELLAR    ME    20000.0999
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR DOS    ME1    20000.21
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR TRES    ME2    20000.22
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR KWATRO    ME3    20000.23
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR SINGKO    ME4    20000.24
+    Verify Insured Person Record Is Displayed In The Insured Grid    BEAR DELETED    ME5    22.24
+    Remove Insured Person In The Insured Grid    6    BEAR DELETED
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Not Displayed In The Insured Grid    BEAR DELETED    ME5    22.24
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB OS HK] Verify That Service Info Fields Of Insurance Behave Correctly And Written In The PNR When FOP Is CC
+    [Tags]    US500
+    Create PNR Using Cash As FOP    HK
+    Click Other Services
+    Select Product And Vendor    INSURANCE    CWT
+    Verify Nett Cost Value Is Correct    0
+    Populate Service Info Cost Details    Insurance Test    800.00    1500.00
+    Select Form Of Payment (FOP)    Credit Card (CC)    VI    4444333322221111    12    2026
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Compute Other Services Fees    0    2    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Compute Other Services Fees    0    2    false    true    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Set BTA Description    ${EMPTY}
+    Unmask Credit Card Number
+    Get Other Services Additional Information Details
+    Click Insurance Tab
+    Populate Insurance Tab Details    Worldwide exc US/CAN    50    Family Budget Plan    CWT Philippines
+    Add Insured Person To Insurance Grid    HAROLD CUELLAR    ME    20000.0999
+    Add Insured Person To Insurance Grid    DOS    ME1    20000.0999
+    Add Insured Person To Insurance Grid    TRES    ME2    20000.0999
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Get From Date    identifier=prev_date
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    CANCELLATION IS NOT ALLOWED    INFANT INCLUDED
+    Click Finish PNR    panel=Other Svcs
+    Generate Exchange Order Creation Date    P1
+    Get Exchange Order Number    identifier=insurance
+    Verify PDF Is Displayed
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Insurance Remarks Are Written When FOP Is Credit Card In The PNR    Insurance    9    000001    HK
+
+[AOS] Verify That Accounting Lines For Other Services Without GST Are Written When FOP Is Credit Card Is CX (DC) And BTA Description Is Not Blank
+    [Tags]    hk    horton    us832
+    Click Other Services
+    Click Amend EO    ${eo_number_insurance}
+    Get Other Services Cost Details
+    Verify Vendor Contact Value Is Correct    Insurance Test
+    Verify Nett Cost Value Is Correct    800
+    Verify Selling Price Value Is Correct    1500
+    Verify Commission Fee Value Is Correct    700
+    Verify Merchant Fee Value Is Correct    0
+    Verify Total Selling Price Value Is Correct    1500
+    Verify Description Value From Additional Information Is Correct    INSURANCE
+    Verify BTA Description Value Is Correct
+    Verify Date Value Is Correct
+    Verify Form Of Payment Details Are Correct    Credit Card (CC)    VI    ************1111    12    2026
+    Verify Exchange Order Number    ${eo_number_insurance}
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Insurance Tab
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Displayed In The Insured Grid    HAROLD CUELLAR    ME    20000.0999
+    Verify Insured Person Record Is Displayed In The Insured Grid    DOS    ME1    20000.0999
+    Verify Insured Person Record Is Displayed In The Insured Grid    TRES    ME2    20000.0999
+    Remove Insured Person In The Insured Grid    3    DOS
+    Get All Record In Insured Grid
+    Verify Insured Person Record Is Not Displayed In The Insured Grid    DOS    ME1    20000.0999
+    Verify Geographical Area Is Correct    Worldwide exc US/CAN
+    Verify Number Of Days Is Correct    50
+    Verify Plan Selected Is Correct    Family Budget Plan
+    Verify Name Is Correct
+    Verify Relationship Is Correct
+    Verify Premium Amount Is Correct
+    Verify From Date Is Correct
+    Verify Insuree's Address Is Correct    CWT Philippines
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    CWT
+    Verify Address 1 Value Is Correct    27/F ING TOWER
+    Verify Address 2 Value Is Correct    308 DES VOEUX ROAD CENTRAL
+    Verify City Value Is Correct
+    Verify Country Value Is Correct    HONG KONG
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    CANCELLATION IS NOT ALLOWED    INFANT INCLUDED
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    09    INSURANCE    MS    000001
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_insurance}
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Insurance Remarks Are Written When FOP Is Credit Card In The PNR    Insurance    9    000001    HK
+
+[AB OS HK] Verify That Service Info Fields Of Insurance Behave CorrectSly And Written In The PNR When FOP Is CX
+    [Tags]    US500
+    Create PNR Using Cash As FOP    HK
+    Click Other Services
+    Select Product And Vendor    INSURANCE    CWT
+    Set Nett Cost    500.00
+    Set Selling Price    1000.00
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    378282246310005    12    2026
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Compute Other Services Fees    0    2    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Set BTA Description    ${EMPTY}
+    Get Other Services Additional Information Details
+    Click Insurance Tab
+    Select Plan Selected    Family Budget Plan
+    Click Remarks Tab
+    Select Itinerary Remarks    CANCELLATION OF RESERVATION ALLOWED
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Insurance Remarks Are Written When FOP Is Credit Card In The PNR    Insurance    9    000001    HK
+    Verify Specific Remark Is Written In The PNR    RIR CANCELLATION OF RESERVATION ALLOWED
+
+[OS HK] Verify That Service Info Fields Of Insurance Behave Correctly And Written In The PNR When FOP Is Cash or Invoice
+    [Tags]    US500
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    INSURANCE
+    Select Vendor    CWT
+    Click Continue In Other Svcs
+    Set Nett Cost    300
+    Set Selling Price    8000
+    Select Form Of Payment (FOP)    Credit Card (CC)    AX    378282246310005    12    2026
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Get Form Of Payment
+    Compute Other Services Fees    0    2    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Compute Other Services Fees    0    2    country=HK
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Set BTA Description    ${EMPTY}
+    Get Selling Price
+    Get Commission
+    Get Total Selling Price
+    Get Form Of Payment
+    Get BTA Description
+    Click Tab In Other Services Panel    Insurance
+    Select Geographical Area    Worldwide exc US/CAN
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    HAROLD CUELLAR
+    Set Relationship    ME
+    Set Premium Amount    20000.0999
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    Click Remarks Tab
+    Select Itinerary Remarks    CANCELLATION OF RESERVATION ALLOWED
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Insurance Remarks Are Written When FOP Is Cash or Invoice In The PNR    Insurance    9    000001    HK
+    Verify Specific Remark Is Written In The PNR    RIR CANCELLATION OF RESERVATION ALLOWED
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Geographical Area Is Correct
+    [Arguments]    ${expected_value}=${EMPTY}
+    Get Geographical Area
+    Verify Actual Value Matches Expected Value    ${actual_geographic_area}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Plan Selected Is Correct
+    [Arguments]    ${expected_value}=${EMPTY}
+    Get Plan Selected
+    Verify Actual Value Matches Expected Value    ${actual_plan_selected}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Relationship Is Correct
+    [Arguments]    ${expected_value}=${EMPTY}
+    Get Relationship
+    Verify Actual Value Matches Expected Value    ${actual_relationship}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Premium Amount Is Correct
+    [Arguments]    ${expected_value}=${EMPTY}
+    Get Premium Amount
+    Verify Actual Value Matches Expected Value    ${actual_premium_amount}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify From Date Is Correct
+    [Arguments]    ${expected_value}=${EMPTY}
+    ${expected_date}    Get Variable Value    ${actual_from_date_prev_date}    ${expected_value}
+    Get From Date
+    Verify Actual Value Matches Expected Value    ${actual_from_date}    ${expected_date}
+    [Teardown]    Take Screenshot
+
+Verify Insuree's Address Is Correct
+    [Arguments]    ${expected_value}=${EMPTY}
+    Get Insuree Address
+    Verify Actual Value Matches Expected Value    ${insuree_address}    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Verify Name Is Correct
+    [Arguments]    ${expected_name}=${EMPTY}
+    Get Name
+    Verify Actual Value Matches Expected Value    ${name}    ${expected_name}
+    [Teardown]    Take Screenshot
+
+Verify Number Of Days Is Correct
+    [Arguments]    ${expected_number_of_days}=${EMPTY}
+    Get Number Of Days
+    Verify Actual Value Matches Expected Value    ${number_of_days}    ${expected_number_of_days}
+    [Teardown]    Take Screenshot

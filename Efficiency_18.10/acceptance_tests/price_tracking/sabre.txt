@@ -1,0 +1,860 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    sabre
+Force Tags        sabre
+Resource          ../../resources/panels/price_tracking.txt
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../resources/common/utilities.txt
+Resource          price_tracking_verification.txt
+Resource          ../database/database_verification.txt
+
+*** Test Cases ***
+[1S EMEA][PT] Verify That Queue Minder Is Added In PNR When Air: Void/Refund And Reissue Is Selected
+    [Tags]    US5922    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    Global - Price Tracking
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Create New Booking Traveller With Ticket
+    Display PNR from GDS in Power Express
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Refund and Re-issue
+    Verify Air Price Tracking Details Calculation    USD    500    300    200    0
+    Verify Refund Details Calculation    501.52    -201.52
+    Select Ticket List    ${ticket_number}
+    Click Panel    Delivery
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Finish PNR
+    Verify Queue Minder Remark Is Present In PNR    \    94    1
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Populate Air: Refund and Re-issue Details    USD    100    200    300    250
+    Select Ticket List    ${ticket_number}
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Finish PNR
+    Verify Clear All Pop-up Will Not Display Quick Workflows
+    Verify Queue Minder Remark Is Present In PNR    \    99    1
+    [Teardown]
+
+[1S NORAM] Verify That Price Tracking Options Are Available When Price Tracking Workflow Is Selected
+    [Tags]    not_ready    CERT    US5919    US5923    us5919
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    Global - Price Tracking
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Retrieve PNR    ${pt_pnr}
+    Sleep    2
+    Click Tab In Top Left    GDS Screen
+    Get Ticket Number From PNR
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking Button Via Shortcut Key
+    Verify Panel Is Selected    PriceTracking
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    PRICETRACKING    AIR FARE    DELIVERY    RECAP
+    Verify Panel Is Green    CLIENT INFO    RECAP
+    Verify Panel Is Red    PRICETRACKING    DELIVERY
+    Verify Default Price Tracking Options
+    Select Price Tracking Process    Air: Void and Re-issue
+    Verify Air: Void and Re-issue UI Validation    ${ticket_number}
+    Verify Air Price Tracking Details Calculation    USD    150    25    35.50    89.50
+    Select Price Tracking Process    Air: Refund and Re-issue
+    Verify Air: Refund and Re-issue UI Validation    ${ticket_number}
+    Verify Air Price Tracking Details Calculation    USD    2546.780    235.080    45.255    2266.445
+    Verify Refund Details Calculation    501.52    2000.005
+    Select Price Tracking Process    Air: No Action
+    Comment    Remove PNR Remark    Y‡0011223344556
+    Verify Air: No Action UI Validation    0011223344556
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel: Cancel and Re-book UI Validation
+    Verify Hotel Cancel and Re-book Calculation    KUALA LUMPUR    USD    2345    345    2000.00
+    Verify Clear All Pop-up Will Not Display Quick Workflows
+    Click Read Booking
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    PRICETRACKING    AIR FARE    DELIVERY    RECAP
+    Verify Panel Is Red    PRICETRACKING
+    Click Panel    PriceTracking
+    Verify Default Price Tracking Options
+    Select Price Tracking Process    Hotel: No Action
+    Verify Hotel: No Action UI Validation    87571
+
+[1S NORAM][PT] Verify That PNR Is Queued In Hotel Fail Safe Queue
+    [Tags]    not_ready
+    Set TEst Variable    ${GDS_switch}    sabre
+    Set TEst Variable    ${locale}    en-US
+    Set TEst Variable    ${syex_env}    Test
+    Set TEst Variable    ${gds}    sabre
+    Set Test Variable    ${current_pnr}    PWSWUH
+    Set Test Variable    ${pt_pnr}    PWSWUH
+    Activate Power Express Window
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Populate Hotel: Cancel and Re-book Details    TOWER    JPN    5454    123
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Finish PNR
+    Verify Queue Minder Remark Is Present In PNR    11    223    1
+
+[1S] Verify That Correct Remarks Are Written For Air: Void, Refund And No Action
+    [Tags]    us6301    us    us6527    us6370    us6252    US6667
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven    ORDLHR¥AA    ${EMPTY}
+    Add Y Remarks In The PNR
+    Click Finish PNR
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    USD    550    495    5    1234567890124
+    Get Air: Void and Re-issue Details
+    Click Panel    Delivery
+    Verify Ticket Queue Item Setup At Country Level Is In The List    Invoice Only - Team
+    Click Panel    Recap
+    Verify Overrides Or Skip Entries Default Value    AQUA: Seat Override
+    Verify Overrides Or Skip Entries Contains Values    Price Tracking: Skip Air    Price Tracking: Skip Hotel
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Click Finish PNR    Create Air: Void and Re-issue
+    Execute Simultaneous Change Handling    Create Air: Void and Re-issue
+    Verify Message Is Not Displayed In Summary    Sent to Back Office
+    Verify Message Is Not Displayed In Summary    Sending to Back Office Failed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Air: Void and Re-issue
+    Verify Price Tracking Skip Air Remark Is Written    TKTSUSPEND
+    Verify Price Tracking Skip Hotel Remark Is Written    HOTELSUSPEND
+    Verify Handling Fee Remark Is Written    Air    10.10
+    Verify Duplicate Remarks Does not Exists In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Refund and Re-issue Details    USD    100    200    300    250
+    Set Ticket Number Price Tracking    1234567890124
+    Get Air: Refund and Re-issue Details
+    Click Panel    Recap
+    Verify Overrides Or Skip Entries Default Value    AQUA: Seat Override    1
+    Verify Overrides Or Skip Entries Default Value    Price Tracking: Skip Hotel    2
+    Verify Overrides Or Skip Entries Default Value    Price Tracking: Skip Air    3
+    Click Delete From Overrides Or Skip Entries
+    Click Finish PNR    Create Air: Refund and Re-issue
+    Execute Simultaneous Change Handling    Create Air: Refund and Re-issue
+    Verify Message Is Not Displayed In Summary    Sent to Back Office
+    Verify Message Is Not Displayed In Summary    Sending to Back Office Failed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Air: Refund and Re-issue
+    Verify Handling Fee Remark Is Written    Air    10.10
+    Verify Duplicate Remarks Does not Exists In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: No Action Details    0011223344556    NF | Incorrect change fee exceeding change fee thresholds
+    Get Air: No Action Details
+    Verify Air Fare, Client Info And Delivery Panel Is Disabled For Air
+    Click Panel    Recap
+    Verify Overrides Or Skip Entries Default Value    AQUA: Seat Override    1
+    Verify Overrides Or Skip Entries Default Value    Price Tracking: Skip Hotel    2
+    Click Finish PNR    Create Air: No Action
+    Execute Simultaneous Change Handling    Create Air: No Action
+    Verify Message Is Not Displayed In Summary    Sent to Back Office
+    Verify Message Is Not Displayed In Summary    Sending to Back Office Failed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Air: No Action
+    Verify Duplicate Remarks Does not Exists In PNR
+    [Teardown]
+
+[1S] Verify That Correct Remarks Are Written For Hotel: Cancel Rebook, No Action And Air: Void Again
+    [Tags]    us    us6301    us6370    US6535    us6252    US6667
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Verify City Of Stay Field With Invalid Input    Invalid Input Error Expected
+    Populate Hotel: Cancel and Re-book Details    CDG    EUR    110    97
+    Get Hotel: Cancel and Rebook details
+    Verify Other Panels Are Disabled For Hotel Cancel And Rebook
+    Click Finish PNR    Create Hotel: Cancel and Rebook
+    Execute Simultaneous Change Handling    Create Hotel: Cancel and Rebook
+    Verify Message Is Displayed In Summary    Sent to Back Office
+    Verify Message Is Not Displayed In Summary    Sending to Back Office Failed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Hotel: Cancel and Rebook
+    Verify Handling Fee Remark Is Written    Hotel    12.13
+    Verify Handling Fee Remark Is Not Written    Air    10.10
+    Verify Duplicate Remarks Does not Exists In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Hotel: No Action Details    TD | Hotel booked with direct billing    1234    L
+    Get Hotel: No Action Details
+    Comment    Click Remove From Future Price Track Checkbox
+    Click Finish PNR    Create Hotel: No Action
+    Execute Simultaneous Change Handling    Create Hotel: No Action
+    Verify Message Is Not Displayed In Summary    Sent to Back Office
+    Verify Message Is Not Displayed In Summary    Sending to Back Office Failed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Hotel: No Action
+    Verify Handling Fee Remark Is Not Written    Air    10.10
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    USD    550    495    5    1234567890124
+    Get Air: Void and Re-issue Details
+    Click Panel    Recap
+    Click Finish PNR    Create Air: Void and Re-issue
+    Execute Simultaneous Change Handling    Create Air: Void and Re-issue
+    Verify Message Is Not Displayed In Summary    Sent to Back Office
+    Verify Message Is Not Displayed In Summary    Sending to Back Office Failed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Price Tracking Generic Remarks Are Written    Air: Void and Re-issue
+    Verify Handling Fee Remark Is Written    Air    10.10
+    Verify Handling Fee Remark Is Not Written    Hotel    12.13
+    Verify Duplicate Remarks Does not Exists In PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S EMEA][PT] Verify That *3311**Hnn*0HP Label Is Added Into The PNR For Offline Booking When Hotel Action Is Cancel And Rebook
+    [Tags]    us6362    CERT    us
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven    ORDLHR¥AA    ${EMPTY}
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    5.*3013**H01*ROH
+    Enter GDS Command    5.*3311**H01*0HH
+    Enter GDS Command    5.*3311**H02*0HH
+    Enter GDS Command    5.*3318**H01*G
+    Enter GDS Command    5.*3224**H01*10
+    Enter GDS Command    6CWTPTEST    ER
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *./
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel Cancel and Re-book Calculation    Seattle    USD    2345    345    2000.00
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *./
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311**H02*0HP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S EMEA][PT] Verify That *3311**Hnn*0HP Label Is Added Into The PNR For Offline Booking When Hotel Action Is no Action
+    [Tags]    us6362    CERT    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven    ORDLHR¥AA    ${EMPTY}
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    5.*3013**H01*ROH
+    Enter GDS Command    5.*3311**H01*0HH
+    Enter GDS Command    5.*3318**H01*G
+    Enter GDS Command    5.*3224**H01*10
+    Enter GDS Command    6CWTPTEST    ER
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Click Clear All
+    Sleep    1
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Populate Hotel: No Action Details    TD | Hotel booked with direct billing    1234    L
+    Comment    Click Remove From Future Price Track Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That *3311**Hnn*0HP Label Is Added Into The PNR For Offline Booking When Hotel Action Is no Action
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311**H01*0HP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S EMEA][PT] Verify That *3311**Hnn*2HP Label Is Added Into The PNR For Online Booking When Hotel Action Is Cancel And Rebook
+    [Tags]    us6362    CERT    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven    ORDLHR¥AA    ${EMPTY}
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    5.*3013**H01*ROH
+    Enter GDS Command    5.*3311**H01*4HH
+    Enter GDS Command    5.*3318**H01*G
+    Enter GDS Command    5.*3224**H01*10
+    Enter GDS Command    6CWTPTEST    ER
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel Cancel and Re-book Calculation    Seattle    USD    2345    345    2000.00
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311**H01*2HP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S EMEA][PT] Verify That *3311**Hnn*2HP Label Is Added Into The PNR For Online Booking When Hotel Action Is No Action
+    [Tags]    us6362    CERT    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven    ORDLHR¥AA    ${EMPTY}
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    5.*3013**H01*ROH
+    Enter GDS Command    5.*3311**H01*4HH
+    Enter GDS Command    5.*3311**H02*4HH
+    Enter GDS Command    5.*3311**H03*4HH
+    Enter GDS Command    5.*3318**H01*G
+    Enter GDS Command    5.*3224**H01*10
+    Enter GDS Command    6CWTPTEST    ER
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Populate Hotel: No Action Details    TD | Hotel booked with direct billing    1234    L
+    Comment    Click Remove From Future Price Track Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify That *3311**Hnn*2HP Label Is Added Into The PNR For Online Booking When Hotel Action Is No Action
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Written In The PNR    *3311**H03*2HP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S EMEA][PT] Verify That *3311**Hnn*0HP Label Is Added Into The PNR For Offline Booking Without Hotel Segment
+    [Tags]    us6362    CERT    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven    ORDLHR¥AA    ${EMPTY}
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Not Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Not Written In The PNR    *3224**H01*10
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Verify Hotel Cancel and Re-book Calculation    Seattle    USD    2345    345    2000.00
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*0HH
+    Verify Specific Line Is Not Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Not Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*0HP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S EMEA][PT] Verify That *3311**Hnn*2HP Label Is Added Into The PNR For Online Booking Without Hotel Segment
+    [Tags]    us6362    CERT    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven    ORDLHR¥AA    ${EMPTY}
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Not Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Not Written In The PNR    *3224**H01*10
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Populate Hotel: No Action Details    TD | Hotel booked with direct billing    1234    L
+    Comment    Click Remove From Future Price Track Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    *3013**H01*ROH
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*4HH
+    Verify Specific Line Is Not Written In The PNR    *3318**H01*G
+    Verify Specific Line Is Not Written In The PNR    *3224**H01*10
+    Verify Specific Line Is Not Written In The PNR    *3311**H01*2HP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S EMEA][PT] Verify That Fail Message Is Displayed When Sending DIT Command For Hotel: Cancel And Rebook For Invalid PNR
+    [Tags]    us6252
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create Shell PNR Using Default Values    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven    U1SOE ¦ SOE CFA ¦ US2559
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Delete Air Segment    ${EMPTY}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Hotel: Cancel and Re-book Details    CDG    EUR    110    97
+    Click Finish PNR
+    Verify Message Is Displayed In Summary    Sending to Back Office Failed
+    Verify Message Is Not Displayed In Summary    Sent to Back Office
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S EMEA][PT] Verify that Client Info Panel is Disabled and Able to End PNR Successfully when no FOP Selected for Hotel: Cancel and Rebook
+    [Documentation]    Service Option: Manadate FOP at End PNR
+    ...
+    ...    Value: Mandate with Onhold
+    [Tags]    US6646
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Create Shell
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    Client Info
+    Verify Not Known at Time of Booking is Unticked
+    Select Form Of Payment    ${EMPTY}
+    Click Panel    PriceTracking
+    Populate Hotel: Cancel and Re-book Details    Seattle    USD    2345    345
+    Verify Client Info Panel Is Disabled
+    Click Panel    Recap
+    Verify Panel Is Green    Recap
+    Click Finish PNR
+    Verify PNR Is Successfully Created    \    ...
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S EMEA][PT] Verify that Client Info Panel is Disabled and Able to End PNR Successfully when no FOP Selected for Air: No Action
+    [Documentation]    Service Option: Manadate FOP at End PNR
+    ...
+    ...    Value: Mandate with Onhold
+    [Tags]    US6646
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Create Shell
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    Client Info
+    Verify Not Known at Time of Booking is Unticked
+    Select Form Of Payment    ${EMPTY}
+    Click Panel    PriceTracking
+    Populate Air: No Action Details    1234567890123    TA | Airline Waiver code received – unable to change itinerary/ticket
+    Verify Client Info Panel Is Disabled
+    Click Panel    Recap
+    Verify Panel Is Green    Recap
+    Click Finish PNR
+    Verify PNR Is Successfully Created    \    ...
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S EMEA][PT] Verify that Client Info Panel is Disabled and Able to End PNR Successfully when no FOP Selected for Hotel: No Action
+    [Documentation]    Service Option: Manadate FOP at End PNR
+    ...
+    ...    Value: Mandate with Onhold
+    [Tags]    US6646    US6637
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Create Shell
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Click Panel    Client Info
+    Verify Not Known at Time of Booking is Unticked
+    Select Form Of Payment    ${EMPTY}
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Verify Hotel Rate Code Field is Mandatory
+    Populate Hotel: No Action Details    BT | Client restricts change in the bedding type i.e. only allows King-Queens    12345    567890
+    Verify Client Info Panel Is Disabled
+    Click Panel    Recap
+    Verify Panel Is Green    Recap
+    Click Finish PNR
+    Verify PNR Is Successfully Created    \    ...
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S][PT] Verify That Remove From Future Price Tracking Check Box Is Removed And Remarks Are Not Written In The PNR
+    [Tags]    us    us6941
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven    ORDLHR¥AA
+    Click Finish PNR
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *Y‡
+    Verify Specific Line Is Not Written In The PNR    Y‡NTRK
+    Verify Specific Line Is Not Written In The PNR    Y‡HOTELSUSPEND
+    Verify Specific Line Is Not Written In The PNR    Y‡HOTELNTRK
+    Click Panel    PriceTracking
+    Verify Remove From Future Price Tracking Checkbox Is Removed
+    Populate Air: Void and Re-issue Details    USD    550    495    5    1234567890124
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *Y‡
+    Verify Specific Line Is Not Written In The PNR    Y‡NTRK
+    Verify Specific Line Is Not Written In The PNR    Y‡HOTELSUSPEND
+    Verify Specific Line Is Not Written In The PNR    Y‡HOTELNTRK
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *Y‡
+    Verify Specific Line Is Not Written In The PNR    Y‡NTRK
+    Verify Specific Line Is Not Written In The PNR    Y‡HOTELSUSPEND
+    Verify Specific Line Is Not Written In The PNR    Y‡HOTELNTRK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S][PT] Verify That HOTELNTRK And NTRK Remarks Are Retain In The PNR
+    [Tags]    us    us6941
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ORDLHR¥AA    01Y1    WPRQ    6
+    Enter GDS Command    5Y‡NTRK
+    Enter GDS Command    5Y‡HOTELNTRK
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Verify Remove From Future Price Tracking Checkbox Is Removed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *Y‡
+    Verify Specific Line Is Written In The PNR    Y‡NTRK
+    Verify Specific Line Is Written In The PNR    Y‡HOTELNTRK
+    Populate Air: Void and Re-issue Details    USD    550    495    5    1234567890124
+    Click Panel    Recap
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Verify HOTELNTRK And NTRK Remarks Are Retain
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *Y‡
+    Verify Specific Line Is Written In The PNR    Y‡NTRK
+    Verify Specific Line Is Written In The PNR    Y‡HOTELSUSPEND
+    Verify Specific Line Is Written In The PNR    Y‡HOTELNTRK
+    Verify Specific Line Is Written In The PNR    Y‡TKTSUSPEND
+
+[1S][PT Amend] Verify That HOTELNTRK And NTRK Remarks Are Retain In The PNR
+    [Tags]    us    us6941
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Verify Remove From Future Price Tracking Checkbox Is Removed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *Y‡
+    Verify Specific Line Is Written In The PNR    Y‡NTRK
+    Verify Specific Line Is Written In The PNR    Y‡HOTELSUSPEND
+    Verify Specific Line Is Written In The PNR    Y‡HOTELNTRK
+    Verify Specific Line Is Written In The PNR    Y‡TKTSUSPEND
+    Populate Air: Void and Re-issue Details    EUR    1750    1525    5    1234567890123
+    Click Panel    Recap
+    Delete Override Or Skip Entries
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *Y‡
+    Verify Specific Line Is Written In The PNR    Y‡NTRK
+    Verify Specific Line Is not Written In The PNR    Y‡HOTELSUSPEND
+    Verify Specific Line Is Written In The PNR    Y‡HOTELNTRK
+    Verify Specific Line Is Written In The PNR    Y‡TKTSUSPEND
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Create New Booking Traveller With Ticket
+    Activate Sabre Red Workspace
+    Enter Command In Native GDS    *m
+    Sleep    2
+    Enter Command In Native GDS    120JULORDLHR'AA    01Y1    W-TEST    6CWTTEST    91234567    -CAIN/MICHELLE
+    ...    7TAW/19JUL    WPRQ    4DOCS/DB/16NOV84/F/CAIN/MICHELLE-1.1    5/    ER    PPS1
+    ...    W*AT    W'AAA'FCASH    5P'GUID/CT-A-1160C/SU-A-1A6D8    5P'GUID/TT-A-DC15/T-A-659A137    5Y'0011223344556 1 EWRBCN V P PUB L,U EUR436    5Y'87571 XK 324 USD 12NOV 4NT XD 311
+    ...    6CWTTEST    ER
+    Enter GDS Command    *T
+    ${data_clip}    Get Data From GDS Screen
+    Should Contain    ${data_clip}    TKT/TIME LIMIT
+    Get TE Ticket Number    ${data_clip}
+    [Teardown]    Take Screenshot
+
+Get Ticket Number From PNR
+    Comment    Should Contain    ${data_clip}    *TRN*
+    Comment    Enter GDS Command    TTP/ET/RT
+    Comment    Should Not Contain Any    ${data_clip}    FOP RJT: INVALID CVV NUMBER - CHECK THE NUMBER AND TRY AGAIN
+    Click Tab In Top Left    GDS Screen
+    Enter GDS Command    *T
+    ${data_clip}    Get Data From GDS Screen
+    Should Contain    ${data_clip}    TKT/TIME LIMIT
+    Comment    Enter GDS Command    RTF
+    ${data_clip}    Get Data From GDS Screen
+    ${ticket_number_raw}    Get Lines Containing String    ${data_clip}    .TE
+    ${ticket_number_raw}    Fetch From Left    ${ticket_number_raw}    -
+    ${ticket_number_raw}    Fetch From Right    ${ticket_number_raw}    .TE
+    Set Test Variable    ${ticket_number}    ${ticket_number_raw.strip()}
+
+Click Price Tracking Button Via Shortcut Key
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:ctxtBookingLocator]
+    Send    {ALTDOWN}i{ALTUP}
+    Wait Until Progress Info is Completed
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Set Test Variable    ${is_new_booking_worflow}    ${True}
+
+Display PNR from GDS in Power Express
+    Activate Power Express Window
+    Comment    Run Keyword If    '${gds_switch}' == 'amadeus'    Run Keywords    Activate Amadeus Selling Platform    False
+    ...    AND    Activate Power Express Window
+    Comment    Run Keyword If    "${skip_clear_all}" == "False"    Run Keywords    Click Clear All
+    ...    AND    Wait Until Progress Info is Completed
+    Wait Until Control Object Is Visible    [NAME:ctxtBookingLocator]    \    true
+    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:ctxtBookingLocator]
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:ctxtBookingLocator]
+    Sleep    2
+    Send    {TAB}
+    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:btnSearchLocator]
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:btnSearchLocator]
+    Wait Until Progress Info is Completed
+    Wait Until Control Object Is Visible    [NAME:UGridBookings]    \    true
+    Comment    ${apply_delay}    Set Variable If    "${apply_delay}" == "${EMPTY}"    1    ${apply_delay}
+    Comment    Sleep    ${apply_delay}
+
+Get TE Ticket Number
+    [Arguments]    ${data_clip}
+    Activate Sabre Red Workspace
+    Enter Command In Native GDS    *T
+    ${ticket_number_raw}    Get Lines Containing String    ${data_clip}    TE
+    ${ticket_number_raw}    Fetch From Left    ${ticket_number_raw}    -AT
+    ${ticket_number_raw}    Fetch From Right    ${ticket_number_raw}    TE
+    ${ticket_number_raw}    Remove String    ${ticket_number_raw}
+    Set Test Variable    ${ticket_number}    ${ticket_number_raw.strip()}
+
+Update Price Tracking For Void and Re-issue
+    Retrieve PNR    ${pt_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Void and Re-issue
+    Set Control Text Value    [NAME:cboTicketList]    1234567890124
+    Populate Air: Void and Re-issue Details    USD    550    495    5
+    Click Panel    Recap
+    Click Finish PNR
+
+Update Price Track for Refund And Re-Issue
+    Retrieve PNR    ${pt_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Refund and Re-issue
+    Set Control Text Value    [NAME:cboTicketList]    1234567890125
+    Populate Air: Refund and Re-issue Details    USD    550    550    5    10
+    Click Panel    Recap
+    Click Finish PNR    Update Price Track for Refund And Re-Issue
+
+Update Price Tracking For Hotel
+    Retrieve PNR    ${pt_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Air: Refund and Re-issue
+    Set Control Text Value    [NAME:cboTicketList]    1234567890125
+    Populate Air: Refund and Re-issue Details    USD    550    500    5    10
+    Click Panel    Recap
+    Click Finish PNR    Update Price Track for Refund And Re-Issue
+
+Set PT ticket number
+    [Arguments]    ${pt_ticket_number}
+    Set Control Text Value    [NAME:cboTicketList]    ${pt_ticket_number}
+    Send    {TAB}
+    Click Control Button    [NAME:cboTicketList]
+    Send    {ENTER}{TAB}
+    Take Screenshot
+
+Create Air: Void and Re-issue
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Void and Re-issue Details    USD    550    495    5    1234567890124
+    Get Air: Void and Re-issue Details
+    Click Panel    Delivery
+    Verify Ticket Queue Item Setup At Country Level Is In The List    Invoice Only - Team
+    Click Panel    Recap
+    Verify Overrides Or Skip Entries Default Value    AQUA: Seat Override
+    Verify Overrides Or Skip Entries Contains Values    Price Tracking: Skip Air    Price Tracking: Skip Hotel
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Click Finish PNR
+
+Create Air: Refund and Re-issue
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: Refund and Re-issue Details    USD    100    200    300    250    1234567890124
+    Get Air: Refund and Re-issue Details
+    Click Panel    Recap
+    Verify Overrides Or Skip Entries Default Value    AQUA: Seat Override    1
+    Verify Overrides Or Skip Entries Default Value    Price Tracking: Skip Hotel    2
+    Verify Overrides Or Skip Entries Default Value    Price Tracking: Skip Air    3
+    Click Delete From Overrides Or Skip Entries
+    Click Finish PNR
+
+Create Air: No Action
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Air: No Action Details    1234567890124    NF | Incorrect change fee exceeding change fee thresholds
+    Get Air: No Action Details
+    Click Finish PNR
+
+Create Hotel: Cancel and Rebook
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Hotel: Cancel and Re-book Details    CDG    EUR    110    97
+    Get Hotel: Cancel and Rebook details
+    Click Finish PNR
+
+Create Hotel: No Action
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Populate Hotel: No Action Details    TD | Hotel booked with direct billing    1234    L
+    Comment    Click Remove From Future Price Track Checkbox
+    Click Finish PNR
+
+Verify City Of Stay Field With Invalid Input
+    [Arguments]    ${city_of_stay}
+    Select Price Tracking Process    Hotel: Cancel and Re-book
+    Set Hotel City Of Stay    ${city_of_stay}
+    Error Sign Should Be Displayed    grpPriceTrackingHotelDetails
+    [Teardown]    Take Screenshot
+
+Error Sign Should Be Displayed
+    [Arguments]    ${error_icon}
+    SyexUiaLibrary.Get Tooltip From Error Icon    ${error_icon}
+
+Amend Booking For Fail Message Is Displayed When Sending DIT Command For Hotel: Cancel And Rebook
+    Retrieve PNR    ${current_pnr}
+    Delete Air Segment    ${EMPTY}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking
+    Click Panel    PriceTracking
+    Populate Hotel: Cancel and Re-book Details    CDG    EUR    110    97
+    Click Finish PNR
+
+Verify HOTELNTRK And NTRK Remarks Are Retain
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Verify Remove From Future Price Tracking Checkbox Is Removed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    Y‡NTRK
+    Verify Specific Line Is Written In The PNR    Y‡HOTELNTRK
+    Populate Air: Void and Re-issue Details    USD    550    495    5    1234567890124
+    Click Panel    Recap
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Air
+    Select Value From Override Or Skip Entries    Price Tracking: Skip Hotel
+    Click Finish PNR
+
+Verify That *3311**Hnn*2HP Label Is Added Into The PNR For Online Booking When Hotel Action Is No Action
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Populate Hotel: No Action Details    TD | Hotel booked with direct billing    1234    L
+    Comment    Click Remove From Future Price Track Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+
+Verify That *3311**Hnn*0HP Label Is Added Into The PNR For Offline Booking When Hotel Action Is no Action
+    Click Clear All
+    Sleep    1
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Verify Price Tracking Button Is Enabled
+    Click Price Tracking
+    Populate All Panels (Except Given Panels If Any)    PriceTracking    Recap
+    Click Panel    PriceTracking
+    Select Price Tracking Process    Hotel: No Action
+    Populate Hotel: No Action Details    TD | Hotel booked with direct billing    1234    L
+    Comment    Click Remove From Future Price Track Checkbox
+    Click Panel    Recap
+    Click Finish PNR

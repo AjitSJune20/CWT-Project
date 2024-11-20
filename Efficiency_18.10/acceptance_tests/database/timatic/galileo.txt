@@ -1,0 +1,201 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../database_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Business Function Metric AutoTriggerTimatic Is Not Logged When Automatic Call To Timatic SO Is Set To NO
+    [Tags]    us2643    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo 15 - Auto ¦ US2643    AutoFifteenTen    OptimizeTrvlrTwo    LHRJFK/AF    01Y1    ${EMPTY}
+    ...    JFKLHR/AF    01Y1    FQ    ${EMPTY}    PSPT AND VISA
+    Click Panel    Pspt and Visa
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Verify Is Doc Valid? Field Is Not Pre-Populated
+    Verify Visa Required? Field Is Not Pre-Populated
+    Delete Current Specific Log File    SyExPerfLog
+    Tick Use Document
+    Click Check Visa Requirements With Timestamp
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Is Doc Valid? Field Contains Expected Value    Yes
+    Verify Visa Required? Field Contains Expected Value    Required
+    Verify Entry Is Not Present In Perf Log File    BusinessFunctionMetric.AutoTriggerTimatic
+    Click Finish PNR
+    Verify New Booking Transaction Is Reflected In OTT Table
+    Verify Entry Is Not Present In Application Usage DB    Auto Trigger Timatic    ${exp_overalltransaction_check_visa_time}
+
+[AB] Verify That Business Function Metric AutoTriggerTimatic Is Not Logged When Automatic Call To Timatic SO Is Set To NO
+    [Tags]    us2643    emea
+    Retrieve PNR    ${current_pnr}    60
+    Click Amend Booking
+    Enter GDS Command    FXALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    LHRLAX/AA    01Y1    ${EMPTY}    6
+    Book Flight X Months From Now    LAXLHR/AA    01Y1    FQ    6    2
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Verify Is Doc Valid? Field Contains Expected Value    Yes
+    Verify Visa Required? Field Contains Expected Value    Required
+    Delete Current Specific Log File    SyExPerfLog
+    Tick Use Document
+    Click Check Visa Requirements With Timestamp
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Is Doc Valid? Field Contains Expected Value    Yes
+    Verify Visa Required? Field Contains Expected Value    Required
+    Verify Entry Is Not Present In Perf Log File    BusinessFunctionMetric.AutoTriggerTimatic
+    Populate All Panels (Except Given Panels If Any)    PSPT AND VISA
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For AutoTriggerTimatic Set To No Verification If Simultaneous Change Error Is Displayed
+    Verify Amend Booking Transaction Is Reflected In OTT Table
+    Verify Entry Is Not Present In Application Usage DB    Auto Trigger Timatic    ${exp_overalltransaction_check_visa_time}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Business Function Metric AutoTriggerTimatic Is Logged When Automatic Call To Timatic SO Is Set To YES
+    [Tags]    us2643    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Delete Current Specific Log File    SyExPerfLog
+    Create New Booking With Timestamp With Round Trip Air Flight Using Default Values    Galileo 16 - Auto ¦ US3277    AutoOneSixSeven    OptimizeTrvlrFour    LHRJFK/AF    01Y1    ${EMPTY}
+    ...    JFKLHR/AF    01Y1    FQ    ${EMPTY}    PSPT AND VISA
+    Click Panel    Pspt and Visa
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Is Doc Valid? Field Contains Expected Value    Yes
+    Verify Visa Required? Field Contains Expected Value    Required
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AutoTriggerTimatic
+    Click Panel    Recap
+    Enter GDS Command    T.TAU/01MAY
+    Click Finish PNR
+    Verify New Booking Transaction Is Reflected In OTT Table
+    Verify Entry Is Present In Application Usage DB    Auto Trigger Timatic    ${exp_overalltransaction_read_time}
+
+[AB] Verify That Business Function Metric AutoTriggerTimatic Is Logged When Automatic Call To Timatic SO Is Set To YES
+    [Tags]    us2643    emea
+    Retrieve PNR    ${current_pnr}    60
+    Click Amend Booking
+    Enter GDS Command    FXALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    CDGJFK/AF    01Y1    ${EMPTY}    6
+    Book Flight X Months From Now    JFKCDG/AF    01Y1    FQ    6    2
+    Delete Current Specific Log File    SyExPerfLog
+    Click Read Booking With Timestamp
+    Click Panel    Pspt and Visa
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Is Doc Valid? Field Contains Expected Value    Yes
+    Verify Visa Required? Field Contains Expected Value    Required
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AutoTriggerTimatic
+    Populate All Panels (Except Given Panels If Any)    PSPT AND VISA
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow For AutoTriggerTimatic Set To Yes Verification
+    Verify Amend Booking Transaction Is Reflected In OTT Table
+    Verify Entry Is Present In Application Usage DB    Auto Trigger Timatic    ${exp_overalltransaction_read_time}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Electronic Authorizations Advice Is Displayed For Multiple International ESTA Flights (CA And US) When Automatic Call To Timatic SO Is Set To Yes
+    [Tags]    us3277    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Timestamp With Round Trip Air Flight Using Default Values    Galileo 16 - Auto ¦ US3277    AutoOneSixSeven    OptimizeTrvlrFour    LHRJFK/AA    01Y1*    ${EMPTY}
+    ...    JFKYYZ/AA    01Y1*    FQ    ${EMPTY}    PSPT AND VISA
+    Click Panel    Pspt and Visa
+    Verify Passport & Visa Info Panel Is Displayed
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    Warning:
+    Verify Pspt And Visa Info Panel Contains Text    Passengers must obtain an ESTA authorization at https://esta.cbp.dhs.gov/
+    Verify Pspt And Visa Info Panel Contains Text    Visa exempt visitors must have an Electronic Travel Authorization (eTA) obtained prior to boarding at http://www.cic.gc.ca/english/visit/eta.asp.
+    Verify ESTA Header In The Lower Right Section Is Displayed    Electronic Authorizations
+    Verify ESTA/ETA Warning Message Is Displayed    If the passenger is travelling under the visa waiver program they must submit and receive an Electronic authorization to travel.
+    Verify ESTA/ETA Warning Message Is Displayed    Please check Passport & Visa Info window for more information.
+    Click Check Visa Requirements
+    Click Panel    Recap
+    Enter GDS Command    T.TAU/01MAY
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    IF YOU ARE TRAVELLING UNDER THE VISA WAIVER PROGRAM
+    Verify Specific Line Is Written In The PNR    YOU MUST SUBMIT AND RECEIVE
+    Verify Specific Line Is Written In The PNR    AN ELECTRONIC AUTHORIZATION TO TRAVEL
+    Verify Specific Line Is Written In The PNR    UNITED STATES HTTPS://ESTA.CBP.DHS.GOV/
+    Verify Specific Line Is Written In The PNR    CANADA HTTP://WWW.CIC.GC.CA/ENGLISH/VISIT/ETA.ASP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Visa Field Defaults To Required When Timatic Response Contains Visa Required And Sufficient Documentation Section Is Conditional
+    [Tags]    us3844    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    # HK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    J.D.Worth - HK ¦ HK_JDWorth-HK    Penduko    Pedro
+    Set Mobile Number    1-1-1
+    Select Client Account Using Default Value
+    Click New Booking
+    Book Flight X Months From Now    SINSYD/QF    01Y1*    ${EMPTY}    6
+    Book Flight X Months From Now    SYDSIN/QF    01Y1*    FQ    6    2
+    Click Read Booking
+    Click Panel    Pspt And Visa
+    Click Check Visa Requirements No ESTA
+    Verify Passport & Visa Info Panel Is Displayed
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    Sufficient Documentation: Conditional
+    Verify Pspt And Visa Info Panel Contains Text    Visa: Visa required.
+    Verify Is Doc Valid? Field Contains Expected Value    Yes
+    Verify Visa Required? Field Contains Expected Value    Required
+    [Teardown]    Click Clear All
+
+[NB HK] Verify That Visa Field Defaults To Not Required When Timatic Response Has No Visa Not Required Section And Sufficient Documentation Section Is No
+    [Tags]    us3844    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    # HK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    J.D.Worth - HK ¦ HK_JDWorth-HK    Snow    John
+    Set Mobile Number    1-1-1
+    Select Client Account Using Default Value
+    Click New Booking
+    Book Flight X Months From Now    SYDSIN/QF    01Y1*    ${EMPTY}    6
+    Book Flight X Months From Now    SINSYD/QF    01Y1*    FQ    6    2
+    Click Read Booking
+    Click Panel    Pspt And Visa
+    Click Check Visa Requirements No ESTA
+    Verify Passport & Visa Info Panel Is Displayed
+    Get Passport & Visa Info Panel Text
+    Verify Pspt And Visa Info Panel Contains Text    Sufficient Documentation: No
+    Verify Pspt And Visa Info Panel Does Not Contain Text    Visa not required.
+    Verify Is Doc Valid? Field Contains Expected Value    No
+    Verify Visa Required? Field Contains Expected Value    Unable to confirm
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Amend Booking Workflow For AutoTriggerTimatic Set To No Verification
+    Retrieve PNR    ${current_pnr}    60
+    Click Amend Booking
+    Enter GDS Command    FXALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    LHRLAX/AA    01Y1    ${EMPTY}    6
+    Book Flight X Months From Now    LAXLHR/AA    01Y1    FQ    6    2
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Passport & Visa Info Panel Is Not Displayed
+    Verify Is Doc Valid? Field Contains Expected Value    Yes
+    Verify Visa Required? Field Contains Expected Value    Required
+    Delete Current Specific Log File    SyExPerfLog
+    Tick Use Document
+    Click Check Visa Requirements With Timestamp
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Is Doc Valid? Field Contains Expected Value    Yes
+    Verify Visa Required? Field Contains Expected Value    Required
+    Verify Entry Is Not Present In Perf Log File    BusinessFunctionMetric.AutoTriggerTimatic
+    Populate All Panels (Except Given Panels If Any)    PSPT AND VISA
+    Click Finish PNR
+
+Amend Booking Workflow For AutoTriggerTimatic Set To Yes Verification
+    Retrieve PNR    ${current_pnr}    60
+    Click Amend Booking
+    Enter GDS Command    FXALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    CDGJFK/AF    01Y1    ${EMPTY}    6
+    Book Flight X Months From Now    JFKCDG/AF    01Y1    FQ    6    2
+    Delete Current Specific Log File    SyExPerfLog
+    Click Read Booking With Timestamp
+    Click Panel    Pspt and Visa
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Is Doc Valid? Field Contains Expected Value    Yes
+    Verify Visa Required? Field Contains Expected Value    Required
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AutoTriggerTimatic
+    Populate All Panels (Except Given Panels If Any)    PSPT AND VISA
+    Click Finish PNR

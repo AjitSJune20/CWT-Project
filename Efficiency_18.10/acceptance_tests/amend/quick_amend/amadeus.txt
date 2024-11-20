@@ -1,0 +1,79 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../amend_verification.txt
+Resource          ../../delivery/delivery_verification.txt
+
+*** Test Cases ***
+[NB DE] Verify That Quick Amend Workflow Is Available For PNRs With CC Declined Ticketing Remark
+    [Tags]    us4073    de
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With Round Trip Air Flight Using Default Values    Amadeus DE 15 - Auto ¦ US2447    AutoSeventeenFive    PerfEight    LHRCDG/AAF    SS1Y1    ${EMPTY}
+    ...    CDGLHR/AAF    SS1Y1    FXB    ${EMPTY}    Air Fare    Cust Refs
+    ...    Delivery    Client Info
+    Click Panel    Client Info
+    Untick Not Known At Time Of Booking For Form Of Payment
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Verify On Hold Booking Reasons Are All Unchecked
+    Click Finish PNR
+    Add Ticketing Remark
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTR
+    Verify Specific Line Is Written In The PNR    TKT- TICKETING UNABLE - CC DECLINED OR NEED MANUAL
+    Click Clear All With Options    Clear All
+
+[QA DE] Verify That Quick Amend Workflow Is Available For PNRs With CC Declined Ticketing Remark
+    [Tags]    us4073    de
+    Retrieve PNR    ${current_pnr}
+    Wait Until Progress Bar Is Completed
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    Auf Grund einer fehlenden Kreditkarte, könnte diese Buchung nicht abgeschlossen werden. Sparen sie Zeit und benutzen sie den ‚Quick-Amend‘ Knopf um fehlende Daten einzugeben und die Buchung abzuschließen!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    CUST REFS    DELIVERY    RECAP
+    Click Panel    Client Info
+    Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Click Panel    Cust Refs
+    Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR    Quick Amend
+    Execute Simultaneous Change Handling    Quick Amend
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddNewFOP
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddNewFOP    ${exp_OverallTransactionStartTime}
+    Click Clear All With Options    Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Wait Until Progress Bar Is Completed
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    Auf Grund einer fehlenden Kreditkarte, könnte diese Buchung nicht abgeschlossen werden. Sparen sie Zeit und benutzen sie den ‚Quick-Amend‘ Knopf um fehlende Daten einzugeben und die Buchung abzuschließen!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    CUST REFS    DELIVERY    RECAP
+    Click Panel    Client Info
+    Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Click Panel    Cust Refs
+    Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR    Quick Amend
+    Execute Simultaneous Change Handling    Quick Amend
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddNewFOP
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddNewFOP    ${exp_OverallTransactionStartTime}
+
+Add Ticketing Remark
+    : FOR    ${INDEX}    IN RANGE    10
+    \    Enter GDS Command    RT    RML TKT- TICKETING UNABLE - CC DECLINED OR NEED MANUAL APPROVAL    RFCWTPTEST
+    \    ${data_clipboard}    Get Data From GDS Screen    ER    True
+    \    ${is_simultaneous_changes}    Run Keyword And Return Status    Should Contain Any    ${data_clipboard}    SIMULT    PARALLEL
+    \    Exit For Loop If    ${is_simultaneous_changes} == False

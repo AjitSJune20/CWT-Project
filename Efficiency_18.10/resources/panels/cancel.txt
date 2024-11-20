@@ -1,0 +1,5 @@
+*** Settings ***
+Documentation     This resource file covers all reusable actions for Cancel related test cases
+Resource          ../common/utilities.txt
+
+*** Keywords ***

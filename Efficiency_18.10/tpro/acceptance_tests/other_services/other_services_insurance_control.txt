@@ -1,0 +1,98 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Add Insured Person To Insurance Grid
+    [Arguments]    ${name}    ${relationship}    ${premium_amount}
+    Set Name    ${name}
+    Set Relationship    ${relationship}
+    Set Premium Amount    ${premium_amount}
+    Click Add
+    [Teardown]    Take Screenshot
+
+Click Add
+    Click Control Button    [NAME:AddButton]
+    [Teardown]    Take Screenshot
+
+Click Insurance Tab
+    Click Tab In Other Services Panel    Insurance
+    [Teardown]    Take Screenshot
+
+Get From Date
+    [Arguments]    ${identifier}=${EMPTY}
+    ${actual_from_date}    Get Control Edit Value    mskTextDate
+    Set Suite Variable    ${actual_from_date}
+    Set Suite Variable    ${actual_from_date_${identifier}}    ${actual_from_date}
+
+Get Geographical Area
+    ${actual_geographic_area_list}    Get Dropdown Values    [NAME:GeographicalAreaComboBox]
+    ${actual_geographic_area}    Get Control Text Value    [NAME:GeographicalAreaComboBox]
+    Set Suite Variable    ${actual_geographic_area_list}
+    Set Suite Variable    ${actual_geographic_area}
+
+Get Insuree Address
+    ${insuree_address}    Get Control Text Value    [NAME:AddressTextBox]
+    Set Suite Variable    ${insuree_address}
+
+Get Plan Selected
+    ${actual_plan_selected_list}    Get Dropdown Values    [NAME:PlanSelectedComboBox]
+    ${actual_plan_selected}    Get Control Text Value    [NAME:PlanSelectedComboBox]
+    Set Suite Variable    ${actual_plan_selected_list}
+    Set Suite Variable    ${actual_plan_selected}
+
+Get Premium Amount
+    ${actual_premium_amount}    Get Control Text Value    [NAME:PremiumAmountTextbox]
+    Set Suite Variable    ${actual_premium_amount}
+
+Get Relationship
+    ${actual_relationship}    Get Control Text Value    [NAME:RelationshipTextBox]
+    Set Suite Variable    ${actual_relationship}
+
+Populate Insurance Tab Details
+    [Arguments]    ${geographical_area}    ${number_of_days}    ${plan_selected}    ${insuree_address}
+    Select Geographical Area    ${geographical_area}
+    Set Number Of Days    ${number_of_days}
+    Select Plan Selected    ${plan_selected}
+    Set Insuree Address    ${insuree_address}
+    [Teardown]    Take Screenshot
+
+Select Geographical Area
+    [Arguments]    ${geographical_area}
+    Select Value From Dropdown List    [NAME:GeographicalAreaComboBox]    ${geographical_area}
+    [Teardown]    Take Screenshot
+
+Select Plan Selected
+    [Arguments]    ${plan}
+    Select Value From Dropdown List    [NAME:PlanSelectedComboBox]    ${plan}
+    [Teardown]    Take Screenshot
+
+Set Insuree Address
+    [Arguments]    ${insuree_address}
+    Set Control Text Value    [NAME:AddressTextBox]    ${insuree_address}
+    Send    {TAB}
+    [Teardown]    Take Screenshot
+
+Set Name
+    [Arguments]    ${name}
+    ${object}    Determine Multiple Object Name Based On Active Tab    NameTextBox,TrainNameTextBox    False
+    Set Control Text Value    ${object}    ${name}
+    Send    {TAB}
+    [Teardown]    Take Screenshot
+
+Set Number Of Days
+    [Arguments]    ${number_of_days}
+    Set Control Text Value    [NAME:NumberOfDaysTextBox]    ${number_of_days}
+    Send    {TAB}
+    [Teardown]    Take Screenshot
+
+Set Premium Amount
+    [Arguments]    ${premium_amount}
+    Set Control Text Value    [NAME:PremiumAmountTextbox]    ${premium_amount}
+    Send    {TAB}
+    [Teardown]    Take Screenshot
+
+Set Relationship
+    [Arguments]    ${relationship}
+    Set Control Text Value    [NAME:RelationshipTextBox]    ${relationship}
+    Send    {TAB}
+    [Teardown]    Take Screenshot

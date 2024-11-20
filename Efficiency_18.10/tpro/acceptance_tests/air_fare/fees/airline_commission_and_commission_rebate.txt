@@ -1,0 +1,830 @@
+*** Settings ***
+Force Tags        airline_commission_and_commission_rebate
+Resource          ../air_fare_verification.txt
+
+*** Test Cases ***
+[NB SG] Verify That Mark-Up, Airline Commission, And Commission Rebate Are Displayed And Accounting Remarks Are Written When Show Mark-Up Fields And Pre-Populate Commission Rebate Are Set To Yes
+    [Tags]    us1052    us1049    us1047    sg
+    Open Power Express And Retrieve Profile    ${version}    Test    U002MEH    en-GB    mhernandez    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ SG - US1052    BEAR    NIKKI SG
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINLAX/ACX    SS1Y1    FXP/S2-3    4    2
+    Book Flight X Months From Now    LAXHKG/ACX    SS1Y1    FXP/S4    4    10
+    Book Flight X Months From Now    HKGMNL/ACX    SS1Y1    FXP/S5    4    18
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Cash
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2-3
+    Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal    Fare Quote 1
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Fare Quote 1
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Fare Quote 1
+    Set Mark-up Percentage Field    1
+    Verify Computed Value Of Mark-Up Amount Is Correct    Fare Quote 1    S2-3    SG    round_type=up
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    SG
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 2    KBTEST/MC************4445/D0526    Airline
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S4
+    Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal    Fare Quote 2
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Fare Quote 2
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Fare Quote 2
+    Set Mark-up Percentage Field    2
+    Verify Computed Value Of Mark-Up Amount Is Correct    Fare Quote 2    S4    SG    mark_up_percentage=2    round_type=up
+    Get Main Fees On Fare Quote Tab    Fare Quote 2    SG
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment And Merchant On Fare Quote Tab    Fare Quote 3    TEST CARD/VI************0087/D0823/CVV***    CWT
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 3    S5
+    Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal    Fare Quote 3
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Fare Quote 3
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Fare Quote 3
+    Set Mark-up Percentage Field    3
+    Verify Computed Value Of Mark-Up Amount Is Correct    Fare Quote 3    S5    SG    mark_up_percentage=3    round_type=up
+    Get Main Fees On Fare Quote Tab    Fare Quote 3    SG
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify BF/AF Remarks For Mark-Up Amount And Percentage Are Written    Fare Quote 1    SG
+    Verify BF/AF Remarks For Mark-Up Amount And Percentage Are Written    Fare Quote 2    SG
+    Verify BF/AF Remarks For Mark-Up Amount And Percentage Are Written    Fare Quote 3    SG
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 1    S2-3    0203    Cash    SG
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 2    S4    04    KBTEST/MC1111222233334445/D0526    SG    Airline
+    Verify FOP, Transaction, Merchant And Commission Rebate Remarks    Fare Quote 3    S5    05    TEST CARD/VI4900000000000087/D0823/CVV***    SG    CWT
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1    country=SG
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 2    country=SG
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 3    country=SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1    country=SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 2    country=SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 3    country=SG
+    Verify CM Remark Is Not Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Mark-Up, Airline Commission, And Commission Rebate Are Displayed And Applicable Accounting Remarks Are Written When Pre-Populate Commission Rebate Are Set To No
+    [Tags]    us1052    us1049    us1047    sg
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ SG - US1052 - NO COMM    BEAR    NIKKI SG
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINLAX/ACX    SS1Y1    FXP/S2-3    4    2
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S4    4    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Invoice
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2-3
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Fare Quote 1
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Fare Quote 1
+    Set Mark-up Percentage Field    1
+    Verify Computed Value Of Mark-Up Amount Is Correct    Fare Quote 1    S2-3    SG
+    Verify Commission Rebate Amount And Percentage Is Displayed And Has No Value    Fare Quote 1
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    SG
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    Cash
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S4
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Fare Quote 2
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Fare Quote 2
+    Set Mark-up Percentage Field    2
+    Verify Computed Value Of Mark-Up Amount Is Correct    Fare Quote 2    S4    SG    mark_up_percentage=2
+    Verify Commission Rebate Amount And Percentage Is Displayed And Has No Value    Fare Quote 2
+    Get Main Fees On Fare Quote Tab    Fare Quote 2    SG
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify BF/AF Remarks For Mark-Up Amount And Percentage Are Written    Fare Quote 1    SG
+    Verify BF/AF Remarks For Mark-Up Amount And Percentage Are Written    Fare Quote 2    SG
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2-3    Invoice    SG
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S4    Cash    SG
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2-3    0203    Invoice    SG
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 2    S4    04    Cash    SG
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2-3    0203    Invoice    SG
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 2    S4    04    Cash    SG
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1    country=SG
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 2    country=SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1    country=SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 2    country=SG
+    Verify CM Remark Is Not Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Mark-Up, Airline Commission, And Commission Rebate Are Displayed But Not Written In Remarks Fare Not Finalised Is Ticked
+    [Tags]    us1052    us1049    us1047    sg
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ SG - US1052    BEAR    NIKKI SG
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINHKG/ASQ    SS1Y1    FXP/S2    5
+    Enter GDS Command    FXD/S2
+    Enter GDS Command    OFS/A1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal    Fare Quote 1
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Fare Quote 1
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Fare Quote 1
+    Set Mark-up Percentage Field    5
+    Click Fare Tab    Alternate Fare 1
+    Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal    Alternate Fare 1
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Alternate Fare 1
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Alternate Fare 1
+    Click Fare Tab    Fare Quote 1
+    Tick Fare Not Finalised
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify BF Remarks Are Not Written
+    Verify Accounting Remarks Are Not Written
+    Verify FM Remark Is Not Written
+    Verify CM Remark Is Not Written
+    Verify Adult Fare And Taxes Itinerary Remarks Are Not Written
+    Verify Adult Fare And Taxes Itinerary Remarks For Alternate Fare Are Not Written
+    [Teardown]
+
+[AB SG] Verify That Mark-Up, Airline Commission, And Commission Rebate Are Displayed And Accounting Remarks Are Written For Fare Quote And Alternate Fare
+    [Tags]    us1052    us1049    us1047    sg
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal    Fare Quote 1
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Fare Quote 1
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Fare Quote 1
+    Set Mark-up Percentage Field    1
+    Verify Computed Value Of Mark-Up Amount Is Correct    Fare Quote 1    S2    SG    TQT    1    up
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    SG
+    Populate Fare Quote Tabs with Default Values
+    Click Panel    Alternate Fare 1
+    Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal    Alternate Fare 1
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Alternate Fare 1
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Alternate Fare 1
+    Set Mark-up Percentage Field    2
+    Verify Computed Value Of Mark-Up Amount Is Correct    Alternate Fare 1    S2    SG    TQQ/O1    2    up
+    Get Main Fees On Fare Quote Tab    Alternate Fare 1    SG
+    Click Fare Tab    Fare Quote 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify BF/AF Remarks For Mark-Up Amount And Percentage Are Written    Fare Quote 1
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2    Cash    SG
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2    02    Cash    SG
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2    02    Cash    SG
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1    country=SG
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Alternate Fare 1    country=SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1    country=SG
+    Verify CM Remark Is Not Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Mark-Up, Airline Commission, And Commission Rebate Are Displayed And Accounting Remarks Are Written For Fare Quote And Alternate Fare
+    [Tags]    us1052    us1049    us1047    hk
+    [Setup]
+    Open Power Express And Retrieve Profile    ${version}    Test    U002MEH    en-GB    mhernandez    APAC SYN
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ HK - US1052    BEAR    NIKKI HK
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    FXP/S2    5
+    Enter GDS Command    FXD/S2
+    Enter GDS Command    OFS/A1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal    Fare Quote 1
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Fare Quote 1
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Fare Quote 1
+    Set Mark-up Percentage Field    4
+    Verify Computed Value Of Mark-Up Amount Is Correct    Fare Quote 1    S2    HK    TQT    4    up
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    HK
+    Populate Fare Quote Tabs with Default Values
+    Click Panel    Alternate Fare 1
+    Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal    Alternate Fare 1
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Alternate Fare 1
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Alternate Fare 1
+    Set Mark-up Percentage Field    2
+    Verify Computed Value Of Mark-Up Amount Is Correct    Alternate Fare 1    S2    HK    TQQ/O1    2    up
+    Get Main Fees On Fare Quote Tab    Alternate Fare 1    HK
+    Click Fare Tab    Fare Quote 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify BF/AF Remarks For Mark-Up Amount And Percentage Are Written    Fare Quote 1    HK
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2    Cash    HK
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2    02    Cash    HK
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2    02    Cash    HK
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1    country=HK
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Alternate Fare 1    country=HK
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1    country=HK
+    Verify CM Remark Is Not Written
+    [Teardown]
+
+[AB HK] Verify That Mark-Up, Airline Commission And Commission Rebate Are Prepopulated And Accounting Remarks Are Updated In Upon Finish PNR
+    [Tags]    us1052    us1049    us1047    hk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    RTOF
+    Enter GDS Command    XE1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Alternate Fare 1
+    air_fare.Click Remove Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Verify Airline Commission Percentage And Commission Rebate Percentage Are Equal    Fare Quote 1
+    Verify Mark-Up Amount Field Is Displayed And Enabled    Fare Quote 1
+    Verify Mark-Up Percentage Field Is Displayed And Enabled    Fare Quote 1
+    Set Mark-up Percentage Field    6
+    Verify Computed Value Of Mark-Up Amount Is Correct    Fare Quote 1    S2    HK    TQT    6    up
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    SG
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify BF/AF Remarks For Mark-Up Amount And Percentage Are Written    Fare Quote 1    HK
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2    Cash    HK
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2    02    Cash    HK
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2    02    Cash    HK
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1    country=HK
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1    country=HK
+    Verify AF Remarks Are Not Written
+    Verify Alternate Fare Itinerary Remarks Are Not Written
+    Verify CM Remark Is Not Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That Mark-Up Is Not Displayed And Airline Commission And Commission Rebate Are Not Pre-Populated When Show Mark Up Fields And Pre-Populate Commission Rebate Are Set To No
+    [Tags]    us1052    us1049    us1047    in
+    Open Power Express And Retrieve Profile    ${version}    Test    U002MEH    en-GB    mhernandez    APAC SYN
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ IN - US1052    BEAR    NIKKI IN
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELSIN/ASQ    SS1Y1    FXP/S2    5
+    Enter GDS Command    FXD/S2
+    Enter GDS Command    OFS/A1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Verify Commission Rebate Amount And Percentage Is Displayed And Has No Value
+    Verify Mark-Up Amount Field Is Not Displayed    Fare Quote 1
+    Verify Mark-Up Amount Percentage Field Is Not Displayed    Fare Quote 1
+    Calculate Mark- Up Amount And Percentage    Fare Quote 1    S2    IN    TQT    0
+    Set Commission Rebate Percentage    12
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    IN
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Alternate Fare 1
+    Verify Commission Rebate Amount And Percentage Is Displayed And Has No Value    Alternate Fare 1
+    Verify Mark-Up Amount Field Is Not Displayed    Alternate Fare 1
+    Verify Mark-Up Amount Percentage Field Is Not Displayed    Alternate Fare 1
+    Calculate Mark- Up Amount And Percentage    Alternate Fare 1    S2    IN    TQQ/O1    0
+    Set Commission Rebate Percentage    6
+    Get Main Fees On Fare Quote Tab    Alternate Fare 1    IN
+    Click Fare Tab    Fare Quote 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify BF/ AF Remarks For Mark-Up Amount And Percentage Are Not Written    Fare Quote 1    IN
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2    VI************1111/D1221    IN
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2    02    Cash    IN
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2    02    Cash    IN
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1    country=IN
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Alternate Fare 1    country=IN
+    Verify CM Remark Is Written    Fare Quote 1    S2
+    [Teardown]
+
+[AB IN] Verify That Mark-Up Is Not Displayed And Airline Commission And Commission Rebate Are Not Pre-Populated For Fare Quote And Alternate Fare
+    [Tags]    us1052    us1049    us1047    in
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Verify Mark-Up Amount Field Is Not Displayed    Fare Quote 1
+    Verify Mark-Up Amount Percentage Field Is Not Displayed    Fare Quote 1
+    Verify Computed Value Of Mark-Up Amount Is Correct    Fare Quote 1    S2    IN    TQT    0
+    Set Commission Rebate Percentage    12
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    IN
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Alternate Fare 1
+    Verify Commission Rebate Amount And Percentage Is Displayed And Has No Value    Alternate Fare 1
+    Verify Mark-Up Amount Field Is Not Displayed    Alternate Fare 1
+    Verify Mark-Up Amount Percentage Field Is Not Displayed    Alternate Fare 1
+    Verify Computed Value Of Mark-Up Amount Is Correct    Fare Quote 1    S2    IN    TQQ/O1    0
+    Set Commission Rebate Percentage    14
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    IN
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify BF/ AF Remarks For Mark-Up Amount And Percentage Are Not Written    Fare Quote 1    IN
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2    VI************1111/D1221    IN
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2    02    VI************1111/D1221    IN
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2    02    VI************1111/D1221    IN
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1    country=IN
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Alternate Fare 1    country=IN
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1    country=IN
+    Verify CM Remark Is Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    [Tags]    us1046    hk
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ HK - US1052    BEAR    NIKKI HK
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    FXP/S2    5
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP/S3    5    1
+    Book Amadeus Offer Retain Flight    S2    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Set Commission Rebate Percentage    2.00
+    Set Merchant Fee Percentage Field    2.00
+    Set Markup Percentage    Fare Quote 1    2.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1    rounding_so=down
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 1    Client Rebate    has_client_cwt_comm_agreement=Yes    rounding_so=up
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1    Client Rebate
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    HK    rounding_so=up
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Alternate Fare 1
+    Select Form Of Payment Value On Fare Quote Tab    Alternate Fare 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Alternate Fare 1    CWT
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Alternate Fare 1    O1    TQQ
+    Get Routing Value    Alternate Fare 1
+    Set Commission Rebate Percentage    4.00
+    Set Merchant Fee Percentage Field    4.00
+    Set Markup Percentage    Alternate Fare 1    4.00
+    Get Main Fees On Fare Quote Tab    Alternate Fare 1
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Alternate Fare 1    rounding_so=down
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Alternate Fare 1    Client Rebate    has_client_cwt_comm_agreement=Yes    rounding_so=up
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Alternate Fare 1    Client Rebate
+    Verify MarkUp Amount Value Is Correct    Alternate Fare 1    HK    rounding_so=up
+    Verify Transaction Fee Value Is Correct    Alternate Fare 1    HK    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Alternate Fare 1
+    Populate Alternate Fare Quote Tabs With Default Values
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    Airline
+    Set Nett Fare Field    Fare Quote 2    1000
+    Set Fuel Surcharge Field    50
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S3
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Set Commission Rebate Percentage    6.00
+    Set Markup Percentage    Fare Quote 2    6.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2    rounding_so=down
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK    rounding_so=up
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    Client Rebate
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    HK    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI4900000000000087/D0823/CVV***    HK
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI4900000000000087/D0823/CVV***    HK    CWT
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI4900000000000087/D0823/CVV***    HK
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 2    country=HK
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 2    S3    03    TEST CARD/VI4900000000000087/D0823/CVV***    HK
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 2
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 2    S3    03    TEST CARD/VI4900000000000087/D0823/CVV***    HK
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 2    country=HK
+
+[AB HK] Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    [Tags]    us1046    hk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    2
+    Delete Amadeus Offer    XE1
+    Book Flight X Months From Now    HKGMNL/XBKK/ATG    SS1Y1    FXP/S3-4    5    5
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 1
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Set Nett Fare Field    Fare Quote 1    0
+    Set Fuel Surcharge Field    50
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Set Merchant Fee Percentage Field    3.80
+    Set Commission Rebate Percentage    6.00
+    Set Markup Percentage    Fare Quote 1    6.00
+    Set Airline Commission Percentage    2.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1    rounding_so=down
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    HK    rounding_so=up
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 1    Client Rebate    has_client_cwt_comm_agreement=Yes    rounding_so=up
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1    Client Rebate
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    #Fare Quote 2
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    Cash
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S3-4
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Set Commission Rebate Percentage    4.50
+    Set Markup Percentage    Fare Quote 2    5.50
+    Populate Fare Quote Tabs with Default Values
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2    rounding_so=down
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK    rounding_so=up
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    Client Rebate
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    HK    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    HK Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    Execute Simultaneous Change Handling    HK Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    Retrieve PNR Details From Amadeus
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2    TEST CARD/VI************0087/D0823/CVV***    HK
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S3-4    Cash    HK
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI************0087/D0823/CVV***    HK
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI************0087/D0823/CVV***    HK
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 2    S3-4    0304    Cash    HK
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1    country=HK
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 2    country=HK
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1    country=HK
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 2    country=HK
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI************0087/D0823/CVV***    HK
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 2    S3-4    0304    Cash    HK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    [Tags]    us1046    sg
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ SG - US1052    BEAR    NIKKI SG
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINLAX/ACX    SS1Y1    FXP/S2-3    4    2
+    Book Flight X Months From Now    SINHKG/ACX    SS1Y1    FXP/S4    4    10
+    Book Flight X Months From Now    HKGMNL/ACX    SS1Y1    FXP/S5    4    18
+    Comment    Book Amadeus Offer Retain Flight    S4    1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2-3
+    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Set Commission Rebate Percentage    2.00
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Set Markup Percentage    Fare Quote 1    2.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1    rounding_so=down
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1    Client Rebate
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    SG    rounding_so=up
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    SG    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    Cash
+    Set Nett Fare Field    Fare Quote 2    1000
+    Set Markup Percentage    Fare Quote 2    3.00
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S4
+    Get Main Fees On Fare Quote Tab    Fare Quote 2    SG
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2    rounding_so=down
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    Client Rebate
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    SG    rounding_so=up
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    SG    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Quote Tabs with Default Values
+    Populate Air Fare Savings Code Using Default Values
+    Click Fare Tab    Fare Quote 3
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 3    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 3    CWT
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 3    S5
+    Get Routing, Turnaround and Route Code    Fare Quote 3
+    Set Commission Rebate Percentage    5.00
+    Set Merchant Fee Percentage Field    5.00
+    Set Markup Percentage    Fare Quote 3    5.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 3    rounding_so=down
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 3    Client Rebate    has_client_cwt_comm_agreement=Yes    rounding_so=up
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 3    Client Rebate
+    Verify MarkUp Amount Value Is Correct    Fare Quote 3    SG    rounding_so=up
+    Verify Transaction Fee Value Is Correct    Fare Quote 3    SG    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 3
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2-3    TEST CARD/VI************0087/D0823/CVV***    SG
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S4    Cash    SG
+    Verify FOP Remark Per TST Is Written    Fare Quote 3    S5    TEST CARD/VI************0087/D0823/CVV***    SG
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 2    S4    04    Cash    SG
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 3    S5    05    TEST CARD/VI************0087/D0823/CVV***    SG
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2-3    0203    TEST CARD/VI************0087/D0823/CVV***    SG
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 2    S4    04    Cash    SG
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 3    S5    05    TEST CARD/VI************0087/D0823/CVV***    SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1    country=SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 2    country=SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 3    country=SG
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2-3    0203    TEST CARD/VI************0087/D0823/CVV***    SG
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 2    S4    04    Cash    SG
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 3    S5    05    TEST CARD/VI************0087/D0823/CVV***    SG
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 2    S4    04    Cash    SG
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 3    S5    05    TEST CARD/VI************0087/D0823/CVV***    SG
+
+[AB SG] Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    [Tags]    us1046    sg
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Populate Client Info Panel With Default Values
+    Delete Air Segment    5
+    Click Panel    Complete
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Cash
+    Set Nett Fare Field    Fare Quote 1    1000
+    Set Markup Percentage    Fare Quote 1    3.00
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2-3
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    SG
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1    rounding_so=down
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1    Client Rebate
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    SG    rounding_so=up
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    SG    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S4
+    Set Commission Rebate Percentage    5.00
+    Set Merchant Fee Percentage Field    5.00
+    Set Markup Percentage    Fare Quote 2    5.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2    rounding_so=down
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    Client Rebate
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    SG    rounding_so=up
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    SG    Offline    Flat    Percentage    rounding_so=up
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 2    Client Rebate    has_client_cwt_comm_agreement=Yes    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Client Info
+    Click Finish PNR    SG Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    Execute Simultaneous Change Handling    SG Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    Retrieve PNR Details From Amadeus
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2-3    Cash    SG
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S4    TEST CARD/VI************0087/D0823/CVV***    SG
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 2    S4    04    TEST CARD/VI************0087/D0823/CVV***    SG
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2-3    0203    Cash    SG
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 2    S4    04    TEST CARD/VI************0087/D0823/CVV***    SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1    country=SG
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 2    country=SG
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2-3    0203    Cash    SG
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 2    S4    04    TEST CARD/VI************0087/D0823/CVV***    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    [Tags]    us1046    in
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ IN - US1052    BEAR    NIKKI IN
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELMAA/AAI    SS1Y1    FXP/S2    5
+    Book Flight X Months From Now    BLRBOM/A9W    SS1Y1    FXP/S3    5    2
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    TEST CARD/VI************0087/D0823/CVV***
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    IN
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 1    Client Rebate    has_client_cwt_comm_agreement=Yes
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    IN    Offline    Flat    Percentage
+    Verify Merchant Fee For Transaction Fee Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Comment    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    Cash
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    Airline
+    Set Nett Fare Field    Fare Quote 2    1000
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S3
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Get Main Fees On Fare Quote Tab    Fare Quote 2    IN
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    IN    Offline    Flat    Percentage
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI************0087/D0823/CVV***    IN
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 2    S3    03    TEST CARD/VI************0087/D0823/CVV***    IN
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI************0087/D0823/CVV***    IN    CWT
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI************0087/D0823/CVV***    IN
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 2    S3    03    TEST CARD/VI************0087/D0823/CVV***    IN
+
+[AB IN] Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    [Tags]    us1046    in
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    3
+    Book Flight X Months From Now    BOMMAA/A9W    SS1Y1    FXP/S3    5    5
+    Populate Client Info Panel With Default Values
+    Click Panel    Complete
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    IN
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 1    Client Rebate    has_client_cwt_comm_agreement=Yes
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    IN    Offline    Flat    Percentage
+    Verify Merchant Fee For Transaction Fee Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Comment    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    Cash
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    Airline
+    Set Nett Fare Field    Fare Quote 2    1000
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S3
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Get Main Fees On Fare Quote Tab    Fare Quote 2    IN
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2
+    Comment    Verify MarkUp Amount Value Is Correct    Fare Quote 2    IN
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    IN    Offline    Flat    Percentage
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    IN Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    Execute Simultaneous Change Handling    IN Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    Retrieve PNR Details From Amadeus
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI************0087/D0823/CVV***    IN
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 2    S3    03    TEST CARD/VI************0087/D0823/CVV***    IN
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI************0087/D0823/CVV***    IN    CWT
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/VI************0087/D0823/CVV***    IN
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 2    S3    03    TEST CARD/VI************0087/D0823/CVV***    IN
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2    TEST CARD/VI4900000000000087/D0823/CVV***    IN    CWT
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S3    TEST CARD/VI4900000000000087/D0823/CVV***    IN    Airline
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+HK Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    2
+    Delete Amadeus Offer    XE1
+    Book Flight X Months From Now    HKGMNL/XBKK/ATG    SS1Y1    FXP/S3-4    5    5
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 1
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Set Nett Fare Field    Fare Quote 1    0
+    Set Fuel Surcharge Field    50
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Set Merchant Fee Percentage Field    3.80
+    Set Commission Rebate Percentage    6.00
+    Set Markup Percentage    Fare Quote 1    6.00
+    Set Airline Commission Percentage    2.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1    rounding_so=down
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    HK    rounding_so=up
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 1    Client Rebate    has_client_cwt_comm_agreement=Yes    rounding_so=up
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1    Client Rebate
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    #Fare Quote 2
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    Cash
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S3-4
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 2
+    Set Commission Rebate Percentage    4.50
+    Set Markup Percentage    Fare Quote 2    5.50
+    Populate Fare Quote Tabs with Default Values
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2    rounding_so=down
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK    rounding_so=up
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    Client Rebate
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    HK    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    HK Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+
+SG Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Populate Client Info Panel With Default Values
+    Delete Air Segment    5
+    Click Panel    Complete
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Cash
+    Set Nett Fare Field    Fare Quote 1    1000
+    Set Markup Percentage    Fare Quote 1    3.00
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2-3
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    SG
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1    rounding_so=down
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1    Client Rebate
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    SG    rounding_so=up
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    SG    Offline    Flat    Percentage    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S4
+    Set Commission Rebate Percentage    5.00
+    Set Merchant Fee Percentage Field    5.00
+    Set Markup Percentage    Fare Quote 2    5.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2    rounding_so=down
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    Client Rebate
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    SG    rounding_so=up
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    SG    Offline    Flat    Percentage    rounding_so=up
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 2    Client Rebate    has_client_cwt_comm_agreement=Yes    rounding_so=up
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Client Info
+    Click Finish PNR    SG Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+
+IN Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    3
+    Book Flight X Months From Now    BOMMAA/A9W    SS1Y1    FXP/S3    5    5
+    Populate Client Info Panel With Default Values
+    Click Panel    Complete
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Comment    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Get Main Fees On Fare Quote Tab    Fare Quote 1    IN
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 1    Client Rebate    has_client_cwt_comm_agreement=Yes
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    IN    Offline    Flat    Percentage
+    Verify Merchant Fee For Transaction Fee Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Quote Tabs with Default Values
+    Click Fare Tab    Fare Quote 2
+    Comment    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    Cash
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    Airline
+    Set Nett Fare Field    Fare Quote 2    1000
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S3
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Get Main Fees On Fare Quote Tab    Fare Quote 2    IN
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2
+    Comment    Verify MarkUp Amount Value Is Correct    Fare Quote 2    IN
+    Verify Transaction Fee Value Is Correct    Fare Quote 2    IN    Offline    Flat    Percentage
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    IN Amend Booking To Verify The Rounding Logic Is Applied To Commission Rebate Amount, Merchant Fee, MarkUp Amount And Transaction Fee

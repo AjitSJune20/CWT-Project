@@ -1,0 +1,3 @@
+*** Settings ***
+Resource          ../acceptance_tests/client_info/client_info_verification.robotResource          ../tpro/acceptance_tests/air_fare/air_fare_verification.robotResource          ../acceptance_tests/air_fare/air_fare_verification.robotResource          ../resources/common/global_resources.robotResource          ../acceptance_tests/gds/gds_verification.robotResource          ../tpro/acceptance_tests/car/car_verification.robotResource          ../tpro/acceptance_tests/pspt_and_visa/pspt_and_visa_verification.robotResource          ../tpro/acceptance_tests/delivery/delivery_verification.robot
+*** Keywords ***

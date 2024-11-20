@@ -1,0 +1,189 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Static And Transactional CDRs Are Enabled Or Disabled Based On Rules
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US508    RULER    FREE
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Matrix DP Code    N123
+    Verify CDR Is Disabled And Text Value Is Correct    SU-Department Name    DEP
+    Set CDR Value    TS-Trip Reason    MTG
+    Set CDR Value    TS-Business Unit Name    12345
+    Click Panel    Client Info
+    Populate Client Info Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD‡AA    01Y1    WPRQ‡S1    6    1
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Matrix DP Code    N123
+    Verify CDR Is Disabled And Text Value Is Correct    SU-Department Name    DEP
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-DP/N123
+    Verify Specific Line Is Written In The PNR    X/-SDN/DEP
+
+[AB] Verify That Static And Transactional CDRs Are Enabled Or Disabled Based On Rules
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Disabled And Text Value Is Correct    Matrix DP Code    N123
+    Verify CDR Is Enabled And Text Value is Correct    SU-Department Name    AMEND
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Static And Transactional CDRs If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/
+    Verify Specific Line Is Written In The PNR    X/-DP/N123
+    Verify Specific Line Is Written In The PNR    X/-SDN/AMEND
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Business Rules Are Working IN CDR Panel
+    Comment    Set Test Variable    ${GDS_switch}    sabre
+    Comment    Set Test Variable    ${locale}    en-US
+    Comment    Set Test Variable    ${syex_env}    Test
+    Comment    Set Test Variable    ${gds}    sabre
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US508    RULER    FREE
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Not Mandatory    TS-Business Unit Name
+    Verify CDR Is Enabled And Text Value is Correct    Matrix DP Code    N123
+    Verify CDR Is Disabled And Text Value Is Correct    SU-Department Name    DEP
+    Verify Trip Reason List Items
+    Comment    Verify CDR Is Enabled And Text Value is Correct    TS-Trip Reason    MTG
+    Set CDR Value    TS-Trip Reason    MTG
+    Comment    Click Control    [NAME:ctxtCDRValue3]
+    Set CDR Value    TS-Business Unit Name    ${EMPTY}
+    Verify CDR Is Mandatory    TS-Business Unit Name
+    Set CDR Value    TS-Business Unit Name    UNIT
+    Click Panel    Client Info
+    Populate Client Info Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD‡AA    01Y1    WPRQ‡S1    6    1
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Matrix DP Code    N123
+    Verify CDR Is Disabled And Text Value Is Correct    SU-Department Name    DEP
+    Verify CDR Is Enabled And Text Value is Correct    TS-Trip Reason    MTG
+    Click Panel    Delivery
+    Click Panel    Client Info
+    Verify CDR Is Enabled And Text Value is Correct    T-Supervisor    TEST SUPER
+    Verify CDR Is Enabled And Text Value is Correct    TS-Business Unit Name    UNIT
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Create PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-DP/N123
+    Verify Specific Line Is Written In The PNR    X/-SDN/DEP
+
+[AB] Verify That Business Rules Are Working IN CDR Panel
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Disabled And Text Value Is Correct    Matrix DP Code    N123
+    Verify CDR Is Enabled And Text Value is Correct    SU-Department Name    AMEND
+    Verify Trip Reason List Items
+    Verify CDR Is Enabled And Text Value is Correct    TS-Trip Reason    MTG
+    Set CDR Value    TS-Trip Reason    VAC
+    Comment    Click Control    [NAME:ctxtCDRValue4]
+    Verify CDR Is Enabled And Text Value is Correct    TS-Employee ID    654321
+    Verify CDR Is Enabled And Text Value is Correct    TS-Business Unit Name    UNIT
+    Verify CDR Is Enabled And Text Value is Correct    T-Supervisor    TEST AMEND
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Retrieve Again the PNR
+    Comment    Re-Execute Amend Static And Transactional CDRs If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X/-DP/N123
+    Verify Specific Line Is Written In The PNR    X/-SDN/AMEND
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Static And Transactional CDRs
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Disabled And Text Value Is Correct    Matrix DP Code    N123
+    Verify CDR Is Enabled And Text Value is Correct    SU-Department Name    AMEND
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+
+Verify Trip Reason List Items
+    Click Button Control    [Name:cbtnCDRSearch5]
+    @{tripReasonListBusinessRules}    Create List    MTG ¦ MTG    VAC ¦ VAC    BUS ¦ BUS
+    @{tripReasonList}    Create List
+    ${tripReasonList} =    Get Tst List
+    : FOR    ${trip_reason}    IN    @{tripReasonList}
+    \    ${result} =    List Should Contain Value    ${tripReasonList}    ${trip_reason}
+    \    Should Be True    ${result} == None
+    Comment    Click Control    [NAME:lbCDRValues]
+    Comment    Select Value From Listbox    BUS ¦ BUS
+    Click Button Control    [Name:btnHidePanel]
+    Log    ${tripReasonList}
+
+Create PNR
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US508    RULER    FREE
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Not Mandatory    TS-Business Unit Name
+    Verify CDR Is Enabled And Text Value is Correct    Matrix DP Code    N123
+    Verify CDR Is Disabled And Text Value Is Correct    SU-Department Name    DEP
+    Verify Trip Reason List Items
+    Comment    Verify CDR Is Enabled And Text Value is Correct    TS-Trip Reason    MTG
+    Set CDR Value    TS-Trip Reason    MTG
+    Comment    Click Control    [NAME:ctxtCDRValue3]
+    Set CDR Value    TS-Business Unit Name    ${EMPTY}
+    Verify CDR Is Mandatory    TS-Business Unit Name
+    Set CDR Value    TS-Business Unit Name    UNIT
+    Click Panel    Client Info
+    Populate Client Info Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD‡AA    01Y1    WPRQ‡S1    6    1
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Matrix DP Code    N123
+    Verify CDR Is Disabled And Text Value Is Correct    SU-Department Name    DEP
+    Verify CDR Is Enabled And Text Value is Correct    TS-Trip Reason    MTG
+    Click Panel    Delivery
+    Click Panel    Client Info
+    Verify CDR Is Enabled And Text Value is Correct    T-Supervisor    TEST SUPER
+    Verify CDR Is Enabled And Text Value is Correct    TS-Business Unit Name    UNIT
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+
+Retrieve Again the PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Disabled And Text Value Is Correct    Matrix DP Code    N123
+    Verify CDR Is Enabled And Text Value is Correct    SU-Department Name    AMEND
+    Verify Trip Reason List Items
+    Verify CDR Is Enabled And Text Value is Correct    TS-Trip Reason    MTG
+    Set CDR Value    TS-Trip Reason    VAC
+    Comment    Click Control    [NAME:ctxtCDRValue4]
+    Verify CDR Is Enabled And Text Value is Correct    TS-Employee ID    654321
+    Verify CDR Is Enabled And Text Value is Correct    TS-Business Unit Name    UNIT
+    Verify CDR Is Enabled And Text Value is Correct    T-Supervisor    TEST AMEND
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR

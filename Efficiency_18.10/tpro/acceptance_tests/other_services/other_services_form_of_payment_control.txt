@@ -1,0 +1,77 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Get Credit Card Details
+    Get FOP Vendor Value
+    Get Credit Card Value
+    Get Expiry Month Value
+    Get Expiry Year Value
+
+Get Credit Card Value
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ValueMaskedTextBox,AssociatedCharges_CardNumberMaskedTextBox,Charges_CardNumberMaskedTextBox,Charges_CardNumberTextBox,CreditCardNumberTextBox,CreditCardNumberTextbox    False
+    ${credit_card_number}    Get Control Text Value    ${object_name}
+    Set Suite Variable    ${credit_card_number}
+    [Return]    ${credit_card_number}
+
+Get Expiry Month Value
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ExpiryMonthComboBox,AssociatedCharges_ExpiryMonthComboBox,Charges_ExpiryMonthComboBox    False
+    ${expiry_month}    Get Control Text Value    ${object_name}
+    Set Suite Variable    ${expiry_month}
+    [Return]    ${expiry_month}
+
+Get Expiry Year Value
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ExpiryYearComboBox,AssociatedCharges_ExpiryYearComboBox,Charges_ExpiryYearComboBox    False
+    ${expiry_year}    Get Control Text Value    ${object_name}
+    Set Suite Variable    ${expiry_year}
+    Set Suite Variable    ${short_expiry_year}    ${expiry_year[2:4]}
+    [Return]    ${expiry_year}
+
+Get FOP Value
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    FormOfPaymentComboBox,FormOfPaymentCombobox,AssociatedCharges_FormOfPaymentComboBox,Charges_FormOfPaymentComboBox    False
+    ${form_of_payment}    Get Control Text Value    ${object_name}
+    Set Suite Variable    ${form_of_payment}
+    [Return]    ${form_of_payment}
+
+Get FOP Vendor Value
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    FopVendorComboBox,AssociatedCharges_FopVendorComboBox,Charges_FopVendorComboBox,CreditCardTypesComboBox,CreditCardTypeCombobox    False
+    ${form_of_payment_vendor}    Get Control Text Value    ${object_name}
+    Set Suite Variable    ${form_of_payment_vendor}
+    [Return]    ${form_of_payment_vendor}
+
+Get Other Services Form Of Payment Details
+    Get FOP Value
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    FopVendorComboBox,AssociatedCharges_FopVendorComboBox,Charges_FopVendorComboBox,CreditCardTypesComboBox,CreditCardTypeCombobox    False
+    ${is_cc_vendor_present}    Control Command    ${title_power_express}    ${EMPTY}    ${object_name}    IsVisible    ${EMPTY}
+    Run Keyword If    ${is_cc_vendor_present} == 1    Get Credit Card Details
+    [Teardown]    Take Screenshot
+
+Populate Credit Card Details
+    [Arguments]    ${credit_card_number}    ${vendor}    ${expiry_month}    ${expiry_year}
+    Unmask Credit Card Number
+    Select Credit Card Vendor    ${vendor}
+    Set Credit Card Value    ${credit_card_number}
+    Select Expiry Month    ${expiry_month}
+    Select Expiry Year    ${expiry_year}
+
+Select Credit Card Vendor
+    [Arguments]    ${credit_card_vendor}
+    Select Value From Dropdown List    [NAME:FopVendorComboBox]    ${credit_card_vendor}
+
+Select Form Of Payment (FOP)
+    [Arguments]    ${form_of_payment}    ${card_vendor_type}=${EMPTY}    ${cc_number}=${EMPTY}    ${expiry_month}=${EMPTY}    ${expiry_year}=${EMPTY}
+    Wait Until Control Object Is Visible    [NAME:FormOfPaymentComboBox]
+    Select Form Of Payment (FOP) Value    ${form_of_payment}
+    Run Keyword If    '${form_of_payment.lower()}'=='credit card (cc)' or '${form_of_payment.lower()}'=='credit card (cx)'    Unmask Credit Card Number
+    Run Keyword If    '${form_of_payment.lower()}'=='credit card (cc)' or '${form_of_payment.lower()}'=='credit card (cx)'    Select Form Of Payment Details    ${card_vendor_type}    ${cc_number}    ${expiry_month}    ${expiry_year}
+    Set Test Variable    ${form_of_payment}
+
+Select Form Of Payment (FOP) Value
+    [Arguments]    ${form_of_payment}
+    Wait Until Control Object Is Visible    [NAME:FormOfPaymentComboBox]
+    Select Value From Dropdown List    [NAME:FormOfPaymentComboBox]    ${form_of_payment}
+
+Set Credit Card Value
+    [Arguments]    ${credit_card_number}
+    Set Control Text Value    [NAME:ValueMaskedTextBox]    ${EMPTY}
+    Set Control Text Value    [NAME:ValueMaskedTextBox]    ${credit_card_number}

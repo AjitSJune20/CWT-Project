@@ -1,0 +1,296 @@
+*** Settings ***
+Force Tags        sabre    emea
+Resource          ../third_party_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Clipper Remarks Are Written In PNR (Fare)
+    [Tags]    us1319    de6233    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 211 - Auto ¦ US1500    AUTOTWOONEONE    EmeaTrvlrOne    FRAPAR‡AF    ${EMPTY}    AIR FARE
+    ...    DELIVERY
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Retrieve PNR Details From Sabre Red    \    *Y‡    1
+    Get PCC and Team ID from GDS Logs in Sabre Red
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Restriction    Non Flexible
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Tick Do Not Send To OBT Checkbox
+    Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Untick Do Not Send Itinerary Checkbox
+    Click Panel    Recap
+    Select PCC And Team ID    U5ZH    FOR-123
+    Verify Clipper Options Compliancy Dropdown Is Displayed
+    Set Clipper Compliancy Value    Oui
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X‡COMMENT1 TKT AF TKT NON MODIFIABLE NON REMBOURSABLE
+    Verify Specific Line Is Written In The PNR    Z‡AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    X‡PRECO/C 1/1
+    Verify Specific Line Is Written In The PNR    H‡OMT-DONTQUEUE
+    Verify New PCC And Team ID Are Written in PNR    U5ZH    FOR-123
+
+[AB] Verify That Clipper Remarks Are Written In PNR (Fare)
+    [Tags]    us1319    de6233    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    FRAPAR‡AF    01Y1    WPRQ    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Retrieve PNR Details From Sabre Red    \    *Y‡    1
+    Get PCC and Team ID from GDS Logs in Sabre Red
+    Click Panel    Air Fare
+    Get Charged Fare Value
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Populate Delivery Panel With Default Values
+    Click Panel    Recap
+    Select PCC And Team ID    D33H    FOR-001
+    Verify Clipper Options Compliancy Dropdown Is Displayed
+    Set Clipper Compliancy Value    Non
+    Click Finish PNR
+    Re-Execute Amend Booking For Sabre Clipper (Fare) If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X‡COMMENT1 TKT AF VAL 1J/1AN-TKT MODIFIABLE ET REMBOURSABLE
+    Verify Specific Line Is Written In The PNR    Z‡AUTOMAIL-NO
+    Verify Specific Line Is Written In The PNR    X‡DEROG/M 1/1
+    Verify Specific Line Is Not Written In The PNR    H‡OMT-DONTQUEUE
+    Verify New PCC And Team ID Are Written in PNR    D33H    FOR-001
+    Verify Total Air Fare is Written In GDS Remarks For EU
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Clipper Remarks Are Written In PNR (Send ITIN Remarks)
+    [Tags]    us1319    de6233    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 211 - Auto ¦ US1500    AUTOTWOONEONE    EmeaTrvlrOne    FRAPAR‡AF    ${EMPTY}    AIR FARE
+    ...    DELIVERY
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Retrieve PNR Details From Sabre Red    \    *Y‡    1
+    Get PCC and Team ID from GDS Logs in Sabre Red
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Tick Do Not Send To OBT Checkbox
+    Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Click Panel    Recap
+    Select PCC And Team ID    U5ZH    FOR-123
+    Verify Clipper Options Compliancy Dropdown Is Displayed
+    Set Clipper Compliancy Value    Oui
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X‡COMMENT1 TKT AF VAL 1J/1AN-TKT MODIFIABLE ET REMBOURSABLE
+    Verify Specific Line Is Written In The PNR    Z‡AUTOMAIL-NO
+    Verify Specific Line Is Written In The PNR    X‡PRECO/C 1/1
+    Verify Specific Line Is Written In The PNR    H‡OMT-DONTQUEUE
+    Verify New PCC And Team ID Are Written in PNR    U5ZH    FOR-123
+
+[AB] Verify That Clipper Remarks Are Written In PNR (Send ITIN Remarks)
+    [Tags]    us1319    de6233    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    FRAPAR‡AF    01Y1    WPRQ    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Retrieve PNR Details From Sabre Red    \    *Y‡    1
+    Get PCC and Team ID from GDS Logs in Sabre Red
+    Click Panel    Air Fare
+    Get Charged Fare Value
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Restriction    Semi Flexible
+    Select Changes Dropdown Value    SANS FRAIS
+    Select Cancellation Dropdown Value    NON
+    Select Min Stay Dropdown Value    1J
+    Select Max Stay Dropdown Value    1A
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Tick Do Not Send To OBT Checkbox
+    Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Untick Do Not Send Itinerary Checkbox
+    Click Panel    Recap
+    Select PCC And Team ID    D33H    FOR-001
+    Verify Clipper Options Compliancy Dropdown Is Displayed
+    Set Clipper Compliancy Value    Non
+    Click Finish PNR
+    Re-Execute Amend Booking For Sabre Clipper (Send Itin Remarks) If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X‡COMMENT1 TKT AF VAL 1J/1A-TKT MODIF SANS FRAIS-ANNUL NON \
+    Verify Specific Line Is Written In The PNR    Z‡AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    X‡DEROG/M 1/1
+    Verify Specific Line Is Written In The PNR    H‡OMT-DONTQUEUE
+    Verify New PCC And Team ID Are Written in PNR    D33H    FOR-001
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Clipper Remarks Are Written In PNR (Compliance)
+    [Tags]    us1319    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 211 - Auto ¦ US1500    AUTOTWOONEONE    EmeaTrvlrOne    FRAPAR‡AF    ${EMPTY}    AIR FARE
+    ...    DELIVERY
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Retrieve PNR Details From Sabre Red    \    *Y‡    1
+    Get PCC and Team ID from GDS Logs in Sabre Red
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Restriction    Semi Flexible
+    Select Changes Dropdown Value    SANS FRAIS
+    Select Cancellation Dropdown Value    NON
+    Select Min Stay Dropdown Value    1J
+    Select Max Stay Dropdown Value    1A
+    Click Panel    Delivery
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Populate Delivery Panel With Default Values
+    Click Panel    Recap
+    Select PCC And Team ID    U5ZH    FOR-123
+    Verify Clipper Options Compliancy Dropdown Is Displayed
+    Set Clipper Compliancy Value    Oui
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X‡COMMENT1 TKT AF VAL 1J/1A-TKT MODIF SANS FRAIS-ANNUL NON \
+    Verify Specific Line Is Written In The PNR    Z‡AUTOMAIL-NO
+    Verify Specific Line Is Written In The PNR    X‡PRECO/C 1/1
+    Verify Specific Line Is Not Written In The PNR    H‡OMT-DONTQUEUE
+    Verify Total Air Fare is Written In GDS Remarks For EU
+    Verify New PCC And Team ID Are Written in PNR    U5ZH    FOR-123
+
+[AB] Verify That Clipper Remarks Are Written In PNR (Compliance)
+    [Tags]    us1319    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    FRAPAR‡AF    01Y1    WPRQ    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Retrieve PNR Details From Sabre Red    \    *Y‡    1
+    Get PCC and Team ID from GDS Logs in Sabre Red
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Untick Do Not Send Itinerary Checkbox
+    Populate Delivery Panel With Default Values
+    Click Panel    Recap
+    Select PCC And Team ID    D33H    FOR-001
+    Verify Clipper Options Compliancy Dropdown Is Displayed
+    Set Clipper Compliancy Value    Oui
+    Click Finish PNR
+    Re-Execute Amend Booking For Sabre Clipper (Compliance) If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    X‡COMMENT1 TKT AF VAL 1J/1AN-TKT MODIFIABLE ET REMBOURSABLE
+    Verify Specific Line Is Written In The PNR    Z‡AUTOMAIL-YES
+    Verify Specific Line Is Written In The PNR    X‡PRECO/M 1/1
+    Verify Specific Line Is Not Written In The PNR    H-OMT-DONTQUEUE
+    Verify New PCC And Team ID Are Written in PNR    D33H    FOR-001
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Sabre Clipper (Compliance)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    FRAPAR‡AF    01Y1    WPRQ    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Retrieve PNR Details From Sabre Red    \    *Y‡    1
+    Get PCC and Team ID from GDS Logs in Sabre Red
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Untick Do Not Send Itinerary Checkbox
+    Populate Delivery Panel With Default Values
+    Click Panel    Recap
+    Select PCC And Team ID    D33H    FOR-001
+    Verify Clipper Options Compliancy Dropdown Is Displayed
+    Set Clipper Compliancy Value    Oui
+    Click Finish PNR
+
+Amend Booking For Sabre Clipper (Fare)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    FRAPAR‡AF    01Y1    WPRQ    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Retrieve PNR Details From Sabre Red    \    *Y‡    1
+    Get PCC and Team ID from GDS Logs in Sabre Red
+    Click Panel    Air Fare
+    Get Charged Fare Value
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Populate Delivery Panel With Default Values
+    Click Panel    Recap
+    Select PCC And Team ID    D33H    FOR-001
+    Verify Clipper Options Compliancy Dropdown Is Displayed
+    Set Clipper Compliancy Value    Non
+    Click Finish PNR
+
+Amend Booking For Sabre Clipper (Send Itin Remarks)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    FRAPAR‡AF    01Y1    WPRQ    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Retrieve PNR Details From Sabre Red    \    *Y‡    1
+    Get PCC and Team ID from GDS Logs in Sabre Red
+    Click Panel    Air Fare
+    Get Charged Fare Value
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Restriction    Semi Flexible
+    Select Changes Dropdown Value    SANS FRAIS
+    Select Cancellation Dropdown Value    NON
+    Select Min Stay Dropdown Value    1J
+    Select Max Stay Dropdown Value    1A
+    Click Panel    Delivery
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Tick Do Not Send To OBT Checkbox
+    Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Untick Do Not Send Itinerary Checkbox
+    Populate Delivery Panel With Default Values
+    Click Panel    Recap
+    Select PCC And Team ID    D33H    FOR-001
+    Verify Clipper Options Compliancy Dropdown Is Displayed
+    Set Clipper Compliancy Value    Non
+    Click Finish PNR
+
+Select PCC And Team ID
+    [Arguments]    ${pcc}    ${teamid}
+    Set PCC Field Value    ${pcc}
+    Set Team ID Field Value    ${teamid}

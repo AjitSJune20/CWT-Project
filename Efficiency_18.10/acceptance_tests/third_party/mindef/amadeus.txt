@@ -1,0 +1,1909 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          mindef_verification.txt
+
+*** Test Cases ***
+[AB] Verify That CPx AIR Remark Line Is Written In The PNR With 9 Pax And 1 Unbooked Proposal Only
+    [Tags]    fr    us3340    us3348
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    5
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS9Y1    6    1
+    GDS Pricing Per Pax Type    S11    P1,3-7,9    P2,8    P5
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD/AAF    SS9Y2    6    7
+    Comment    Create Amadeus Offer Remove Flight    S12
+    Enter GDS Command    FXD/S12    OFS/A1
+    Verify Amadeus Offer Is Created
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    WN - Tarif Net Classe Premium Economique    3
+    Click Finish PNR    Simultaneous Change Handling 9 Pax And 1 Unbooked Proposal Only
+    Execute Simultaneous Change Handling    Simultaneous Change Handling 9 Pax And 1 Unbooked Proposal Only
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CP Mindef Remarks Is Not Written    Alternate Fare 1
+
+[AB] Verify That CPx AIR remark Line Is Updated In The PNR With 9PAX And 1 Amadeus Offer And 1 Manual Alternate Fare
+    [Tags]    fr    us3340    us3348
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Amadeus Offer Is Created
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    WN - Tarif Net Classe Premium Economique    3
+    Add Mindef Manual Alternate And Populate Details    Alternate Fare 2    1333,33    FRR    WN - Tarif Net Classe Premium Economique    1
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling 9 Pax And 1 Amadeus Offer and 1 Manual Alternate Fare
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CPx Air Remarks Are Written    Alternate Fare 1
+    Verify CPx Air Remarks Are Written    Alternate Fare 2
+    Verify CPx TAir Remarks Are Written    Alternate Fare 1
+    Verify CPx TAir Remarks Are Written    Alternate Fare 2
+
+[AB] Verify That CPx AIR Remark Line Is Removed In The PNR With 9 Pax When At Least 1 Offer Is Removed in Express
+    [Tags]    fr    us3340    us3348
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Amadeus Offer Is Created
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Comment    Remove Fare Tab    Alternate Fare 3
+    Remove Fare Tab    Alternate Fare 2
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    WN - Tarif Net Classe Premium Economique    3
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling 9 Pax When At Least 1 Offer Is Removed in Express
+    Execute Simultaneous Change Handling    Simultaneous Change Handling 9 Pax When At Least 1 Offer Is Removed in Express
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CPx Air Remarks Are Written    Alternate Fare 1
+    Verify CPx TAir Remarks Are Written    Alternate Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That CPX AIR Remark Line Is Written In The PNR With 1ADT1CHD And Unbooked Proposal With Multiple Segment
+    [Tags]    fr    us3340    us3348
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    4
+    Create Round Trip Single Booked and Single Unbooked
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    WN - Tarif Net Classe Premium Economique    3
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    \    \    MRS
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For 1ADT1CHD Unbooked Proposal With Multiple Segment
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For 1ADT1CHD Unbooked Proposal With Multiple Segment
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CPx Air Remarks Are Written    Alternate Fare 1
+    Verify CPx TAir Remarks Are Written    Alternate Fare 1
+
+[AB] Verify That CPX AIR Remark Line Is Updated In The PNR With 1ADT1CHD And 1 Amadeus offer And 1 Manual Alternate Fare
+    [Tags]    fr    us3340    us3348
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now Without Pricing    CDGWAW    SS2Y1    7
+    GDS Pricing Per Pax Type    S6    P1    P2    0
+    Verify Amadeus Offer Is Created
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    WN - Tarif Net Classe Premium Economique    1
+    Add Mindef Manual Alternate And Populate Details    Alternate Fare 2    93,33    YTEST    YF - Plein Tarif Classe Economique    1
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    \    \    MRS
+    Populate Fare Tab With Default Values    Fare 3
+    Populate Fare Tab With Default Values    Fare 4    \    \    PAR
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For 1ADT1CHD 1 Amadeus offer And 1 Manual Alternate Fare
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For 1ADT1CHD 1 Amadeus offer And 1 Manual Alternate Fare
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CPx Air Remarks Are Written    Alternate Fare 1
+    Verify CPx TAir Remarks Are Written    Alternate Fare 1
+    Verify CPx Air Remarks Are Written    Alternate Fare 2
+    Verify CPx TAir Remarks Are Written    Alternate Fare 2
+
+[AB] Verify That CPX AIR Remark Line Is Removed In The PNR With 1ADT1CHD When At least 1 Offer Is Removed In Express
+    [Tags]    fr    us3340    us3348
+    [Template]
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Amadeus Offer    XE1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Set Alternate Fare Airline    AF
+    Select Fare Restriction    2
+    Select Changes Dropdown Value    SANS FRAIS
+    Select Cancellation Dropdown Value    NON
+    Convert Fare Values To Mindef CPx Air Remarks    Alternate Fare 1
+    Convert Fare Values To Mindef CPx TAir Remarks    Alternate Fare 1    2
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Populate Fare Tab With Default Values    Fare 4
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For 1ADT1CHD When At least 1 Offer Is Removed In Express
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For 1ADT1CHD When At least 1 Offer Is Removed In Express
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CPx Air Remarks Are Written    Alternate Fare 1
+    Verify CPx TAir Remarks Are Written    Alternate Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That CPx AIR Remark Line Is Written In The PNR With 1ADT And 1 Unbooked Proposal Only
+    [Tags]    fr    us3340    us3348    us5414    us5488    us5052
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    1
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    LHRCDG/AAF    SS1Y1    5
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Add Mindef Manual Alternate And Populate Details    Alternate Fare 1    125,55    YTEST    YC - Tarif Client Classe Economique    1
+    Verify Alternate Fare Basis, Min And Max Fields are Mandatory on First Amend    Alternate Fare 1    YC - Tarif Client Classe Economique    YTEST    1    125,55
+    Click Panel    Delivery
+    Verify Delivery Panel Emails    GSBDD-GUF-VAC-BILLETERIE.RESP.SPAC@INTRADF.GOUV.FR
+    Populate Delivery Panel With Default Values
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For 1ADT And 1 Unbooked Proposal Only
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For 1ADT And 1 Unbooked Proposal Only
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CPx Air Remarks Are Written    Alternate Fare 1
+    Verify CPx TAir Remarks Are Written    Alternate Fare 1
+    Verify Specific Line Is Written In The PNR    RMZ CONF*SEND TO MAIL GSBDD-GUF-VAC-BILLETERIE.RESP.SPAC@INT RADF.GOUV.FR    \    true
+    Verify Specific Line Is Written In The PNR    RM *0702*GSBDD-GUF-VAC-BILLETERIE.RESP.SPAC@INTRADF.GOUV.FR    \    true
+
+[AB] Verify That CPx AIR Remark Line Is Updated In The PNR With 1ADT And 1 Booked Fare
+    [Tags]    fr    us3340    us3348
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGLHR/AAF    SS1Y1    5    5
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1    5    10
+    Create Amadeus Offer Remove Flight    S5
+    Verify Amadeus Offer Is Created
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    CW - Tarif Net CWT Classe Affaire    3
+    Click Fare Tab    Alternate Fare 2
+    Set Alternate Fare Airline    AF
+    Select Fare Restriction    2
+    Convert Fare Values To Mindef CPx Air Remarks    Alternate Fare 2
+    Convert Fare Values To Mindef CPx TAir Remarks    Alternate Fare 2    2
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Delivery
+    Click Finish PNR    Simultaneous Change Handling For 1ADT And 1 Booked Fare
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For 1ADT And 1 Booked Fare
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CPx Air Remarks Are Written    Alternate Fare 1
+    Verify CPx TAir Remarks Are Written    Alternate Fare 1
+
+[AB] Verify That CPx AIR Remark Line Is Removed In The PNR With 1ADT When Offer Is Removed In Express
+    [Tags]    fr    us3340    us3348
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Amadeus Offer    XE1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Recap
+    Populate Fare Tab With Default Values    Fare 1
+    Remove Fare Tab    Alternate Fare 2
+    Remove Fare Tab    Alternate Fare 1
+    Comment    Click Panel    Delivery
+    Click Finish PNR    Simultaneous Change Handling For 1ADT When Offer Is Removed In Express
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For 1ADT When Offer Is Removed In Express
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify CP Mindef Remarks Is Not Written    Alternate Fare 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Wings Remarks Are Correct For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Added
+    [Tags]    fr    us4752    us4612    us4842    us4233    us4165
+    ...    us5489
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    5
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGLHR/AAF    SS9Y1    6    7
+    Comment    Enter GDS Command    ACR5    SS9Y1
+    Book Flight X Months From Now With Requested Airline Without Pricing    LHRCDG/AAF    SS9Y1    6    14
+    Book Flight X Months From Now With Requested Airline Without Pricing    FRACDG/ALH    SS9Y1    6
+    Comment    Enter GDS Command    ACR5    SS9Y1
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGFRA/ALH    SS9Y1    7
+    GDS Pricing Per Pax Type    S11    P1,3-7,9    P2,8    P5
+    GDS Pricing Per Pax Type    S12-13    P1,3-7,9    P2,8    P5
+    GDS Pricing Per Pax Type    S14    P1,3-7,9    P2,8    P5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify That Pspt & Visa And APIS/SFPD Panels Are Not Shown For Mindef
+    Click Panel    Air Fare
+    Verify Fare Tabs For Multi Typologies Passengers Are Correct    Fare 1    Fare 2    Fare 3
+    Populate Fare Tab For Mindef    Fare 1    ABN - ABONNEMENT    CID - CLASSE IMPERATIVE DEMANDEE    YC - Tarif Client Classe Economique    Fully Flexible
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 1    Fare 2    Fare 3
+    Get Mindef Details From Fare Tab    Fare 1    P1,3-7,9    S11    T1
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P2,8    S11    T2
+    Populate Fare Tab With Default Values    Fare 3    true    true
+    Get Mindef Details From Fare Tab    Fare 3    INF/P5    S11    T3
+    Populate Fare Tab For Mindef    Fare 4    CWT - NEGOCIATION CWT    DER - DEROGATION CLIENT    YF - Plein Tarif Classe Economique    Semi Flexible    SANS FRAIS
+    ...    NON    1J    7J
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 4    Fare 5    Fare 6
+    Get Mindef Details From Fare Tab    Fare 4    P1,3-7,9    S12-13    T4
+    Populate Fare Tab With Default Values    Fare 5    true    true
+    Get Mindef Details From Fare Tab    Fare 5    P2,8    S12-13    T5
+    Populate Fare Tab With Default Values    Fare 6    true    true
+    Get Mindef Details From Fare Tab    Fare 6    INF/P5    S12-13    T6
+    Populate Fare Tab For Mindef    Fare 7    ABN - ABONNEMENT    CID - CLASSE IMPERATIVE DEMANDEE    YC - Tarif Client Classe Economique    Non Flexible
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 7    Fare 8    Fare 9
+    Get Mindef Details From Fare Tab    Fare 7    P1,3-7,9    S14    T7
+    Populate Fare Tab With Default Values    Fare 8    true    true
+    Get Mindef Details From Fare Tab    Fare 8    P2,8    S14    T8
+    Populate Fare Tab With Default Values    Fare 9    true    true
+    Get Mindef Details From Fare Tab    Fare 9    INF/P5    S14    T9
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Added
+    Execute Simultaneous Change Handling    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Added
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Mindef Remarks for Air Booked PNR    Fare 1
+    Verify Mindef Remarks for Air Booked PNR    Fare 2
+    Verify Mindef Remarks for Air Booked PNR    Fare 3
+    Verify Mindef Remarks for Air Booked PNR    Fare 4
+    Verify Mindef Remarks for Air Booked PNR    Fare 5
+    Verify Mindef Remarks for Air Booked PNR    Fare 6
+    Verify Mindef Remarks for Air Booked PNR    Fare 7
+    Verify Mindef Remarks for Air Booked PNR    Fare 8
+    Verify Mindef Remarks for Air Booked PNR    Fare 9
+    [Teardown]
+
+[AB] Verify That Wings Remarks Are Correct For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Updated
+    [Tags]    fr    us4752    us4612    us4842    us5489    us3575
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    GDS Pricing Per Pax Type    S11,14    P1,3-7,9    P2,8    P5
+    GDS Pricing Per Pax Type    S12    P1,3-7,9    P2,8    P5
+    GDS Pricing Per Pax Type    S13    P1,3-7,9    P2,8    P5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify That Pspt & Visa And APIS/SFPD Panels Are Not Shown For Mindef
+    Populate Fare Tab For Mindef    Fare 1    GRP - GROUPE    HPD - HORAIRE OU DATEPRECIS DEMANDE    YC - Tarif Client Classe Economique    Semi Flexible    NOUS CONSULTER
+    ...    NON    1J    7J
+    Get Mindef Details From Fare Tab    Fare 1    P1,3-7,9    S11,14    \    True
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P2,8    S11,14    \    True
+    Populate Fare Tab With Default Values    Fare 3    true    true
+    Get Mindef Details From Fare Tab    Fare 3    INF/P5    S11,14    \    True
+    Populate Fare Tab For Mindef    Fare 4    SPE - TARIFS SPECIAUX    VSC - VOYAGE SANS CONTRAINTE DEMANDE    FD - Tarif Reduit Premiere    Semi Flexible    NOUS CONSULTER
+    ...    NOUS CONSULTER    1J    7J
+    Get Mindef Details From Fare Tab    Fare 4    P1,3-7,9    S12    \    True
+    Populate Fare Tab With Default Values    Fare 5    true    true
+    Get Mindef Details From Fare Tab    Fare 5    P2,8    S12    \    True
+    Populate Fare Tab With Default Values    Fare 6    true    true
+    Get Mindef Details From Fare Tab    Fare 6    INF/P5    S12    \    True
+    Populate Fare Tab For Mindef    Fare 7    ACA - ACHAT CARTE OU COUPONS    CPD - COMPAGNIE PRECISE DEMANDEE    YD - Tarif Reduit Classe Economique    Semi Flexible    SANS FRAIS
+    ...    NON    1J    7J
+    Get Mindef Details From Fare Tab    Fare 7    P1,3-7,9    S13    \    True
+    Populate Fare Tab With Default Values    Fare 8    true    true
+    Get Mindef Details From Fare Tab    Fare 8    P2,8    S13    \    True
+    Populate Fare Tab With Default Values    Fare 9    true    true
+    Get Mindef Details From Fare Tab    Fare 9    INF/P5    S13    \    True
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Updated
+    Execute Simultaneous Change Handling    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Updated
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Mindef Remarks for Air Booked PNR    Fare 1
+    Verify Mindef Remarks for Air Booked PNR    Fare 2
+    Verify Mindef Remarks for Air Booked PNR    Fare 3
+    Verify Mindef Remarks for Air Booked PNR    Fare 4
+    Verify Mindef Remarks for Air Booked PNR    Fare 5
+    Verify Mindef Remarks for Air Booked PNR    Fare 6
+    Verify Mindef Remarks for Air Booked PNR    Fare 7
+    Verify Mindef Remarks for Air Booked PNR    Fare 8
+    Verify Mindef Remarks for Air Booked PNR    Fare 9
+
+[AB] Verify That Wings Remarks Are Correct For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Retained
+    [Tags]    fr    us4752    us4612    us4842    us5489    us3575
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify That Pspt & Visa And APIS/SFPD Panels Are Not Shown For Mindef
+    Get Mindef Details From Fare Tab    Fare 1    P1,3-7,9    S11,14    \    True
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P2,8    S11,14    \    True
+    Populate Fare Tab With Default Values    Fare 3    true    true
+    Get Mindef Details From Fare Tab    Fare 3    INF/P5    S11,14    \    True
+    Get Mindef Details From Fare Tab    Fare 4    P1,3-7,9    S12    \    True
+    Populate Fare Tab With Default Values    Fare 5    true    true
+    Get Mindef Details From Fare Tab    Fare 5    P2,8    S12    \    True
+    Populate Fare Tab With Default Values    Fare 6    true    true
+    Get Mindef Details From Fare Tab    Fare 6    INF/P5    S12    \    True
+    Get Mindef Details From Fare Tab    Fare 7    P1,3-7,9    S13    \    True
+    Populate Fare Tab With Default Values    Fare 8    true    true
+    Get Mindef Details From Fare Tab    Fare 8    P2,8    S13    \    True
+    Populate Fare Tab With Default Values    Fare 9    true    true
+    Get Mindef Details From Fare Tab    Fare 9    INF/P5    S13    \    True
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Retained
+    Execute Simultaneous Change Handling    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Retained
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Mindef Remarks for Air Booked PNR    Fare 1
+    Verify Mindef Remarks for Air Booked PNR    Fare 2
+    Verify Mindef Remarks for Air Booked PNR    Fare 3
+    Verify Mindef Remarks for Air Booked PNR    Fare 4
+    Verify Mindef Remarks for Air Booked PNR    Fare 5
+    Verify Mindef Remarks for Air Booked PNR    Fare 6
+    Verify Mindef Remarks for Air Booked PNR    Fare 7
+    Verify Mindef Remarks for Air Booked PNR    Fare 8
+    Verify Mindef Remarks for Air Booked PNR    Fare 9
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Wings Remarks Are Correct For Multi Typologies Passengers (ADT, CHD) When Unbooked Fare Is Added
+    [Tags]    fr    us4752    us4612    us4842    us5489
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    4
+    Book Flight X Months From Now Without Pricing    ORYMRS    SS2Y2
+    GDS Pricing Per Pax Type    S4    P2    0    0
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now Without Pricing    ORYBOD    SS2Y2    7
+    Enter GDS Command    ACR5    SS2Y2
+    Book Flight X Months From Now Without Pricing    BODORY    SS2Y2    7    7
+    Comment    Create Amadeus Offer Remove Flight    S6
+    Comment    Create Amadeus Offer Remove Flight    S5
+    Enter GDS Command    FXD/S6    OFS/A1
+    Enter GDS Command    FXD/S5    OFS/A1
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tabs For Multi Typologies Passengers Are Correct    Fare 1    Fare 2
+    Populate Fare Tab For Mindef    Fare 1    TAR - CONSTRUCTION TARIFAIRE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Semi Flexible    NOUS CONSULTER
+    ...    NON    1J    7J
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 1    Fare 2
+    Get Mindef Details From Fare Tab    Fare 1    P2    S4
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P1    S4
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD) When Unbooked Fare Is Added
+    Execute Simultaneous Change Handling    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD) When Unbooked Fare Is Added
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Mindef Remarks for Air Booked PNR    Fare 1
+    Verify Mindef Remarks for Air Booked PNR    Fare 2
+
+[AB] Verify That Wings Remarks Are Correct For Multi Typologies Passengers (ADT, CHD) When Manual fare Is Added
+    [Tags]    fr    us4752    us4612    us4842    us5489
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    RTOF
+    Enter GDS Command    XE1
+    Book Flight X Months From Now With Requested Airline Without Pricing    LYSCDG/AAF    SS2Y2    6    7
+    GDS Pricing Per Pax Type    S5    P2    0    0
+    GDS Pricing Per Pax Type    S5    P1    0    0
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab For Mindef    Fare 1    TAR - CONSTRUCTION TARIFAIRE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Semi Flexible    NOUS CONSULTER
+    ...    NOUS CONSULTER    1J    1M
+    Get Mindef Details From Fare Tab    Fare 1    P2    S4    \    True
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P1    S4    \    True
+    Populate Fare Tab For Mindef    Fare 3    TAR - CONSTRUCTION TARIFAIRE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Semi Flexible    50 EUR ET REAJUST
+    ...    NOUS CONSULTER    2J    3M
+    Get Mindef Details From Fare Tab    Fare 3    P2    S5    \    True
+    Populate Fare Tab With Default Values    Fare 4    true    true
+    Get Mindef Details From Fare Tab    Fare 4    P1    S5    \    True
+    Remove Fare Tab    Alternate Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Add Mindef Manual Alternate And Populate Details    Alternate Fare 2    93,33    Y1    YF - Plein Tarif Classe Economique    1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD) When Manual fare Is Added
+    Execute Simultaneous Change Handling    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD) When Manual fare Is Added
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Mindef Remarks for Air Booked PNR    Fare 1
+    Verify Mindef Remarks for Air Booked PNR    Fare 2
+    Verify Mindef Remarks for Air Booked PNR    Fare 3
+    Verify Mindef Remarks for Air Booked PNR    Fare 4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Wings Remarks Are Correct For Multi Typologies Passengers (ADT, INF)
+    [Tags]    fr    us4752    us4612    us4842    us5489
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    3
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    FRACDG/ALH    SS1Y1    6
+    Comment    Enter GDS Command    ACR5    SS1Y1
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGFRA/ALH    SS1Y1    6    7
+    Book Flight X Months From Now With Requested Airline Without Pricing    FRACDG/ALH    SS1Y1    7
+    Comment    Enter GDS Command    ACR5    SS1Y1
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGFRA/ALH    SS1Y1    7    7
+    GDS Pricing Per Pax Type    S3-4    P1    0    P1
+    GDS Pricing Per Pax Type    S5-6    P1    0    P1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab For Mindef    Fare 1    GRP - GROUPE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Non Flexible
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 1    Fare 2
+    Get Mindef Details From Fare Tab    Fare 1    P1    S3-4
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P1    S3-4
+    Populate Fare Tab For Mindef    Fare 3    GRP - GROUPE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Non Flexible
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 3    Fare 4
+    Get Mindef Details From Fare Tab    Fare 3    P1    S5-6
+    Populate Fare Tab With Default Values    Fare 4    true    true
+    Get Mindef Details From Fare Tab    Fare 4    P1    S5-6
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, INF)
+    Execute Simultaneous Change Handling    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, INF)
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Mindef Remarks for Air Booked PNR For 1 PAX    Fare 1    S3-4
+    Verify Mindef Remarks for Air Booked PNR For 1 PAX    Fare 2    S3-4
+    Verify Mindef Remarks for Air Booked PNR For 1 PAX    Fare 3    S5-6
+    Verify Mindef Remarks for Air Booked PNR For 1 PAX    Fare 4    S5-6
+
+[AB] Verify That Wings Remarks Are Correct For Multi Typologies Passengers (ADT, INF) When Removing One Of The Fares
+    [Tags]    fr    us4752    us4612    us4842    us5489
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3-4
+    Click Read Booking
+    Populate Fare Tab For Mindef    Fare 1    GRP - GROUPE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Fully Flexible
+    Get Mindef Details From Fare Tab    Fare 1    P1    S3-4    \    True
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P1    S3-4    \    True
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, INF) When Removing One Of The Fares
+    Execute Simultaneous Change Handling    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, INF) When Removing One Of The Fares
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Mindef Remarks for Air Booked PNR For 1 PAX    Fare 1    S3-4
+    Verify Mindef Remarks for Air Booked PNR For 1 PAX    Fare 2    S3-4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify Alternate Rail Tab For Single Alternate Rail Fares
+    [Tags]    fr    emea    us3626    us3744    DE6870
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    1
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Alternate Rail Button    Fare 1
+    Verify Rail Tab Is Added    Contre proposition Rail 1
+    Add Alternate Rail Details    1    Contre proposition Rail 1
+    Get Counter Proposal Rail Details    Contre proposition Rail 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling for Alternate Rail Tab For Single Alternate Rail Fares
+    Execute Simultaneous Change Handling    Simultaneous Change Handling for Alternate Rail Tab For Single Alternate Rail Fares
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTR
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 1
+
+[AB] Verify Alternate Rail Tab For Single Alternate Rail Fare
+    [Tags]    fr    emea    us3626    us3744    DE6870
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Contre proposition Rail 1
+    Verify Proposition Rail Details Is Retained    Contre proposition Rail 1
+    Click Remove Details And Verify If Details Are Removed    Contre proposition Rail 1
+    Add Alternate Rail Details    2    Contre proposition Rail 1
+    Get Counter Proposal Rail Details    Contre proposition Rail 1
+    Click Add Alternate Rail Button    Contre proposition Rail 1
+    Verify Rail Tab Is Added    Contre proposition Rail 2
+    Add Alternate Rail Details    2    Contre proposition Rail 2
+    Get Counter Proposal Rail Details    Contre proposition Rail 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For AB Verify Alternate Rail Tab For Single Alternate Rail Fare
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For AB Verify Alternate Rail Tab For Single Alternate Rail Fare
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTR
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 1
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 1
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 2
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify Alternate Rail Remark For Multiple Alternate Rail Fares
+    [Tags]    fr    emea    us3626    us3744    DE6870    r
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    5
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS9Y1    5
+    GDS Pricing Per Pax Type    S11    P1,3-7,9    P2,8    P5
+    Comment    Create Amadeus Offer For Multiple Passangers To Verify Alternate Rail Remark    ORYBOD    SS9Y2    FXX/S12    5    5
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD    SS9Y2    5    5
+    Enter GDS Command    FXD/S12    OFS/A1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Alternate Rail Button    Alternate Fare 1
+    Verify Rail Tab Is Added    Contre proposition Rail 1
+    Add Alternate Rail Details    2    Contre proposition Rail 1
+    Get Counter Proposal Rail Details    Contre proposition Rail 1
+    Click Add Alternate Rail Button    Contre proposition Rail 1
+    Verify Rail Tab Is Added    Contre proposition Rail 2
+    Add Alternate Rail Details    1    Contre proposition Rail 2
+    Get Counter Proposal Rail Details    Contre proposition Rail 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Recap
+    Click Finish PNR    Simultaneous Change Handling For AB Verify Alternate Rail Remark For Multiple Alternate Rail Fares
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For AB Verify Alternate Rail Remark For Multiple Alternate Rail Fares
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTR
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 1
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 1
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 2
+
+[AB] Verify Alternate Rail Tab For Multiple Alternate Rail Fares
+    [Tags]    fr    emea    us3626    us3744    DE6870
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Contre proposition Rail 1
+    Verify Proposition Rail Details Is Retained    Contre proposition Rail 1
+    Click Remove Details And Verify If Details Are Removed    Contre proposition Rail 1
+    Add Alternate Rail Details    1    Contre proposition Rail 1
+    Get Counter Proposal Rail Details    Contre proposition Rail 1
+    Click Fare Tab    Contre proposition Rail 2
+    Verify Proposition Rail Details Is Retained    Contre proposition Rail 2
+    Populate All Panels (Except Given Panels If Any)
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For AB Verify Alternate Rail Tab for Multiple Alternate Rail Fares
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For AB Verify Alternate Rail Tab for Multiple Alternate Rail Fares
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTR
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 1
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 1
+    Verify Counter Proposition Rail Remarks Are Written    Contre proposition Rail 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Mindef Air Booked Transaction Should Allow Selection Of Workflow PRECO P
+    [Tags]    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    1
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD/AAF    SS1Y1    5
+    Book Flight X Months From Now With Requested Airline Without Pricing    BODORY/AAF    SS1Y1    5    7
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1    6    7
+    Comment    Create Amadeus Offer Remove Flight    S5
+    Enter GDS Command    FXD/S5    OFS/A1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    \    \    BOD
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Add Alternate Fare
+    Populate Alternate Fare Details Using Copy Air Button    YTEST    125,55    YC - Tarif Client Classe Economique
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Recap
+    Select Mindef Workflow Value    C : Confirmation
+    Verify Mindef No Unbooked Fare Error Is Shown In Recap Panel
+    Select Mindef Workflow Value    P : Proposition
+    Click Finish PNR    Simultaneous Change Handling For NB Verify That Mindef Air Booked Transaction Should Allow Selection Of Workflow PRECO P
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For NB Verify That Mindef Air Booked Transaction Should Allow Selection Of Workflow PRECO P
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify PRECO Remark Written To PNR    RM PRECO/P 1/1
+
+[AB] Verify That Mindef Without Air Booked Proposal Should Not Able To Process Finish PNR And Returns An Error
+    [Tags]    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3-4    TTE/ALL
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Recap
+    Click Panel    Air Fare
+    Verify Fare Tab Is Not Visible    Fare 1
+    Verify Fare Tab Is Not Visible    Fare 2
+    Verify Fare Tab Is Visible    Alternate Fare 1
+    Verify Fare Tab Is Visible    Alternate Fare 2
+    Click Alternate Rail Button    Alternate Fare 1
+    Verify Rail Tab Is Added    Contre proposition Rail 1
+    Add Alternate Rail Details    1    Contre proposition Rail 1
+    Set MaxieIncidentID
+    Select Mindef Workflow Value    P : Proposition
+    Verify Mindef No Booked Fare Error Is Shown In Recap Panel
+    Select Mindef Workflow Value    C : Confirmation
+    Verify Mindef No Booked Fare Error Is Shown In Recap Panel
+    Remove MaxieIncidentID
+    Click Panel    Air Fare
+    Enter GDS Command    IR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Set Alternate Fare Airline    AF
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For AB Verify That Mindef Without Air Booked Proposal Should Not Able To Process Finish PNR And Returns An Error
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For AB Verify That Mindef Without Air Booked Proposal Should Not Able To Process Finish PNR And Returns An Error
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify PRECO Remark Written To PNR    RM PRECO/P 1/1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Mindef Air Booked Transaction, 1 Air Booked Should Allow Workflow C To Proceed With Recap Panel
+    [Tags]    fr    us2896
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    5
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Mindef Amend Booking 9 Pax Multiple Air And Booked Fare Only
+    Execute Simultaneous Change Handling    Mindef Amend Booking 9 Pax Multiple Air And Booked Fare Only
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify PRECO Remark Written To PNR    RM PRECO/C 1/1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Mindef Air Booked Transaction, 1 Amadeus Offer, 1 Air Unbooked Should Only Allow Workflow P To Proceed With Recap Panel
+    [Tags]    fr    us2896
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    5
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Mindef Amend Booking 9 Pax Multiple Air 1 Amadeus Offer 1 Manual Alternate Fare
+    Execute Simultaneous Change Handling    Mindef Amend Booking 9 Pax Multiple Air 1 Amadeus Offer 1 Manual Alternate Fare
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify PRECO Remark Written To PNR    RM PRECO/P 1/1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That OMT-DONTQUEUE Remark Is Written And PNR Is Queued To QE/PARWL210H/16C70/ For PRECO Workflow E And Autoticketer Delivery Method Is Selected
+    [Tags]    fr    us3370    DE6941
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    5
+    Add PRECO Remark To PNR    RM PRECO/E 1/1
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS9Y1    7
+    GDS Pricing Per Pax Type    S11    P1,3-7,9    P2,8    P5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Select Delivery Method    Auto Ticket
+    Set Ticketing Date    0
+    Comment    Select Do Not Send To OBT
+    Verify Do Not Send To OBT Checkbox Is Ticked
+    Click Panel    Recap
+    Verify Default Value For Confirmation Workflow Is Correct    E : Emission
+    Click Finish PNR    Simultaneous Change Handling For NB Verify That OMT-DONTQUEUE Remark Is Written And PNR Is Queued To QE/PARWL210H/16C70/ For PRECO Workflow E And Autoticketer Delivery Method Is Selected
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For NB Verify That OMT-DONTQUEUE Remark Is Written And PNR Is Queued To QE/PARWL210H/16C70/ For PRECO Workflow E And Autoticketer Delivery Method Is Selected
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTR
+    Verify Specific Line Is Written In The PNR    RM OMT-DONTQUEUE
+    Verify Queue Remark Is Written    PARWL210G    98    7    2
+    Comment    Verify Queue Remark Is Written    PARWL210G    70    4    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That OMT-DONTQUEUE Remark Is NOT Written And PNR Is NOT Queued To QE/PARWL210G/98C7/ For PRECO Workflow E And NON-autoticketer Delivery Method Is Selected
+    [Tags]    fr    us3370    DE6941
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    4
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGLHR/AAF    SS2Y1    7
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Add PRECO Remark To PNR    RM PRECO/C 1/1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Select Delivery Method    Auto Ticket
+    Set Ticketing Date    0
+    Verify Do Not Send To OBT Checkbox Is Ticked
+    Select Delivery Method    Amadeus edited TKOK
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Click Panel    Recap
+    Select Mindef Workflow Value    E : Emission
+    Click Finish PNR    Simultaneous Change Handling For AB Verify That OMT-DONTQUEUE Remark Is NOT Written And PNR Is NOT Queued To QE/PARWL210G/98C7/ For PRECO Workflow E And NON-autoticketer Delivery Method Is Selected    30
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For AB Verify That OMT-DONTQUEUE Remark Is NOT Written And PNR Is NOT Queued To QE/PARWL210G/98C7/ For PRECO Workflow E And NON-autoticketer Delivery Method Is Selected
+    Verify Queue Remark Is Not Written    PARWL210G    98    7
+    Retrieve PNR Details From Amadeus    ${current_pnr}    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    OMT-DONTQUEUE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    [Tags]    fr    emea    us4886
+    Open Power Express And Retrieve Profile    ${version}    ${syex_env}    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    1
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD/AAF    SS1Y1    6
+    Book Flight X Months From Now With Requested Airline Without Pricing    BODORY/AAF    SS1Y1    6    7
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1    7    7
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Recap
+    Select Mindef Workflow Value    C : Confirmation
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    1st Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    Execute Simultaneous Change Handling    1st Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify PRECO Remark Written To PNR    RM PRECO/C 1/1
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Recap
+    Verify Default Value In Proposition Box    O : Annulation avant émission
+    Click Finish PNR    2nd Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    Execute Simultaneous Change Handling    2nd Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    Click Panel    Recap
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify PRECO Remark Written To PNR    RM PRECO/O 1/1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[CB] Verify That Proposition Box Defaults To O When PRECO Line Is P In Mindef PNR
+    [Tags]    fr    emea    us4886
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    1
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD/AAF    SS1Y1    6
+    Book Flight X Months From Now With Requested Airline Without Pricing    BODORY/AAF    SS1Y1    6    7
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1    7    7
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Recap
+    Select Mindef Workflow Value    P : Proposition
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Simultaneous Change Handling For Verify That Proposition Box Defaults To O When PRECO Line Is P In Mindef PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Verify That Proposition Box Defaults To O When PRECO Line Is P In Mindef PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify PRECO Remark Written To PNR    RM PRECO/P 1/1
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Recap
+    Verify Default Value In Proposition Box    O : Annulation avant émission
+    Click Finish PNR    Simultaneous Change Handling For Verify That Proposition Box Defaults To O When PRECO Line Is P In Mindef PNR - CB
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Verify That Proposition Box Defaults To O When PRECO Line Is P In Mindef PNR - CB
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify PRECO Remark Written To PNR    RM PRECO/O 1/1
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Recap
+    Click Panel    Recap
+    Verify Default Value In Proposition Box    P : Proposition
+    Verify Workflow Selections Should Contain    P : Proposition    C : Confirmation
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+    [Tags]    fr    emea    us4886
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    1
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD/AAF    SS1Y1    6
+    Book Flight X Months From Now With Requested Airline Without Pricing    BODORY/AAF    SS1Y1    6    7
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1    7    7
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Recap
+    Select Mindef Workflow Value    C : Confirmation
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    1st AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+    Execute Simultaneous Change Handling    1st AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify PRECO Remark Written To PNR    RM PRECO/C 1/1
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Recap
+    Select Mindef Workflow Value    E : Emission
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    2nd AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+    Execute Simultaneous Change Handling    2nd AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify PRECO Remark Written To PNR    RM PRECO/E 1/1
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Recap
+    Verify Default Value In Proposition Box    O : Annulation avant émission
+    Click Finish PNR    3rd AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+    Execute Simultaneous Change Handling    3rd AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][AB] Verify That SSR Line Is Written For Single Pax in Mindef With Complete RMP Information In The Remarks
+    [Tags]    fr    US5545    US6311    US6235
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef SSLT PNR In Amadeus Screen    PARWL210G    7
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Verify Delivery Panel Emails    GSBDD-GUF-VAC-BILLETERIE.RESP.SPAC@INTRADF.GOUV.FR
+    Populate Delivery Panel With Default Values Excluding Email Address
+    Click Finish PNR    Simultaneous For SSR Line Is Written For Single Pax in Mindef With Complete RMP Information In The Remarks
+    Execute Simultaneous Change Handling    Simultaneous For SSR Line Is Written For Single Pax in Mindef With Complete RMP Information In The Remarks
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DOCS UA HK1 P/FR/1234566/FR/28APR75/F/12DEC20/POLO /LISA/MIDNAMEONE/P1    \    true
+    Verify Specific Line Is Written In The PNR    SSR DOCS UA HK1 P/FR/654321/FR/28APR70/M/12MAR21/POLO /MARCO/MIDNAMETWO/P2    \    true
+    #For US6235
+    Retrieve PNR Details From Amadeus    command=RTR/0112
+    Verify Specific Line Is Written In The PNR    RM *0112*GSBDD-GUF-VAC-BILLETERIE.RESP.SPAC@INTRADF.GOUV.FR    \    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][AB] Verify That SSR Line Is Written For Multi Pax in Mindef With Complete RMP Information In The Remarks
+    [Tags]    fr    US5545
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef SSLT PNR In Amadeus Screen    PARWL210G    4
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR    Simultaneous For SSR Line Is Written For Single Pax in Mindef With Complete RMP Information In The Remarks
+    Execute Simultaneous Change Handling    Simultaneous For SSR Line Is Written For Single Pax in Mindef With Complete RMP Information In The Remarks
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DOCS UA HK1 P/FR/1234566/FR/28APR75/F/12DEC20/POLO /LISA/P1    \    true
+    Verify Specific Line Is Written In The PNR    SSR DOCS UA HK1 P/FR/654321/FR/28APR70/M/12MAR21/POLO /MARCO/P2    \    true
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Recap
+    Click Finish PNR    2nd Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    Execute Simultaneous Change Handling    2nd Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][AB] Verify That If RMP line Is Updated The SSR Line Is Also Updated During Second Amend Booking
+    [Tags]    fr    US5545    US6311
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef SSLT PNR In Amadeus Screen    PARWL210G    7
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Modify PNR Remark    CO-FR\/NR-1234566\/EX-12DEC20\/CI-FR\/P1    CO-FR/NR-1234566/EX-12DEC25/CI-FR/P1
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR    Simultaneous Change handle RMP line Is Updated The SSR Line Is Also Updated During Second Amend Booking
+    Execute Simultaneous Change Handling    Simultaneous Change handle RMP line Is Updated The SSR Line Is Also Updated During Second Amend Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DOCS UA HK1 P/FR/1234566/FR/28APR75/F/12DEC25/POLO /LISA/MIDNAME1/P1    \    true
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Recap
+    Click Finish PNR    2nd Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    Execute Simultaneous Change Handling    2nd Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][AB] Verify That NO SSR Line Is Written For Mindef If No RMP Information Is In The Remarks
+    [Tags]    fr    US5545
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef SSLT PNR In Amadeus Screen    PARWL210G    7
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Remove PNR Remark    NAME-LISA/MIDNAMEONE/POLO/P1
+    Remove PNR Remark    DOB-28APR75/GENDER-F/P1
+    Remove PNR Remark    CO-FR/NR-1234566/EX-12DEC20/CI-FR/P1
+    Remove PNR Remark    NAME-MARCO/MIDNAMETWO/POLO/P2
+    Remove PNR Remark    DOB-28APR70/GENDER-M/P2
+    Remove PNR Remark    CO-FR/NR-654321/EX-12MAR21/CI-FR/P2
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR    Simultaneous Change handle No SSR Lines Is Written for SSLT
+    Execute Simultaneous Change Handling    Simultaneous Change handle No SSR Lines Is Written for SSLT
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Remark Is Not Written In The PNR    SSR DOCS UA HK1 P/FR/1234566/FR/28APR75/F/12DEC20/POLO/LISA/MIDNAMEONE    \    true
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Recap
+    Click Finish PNR    2nd Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    Execute Simultaneous Change Handling    2nd Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][AB] Verify That SSR Lines Are Written Correctly For RMP Lines With Or Without Passport Info
+    [Tags]    US6311    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef SSLT PNR In Amadeus Screen    PARWL210G    7
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Remove PNR Remark    CO-FR/NR-654321/EX-12MAR21/CI-FR/P2
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR    Simultaneous For SSR Line Written But One RMP Line Removed
+    Execute Simultaneous Change Handling    Simultaneous For SSR Line Written But One RMP Line Removed
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DOCS UA HK1 P/FR/1234566/FR/28APR75/F/12DEC20/POLO /LISA/MIDNAMEONE/P1    \    true
+    Verify Specific Line Is Written In The PNR    SSR DOCS UA HK1 ////28APR70/M//POLO/MARCO/MIDNAMETWO/P2    \    true
+    Verify Specific Line Is NOT Written In The PNR    SSR DOCS UA HK1 P/FR/654321/FR/28APR70/M/12MAR21/POLO /MARCO/MIDNAMETWO/P2    \    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA][AB] Verify That SSR Lines Are Written Correctly For RMP Lines Without Passport Info
+    [Tags]    US6311    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef SSLT PNR In Amadeus Screen    PARWL210G    7
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Remove PNR Remark    CO-FR/NR-654321/EX-12MAR21/CI-FR/P2
+    Remove PNR Remark    CO-FR/NR-1234566/EX-12DEC20/CI-FR/P1
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR    Simultaneous For SSR Line Written But Two RMP Lines Removed
+    Execute Simultaneous Change Handling    Simultaneous For SSR Line Written But Two RMP Lines Removed
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DOCS UA HK1 ////28APR75/F//POLO/LISA/MIDNAMEONE/P1    \    true
+    Verify Specific Line Is Written In The PNR    SSR DOCS UA HK1 ////28APR70/M//POLO/MARCO/MIDNAMETWO/P2    \    true
+    Verify Specific Line Is NOT Written In The PNR    SSR DOCS UA HK1 P/FR/1234566/FR/28APR75/F/12DEC20/POLO/LISA    \    true
+    Verify Specific Line Is NOT Written In The PNR    SSR DOCS UA HK1 P/FR/654321/FR/28APR70/M/12MAR21/POLO/MARCO    \    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That RM Remarks Are Written Correctly For Single Segment Of Light Ticketing PNRs
+    [Tags]    fr    us6233
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Create Mindef PNR In Amadeus Screen    PARWL210G    1
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now Without Pricing    ORYNCE/AU2    SS1Y1    5
+    Enter Command In Native GDS    FXP    FXT1/P1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    NON FLEXIBLE
+    Set Comment Value    NON RESERVE-MERCI CONFIRMER SI BAGAGE ET SPEEDY BOARDING
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous handling For RM Remarks Are Written Correctly For Single Segment Of Light Ticketing PNRs
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RM COMMENT1 BILLET U2 BILLET NON MODIFIABLE ET NON REMBOURSABLE-NON RESERVE-MERCI CONFIRMER SI BAGAGE ET SPEEDY BOARDING/S4    \    true
+
+[QA] Verify That RM Remarks Are Written Correctly For Single Segment Of Light Ticketing PNRs
+    [Tags]    fr    us6233
+    Retrieve PNR    ${current_pnr}
+    Enter Command In Native GDS    RMM ONHOLD-EN ATTENTE DE VALIDATION    RIR ON HOLD:EN ATTENTE DE VALIDATION    RFCWTPTEST
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Wait Until Progress Bar Is Completed
+    Verify Quick Amend Is Visible
+    Click Quick Amend
+    Select Delivery Method Using Default Value
+    Set Email Address In Delivery Panel
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Finish PNR    Simultaneous handling For RM Remarks Are Written Correctly For Single Segment Of Light Ticketing PNRs
+    Execute Simultaneous Change Handling    Simultaneous handling For RM Remarks Are Written Correctly For Single Segment Of Light Ticketing PNRs
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RM COMMENT1 BILLET U2 BILLET NON MODIFIABLE ET NON REMBOURSABLE-NON RESERVE-MERCI CONFIRMER SI BAGAGE ET SPEEDY BOARDING/S3 is complete    \    true
+    Enter GDS Command    XE4    RFCWTPTEST    ER
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+1st AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+    Retrieve PNR    ${current_pnr}
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD/AAF    SS1Y1    6
+    Book Flight X Months From Now With Requested Airline Without Pricing    BODORY/AAF    SS1Y1    6    7
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1    7    7
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Recap
+    Select Mindef Workflow Value    C : Confirmation
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    1st AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+
+1st Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    Retrieve PNR    ${current_pnr}
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD/AAF    SS1Y1    6
+    Book Flight X Months From Now With Requested Airline Without Pricing    BODORY/AAF    SS1Y1    6    7
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1    7    7
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Recap
+    Select Mindef Workflow Value    C : Confirmation
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    1st Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+
+2nd AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Recap
+    Select Mindef Workflow Value    E : Emission
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    2nd AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+
+2nd Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+    Click Cancel Booking
+    Click Panel    Recap
+    Verify Default Value In Proposition Box    O : Annulation avant émission
+    Click Finish PNR    2nd Simultaneous Change Handling For CB Verify That Proposition Box Defaults To O When PRECO Line Is C In Mindef PNR
+
+3rd AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Recap
+    Verify Default Value In Proposition Box    O : Annulation avant émission
+    Click Finish PNR    3rd AB Verify That Proposition Box Defaults To O When PRECO Line Is E, And Has No FA Lines In Mindef PNR
+
+Add Mindef Manual Alternate And Populate Details
+    [Arguments]    ${fare_tab_name}    ${total_fare}    ${farebasis}    ${fare_class}    ${fare_restriction}
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Select Alternate Fare Class Code    ${fare_class}
+    Set Alternate Fare Fare Basis    ${farebasis}
+    Select Fare Restriction    ${fare_restriction}
+    Set Alternate Fare Amount    ${total_fare}
+    Convert Fare Values To Mindef CPx Air Remarks    ${fare_tab_name}
+    Convert Fare Values To Mindef CPx TAir Remarks    ${fare_tab_name}    ${fare_restriction}
+    [Teardown]    Take Screenshot
+
+Add PRECO Remark To PNR
+    [Arguments]    ${remark}
+    Enter GDS Command    ${remark}
+
+Mindef Amend Booking 9 Pax Multiple Air 1 Amadeus Offer 1 Manual Alternate Fare
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Add PRECO Remark To PNR    RM PRECO/P 1/1
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGLHR/AAF    SS9Y1    5    20
+    Book Flight X Months From Now With Requested Airline Without Pricing    LHRCDG/AAF    SS9Y1    5
+    GDS Pricing Per Pax Type    S11-12    P1,3-7,9    P2,8    P5
+    Create Amadeus Offer Retain Flight and Handle Offer Group    S12
+    Verify Amadeus Offer Is Created
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Create And Populate Alternate Fare With Default Values    Alternate Fare 2    200
+    Click Panel    Recap
+    Verify Default Value For Confirmation Workflow Is Correct    P : Proposition
+    Select Mindef Workflow Value    C : Confirmation
+    Verify Mindef No Unbooked Fare Error Is Shown In Recap Panel
+    Select Mindef Workflow Value    P : Proposition
+    Click Finish PNR
+
+Mindef Amend Booking 9 Pax Multiple Air And Booked Fare Only
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Add PRECO Remark To PNR    RM PRECO/P 1/1
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGLHR/AAF    SS9Y1    6    20
+    Book Flight X Months From Now With Requested Airline Without Pricing    LHRCDG/AAF    SS9Y1    7
+    GDS Pricing Per Pax Type    S11-12    P1,3-7,9    P2,8    P5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Populate Fare Tab With Default Values    Fare 3    true    true
+    Click Panel    Recap
+    Verify Default Value For Confirmation Workflow Is Correct    P : Proposition
+    Select Mindef Workflow Value    C : Confirmation
+    Click Finish PNR    Mindef Amend Booking 9 Pax Multiple Air And Booked Fare Only
+
+Mindef Amend Booking 9 Pax Single Air OMT-DONTQUEUE Remark PRECO E
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS9Y1    7
+    GDS Pricing Per Pax Type    S11    P1,3-7,9    P2,8    P5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Select Delivery Method    Auto Ticket
+    Verify Do Not Send To OBT Checkbox Is Ticked
+    Click Panel    Recap
+    Verify Default Value For Confirmation Workflow Is Correct    E : Emission
+    Select Mindef Workflow Value    E : Emission
+    Click Finish PNR
+
+Simultaneous Change Handling 9 Pax And 1 Amadeus Offer and 1 Manual Alternate Fare
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Amadeus Offer Is Created
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    WN - Tarif Net Classe Premium Economique    3
+    Add Mindef Manual Alternate And Populate Details    Alternate Fare 2    1333,33    FRR    WN - Tarif Net Classe Premium Economique    1
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling 9 Pax And 1 Amadeus Offer and 1 Manual Alternate Fare
+
+Simultaneous Change Handling 9 Pax And 1 Unbooked Proposal Only
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS9Y1    6    1
+    GDS Pricing Per Pax Type    S11    P1,3-7,9    P2,8    P5
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD/AAF    SS9Y2    6    7
+    Comment    Create Amadeus Offer Remove Flight    S12
+    Enter GDS Command    FXD/S12    OFS/A1
+    Verify Amadeus Offer Is Created
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    WN - Tarif Net Classe Premium Economique    3
+    Click Finish PNR    Simultaneous Change Handling 9 Pax And 1 Unbooked Proposal Only
+
+Simultaneous Change Handling 9 Pax When At Least 1 Offer Is Removed in Express
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Amadeus Offer Is Created
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Remove Fare Tab    Alternate Fare 2
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    WN - Tarif Net Classe Premium Economique    3
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling 9 Pax When At Least 1 Offer Is Removed in Express
+
+Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Added
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGLHR/AAF    SS9Y1    6    7
+    Book Flight X Months From Now With Requested Airline Without Pricing    LHRCDG/AAF    SS9Y1    6    14
+    Book Flight X Months From Now With Requested Airline Without Pricing    FRACDG/ALH    SS9Y1    6
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGFRA/ALH    SS9Y1    7
+    GDS Pricing Per Pax Type    S11    P1,3-7,9    P2,8    P5
+    GDS Pricing Per Pax Type    S12-13    P1,3-7,9    P2,8    P5
+    GDS Pricing Per Pax Type    S14    P1,3-7,9    P2,8    P5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify That Pspt & Visa And APIS/SFPD Panels Are Not Shown For Mindef
+    Click Panel    Air Fare
+    Verify Fare Tabs For Multi Typologies Passengers Are Correct    Fare 1    Fare 2    Fare 3
+    Populate Fare Tab For Mindef    Fare 1    ABN - ABONNEMENT    CID - CLASSE IMPERATIVE DEMANDEE    YC - Tarif Client Classe Economique    Fully Flexible
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 1    Fare 2    Fare 3
+    Get Mindef Details From Fare Tab    Fare 1    P1,3-7,9    S11    T1
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P2,8    S11    T2
+    Populate Fare Tab With Default Values    Fare 3    true    true
+    Get Mindef Details From Fare Tab    Fare 3    INF/P5    S11    T3
+    Populate Fare Tab For Mindef    Fare 4    CWT - NEGOCIATION CWT    DER - DEROGATION CLIENT    YF - Plein Tarif Classe Economique    Semi Flexible    SANS FRAIS
+    ...    NON    1J    7J
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 4    Fare 5    Fare 6
+    Get Mindef Details From Fare Tab    Fare 4    P1,3-7,9    S12-13    T4
+    Populate Fare Tab With Default Values    Fare 5    true    true
+    Get Mindef Details From Fare Tab    Fare 5    P2,8    S12-13    T5
+    Populate Fare Tab With Default Values    Fare 6    true    true
+    Get Mindef Details From Fare Tab    Fare 6    INF/P5    S12-13    T6
+    Populate Fare Tab For Mindef    Fare 7    ABN - ABONNEMENT    CID - CLASSE IMPERATIVE DEMANDEE    YC - Tarif Client Classe Economique    Non Flexible
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 7    Fare 8    Fare 9
+    Get Mindef Details From Fare Tab    Fare 7    P1,3-7,9    S14    T7
+    Populate Fare Tab With Default Values    Fare 8    true    true
+    Get Mindef Details From Fare Tab    Fare 8    P2,8    S14    T8
+    Populate Fare Tab With Default Values    Fare 9    true    true
+    Get Mindef Details From Fare Tab    Fare 9    INF/P5    S14    T9
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Added
+
+Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Retained
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify That Pspt & Visa And APIS/SFPD Panels Are Not Shown For Mindef
+    Get Mindef Details From Fare Tab    Fare 1    P1,3-7,9    S11,14    \    True
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P2,8    S11,14    \    True
+    Populate Fare Tab With Default Values    Fare 3    true    true
+    Get Mindef Details From Fare Tab    Fare 3    INF/P5    S11,14    \    True
+    Get Mindef Details From Fare Tab    Fare 4    P1,3-7,9    S12    \    True
+    Populate Fare Tab With Default Values    Fare 5    true    true
+    Get Mindef Details From Fare Tab    Fare 5    P2,8    S12    \    True
+    Populate Fare Tab With Default Values    Fare 6    true    true
+    Get Mindef Details From Fare Tab    Fare 6    INF/P5    S12    \    True
+    Get Mindef Details From Fare Tab    Fare 7    P1,3-7,9    S13    \    True
+    Populate Fare Tab With Default Values    Fare 8    true    true
+    Get Mindef Details From Fare Tab    Fare 8    P2,8    S13    \    True
+    Populate Fare Tab With Default Values    Fare 9    true    true
+    Get Mindef Details From Fare Tab    Fare 9    INF/P5    S13    \    True
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Retained
+
+Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Updated
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    GDS Pricing Per Pax Type    S11,14    P1,3-7,9    P2,8    P5
+    GDS Pricing Per Pax Type    S12    P1,3-7,9    P2,8    P5
+    GDS Pricing Per Pax Type    S13    P1,3-7,9    P2,8    P5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify That Pspt & Visa And APIS/SFPD Panels Are Not Shown For Mindef
+    Populate Fare Tab For Mindef    Fare 1    GRP - GROUPE    HPD - HORAIRE OU DATEPRECIS DEMANDE    YC - Tarif Client Classe Economique    Semi Flexible    NOUS CONSULTER
+    ...    NON    1J    7J
+    Get Mindef Details From Fare Tab    Fare 1    P1,3-7,9    S11,14    \    True
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P2,8    S11,14    \    True
+    Populate Fare Tab With Default Values    Fare 3    true    true
+    Get Mindef Details From Fare Tab    Fare 3    INF/P5    S11,14    \    True
+    Populate Fare Tab For Mindef    Fare 4    SPE - TARIFS SPECIAUX    VSC - VOYAGE SANS CONTRAINTE DEMANDE    FD - Tarif Reduit Premiere    Semi Flexible    NOUS CONSULTER
+    ...    NOUS CONSULTER    1J    7J
+    Get Mindef Details From Fare Tab    Fare 4    P1,3-7,9    S12    \    True
+    Populate Fare Tab With Default Values    Fare 5    true    true
+    Get Mindef Details From Fare Tab    Fare 5    P2,8    S12    \    True
+    Populate Fare Tab With Default Values    Fare 6    true    true
+    Get Mindef Details From Fare Tab    Fare 6    INF/P5    S12    \    True
+    Populate Fare Tab For Mindef    Fare 7    ACA - ACHAT CARTE OU COUPONS    CPD - COMPAGNIE PRECISE DEMANDEE    YD - Tarif Reduit Classe Economique    Semi Flexible    SANS FRAIS
+    ...    NON    1J    7J
+    Get Mindef Details From Fare Tab    Fare 7    P1,3-7,9    S13    \    True
+    Populate Fare Tab With Default Values    Fare 8    true    true
+    Get Mindef Details From Fare Tab    Fare 8    P2,8    S13    \    True
+    Populate Fare Tab With Default Values    Fare 9    true    true
+    Get Mindef Details From Fare Tab    Fare 9    INF/P5    S13    \    True
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD & INF) When Fares Details Are Updated
+
+Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD) When Manual fare Is Added
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    RTOF
+    Enter GDS Command    XE1
+    Book Flight X Months From Now With Requested Airline Without Pricing    LYSCDG/AAF    SS2Y2    6    7
+    GDS Pricing Per Pax Type    S5    P2    0    0
+    GDS Pricing Per Pax Type    S5    P1    0    0
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab For Mindef    Fare 1    TAR - CONSTRUCTION TARIFAIRE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Semi Flexible    NOUS CONSULTER
+    ...    NOUS CONSULTER    1J    1M
+    Get Mindef Details From Fare Tab    Fare 1    P2    S4    \    True
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P1    S4    \    True
+    Populate Fare Tab For Mindef    Fare 3    TAR - CONSTRUCTION TARIFAIRE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Semi Flexible    50 EUR ET REAJUST
+    ...    NOUS CONSULTER    2J    3M
+    Get Mindef Details From Fare Tab    Fare 3    P2    S5    \    True
+    Populate Fare Tab With Default Values    Fare 4    true    true
+    Get Mindef Details From Fare Tab    Fare 4    P1    S5    \    True
+    Remove Fare Tab    Alternate Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Add Mindef Manual Alternate And Populate Details    Alternate Fare 2    93,33    Y1    YF - Plein Tarif Classe Economique    1
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD) When Manual fare Is Added
+
+Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD) When Unbooked Fare Is Added
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tabs For Multi Typologies Passengers Are Correct    Fare 1    Fare 2
+    Populate Fare Tab For Mindef    Fare 1    TAR - CONSTRUCTION TARIFAIRE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Semi Flexible    NOUS CONSULTER
+    ...    NON    1J    7J
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 1    Fare 2
+    Get Mindef Details From Fare Tab    Fare 1    P2    S4
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    P1    S4
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, CHD) When Unbooked Fare Is Added
+
+Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, INF)
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    FRACDG/ALH    SS1Y1    6
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGFRA/ALH    SS1Y1    6    7
+    Book Flight X Months From Now With Requested Airline Without Pricing    FRACDG/ALH    SS1Y1    7
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGFRA/ALH    SS1Y1    7    7
+    GDS Pricing Per Pax Type    S3-4    P1    0    P1
+    GDS Pricing Per Pax Type    S5-6    P1    0    P1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab For Mindef    Fare 1    GRP - GROUPE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Non Flexible
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 1    Fare 2
+    Get Mindef Details From Fare Tab    Fare 1    P1    S3-4
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    INF/P1    S3-4
+    Populate Fare Tab For Mindef    Fare 3    GRP - GROUPE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Non Flexible
+    Verify Associated Mindef Fare Tab Displays Values From Reference Fare Tab    Fare 3    Fare 4
+    Get Mindef Details From Fare Tab    Fare 3    P1    S5-6
+    Populate Fare Tab With Default Values    Fare 4    true    true
+    Get Mindef Details From Fare Tab    Fare 4    INF/P1    S5-6
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, INF)
+
+Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, INF) When Removing One Of The Fares
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3-4
+    Click Read Booking
+    Populate Fare Tab For Mindef    Fare 1    GRP - GROUPE    PDR - PAS DE REFUS    CW - Tarif Net CWT Classe Affaire    Fully Flexible
+    Get Mindef Details From Fare Tab    Fare 1    P1    S3-4    \    True
+    Populate Fare Tab With Default Values    Fare 2    true    true
+    Get Mindef Details From Fare Tab    Fare 2    INF/P1    S3-4    \    True
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling Amend For Multi Typologies Passengers (ADT, INF) When Removing One Of The Fares
+
+Simultaneous Change Handling For 1ADT And 1 Booked Fare
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGLHR/AAF    SS1Y1    7
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1    7    7
+    Create Amadeus Offer Remove Flight    S5
+    Verify Amadeus Offer Is Created
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    CW - Tarif Net CWT Classe Affaire    3
+    Click Fare Tab    Alternate Fare 2
+    Set Alternate Fare Airline    AF
+    Select Fare Restriction    2
+    Convert Fare Values To Mindef CPx Air Remarks    Alternate Fare 2
+    Convert Fare Values To Mindef CPx TAir Remarks    Alternate Fare 2    2
+    Populate Fare Tab With Default Values    Fare 2
+    Click Finish PNR    Simultaneous Change Handling For 1ADT And 1 Booked Fare
+
+Simultaneous Change Handling For 1ADT And 1 Unbooked Proposal Only
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    LHRCDG/AAF    SS1Y1
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Add Mindef Manual Alternate And Populate Details    Alternate Fare 1    125,55    YTEST    YC - Tarif Client Classe Economique    1
+    Verify Alternate Fare Basis, Min And Max Fields Are Non-Mandatory    Alternate Fare 1    YC - Tarif Client Classe Economique    YTEST    1    125,55
+    Click Panel    Delivery
+    Verify Delivery Panel Emails    GSBDD-GUF-VAC-BILLETERIE.RESP.SPAC@INTRADF.GOUV.FR
+    Populate Delivery Panel With Default Values    GSBDD-GUF-VAC-BILLETERIE.RESP.SPAC@INTRADF.GOUV.FR
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For 1ADT And 1 Unbooked Proposal Only
+
+Simultaneous Change Handling For 1ADT When Offer Is Removed In Express
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Amadeus Offer    XE1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Populate Fare Tab With Default Values    Fare 1
+    Remove Fare Tab    Alternate Fare 2
+    Remove Fare Tab    Alternate Fare 1
+    Click Finish PNR
+
+Simultaneous Change Handling For 1ADT1CHD 1 Amadeus offer And 1 Manual Alternate Fare
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now Without Pricing    CDGWAW    SS2Y1    7
+    GDS Pricing Per Pax Type    S6    P1    P2    0
+    Verify Amadeus Offer Is Created
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    WN - Tarif Net Classe Premium Economique    1
+    Add Mindef Manual Alternate And Populate Details    Alternate Fare 2    93,33    YTEST    YF - Plein Tarif Classe Economique    1
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Populate Fare Tab With Default Values    Fare 4
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For 1ADT1CHD 1 Amadeus offer And 1 Manual Alternate Fare
+
+Simultaneous Change Handling For 1ADT1CHD Unbooked Proposal With Multiple Segment
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify And Populate Alternate Fare Tab For Amadeus Offer    Alternate Fare 1    WN - Tarif Net Classe Premium Economique    3
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For 1ADT1CHD Unbooked Proposal With Multiple Segment
+
+Simultaneous Change Handling For 1ADT1CHD When At least 1 Offer Is Removed In Express
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Amadeus Offer    XE1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Delete Alternate Fare Tab    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Set Alternate Fare Airline    AF
+    Select Fare Restriction    2
+    Select Changes Dropdown Value    SANS FRAIS
+    Select Cancellation Dropdown Value    NON
+    Convert Fare Values To Mindef CPx Air Remarks    Alternate Fare 1
+    Convert Fare Values To Mindef CPx TAir Remarks    Alternate Fare 1    2
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Populate Fare Tab With Default Values    Fare 4
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For 1ADT1CHD When At least 1 Offer Is Removed In Express
+
+Simultaneous Change Handling For AB Verify Alternate Rail Remark For Multiple Alternate Rail Fares
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS9Y1    5
+    GDS Pricing Per Pax Type    S11    P1,3-7,9    P2,8    P5
+    Create Amadeus Offer For Multiple Passengers    ORDBOS    SS9Y2    FXX/S12    6    5
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Alternate Rail Button    Alternate Fare 1
+    Verify Rail Tab Is Added    Contre proposition Rail 1
+    Add Alternate Rail Details    2    Contre proposition Rail 1
+    Get Counter Proposal Rail Details    Contre proposition Rail 1
+    Click Alternate Rail Button    Contre proposition Rail 1
+    Verify Rail Tab Is Added    Contre proposition Rail 2
+    Add Alternate Rail Details    1    Contre proposition Rail 2
+    Get Counter Proposal Rail Details    Contre proposition Rail 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Recap
+    Click Finish PNR    Simultaneous Change Handling For AB Verify Alternate Rail Remark For Multiple Alternate Rail Fares
+
+Simultaneous Change Handling For AB Verify Alternate Rail Tab For Single Alternate Rail Fare
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Contre proposition Rail 1
+    Verify Proposition Rail Details Is Retained    Contre proposition Rail 1
+    Click Remove Details And Verify If Details Are Removed    Contre proposition Rail 1
+    Add Alternate Rail Details    2    Contre proposition Rail 1
+    Get Counter Proposal Rail Details    Contre proposition Rail 1
+    Click Alternate Rail Button    Contre proposition Rail 1
+    Verify Rail Tab Is Added    Contre proposition Rail 2
+    Add Alternate Rail Details    2    Contre proposition Rail 2
+    Get Counter Proposal Rail Details    Contre proposition Rail 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For AB Verify Alternate Rail Tab For Single Alternate Rail Fare
+
+Simultaneous Change Handling For AB Verify Alternate Rail Tab for Multiple Alternate Rail Fares
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Contre proposition Rail 1
+    Verify Proposition Rail Details Is Retained    Contre proposition Rail 1
+    Click Remove Details And Verify If Details Are Removed    Contre proposition Rail 1
+    Add Alternate Rail Details    1    Contre proposition Rail 1
+    Get Counter Proposal Rail Details    Contre proposition Rail 1
+    Click Fare Tab    Contre proposition Rail 2
+    Verify Proposition Rail Details Is Retained    Contre proposition Rail 2
+    Populate All Panels (Except Given Panels If Any)
+    Populate Alternate Fare With Default Values    Fare 1
+    Populate Alternate Fare With Default Values    Fare 2
+    Populate Alternate Fare With Default Values    Fare 3
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For AB Verify Alternate Rail Tab for Multiple Alternate Rail Fares
+
+Simultaneous Change Handling For AB Verify That Mindef Without Air Booked Proposal Should Not Able To Process Finish PNR And Returns An Error
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3-4    TTE/ALL
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Recap
+    Click Panel    Air Fare
+    Verify Fare Tab Is Not Visible    Fare 1
+    Verify Fare Tab Is Not Visible    Fare 2
+    Verify Fare Tab Is Visible    Alternate Fare 1
+    Verify Fare Tab Is Visible    Alternate Fare 2
+    Click Alternate Rail Button    Alternate Fare 1
+    Verify Rail Tab Is Added    Contre proposition Rail 1
+    Add Alternate Rail Details    1    Contre proposition Rail 1
+    Verify Mindef No Booked Fare Error Is Shown In Recap Panel
+    Select Mindef Workflow Value    C : Confirmation
+    Verify Mindef No Booked Fare Error Is Shown In Recap Panel
+    Click Panel    Air Fare
+    Enter GDS Command    IR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Set Alternate Fare Airline    AF
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling For AB Verify That Mindef Without Air Booked Proposal Should Not Able To Process Finish PNR And Returns An Error
+
+Simultaneous Change Handling For AB Verify That OMT-DONTQUEUE Remark Is NOT Written And PNR Is NOT Queued To QE/PARWL210G/98C7/ For PRECO Workflow E And NON-autoticketer Delivery Method Is Selected
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    CDGLHR/AAF    SS2Y1    7
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Add PRECO Remark To PNR    RM PRECO/C 1/1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Select Delivery Method    Auto Ticket
+    Verify Do Not Send To OBT Checkbox Is Ticked
+    Select Delivery Method    Amadeus edited TKOK
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Click Panel    Recap
+    Select Mindef Workflow Value    E : Emission
+    Click Finish PNR    Simultaneous Change Handling For AB Verify That OMT-DONTQUEUE Remark Is NOT Written And PNR Is NOT Queued To QE/PARWL210G/98C7/ For PRECO Workflow E And NON-autoticketer Delivery Method Is Selected    30
+
+Simultaneous Change Handling For NB Verify That Mindef Air Booked Transaction Should Allow Selection Of Workflow PRECO P
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD/AAF    SS1Y1    6
+    Book Flight X Months From Now With Requested Airline Without Pricing    BODORY/AAF    SS1Y1    6    7
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1    7    7
+    Comment    Create Amadeus Offer Remove Flight    S5
+    Enter GDS Command    FXD/S5    OFS/A1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Click Add Alternate Fare
+    Populate Alternate Fare Details Using Copy Air Button    YTEST    125,55    YC - Tarif Client Classe Economique
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Recap
+    Select Mindef Workflow Value    C : Confirmation
+    Verify Mindef No Unbooked Fare Error Is Shown In Recap Panel
+    Select Mindef Workflow Value    P : Proposition
+    Click Finish PNR    Simultaneous Change Handling For NB Verify That Mindef Air Booked Transaction Should Allow Selection Of Workflow PRECO P
+
+Simultaneous Change Handling For NB Verify That OMT-DONTQUEUE Remark Is Written And PNR Is Queued To QE/PARWL210H/16C70/ For PRECO Workflow E And Autoticketer Delivery Method Is Selected
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS9Y1    7
+    GDS Pricing Per Pax Type    S11    P1,3-7,9    P2,8    P5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Select Delivery Method    Auto Ticket
+    Verify Do Not Send To OBT Checkbox Is Ticked
+    Click Panel    Recap
+    Verify Default Value For Confirmation Workflow Is Correct    E : Emission
+    Click Finish PNR    Simultaneous Change Handling For NB Verify That OMT-DONTQUEUE Remark Is Written And PNR Is Queued To QE/PARWL210H/16C70/ For PRECO Workflow E And Autoticketer Delivery Method Is Selected
+
+Simultaneous Change Handling For Verify That Proposition Box Defaults To O When PRECO Line Is P In Mindef PNR
+    Retrieve PNR    ${current_pnr}
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYBOD/AAF    SS1Y1    6
+    Book Flight X Months From Now With Requested Airline Without Pricing    BODORY/AAF    SS1Y1    6    7
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    GDS Pricing Per Pax Type    S4    P1    0    0
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1    7    7
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Recap
+    Select Mindef Workflow Value    P : Proposition
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR    Simultaneous Change Handling For Verify That Proposition Box Defaults To O When PRECO Line Is P In Mindef PNR
+
+Simultaneous Change Handling for Alternate Rail Tab For Single Alternate Rail Fares
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now With Requested Airline Without Pricing    ORYMRS/AAF    SS1Y1
+    GDS Pricing Per Pax Type    S3    P1    0    0
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Alternate Rail Button    Fare 1
+    Verify Rail Tab Is Added    Contre proposition Rail 1
+    Add Alternate Rail Details    1    Contre proposition Rail 1
+    Get Counter Proposal Rail Details    Contre proposition Rail 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKOK
+    Click Finish PNR    Simultaneous Change Handling for Alternate Rail Tab For Single Alternate Rail Fares
+
+Simultaneous For SSR Line Is Written For Single Pax in Mindef With Complete RMP Information In The Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Verify Delivery Panel Emails    GSBDD-GUF-VAC-BILLETERIE.RESP.SPAC@INTRADF.GOUV.FR
+    Populate Delivery Panel With Default Values Excluding Email Address
+    Click Finish PNR    Simultaneous For SSR Line Is Written For Single Pax in Mindef With Complete RMP Information In The Remarks
+
+Simultaneous Change handle RMP line Is Updated The SSR Line Is Also Updated During Second Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Modify PNR Remark    CO-FR\/NR-1234566\/EX-12DEC20\/CI-FR\/P1    CO-FR/NR-1234566/EX-12DEC25/CI-FR/P1
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR    Simultaneous Change handle RMP line Is Updated The SSR Line Is Also Updated During Second Amend Booking
+
+Simultaneous Change handle No SSR Lines Is Written for SSLT
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Remove PNR Remark    NAME-LISA//POLO/P1
+    Remove PNR Remark    DOB-28APR75/GENDER-F/P1
+    Remove PNR Remark    CO-FR/NR-1234566/EX-12DEC20/CI-FR/P1
+    Remove PNR Remark    NAME-MARCO//POLO/P2
+    Remove PNR Remark    DOB-28APR70/GENDER-M/P2
+    Remove PNR Remark    CO-FR/NR-654321/EX-12MAR21/CI-FR/P2
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+
+Simultaneous Change Handling For Verify That Proposition Box Defaults To O When PRECO Line Is P In Mindef PNR - CB
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Recap
+    Verify Default Value In Proposition Box    O : Annulation avant émission
+    Click Finish PNR    Simultaneous Change Handling For Verify That Proposition Box Defaults To O When PRECO Line Is P In Mindef PNR - CB
+
+Create Amadeus Offer Retain Flight and Handle Offer Group
+    [Arguments]    ${segment_number}
+    Enter GDS Command    FXD/${segment_number}
+    ${amadeus_data}    Get Clipboard Data Amadeus
+    Should Not Contain    ${amadeus_data}    NO PNR ALTERNATE RECOMMENDATIONS FOUND WITH LOWER OR EQUAL PRIC    msg=Failed to create amadeus offer due to: NO PNR ALTERNATE RECOMMENDATIONS FOUND WITH LOWER OR EQUAL PRICE    values=False
+    ${group_line}    Get Lines Containing String    ${amadeus_data}    GROUPS
+    ${group_count}    Fetch From Left    ${group_line}    ${SPACE}GROUPS
+    Convert To Integer    ${group_count}
+    ${count}    Set Variable    1
+    : FOR    ${count}    IN RANGE    ${group_count}
+    \    ${count}    Evaluate    ${count} + 1
+    \    Enter GDS Command    OFS/A${count}
+    \    ${gds_screen_data}    Get Data From GDS Screen
+    \    ${has_offer}    Run Keyword And Return Status    Should Contain    ${gds_screen_data}    OFFER
+    \    Exit For Loop If    ${has_offer} == True
+
+Verify Proposition Rail Details Is Retained
+    [Arguments]    ${tab_name}
+    ${alt_rail_details_field}    Determine Multiple Object Name Based On Active Tab    txtAlternateRailDetails
+    ${alt_rail_details}    Get Control Text Value    ${alt_rail_details_field}
+    Should Be Equal    ${alt_rail_details_${tab_name}}    ${alt_rail_details}
+
+Simultaneous For SSR Line Written But One RMP Line Removed
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Remove PNR Remark    CO-FR/NR-654321/EX-12MAR21/CI-FR/P2
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR    Simultaneous For SSR Line Written But One RMP Line Removed
+
+Simultaneous For SSR Line Written But Two RMP Lines Removed
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Remove PNR Remark    CO-FR/NR-1234566/EX-12DEC20/CI-FR/P1
+    Remove PNR Remark    CO-FR/NR-654321/EX-12MAR21/CI-FR/P2
+    Book Flight X Months From Now    DENORD/AUA    SS2Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR    Simultaneous For SSR Line Written But Two RMP Lines Removed
+
+Simultaneous handling For RM Remarks Are Written Correctly For Single Segment Of Light Ticketing PNRs
+    Retrieve PNR    ${current_pnr}
+    Enter Command In Native GDS    RMM ONHOLD-EN ATTENTE DE VALIDATION    RIR ON HOLD:EN ATTENTE DE VALIDATION    RFCWTPTEST
+    Update Sub Unit GUID    GUID    GUID/CT-A:8BD9D/SU-A:8BBAF
+    Retrieve PNR    ${current_pnr}
+    Wait Until Progress Bar Is Completed
+    Verify Quick Amend Is Visible
+    Click Quick Amend
+    Select Delivery Method Using Default Value
+    Set Email Address In Delivery Panel
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Finish PNR    Simultaneous handling For RM Remarks Are Written Correctly For Single Segment Of Light Ticketing PNRs
+
+Simultaneous Change Handling RM Remarks Are Written Correctly For Multi Segment And Multi Pax Of Light Ticketing PNRs
+    Click Amend Booking
+    Book Flight X Months From Now Without Pricing    ORYNCE/AU2    SS9Y1    5
+    Book Flight X Months From Now Without Pricing    NCEORY/AU2    SS9Y1    5
+    Enter Command In Native GDS    FXP    FXT1/P1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Verify Output Binding Code In PNR Remarks For 1 PAX
+    [Arguments]    ${tab_name}    ${segment_number}=${EMPTY}
+    ${fare_tab_index} =    Fetch From Right    ${tab_name}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    RM *7105*${point_of_${fare_tab_index}}/${segment_number}    \    true
+    Verify Specific Line Is Written In The PNR    RM *7110*${class_code_value_${fare_tab_index}}/${segment_number}    \    true
+    Verify Specific Line Is Written In The PNR    RM *7305*${realised_code_value_${fare_tab_index}}/${segment_number}    \    true
+    Verify Specific Line Is Written In The PNR    RM *7306*${missed_code_value_${fare_tab_index}}/${segment_number}    \    true
+    Verify Specific Line Is Written In The PNR    RM *7302*${high_fare_${fare_tab_index}}/${segment_number}    \    true
+    Verify Specific Line Is Written In The PNR    RM *7303*${low_fare_${fare_tab_index}}/${segment_number}    \    true
+
+Verify Mindef Remarks for Air Booked PNR For 1 PAX
+    [Arguments]    ${fare_tab}    ${segment_number}=${EMPTY}
+    Verfiy Fare Remark For Mindef Are Written    ${fare_tab}
+    Verify Output Binding Code In PNR Remarks For 1 PAX    ${fare_tab}    ${segment_number}
+    Verify Mindef Booked Proposal Remarks    ${fare_tab}
+
+Click Add Alternate Rail Button
+    [Arguments]    ${tab_name}
+    Click Fare Tab    ${tab_name}
+    ${add_button}    Determine Multiple Object Name Based On Active Tab    AddAlternateRailButton
+    Click Control Button    ${add_button}
+    Take Screenshot
+
+Select Do Not Send To OBT
+    Click Control    [NAME:chkDoNotSendToOBT]
+
+Create Amadeus Offer For Multiple Passangers To Verify Alternate Rail Remark
+    [Arguments]    ${itinerary}    ${seat_select}    ${store_fare}    ${number_of_months}=6    ${number_of_days}=0    ${store_offer}=OFS/A
+    ${departure_date} =    Set Departure Date X Months From Now In Gds Format    ${number_of_months}    ${number_of_days}
+    Set Test Variable    ${departure_date}
+    Enter GDS Command    AN${departure_date}${itinerary}    ${seat_select}    ${store_fare}    FQN01
+    Select Offer For Verify Alternate Rail Remark For Multiple Alternate Rail Fare
+    Enter GDS Command    OFS/A
+
+Set MaxieIncidentID
+    [Arguments]    ${incidentid}=12345
+    Click Panel    Recap
+    Set Control Text Value    [NAME:ctxtMoxieIncidentId]    ${incidentid}
+
+Remove MaxieIncidentID
+    Click Panel    Recap
+    Set Control Text Value    [NAME:ctxtMoxieIncidentId]    ${EMPTY}

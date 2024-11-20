@@ -1,0 +1,25 @@
+*** Settings ***
+Resource          ../panels/air_fare.robot
+Resource          ../panels/amend.robot
+Resource          ../panels/apis_sfpd.robot
+Resource          ../panels/car.robot
+Resource          ../panels/client_fees.robot
+Resource          ../panels/client_info.robot
+Resource          ../panels/complete.robot
+Resource          ../panels/contact_details.robot
+Resource          ../panels/cust_refs.robot
+Resource          ../panels/delivery.robot
+Resource          ../panels/gds_screen.robot
+Resource          ../panels/id_traveller.robot
+Resource          ../panels/policy_check.robot
+Resource          ../panels/pspt_and_visa.robot
+Resource          ../panels/recap.robot
+Resource          ../panels/unused_documents.robot
+Resource          ../common/utilities.robot
+Resource          ../common/database.robot
+Resource          ../panels/other_svcs.robot
+Resource          common_library.robot
+Resource          ../../resources/variables/db_variables.robot
+Variables         ../variables/general_variables.py
+Resource          ../gds/amadeus.robot
+Resource          ../../acceptance_tests/gds/gds_verification.robot

@@ -1,0 +1,140 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Pop Up Choice Will Write Itinerary And Invoice Remarks In The PNR
+    [Tags]    us6133    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ US6133    Rules    EmeaTest
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    DEPTNAME    ABC
+    Set CDR Value    TRVLCOST    12345
+    Click Update PNR
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    Click Read Booking
+    Verify Window Exists    21 days travel
+    Set Value In Pop Up    21 days travel    Yes
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *1234*YES
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTB
+    Verify Specific Line Is Written In The PNR    ITINERARY REMARKS FROM BUSINESS RULE
+
+[AB] Verify That Pop Up Choice Will Delete Itinerary And Invoice Remarks In The PNR
+    [Tags]    us6133    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Window Exists    21 days travel
+    Set Value In Pop Up    21 days travel    No
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    THIS IS A SAMPLE ITINERARY REMARK
+    Verify Specific Line Is Not Written In The PNR    ITINERARY REMARK FROM BUSINESS RULE
+    Verify Specific Line Is Not Written In The PNR    *1001*THIS IS A SAMPLE WINGS REMARK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[CA][NB-AB] Verify That Popup Message Appears At New And Amend Booking
+    [Tags]    ca    19.1    us6786    us6911    19.2    us6968
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - US6786 Test    AutoOneNineteen    CaTrvlrRulesThree
+    Select Trip Type Value    Business
+    Click New Booking
+    Verify That Popup Message Exist    US6786 Rule 1
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Sleep    5
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify That Popup Message Exist    US6786 Rule 1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    RM THIS IS AN INTERNATIONAL TRIP
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[CA][NB] Verify That Popup Message Appears At Update PNR For New Booking
+    [Tags]    ca    19.1    us6786
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - US6786 Test    AutoOneNineteen    CaTrvlrRulesThree
+    Select Trip Type Value    Meetings
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Verify That Popup Message Exist    US6786 Rule 4
+    [Teardown]    Click Clear All
+
+[1A FI] [PT] Verify that Popup with header "Price Track Title" is displayed upon clicking on PriceTracking for Finland SubUnit
+    [Tags]    finland    us6787
+    #Run This Test Case in Amadeus Classic Only
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    FI Head Office Test Team
+    Select GDS    Amadeus
+    Set Client And Traveler    Finland Sales ¦ US6787 - PT Business Rules    AJJU    KUMAR
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Change Team    Global - Price Tracking
+    Retrieve PNR    ${current_pnr}
+    Click Price Tracking
+    Verify Window Exists    Price Track Title
+    Set Value In Pop Up    Price Track Title    YES
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A NORAM][CA][NB] Verify That Hyperlink Is Displayed In Single Popup For New Booking
+    [Tags]    19.2    us6911    not_ready    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationCA    CA QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - US6786 Test    AutoOneNineteen    CaTrvlrRulesThree
+    Select Trip Type Value    Personal
+    Click New Booking
+    Set Answer In Popup    US6786 Rule 2    BPG123
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Verify That Popup Message Exist    US6911 Rule 2-Update PNR
+    Book Flight X Months From Now    YULSFO/AAC    SS1Y1    FXP/S2    6    1
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Enter GDS Command    RM *DP/A098
+    End And Retrieve PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR    RM *DP/A098
+    [Teardown]    Click Clear All
+
+[1A NORAM][CA][AB] Verify That Hyperlink Is Displayed In Single Popup For Amend Booking
+    [Tags]    19.2    us6911    not_ready    ca
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2
+    Book Flight X Months From Now    SFOYUL/AAC    SS1Y1    FXP/S2    6    5
+    Click Read Booking
+    Verify That Popup Message Exist    US6786 Rule 3
+    Set Answer In Popup    US6786 Rule 3    SHERIDAN
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

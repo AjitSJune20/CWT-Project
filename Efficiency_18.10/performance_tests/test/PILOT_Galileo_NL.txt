@@ -1,0 +1,117 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          performance_test_resource.txt
+
+*** Variables ***
+@{travelers_Galileo}    OPLEIDINGEN ¦ NL-OPLEIDINGEN CLASSIC (H7N),PINKERTON,ANDREW    OPLEIDINGEN ¦ NL-OPLEIDINGEN CLASSIC (H7N),Vlieger,Adriaan    OPLEIDINGEN ¦ NL-OPLEIDINGEN CLASSIC (H7N),Dehond,Frans    OPLEIDINGEN ¦ NL-OPLEIDINGEN CLASSIC (H7N),DITALIA,GIRO    OPLEIDINGEN ¦ NL-OPLEIDINGEN CLASSIC (H7N),Flater,Gust    OPLEIDINGEN ¦ NL-OPLEIDINGEN CLASSIC (H7N),Johnson,Coral    OPLEIDINGEN ¦ NL-OPLEIDINGEN CLASSIC (H7N),Herkenner,Jaap
+...               OPLEIDINGEN ¦ NL-OPLEIDINGEN CLASSIC (H7N),Lucas,George    OPLEIDINGEN ¦ NL-OPLEIDINGEN CLASSIC (H7N),Mevrouw,Henriette    OPLEIDINGEN ¦ NL-OPLEIDINGEN CLASSIC (H7N),Pieters,Jan
+@{city_pairs_Galileo}    AMSMUC/KL    AMSMUC/KL    AMSMUC/KL    AMSMUC/KL    AMSMUC/KL    AMSMUC/KL    AMSMUC/KL
+...               AMSMUC/KL    AMSMUC/KL    AMSMUC/KL
+
+*** Test Cases ***
+Set Performance Test Variables
+    Set Suite Variable    ${start_time}    ${EMPTY}
+    Set Suite Variable    ${end_time}    ${EMPTY}
+    Set Suite Variable    ${time}    ${EMPTY}
+    Set Suite Variable    ${converted_time}    ${EMPTY}
+    Set Suite Variable    ${client}    ${EMPTY}
+    Set Suite Variable    ${trav_last_name}    ${EMPTY}
+    Set Suite Variable    ${trav_first_name}    ${EMPTY}
+    Set Suite Variable    ${simultaneous_changes}    ${EMPTY}
+    Set Suite Variable    ${city_pair}    ${EMPTY}
+    Set Suite Variable    ${temp_pnr}    ${EMPTY}
+    ${pnr_list} =    Create List
+    Set Suite Variable    ${pnr_list}
+    ${list_set_client_traver}=    Create List
+    Set Suite Variable    ${list_set_client_traver}
+    ${list_new_booking}=    Create List
+    Set Suite Variable    ${list_new_booking}
+    ${list_update_pnr} =    Create List
+    Set Suite Variable    ${list_update_pnr}
+    ${list_read_booking_new}=    Create List
+    Set Suite Variable    ${list_read_booking_new}
+    ${list_read_booking_amend}=    Create List
+    Set Suite Variable    ${list_read_booking_amend}
+    ${list_finish_pnr_new}=    Create List
+    Set Suite Variable    ${list_finish_pnr_new}
+    ${list_finish_pnr_amend}=    Create List
+    Set Suite Variable    ${list_finish_pnr_amend}
+    ${list_finish_pnr_si}=    Create List
+    Set Suite Variable    ${list_finish_pnr_si}
+    ${list_finish_pnr_cancel}=    Create List
+    Set Suite Variable    ${list_finish_pnr_cancel}
+    ${list_amend_booking}=    Create List
+    Set Suite Variable    ${list_amend_booking}
+    ${list_send_itin}=    Create List
+    Set Suite Variable    ${list_send_itin}
+    ${list_cancel_booking}=    Create List
+    Set Suite Variable    ${list_cancel_booking}
+
+New Booking
+    [Documentation]    Documentation for other required steps to be documented here.
+    ...
+    ...    <TODO>
+    ...    1. Document Performance Monitor steps
+    ...
+    ...
+    ...
+    ...    SQL Query for retireving execution times:
+    ...
+    ...    use ApplicationUsage_Test
+    ...    go
+    ...
+    ...    select au.ApplicationUsageId, ApplicationEventDescription, StartTime, EndTime, ActualTime, *
+    ...    from ApplicationUsage au
+    ...    join ApplicationUsageDetail aud on aud.applicationusageid = au.applicationusageid
+    ...    join ApplicationEvent ae on ae.ApplicationEventId = au.ApplicationEventId
+    ...    where ComputerName = '<<Machine Name>>'
+    ...    and ApplicationUsageDate > '<<Start Time>>'
+    ...    and ApplicationUsageDate < '<<End Time>>'
+    ...    and ApplicationVersion = '<<version>>'
+    ...    order by aud.StartTime
+    [Tags]    performance_tests
+    Performance - Open Power Express And Retrieve Profile    ${version}    Pilot    U001NCB    en-GB    ${EMPTY}    NL Amsterdam FSC Team 2
+    Sleep    5
+    Handle Generic Window Popup
+    Select GDS    Galileo
+    : FOR    ${INDEX}    IN RANGE    0    10
+    \    Get Client And Traveler    Galileo    ${INDEX}
+    \    Get City Pair    Galileo    ${INDEX}
+    \    Performance - Create New Booking With One Way Flight Using Default Values    ${client}    ${trav_last_name}    ${trav_first_name}    ${city_pair}    galileo
+    \    ...    ${EMPTY}    Air Fare    Cust Refs    Client Info
+    \    Populate Fare Tab With Default Values    Fare 1
+    \    Select Panel    Client Info
+    \    Tick Not Known At Time Of Booking For Form Of Payment
+    \    Select Panel    Cust Refs
+    \    Set CDR Value    PAY WITH    TEST VALUE CHECK
+    \    Set CDR Value    TRAVELLER LAST NAME    TEST VALUE BEGIN
+    \    Select Panel    Delivery
+    \    Select On Hold Booking Reasons    Awaiting Approval
+    \    Comment    Populate Policy Check Panel When Present
+    \    Performance - Click Finish PNR    Finish PNR From New Booking    ${list_finish_pnr_new}
+    \    Append PNR To PNR list
+    \    Click Clear All
+
+Amend Booking
+    : FOR    ${pnr}    IN    @{pnr_list}
+    \    ${temp_pnr}=    Fetch From Right    ${pnr}    ,
+    \    Set Suite Variable    ${current_pnr}    ${temp_pnr}
+    \    Performance - Amend Booking
+    \    Execute Simultaneous Change Handling    Performance - Amend Booking
+
+Send Itinerary
+    : FOR    ${pnr}    IN    @{pnr_list}
+    \    ${temp_pnr}=    Fetch From Right    ${pnr}    ,
+    \    Set Suite Variable    ${current_pnr}    ${temp_pnr}
+    \    Performance - Send Itinerary
+    \    Execute Simultaneous Change Handling    Performance - Send Itinerary
+
+Cancel Booking
+    : FOR    ${pnr}    IN    @{pnr_list}
+    \    ${temp_pnr}=    Fetch From Right    ${pnr}    ,
+    \    Set Suite Variable    ${current_pnr}    ${temp_pnr}
+    \    Performance - Cancel Booking
+    \    Execute Simultaneous Change Handling    Performance - Cancel Booking
+    Click Clear All
+    Display Average Execution Times

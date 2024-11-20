@@ -1,0 +1,141 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../third_party_verification.txt
+Resource          ../../id_traveller/id_traveller_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[NB] Verify That 3xx Transaction Code Are Not Changed To 4xx In Remarks
+    [Tags]    us1500    data_dependent    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values    Galileo 16 - Auto ¦ DE4368    Auto    EmeaTrvlrFour    LAXCDG/AF    ${EMPTY}
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Enter GDS Command    DI.FT-*7311*3KD    DI.FT-*6311*3KD    DI.FT-*3311*3KD    DI.FT-*1311*3KD
+    Click Finish PNR
+
+[AB] Verify That 3xx Transaction Code Are Not Changed To 4xx In Remarks
+    [Tags]    us1500    data_dependent    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    FXALL    XI
+    Book Flight X Months From Now    LHRCDG/AF    01Y1    FQ    6
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For KDS Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *DI
+    Verify Specific Line Is Written In The PNR    *0107*123
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 3KD Is Not Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That 2xx Transaction Code Are Changed To 4xx In Remarks
+    [Tags]    us1500    data_dependent    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values    Galileo 16 - Auto ¦ DE4368    Auto    EmeaTrvlrFour    LAXCDG/AF    ${EMPTY}
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Enter GDS Command    DI.FT-*7311*2KD    DI.FT-*6311*2KD    DI.FT-*3311*2KD    DI.FT-*1311*2KD
+    Click Finish PNR
+
+[AB] Verify That 2xx Transaction Code Are Changed To 4xx In Remarks
+    [Tags]    us1500    data_dependent    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Enter GDS Command    FXALL    XI
+    Book Flight X Months From Now    LHRCDG/AF    01Y1    FQ    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For KDS Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *DI
+    Verify Specific Line Is Written In The PNR    *0107*123
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 2KD Is Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+
+[AB] Verify That 0xx Transaction Code Are Not Changed To 4xx In Remarks
+    [Tags]    us1500    data_dependent    not_ready
+    Modify Transaction Codes    4KD    0KD    DI
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Enter GDS Command    FXALL    XI
+    Book Flight X Months From Now    CDGLHR/AF    01Y1    FQ    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For KDS Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}    *DI
+    Verify Specific Line Is Written In The PNR    *0107*123
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 0KD Is Not Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB UK] Verify That No Remarks Update Errors During Or After Completion
+    [Tags]    uat    emea    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    AUTOFIFTEENUK    EMEAUATUKTWO    LHRCDG/AF    ${EMPTY}    Air Fare
+    ...    Client Info
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Cust Refs
+    Set CDR Value    TRVLCOST    029019
+    Click Finish PNR
+    Add KDS Remarks    DI.FT-*7311*1KD
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Client Account Number Is Correct    Traveller/Contact    717171 ¦ DC April test ¦ UK-STAFF TEST AUTO
+    Click Panel    Cust Refs
+    Verify CDR Value Is Correct    TRVLCOST    029019
+    Set CDR Value    TRVLCOST    029020
+    Verify CDR Value Is Correct    TRVLCOST    029020
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That No Remarks Update Errors During Finish PNR When Simulating Online Booking Tool
+    Verify Message Is Not Displayed In Summary    Remarks Update Failed
+    Verify PNR Is Successfully Updated
+    Verify NP SYEXGVS Line Shows Itinerary Language As EN-GB
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That No Remarks Update Errors During Finish PNR When Simulating Online Booking Tool
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    TRVLCOST    029020
+    Verify CDR Value Is Correct    TRVLCOST    029020
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+
+Amend Booking Workflow For KDS Remarks Verification
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    FXALL    XI
+    Book Flight X Months From Now    LHRCDG/AF    01Y1    FQ    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    Manual Ticket
+    Click Finish PNR    Amend Booking Workflow For KDS Remarks Verification
+
+Verify NP SYEXGVS Line Shows Itinerary Language As EN-GB
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HA\\*SYEXGVS.*EN-GB    true

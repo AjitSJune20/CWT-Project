@@ -1,0 +1,62 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Click EMD Tab
+    Select Tab Item    EMD
+
+Create Exchange Booking With Tax For Amadeus
+    [Arguments]    ${segment_number}    ${tst_number}    ${currency}    ${base_fare}    ${tax_amount}    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Enter GDS Command    RT    TTK/EXCH/${segment_number}
+    Enter GDS Command    TTK/${tst_number}/R${currency}${base_fare}/X${currency}${tax_amount}YR/T${currency}${tax_amount}
+    Get Grand Total Fare From Amadeus    ${fare_tab}
+    ${date}    Generate Date X Months From Now    5    1    %d%b%y
+    Enter GDS Command    FHA 057-1346629127
+    Enter GDS Command    FO057-1346629127E1PAR${date}/00002634/057-1346629127E1/${segment_number}
+    Enter GDS Command    RFCWTPTEST
+
+Create Exchange Booking Without Tax For Amadeus
+    [Arguments]    ${segment_number}    ${ticket_number}
+    Enter GDS Command    RT    TTK/EXCH/${segment_number}
+    ${date}    Generate Date X Months From Now    5    1    %d%B%y
+    Enter GDS Command    FHA ${ticket_number}
+    Enter GDS Command    FO057-1346629127E1PAR${date}/00002634/057-1346629127E1/${segment_number}
+    Enter GDS Command    RFCWTPTEST
+
+Populate EMD With Default Values
+    [Arguments]    ${amount_value}=EUR10.00    ${reason_for_emd}=PENALITE PERCUE
+    Click EMD Tab
+    ${currency_emd}    Determine Multiple Object Name Based On Active Tab    ctxtCurrencyEmd
+    ${reason_emd}    Determine Multiple Object Name Based On Active Tab    ccboChangesEmd
+    Control Set Text    ${title_power_express}    ${EMPTY}    ${currency_emd}    ${amount_value}
+    Control Set Text    ${title_power_express}    ${EMPTY}    ${reason_emd}    ${reason_for_emd}
+    Take Screenshot
+    Select Tab Item    Details
+    [Teardown]
+
+Tick EMD Checkbox
+    ${emd_checkbox}    Determine Multiple Object Name Based On Active Tab    cchkEnableEmd
+    Tick Checkbox    ${emd_checkbox}
+
+Untick EMD Checkbox
+    ${emd_checkbox}    Determine Multiple Object Name Based On Active Tab    cchkEnableEmd
+    Untick Checkbox    ${emd_checkbox}
+
+Verify EMD Tab Exists
+    ${is_error_icon_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\emdtab.png    0.80    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    ${is_error_icon_exist}    Invalid icon is NOT displayed
+    Click Object    ${sikuli_image_path}\\emdtab.png    0.80    ${timeout}
+    Sleep    2
+
+Verify Values in EMD Tab
+    [Arguments]    ${expected_flight_status}
+    ${checkbox}    Determine Multiple Object Name Based On Active Tab    cchkEnableEMD
+    ${pass_name}    Determine Multiple Object Name Based On Active Tab    ctxtPassengerNameEmd
+    ${int_name}    Determine Multiple Object Name Based On Active Tab    cradInternationalEmd
+    ${dom_name}    Determine Multiple Object Name Based On Active Tab    cradDomesticEmd
+    ${currency_emd}    Determine Multiple Object Name Based On Active Tab    ctxtCurrencyEmd
+    ${reason_emd}    Determine Multiple Object Name Based On Active Tab    ccboChangesEmd
+    ${dom}    Get Checkbox Status    ${dom_name}
+    ${actual_flight_status}    Set Variable If    ${dom}== True    dom    int
+    Should Be Equal    ${expected_flight_status}    ${actual_flight_status}

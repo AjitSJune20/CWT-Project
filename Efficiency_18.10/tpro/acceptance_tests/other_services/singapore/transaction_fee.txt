@@ -1,0 +1,300 @@
+*** Settings ***
+Documentation     BTA description and Addition Description should NOT be empty.
+...
+...               Remarks for BTA description and Addition Description = EMPTY is not included in US943 and is not implemented in this automation
+...
+...               Tendency to fail due to:
+...               1. Time difference between Robot Framework logging the date/Time of EO creation and actual saving of EO to Database.
+...
+...               2. \ General Remarks may be warpped due to product name being too long.
+Force Tags        transaction_fee
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../other_services_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+Resource          ../other_services.txt
+
+*** Test Cases ***
+[SG NB OS] Verify That Transaction Fee Behaves Correctly When Ticket Type Is BSP (Without File Fare) And FOP Is Cash
+    [Tags]    sg    horton    US464    valid_fail
+    Create PNR Using Cash As FOP    SG
+    Click Other Services
+    Select Product And Vendor    Transaction Fee    MERCHANT FEE - NRCC
+    Click Tab In Other Services Panel    Service Info
+    Verify Default Form Of Payment Is Correct    Cash or Invoice
+    Select Form Of Payment (FOP)    Cash or Invoice    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Verify Nett Cost Value Is Correct    0.00
+    Verify Selling Price Value Is Correct    0.00
+    Verify Commission Fee Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    0.00
+    Populate Service Info Cost Details    CWT Vendor    350.25    680.23
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    0    2    True    True
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Tab In Other Services Panel    Ticket Type
+    Verify Ticket Type Is Blank By Default
+    Verify Default Values For Selected Ticket Type    BSP (without File Fare)
+    Populate Ticket Type With Default Values    BSP (without File Fare)
+    Get Ticket Type Details
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    EARLY CHECKIN IS ALLOWED    NO SMOKING
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTA
+    Get Current Segments From The PNR
+    Verify Air Segments Are Retrieved Correctly
+    Select Air Segment    2
+    Click Remarks Tab
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number    identifier=sgtransactionfee
+    Generate Exchange Order Creation Date    P1
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services General Notepad Remarks    Transaction Fee
+    Verify Other Services Transaction Fee Generic Accounting Remarks    Transaction Fee    MERCHANT FEE - NRCC    Cash or Invoice    BSP (without File Fare)    02    2
+
+[SG AB OS] Verify That Air Commission Returned Behaves Correctly When Ticket Type Is BSP (With File Fare) And FOP Is CX
+    [Tags]    sg    horton    US464    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    1222
+    Book Flight X Months From Now    MNLSIN/ASQ    SS1Y1    FXP/S3    6    5
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP/S4    6    15
+    Click Read Booking
+    Populate Fare Details And Fees Tab With Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Air Commission Returned    REBATE
+    Click Tab In Other Services Panel    Service Info
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    378282246310005    12    2026
+    Verify Nett Cost Value Is Correct    0.00
+    Verify Selling Price Value Is Correct    0.00
+    Verify Commission Fee Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    0.00
+    Populate Service Info Cost Details    CWT Vendor    344.23    566.00
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    0    2    True    True
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Tab In Other Services Panel    Ticket Type
+    Verify Ticket Type Is Blank By Default
+    Verify Default Values For Selected Ticket Type    BSP (with File Fare)
+    Populate Ticket Type With Default Values    BSP (with File Fare)
+    Get Ticket Type Details
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTA
+    Get Current Segments From The PNR
+    Verify Air Segments Are Retrieved Correctly
+    Select Air Segment    2
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services General Notepad Remarks    Air Commission Returned
+    Verify Other Services Transaction Fee Generic Accounting Remarks    Air Commission Returned    REBATE    Credit Card (CX)    BSP (with File Fare)    02    2
+    Verify Other Services Transaction Credit Card Info Remarks    Credit Card (CX)    SG    378282246310005    AX    12    2026
+
+[SG OS] Verify That Air Commission Returned Behaves Correctly When Ticket Type Is Consolidator Ticket And FOP Is CX
+    [Tags]    sg    horton    US464
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Air Commission Returned    REBATE
+    Click Tab In Other Services Panel    Service Info
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2026
+    Verify Nett Cost Value Is Correct    0.00
+    Verify Selling Price Value Is Correct    0.00
+    Verify Commission Fee Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    0.00
+    Populate Service Info Cost Details    CWT Vendor    350.25    680.23
+    Tick CWT Absorb Checkbox For Merchant Fee
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    0    2    True    True
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Tab In Other Services Panel    Ticket Type
+    Verify Ticket Type Is Blank By Default
+    Verify Default Values For Selected Ticket Type    Consolidator Ticket
+    #Ticket Prefix and No is less than the min length
+    Select Ticket Type    BSP (without File Fare)
+    Set Ticket No Prefix    11
+    Verify Error Icon Is Displayed For Ticket No Prefix    Input should be not less than 3 digits long.
+    Set Ticket No Prefix    111
+    Set Ticket No    555
+    Verify Error Icon Is Displayed For Ticket No    Input should be not less than 10 digits long.
+    Set Ticket No    5555555555
+    #Ticket Prefix and No have max length but have invalid values
+    Set Ticket No Prefix    11a
+    Verify Error Icon Is Displayed For Ticket No Prefix    Only numbers are allowed
+    Set Ticket No Prefix    111
+    Set Ticket No    555555555a
+    Verify Error Icon Is Displayed For Ticket No    Only numbers are allowed
+    Set Ticket No    5555555555
+    Set Passenger ID Value    !@
+    Verify Error Icon Is Displayed For EO No    Alphanumeric characters and space only
+    Set Passenger ID Value    P1
+    #Ticket Fare No is less than the min length
+    Select Ticket Type    BSP (with File Fare)
+    Set Fare No    1
+    Verify Error Icon Is Displayed For Ticket No Prefix    Input should be not less than 2 digits long.
+    Set Fare No    1a
+    Verify Error Icon Is Displayed For Ticket No    Only numbers are allowed
+    Set Fare No    11
+    #Ticket Prefix and No is less than the min length
+    Select Ticket Type    Consolidator Ticket
+    Set EO No Prefix    11
+    Verify Error Icon Is Displayed For EO No Prefix    Input should be not less than 3 digits long.
+    Set EO No Prefix    111
+    Set EO No    555
+    Verify Error Icon Is Displayed For EO No    Input should be not less than 10 digits long.
+    Set EO No    5555555555
+    Set Passenger ID Value    !@
+    Verify Error Icon Is Displayed For EO No    Alphanumeric characters and space only
+    Set Passenger ID Value    P1
+    #Ticket Prefix and No have max length but have invalid values
+    Set EO No Prefix    11a
+    Verify Error Icon Is Displayed For EO No Prefix    Only numbers are allowed
+    Set EO No Prefix    111
+    Set EO No    555555555a
+    Verify Error Icon Is Displayed For EO No    Only numbers are allowed
+    Set EO No    5555555555
+    Set Passenger ID Value    !@
+    Verify Error Icon Is Displayed For EO No    Alphanumeric characters and space only
+    Set Passenger ID Value    P1
+    Verify Error Icon Is Displayed For Air Segments    Please select air segment(s) for this transaction
+    Populate Ticket Type With Default Values    Consolidator Ticket
+    Get Ticket Type Details
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTA
+    Get Current Segments From The PNR
+    Verify Air Segments Are Retrieved Correctly
+    Select Air Segment    2    4
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services General Notepad Remarks    Air Commission Returned
+    Verify Other Services Transaction Fee Generic Accounting Remarks    Air Commission Returned    REBATE    Credit Card (CX)    Consolidator Ticket    0204    2,4
+    Verify Other Services Transaction Credit Card Info Remarks    Credit Card (CX)    SG    4444333322221111    VI    12    2026
+
+[SG OS 2nd] Verify That Transaction Fee Behaves Correctly When Ticket Type Is Consolidator Ticket And FOP Is Cash
+    [Tags]    sg    horton    US464
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Transaction Fee    CARLSON WAGONLIT TRAVEL
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Service Info
+    Select Form Of Payment (FOP)    Cash or Invoice    ${EMPTY}    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Verify Nett Cost Value Is Correct    0.00
+    Verify Selling Price Value Is Correct    0.00
+    Verify Commission Fee Value Is Correct    0.00
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    0.00
+    Set Vendor Contact    CWT Vendor
+    Set Nett Cost    350.25
+    Set Selling Price    680.23
+    Get Nett Cost In Other Services
+    Get Selling Price
+    Compute Other Services Fees    0    2    True    True
+    Verify Commission Fee Value Is Correct
+    Verify Merchant Fee Value Is Correct
+    Verify Total Selling Price Value Is Correct
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Tab In Other Services Panel    Ticket Type
+    Verify Ticket Type Is Blank By Default
+    Verify Default Values For Selected Ticket Type    Consolidator Ticket
+    Populate Ticket Type With Default Values    Consolidator Ticket
+    Get Ticket Type Details
+    Select Air Segment    2    3    4
+    Comment    Verify Air Segments Are Retrieved Correctly
+    Click Finish PNR    panel=Other Svcs
+    Verify PNR Is Successfully Created    False    Exchange Order Transaction Successfully Saved
+    Get Exchange Order Number
+    Verify PDF Is Displayed
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Other Services General Notepad Remarks    Transaction Fee
+    Verify Other Services Transaction Fee Generic Accounting Remarks    Transaction Fee    CARLSON WAGONLIT TRAVEL    Cash or Invoice    Consolidator Ticket    020304    2-4
+    [Teardown]
+
+[SG AOS] Verify That Transaction Fee Behaves Correctly During Amend OS When Ticket Type Is BSP (Without File Fare) And FOP Is CC
+    [Tags]    sg    horton    US464
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend EO    ${eo_number_sgtransactionfee}
+    Get Other Services Cost Details
+    Verify Vendor Contact Value Is Correct    CWT Vendor
+    Verify Nett Cost Value Is Correct    350.25
+    Verify Selling Price Value Is Correct    680.23
+    Verify Commission Fee Value Is Correct    329.98
+    Verify Merchant Fee Value Is Correct    0.00
+    Verify Total Selling Price Value Is Correct    680.23
+    Verify Description Value From Additional Information Is Correct    Transaction Fee
+    Verify BTA Description Value Is Correct    Transaction Fee
+    Verify Date Value Is Correct
+    Verify Form Of Payment Details Are Correct    Cash or Invoice
+    Verify Exchange Order Number    ${eo_number_sgtransactionfee}
+    Click Tab In Other Services Panel    Ticket Type
+    Verify Ticket Type Value Is Correct    BSP (without File Fare)
+    Verify Ticket No Values Are Correct    111    1234567890
+    Select Air Segment    2
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    MERCHANT FEE - NRCC
+    Verify Address 1 Value Is Correct
+    Verify Address 2 Value Is Correct
+    Verify City Value Is Correct
+    Verify Country Value Is Correct    SINGAPORE
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    EARLY CHECKIN IS ALLOWED    NO SMOKING
+    Click Service Info Tab
+    Select Form Of Payment (FOP)    Credit Card (CC)    VI    4444333322221111    12    2026
+    Set Description    Amend Trans Fee
+    Set BTA Description    Amend
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Services Additional Information Details
+    Click Ticket Type Tab
+    Populate Ticket Type With Default Values    BSP (without File Fare)
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTA
+    Get Current Segments From The PNR
+    Verify Air Segments Are Retrieved Correctly
+    Select Air Segment    2    3
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    35    Transaction Fee    MS    032001
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_sgtransactionfee}
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Other Services General Notepad Remarks    Transaction Fee
+    Verify Other Services Transaction Fee Generic Accounting Remarks    Transaction Fee    MERCHANT FEE - NRCC    Credit Card (CC)    BSP (without File Fare)    03    3
+    ...    SG
+    Verify Other Services Transaction Credit Card Info Remarks    Credit Card (CC)    SG    4444333322221111    VI    12    2026
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

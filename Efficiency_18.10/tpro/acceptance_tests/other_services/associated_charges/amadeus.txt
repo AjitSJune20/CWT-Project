@@ -1,0 +1,766 @@
+*** Settings ***
+Suite Setup
+Force Tags        for_update
+Resource          ../../../../resources/common/global_resources.txt
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../other_services_verification.txt
+Resource          ../../../../resources/panels/client_info.txt
+Resource          ../../../../resources/panels/other_svcs.txt
+Resource          ../../air_fare/air_fare_verification.txt
+Library           Collections
+Library           ExcelLibrary
+Resource          ../other_services_charges_verification.txt
+Resource          ../other_services_associated_charges_control.txt
+
+*** Test Cases ***
+[IN NB OS] Verify That Accounting Lines Are Written When FOP Type is BTC (Charges and Single Assoc Charges-With PO and With GSA)
+    [Tags]    us595    us808    us899    in    team_chiu    us956
+    ...    us1031
+    Create New Booking For Other Services - India    1026100093 ¦ SIEMENS PLM SOFTWARE UGS -(K.PARK)-CC ¦ APAC SYN IN    CASH    1    1
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    DILIP JADHAV
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Testing    Testing
+    Click Tab In Other Services Panel    Charges
+    Verify Charges Fields Are Mandatory
+    Verify Charges Fields Are Optional
+    Verify Default Values Of Charges Fields
+    Populate Charges Fields Details    400    20    30    ${product}    TestChargesGSA1    TestChargesPO1
+    Get Charges Field Values    new
+    Comment    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    #UI Validation
+    Verify Associated Charges Fields Are Mandatory
+    Verify Associated Charges Fields Are Optional
+    Verify Default Values Of Associated Charges Fields
+    Verify Displayed Fields In Form Of Payment Details In Associated Charges Depending On FP Line
+    Verify Default Values Of Form Of Payment Details In Associated Charges    cash
+    Verify Client Exempt In Associated Charges Is Disabled
+    Verify No Merchant Fee In Associated Charges Is Disabled
+    Set Cost Amount In Associated Charges    xxx
+    Verify Error Icon Is Displayed Beside Cost Amount In Associated Charges When Invalid Value Is Entered    Should not contain non-numeric characters
+    Set Cost Amount In Associated Charges    1234551234567890.1234
+    Verify Error Icon Is Displayed Beside Cost Amount In Associated Charges When Invalid Value Is Entered    Should not be more than 15 characters
+    Set Discount In Associated Charges    10.45!
+    Verify Error Icon Is Displayed Beside Discount In Associated Charges When Invalid Value Is Entered    Should not contain non-numeric characters
+    Set Discount In Associated Charges    12345678909864.1235
+    Verify Error Icon Is Displayed Beside Discount In Associated Charges When Invalid Value Is Entered    Should not be more than 15 characters
+    Set Commission In Associated Charges    -123.56
+    Verify Error Icon Is Displayed Beside Commission In Associated Charges When Invalid Value Is Entered    Should not contain non-numeric characters
+    Set Commission In Associated Charges    42345465345623456734
+    Verify Error Icon Is Displayed Beside Commission In Associated Charges When Invalid Value Is Entered    Should not be more than 15 characters
+    Click Clear In Associated Charges
+    Select Product In Associated Charges    Despatch
+    Verify Default Value Of Description In Associated Charges On Select Of Product    Despatch
+    Populate Associated Charges Fields    Despatch    COURIER CHARGES    550.556    5.678    4.50    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    #Calculations
+    Verify Gross Sell Computation In Associated Charges
+    Verify Merchant Fee Computation In Associated Charges    0    14
+    Verify VAT/GST Amount Computation In Associated Charges    14    0.5    0.5
+    Verify Gross Sell Computation In Associated Charges
+    Verify Total Selling Price Computation In Associated Charges
+    #Buttons
+    Populate Associated Charges Fields    Despatch    COURIER CHARGES    550.556    5.678    4.50    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Click Clear In Associated Charges
+    Populate Associated Charges Fields    Despatch    COURIER CHARGES    550.556    5.678    4.50    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Clear In Associated Charges
+    Verify Associated Charges Fields Are Mandatory
+    Verify Associated Charges Fields Are Optional
+    Verify Default Values Of Associated Charges Fields
+    Verify Displayed Fields In Form Of Payment Details In Associated Charges Depending On FP Line
+    Verify Default Values Of Form Of Payment Details In Associated Charges    cash
+    #Actual adding of row in Associated Charges grid
+    Populate Associated Charges Fields    Tour Intl    TOUR INTERNATIONAL (TRANCPORT CONTROL ACCOUNT)    889.989    12.56    8.456    Tour Intl
+    ...    Assoc-RNPO1    Assoc-OSGSA1
+    Get Associated Charges Field Values    R2
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Tour Intl
+    Get Vendor Code For India    Tour Intl    TOUR INTERNATIONAL (TRANCPORT CONTROL ACCOUNT)
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    #Vendor Info Tab
+    Click Tab In Other Services Panel    Vendor Info
+    Get Fields From Vendor Info Tab
+    Verify Prepopulated Default Value In Vendor Info tab
+    Verify Fields Are Optional In Vendor Tab
+    Populate Fields For Vendor Info Tab    Attention1    Address1    Bangalore    India    cwt_email    cwt_phone
+    #Grid In Vendor Info Tab
+    Populate Grid Data In Vendor Info Tab    Phone    0987654321    False
+    Click Add In Vendor Info Tab
+    Get Fields From Vendor Info Tab
+    Generate Data For Specific Row In Vendor Info Tab    vendorR1
+    Verify Record Is Displayed In Grid For Vendor Info Tab    vendorR1
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+
+[IN AB OS]Verify That Accounting Lines Are Written When FOP Type is BTC And (Charges and Multiple Assoc Charges-Without PO and With GSA)
+    [Tags]    us956    us889    us807    in    us919    us1031
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    JFKLAX/AAA    SS1Y1    FXP/S2    5    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Accounting Lines Are Written When FOP Type is BTC And (Charges and Multiple Assoc Charges-Without PO and With GSA)
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    DILIP JADHAV
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Testing    Testing
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    ChargesGSA2    ${EMPTY}
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Assoc-OSGSA2    ${EMPTY}
+    Get Associated Charges Field Values    R2
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Comment    Generate Grid Data For Specific Associated Charges Row
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Air Sales-Non BSP INT    Continental Airlines    889.989    12.56    8.456    Air Sales-Non BSP INT
+    ...    ${EMPTY}    Assoc-PO3
+    Get Associated Charges Field Values    R3
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Generate Remarks Data For Specific Associated Charge Row    R3
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R3
+    Log    ${current_pnr}
+    Click Clear All
+
+[IN OS]Verify That Accounting Lines Are Written When FOP Type is BTC And (Charges and Multiple Assoc Charges-With PO and Without GSA)
+    [Tags]    us956    us899    us807    us919    in    team_chiu
+    ...    us1031    for_jona    valid_fail
+    [Timeout]
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    DILIP JADHAV
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Testing    Testing
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    ${EMPTY}    TestChargesPO3
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    ${EMPTY}    Assoc-Ref No4
+    Get Associated Charges Field Values    R2
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Tour Intl    TOUR INTERNATIONAL (TRANCPORT CONTROL ACCOUNT)    889.989    12.56    8.456    Tour Intl
+    ...    Assoc-OSGSA5    Assoc-RNPO5
+    Get Associated Charges Field Values    R3
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Generate Remarks Data For Specific Associated Charge Row    R3
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R3
+
+[IN OS] Verify That Accounting Lines Are Written When Amount FOP Type is BTC (Multiple Assoc Service Info, Amount Without PO and Without GSA)
+    [Tags]    us595    us808    us899    in    us919    team_chiu
+    ...    us1031
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    COURIER CHARGES
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Internal Remarks    Detail 1    Detail 2    Detail 3
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    ${EMPTY}    ${EMPTY}
+    Get Charges Field Values For BTC
+    Generate Remarks Data For Specific Charges Row BTC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    #row1
+    Populate Associated Charges Fields    Despatch    COURIER CHARGES    550.556    5.678    4.505    Despatch
+    ...    ${EMPTY}    ${EMPTY}
+    Get Associated Charges Field Values    R2
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Despatch
+    Get Vendor Code For India    Despatch    COURIER CHARGES
+    Generate Grid Data For Specific Associated Charges Row    R2
+    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Comment    Verify Record Is Displayed In Associated Charges Grid    R2
+    #row2
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Mice Domestic    JTB TRAVELS PVT LTD    1000.98    8.50    2.67    Mice Domestic
+    ...    Assoc-GSA6    ${EMPTY}
+    Get Associated Charges Field Values    R3
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Mice Domestic
+    Get Vendor Code For India    Mice Domestic    JTB TRAVELS PVT LTD
+    Generate Grid Data For Specific Associated Charges Row    R3
+    Generate Remarks Data For Specific Associated Charge Row    R3
+    Click Save In Associated Charges
+    Comment    Verify Record Is Displayed In Associated Charges Grid    R3
+    #row3
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    ETS Call charges    ETS CALL CHARGES    1500.32    10.2145    8.983    ETS Call charges
+    ...    ${EMPTY}    AssocPO7
+    Get Associated Charges Field Values    R4
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    ETS Call charges
+    Get Vendor Code For India    ETS Call charges    ETS CALL CHARGES
+    Generate Grid Data For Specific Associated Charges Row    R4
+    Generate Remarks Data For Specific Associated Charge Row    R4
+    Click Save In Associated Charges
+    Comment    Verify Record Is Displayed In Associated Charges Grid    R4
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For BTC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R3
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That Accounting Lines Are Written When FOP Type is BTC (Single Assoc Service Info, Amount)
+    [Tags]    us595    us808    us899    in    us1031
+    Create New Booking For Other Services - India    1026100093 ¦ SIEMENS PLM SOFTWARE UGS -(K.PARK)-CC ¦ APAC SYN IN    CASH    1    1
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    COURIER CHARGES
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Internal Remarks    Detail 1
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    650    33    11    ${product}    gsa1c    po1c
+    Click Tab In Other Services Panel    Associated Charges
+    #UI Validation
+    Verify Associated Charges Fields Are Mandatory
+    Verify Associated Charges Fields Are Optional
+    Verify Default Values Of Associated Charges Fields
+    Verify Displayed Fields In Form Of Payment Details In Associated Charges Depending On FP Line
+    Verify Default Values Of Form Of Payment Details In Associated Charges    cash
+    Verify Client Exempt In Associated Charges Is Disabled
+    Verify No Merchant Fee In Associated Charges Is Disabled
+    Set Cost Amount In Associated Charges    xxx
+    Verify Error Icon Is Displayed Beside Cost Amount In Associated Charges When Invalid Value Is Entered    Should not contain non-numeric characters
+    Set Cost Amount In Associated Charges    1234551234567890.1234
+    Verify Error Icon Is Displayed Beside Cost Amount In Associated Charges When Invalid Value Is Entered    Should not be more than 15 characters
+    Set Discount In Associated Charges    10.45!
+    Verify Error Icon Is Displayed Beside Discount In Associated Charges When Invalid Value Is Entered    Should not contain non-numeric characters
+    Set Discount In Associated Charges    12345678909864.1235
+    Verify Error Icon Is Displayed Beside Discount In Associated Charges When Invalid Value Is Entered    Should not be more than 15 characters
+    Set Commission In Associated Charges    -123.56
+    Verify Error Icon Is Displayed Beside Commission In Associated Charges When Invalid Value Is Entered    Should not contain non-numeric characters
+    Set Commission In Associated Charges    42345465345623456734
+    Verify Error Icon Is Displayed Beside Commission In Associated Charges When Invalid Value Is Entered    Should not be more than 15 characters
+    Click Save In Associated Charges
+    Verify Pop-up Message Is Displayed Upon Click Of Save In Associated Charges
+    Click Clear In Associated Charges
+    Select Product In Associated Charges    Despatch
+    Verify Default Value Of Description In Associated Charges On Select Of Product    Despatch
+    Populate Associated Charges Fields    Despatch    COURIER CHARGES    550.556    5.678    4.50    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    #Calculations
+    Verify Gross Sell Computation In Associated Charges
+    Verify Merchant Fee Computation In Associated Charges    0    14
+    Verify VAT/GST Amount Computation In Associated Charges    14    0.5    0.5
+    Verify Gross Sell Computation In Associated Charges
+    Verify Total Selling Price Computation In Associated Charges
+    #Buttons
+    Populate Associated Charges Fields    Despatch    COURIER CHARGES    550.556    5.678    4.50    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Comment    Generate Grid Data For Specific Associated Charges Row    R1
+    Click Cancel In Associated Charges
+    Comment    Verify Record Is Not Displayed In Associated Charges Grid    R1
+    Populate Associated Charges Fields    Despatch    COURIER CHARGES    550.556    5.678    4.50    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Click Clear In Associated Charges
+    Verify Associated Charges Fields Are Mandatory
+    Verify Associated Charges Fields Are Optional
+    Verify Default Values Of Associated Charges Fields
+    Verify Displayed Fields In Form Of Payment Details In Associated Charges Depending On FP Line
+    Verify Default Values Of Form Of Payment Details In Associated Charges    cash
+    #Actual adding of row in Associated Charges grid
+    Populate Associated Charges Fields    Tour Intl    TOUR INTERNATIONAL (TRANCPORT CONTROL ACCOUNT)    889.989    12.56    8.456    Tour Intl
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Tour Intl
+    Get Vendor Code For India    Tour Intl    TOUR INTERNATIONAL (TRANCPORT CONTROL ACCOUNT)
+    Comment    Generate Grid Data For Specific Associated Charges Row    R1
+    Generate Remarks Data For Specific Associated Charge Row    R1
+    Click Save In Associated Charges
+    Comment    Verify Record Is Displayed In Associated Charges Grid    R1
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R1
+
+[IN OS] Verify That Accounting Lines Are Written When Amount FOP Type is BTC (Multiple Assoc Service Info, Amount)
+    [Tags]    us595    us808    us899    in    team_chiu    us1031
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    COURIER CHARGES
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Internal Remarks    Detail 1    Detail 2    Detail 3
+    Click Tab In Other Services Panel    Associated Charges
+    #row1
+    Populate Associated Charges Fields    Despatch    COURIER CHARGES    550.556    5.678    4.505    Despatch
+    ...    ${EMPTY}    ${EMPTY}
+    Get Associated Charges Field Values    R1
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Despatch
+    Get Vendor Code For India    Despatch    COURIER CHARGES
+    Comment    Generate Grid Data For Specific Associated Charges Row    R1
+    Generate Remarks Data For Specific Associated Charge Row    R1
+    Click Save In Associated Charges
+    Comment    Verify Record Is Displayed In Associated Charges Grid    R1
+    #row2
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Mice Domestic    JTB TRAVELS PVT LTD    1000.98    8.50    2.67    Despatch
+    ...    Vendor Reference No    ${EMPTY}
+    Get Associated Charges Field Values    R2
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    Mice Domestic
+    Get Vendor Code For India    Mice Domestic    JTB TRAVELS PVT LTD
+    Generate Grid Data For Specific Associated Charges Row    R2
+    Comment    Generate Remarks Data For Specific Associated Charge Row    R2
+    Click Save In Associated Charges
+    Comment    Verify Record Is Displayed In Associated Charges Grid    R2
+    #row3
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    ETS Call charges    ETS CALL CHARGES    1500.32    10.2145    8.983    Despatch
+    ...    ${EMPTY}    Other Reference No
+    Get Associated Charges Field Values    R3
+    Get Form Of Payment Fields Values Based On FOP Type    cash
+    Get Associated Charges Product Code And GST And OT1 And OT2    ETS Call charges
+    Get Vendor Code For India    ETS Call charges    ETS CALL CHARGES
+    Comment    Generate Grid Data For Specific Associated Charges Row    R3
+    Generate Remarks Data For Specific Associated Charge Row    R3
+    Click Save In Associated Charges
+    Comment    Verify Record Is Displayed In Associated Charges Grid    R3
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For BTC Are Written In The PNR    R3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That Accounting Lines Are Written When Amount FOP Type is CC - VI (Single Assoc Service Info, Amount)
+    [Tags]    us595    us919    us899    us956    in    us1031
+    Create New Booking For Other Services - India    1026100093 ¦ SIEMENS PLM SOFTWARE UGS -(K.PARK)-CC ¦ APAC SYN IN    VI    1    1
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    COURIER CHARGES
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Internal Remarks    Detail 1
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    400    20    30    ${product}    ${EMPTY}    TestPO
+    Get Charges Field Values    R1
+    Calculate Merchant Fee In Charges For Remarks
+    Calculate VAT In Charges For Remarks
+    Calculate VAT For Merchant Fee In Charges For Remarks
+    Generate Remarks Data For Specific Charges Row For CC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    #Actual adding of row in Associated Charges grid
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    889.989    12.56    8.456    Despatch
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R2
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Calculate VAT For Merchant Fee In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R2
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Mice Domestic    JTB TRAVELS PVT LTD    889.989    12.56    8.456    Mice Domestic
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R3
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R3
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Car DOM    AVIS    600    50    30    Car DOM
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R4
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Calculate VAT For Merchant Fee In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R4
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For CC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R3
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R4
+
+[IN AB OS] ] Verify That Accounting Lines Are Written When Amount FOP Type is CC - CA (Multiple Assoc Service Info, Amount)
+    [Tags]    us919    us899    in    us956    team_chiu    us1031
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    CA    5555555555554444    1220
+    Comment    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Other Services
+    Select Product    Rebate
+    Select Vendor    REBATE (HANDLING)
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Internal Remarks    Test
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    980    16    6    ${product}    TestGSA    ${EMPTY}
+    Get Charges Field Values    R1
+    Calculate Merchant Fee In Charges For Remarks
+    Calculate VAT In Charges For Remarks
+    Calculate VAT For Merchant Fee In Charges For Remarks
+    Generate Remarks Data For Specific Charges Row For CC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    #Actual adding of row in Associated Charges grid
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    198    22    21    Despatch
+    ...    ASsocVN Info    Assoc Oter Ref
+    Get Associated Charges Field Values    R2
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R2
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Tour Intl    TOUR INTERNATIONAL (TRANCPORT CONTROL ACCOUNT)    388    10.25    1.25    Tour Intl
+    ...    VRno    ORNo
+    Get Associated Charges Field Values    R3
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R3
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Car DOM    AVIS    600    50    30    Car DOM
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R4
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Calculate VAT For Merchant Fee In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R4
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For CC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R3
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R4
+
+[IN AB OS] Verify That Accounting Lines Are Written When Amount FOP Type is CC - AX (Multiple Assoc Service Info, Amount)
+    [Tags]    us919    us899    us956    team_chiu    us1031
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    371134257188217    1220
+    Comment    Select Merchant Fee Type    Airline
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Despatch
+    Select Vendor    COURIER CHARGES
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Internal Remarks    Detail 1
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    800    15    4    ${product}    TestGSA    TestPO
+    Get Charges Field Values    R1
+    Calculate Merchant Fee In Charges For Remarks
+    Calculate VAT In Charges For Remarks
+    Calculate VAT For Merchant Fee In Charges For Remarks
+    Generate Remarks Data For Specific Charges Row For CC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    #Actual adding of row in Associated Charges grid
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    555.454    11.23    11.13    Despatch
+    ...    VRNO    Orno
+    Get Associated Charges Field Values    R2
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R2
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Car DOM    AVIS    600    33    23    Car DOM
+    ...    Vendor Reference No    Other Reference No
+    Get Associated Charges Field Values    R3
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R3
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Air domestic    B.S.P.DOMESTIC SALES    800    20    30    Air domestic
+    ...    vrn    orn
+    Get Associated Charges Field Values    R4
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Calculate VAT For Merchant Fee In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R4
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For CC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R3
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R4
+
+[IN][OS] Verify That Accounting Lines Are Written For Charges When FOP Type is CC (WithOut PO and WithOut GSA)- AX
+    [Tags]    us956    team_chiu    us1031
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product    Rebate
+    Select Vendor    REBATE (HANDLING)
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Request
+    Populate Request Fields    Internal Remarks    Detail 1
+    Click Tab In Other Services Panel    Charges
+    Populate Charges Fields Details    700    36    12    ${product}    ${EMPTY}    TestPO
+    Get Charges Field Values    R1
+    Calculate Merchant Fee In Charges For Remarks
+    Calculate VAT In Charges For Remarks
+    Calculate VAT For Merchant Fee In Charges For Remarks
+    Generate Remarks Data For Specific Charges Row For CC    R1
+    Click Tab In Other Services Panel    Associated Charges
+    #Actual adding of row in Associated Charges grid
+    Populate Associated Charges Fields    Despatch    DILIP JADHAV    656.123    15.456    6.123    Despatch
+    ...    Assoc-GSA1    Assoc-Po1
+    Get Associated Charges Field Values    R2
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R2
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Air domestic    B.S.P.DOMESTIC SALES    400    10    8    B.S.P.DOMESTIC SALES
+    ...    Assoc-GSA2    Assoc-Po2
+    Get Associated Charges Field Values    R3
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R3
+    Click Save In Associated Charges
+    Click Add In Associated Charges
+    Populate Associated Charges Fields    Car DOM    AVIS    700    30    28    Car DOM
+    ...    Assoc-Gsa3    Assoc-Po3
+    Get Associated Charges Field Values    R4
+    Calculate Merchant Fee In Associated Charges For Remarks
+    Calculate VAT In Associated Charges For Remarks
+    Calculate VAT For Merchant Fee In Associated Charges For Remarks
+    Generate Remarks Data For Specific Associated Charge Row For CC    R4
+    Click Save In Associated Charges
+    Click Finish PNR    \    5    Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Charges Accounting Lines For CC Are Written In The PNR    R1
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R2
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R3
+    Verify Associated Charges Accounting Lines For CC Are Written In The PNR    R4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That Client Exempt And Merchant Fee Checkboxes Are Ticked/Unticked And Commission And Discount Are Calculated Correctly From Percentage To Amount When FOP Is BTC
+    [Tags]    us955    in    team_chiu    us1031
+    Create New Booking For Other Services - India    1026100093 ¦ SIEMENS PLM SOFTWARE UGS -(K.PARK)-CC ¦ APAC SYN IN    CASH    1    1
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    Bajaj Allianz General Insurance Co Ltd-C/O Siemens
+    Click Continue In Other Svcs
+    #Charges Verification
+    Click Tab In Other Services Panel    Charges
+    #Percentage Calculation
+    Set Cost Amount    500.99
+    Set Discount    23.56
+    Get Discount    charges
+    Set Commission    13.89
+    Get Commission    charges
+    Click Discount    p
+    Click Commission    p
+    Get Cost Amount    charges
+    Calculate Discount    charges
+    Get Discount    charges
+    Calculate Commission    charges
+    Get Commission    charges
+    Verify Discount Calculation Is Correct    charges
+    Verify Commission Calculation Is Correct    charges
+    #No Merchant Fee and Client Exempt Status - Both ticked
+    Verify No Merchant Fee Checkbox Status    true
+    Verify Client Exempt Checkbox Status    true
+    Click Cancel For IN
+    Select Product    Air BSP Add on
+    Select Vendor    TURKISH AIRLINE
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Charges
+    #No Merchant Fee -ticked, Client Exempt Status - unticked
+    Verify No Merchant Fee Checkbox Status    true
+    Verify Client Exempt Checkbox Status    false
+    #Associated Charges Verification
+    Click Tab In Other Services Panel    Associated Charges
+    Select Product In Associated Charges    Insurance
+    Select Vendor In Associated Charges    Bajaj Allianz General Insurance Co Ltd-C/O Siemens
+    #Percentage Calculation
+    Set Cost Amount    1500.768
+    Set Discount    10.456
+    Get Discount    assoc_charges
+    Set Commission    8.5102
+    Get Commission    assoc_charges
+    Click Discount    p
+    Click Commission    p
+    Get Cost Amount    assoc_charges
+    Calculate Discount    assoc_charges
+    Get Discount    assoc_charges
+    Calculate Commission    assoc_charges
+    Get Commission    assoc_charges
+    Verify Discount Calculation Is Correct    assoc_charges
+    Verify Commission Calculation Is Correct    assoc_charges
+    #No Merchant Fee and Client Exempt Status - Both ticked
+    Verify No Merchant Fee Checkbox Status    true
+    Verify Client Exempt Checkbox Status    true
+    Select Product In Associated Charges    Air BSP Add on
+    Select Vendor In Associated Charges    TURKISH AIRLINE
+    #No Merchant Fee -ticked, Client Exempt Status - unticked
+    Verify No Merchant Fee Checkbox Status    true
+    Verify Client Exempt Checkbox Status    false
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN NB OS] Verify That Client Exempt And Merchant Fee Checkboxes Are Ticked/Unticked And Commission And Discount Are Calculated Correctly From Percentage To Amount When FOP Is Credit Card
+    [Tags]    us955    in    team_chiu    us1031
+    Create New Booking For Other Services - India    1026100093 ¦ SIEMENS PLM SOFTWARE UGS -(K.PARK)-CC ¦ APAC SYN IN    VI    1    1
+    Click Other Services
+    Select Product    Insurance
+    Select Vendor    Bajaj Allianz General Insurance Co Ltd-C/O Siemens
+    Click Continue In Other Svcs
+    #Charges Verification
+    Click Tab In Other Services Panel    Charges
+    #Percentage Calculation
+    Set Cost Amount    500.99
+    Set Discount    23.56
+    Get Discount    charges
+    Set Commission    13.89
+    Get Commission    charges
+    Click Discount    p
+    Click Commission    p
+    Get Cost Amount    charges
+    Calculate Discount    charges
+    Get Discount    charges
+    Calculate Commission    charges
+    Get Commission    charges
+    Verify Discount Calculation Is Correct    charges
+    Verify Commission Calculation Is Correct    charges
+    #No Merchant Fee-unticked and Client Exempt Status-ticked
+    Verify No Merchant Fee Checkbox Status    false
+    Verify Client Exempt Checkbox Status    true
+    Click Cancel For IN
+    Select Product    Air BSP Add on
+    Select Vendor    UNITED AIRLINES
+    Click Continue In Other Svcs
+    Click Tab In Other Services Panel    Charges
+    #No Merchant Fee -ticked, Client Exempt Status - unticked
+    Verify No Merchant Fee Checkbox Status    true
+    Verify Client Exempt Checkbox Status    false
+    #Associated Charges Verification
+    Click Tab In Other Services Panel    Associated Charges
+    Select Product In Associated Charges    Insurance
+    Select Vendor In Associated Charges    Bajaj Allianz General Insurance Co Ltd-C/O Siemens
+    #Percentage Calculation
+    Set Cost Amount    1500.768
+    Set Discount    10.456
+    Get Discount    assoc_charges
+    Set Commission    8.5102
+    Get Commission    assoc_charges
+    Click Discount    p
+    Click Commission    p
+    Get Cost Amount    assoc_charges
+    Calculate Discount    assoc_charges
+    Get Discount    assoc_charges
+    Calculate Commission    assoc_charges
+    Get Commission    assoc_charges
+    Verify Discount Calculation Is Correct    assoc_charges
+    Verify Commission Calculation Is Correct    assoc_charges
+    #No Merchant Fee-unticked and Client Exempt Status - ticked
+    Verify No Merchant Fee Checkbox Status    false
+    Verify Client Exempt Checkbox Status    true
+    Select Product In Associated Charges    Air BSP Add on
+    Select Vendor In Associated Charges    UNITED AIRLINES
+    #No Merchant Fee -ticked, Client Exempt Status - unticked
+    Verify No Merchant Fee Checkbox Status    true
+    Verify Client Exempt Checkbox Status    false
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That Accounting Lines Are Written When FOP Type is BTC And (Charges and Multiple Assoc Charges-Without PO and With GSA)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    JFKLAX/AAA    SS1Y1    FXP/S2    5    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Verify That Accounting Lines Are Written When Amount FOP Type is CC - AX (Multiple Assoc Service Info, Amount)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    0128
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Set Form Of Payment On Fare Quote Tab    Fare Quote 1    AX***********0005/D0128
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Set Commission Rebate Amount    5
+    Set Transaction Fee On Air Fare Panel    7
+    Populate Air Fare Savings Code    XX - NO SAVING    P - PASSENGER DECLINED RESTRICTED FARE    CW - Business Class CWT Negotiated Fare
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel (TKXL)
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Click Finish PNR
+
+Verify That Accounting Lines Are Written When Amount FOP Type is CC - CA (Multiple Assoc Service Info, Amount)
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    CA    5555555555554444    0122
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Set Form Of Payment On Fare Quote Tab    Fare Quote 1    CA************4444/D0122
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Set Commission Rebate Amount    5
+    Set Transaction Fee On Air Fare Panel    7
+    Populate Air Fare Savings Code    XX - NO SAVING    P - PASSENGER DECLINED RESTRICTED FARE    CW - Business Class CWT Negotiated Fare
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel (TKXL)
+    Populate All Panels (Except Given Panels If Any)    Client Info    Air Fare
+    Click Finish PNR

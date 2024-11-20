@@ -1,0 +1,31 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../gds_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That Only 1 DS Format Line Is Written In the PNR After Clicking New Booking, Update PNR and Finish PNR Buttons
+    [Tags]    uat    emea    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    LinkedContact    John
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    LinkedTraveller    John
+    Click New Booking
+    Retrieve PNR Details From Galileo
+    Verify Specific Line Is Written In The PNR Only Once    HJ*DS FORMAT V3.0
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Verify Message Is Not Displayed In Summary    Remarks Update Failed
+    Retrieve PNR Details From Galileo
+    Verify Specific Line Is Written In The PNR Only Once    HJ*DS FORMAT V3.0
+    Activate Power Express Window
+    Book Flight X Months From Now    LHRCDG/AF    01Y1    \    6    0
+    Book Flight X Months From Now    CDGLHR/AF    01Y1    FQ:NR    6    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    HJ*DS FORMAT V3.0
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

@@ -1,0 +1,169 @@
+*** Settings ***
+Test Teardown
+Force Tags        apac    amadeus
+Resource          ../../../../resources/common/common_library.txt
+Resource          ../../../../resources/common/core.txt
+Resource          ../../../../acceptance_tests/complete/complete_verification.txt
+Resource          ../../../../acceptance_tests/gds/gds_verification.txt
+
+*** Test Cases ***
+[NB SI HK] Verify That Queue Minder Is Added For Itinerary Confirmation E-mail
+    [Tags]    hk    howan    us912
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US912    BEAR    HKNINEONETWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Remarks for Itinerary Type    PARWL2877    64    C0
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SI IN] Verify That Queue Minder Is Added For Itinerary Confirmation E-mail
+    [Tags]    in    howan    us912
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US912    BEAR    INNINEONETWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Remarks for Itinerary Type    PARWL2877    64    C0
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SI SG] Verify That Queue Minder Is Added For Itinerary Confirmation E-mail
+    [Tags]    sg    howan    us912
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US912    BEAR    SGNINEONETWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Remarks for Itinerary Type    PARWL2877    64    C0
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SI HK] Verify That Queue Minder Is Added For E-ticket Notification
+    [Tags]    hk    howan    us912
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US912    BEAR    HKNINEONETWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Select E-Ticket Notification Radio Button
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Remarks for Itinerary Type    PARWL2877    65    C0
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SI IN] Verify That Queue Minder Is Added For E-ticket Notification
+    [Tags]    howan    us912    in
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US912    BEAR    INNINEONETWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Select E-Ticket Notification Radio Button
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Remarks for Itinerary Type    PARWL2877    65    C0
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SI SG] Verify That Queue Minder Is Added For E-ticket Notification
+    [Tags]    sg    howan    us912
+    Open Power Express And Retrieve Profile    ${version}    Test    U001MKR    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US912    BEAR    SGNINEONETWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Tick Receive Itinerary Checkbox
+    Tick Receive Invoice Checkbox
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Select E-Ticket Notification Radio Button
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Remarks for Itinerary Type    PARWL2877    65    C0
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

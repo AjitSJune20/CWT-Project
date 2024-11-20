@@ -1,0 +1,172 @@
+*** Settings ***
+Resource          other_services_additional_information_control.txt
+Resource          other_services_exchange_order_control.txt
+Resource          other_services_form_of_payment_control.txt
+Resource          other_services_cost_control.txt
+Resource          other_services_remarks_control.txt
+Resource          other_services_verification.txt
+Resource          other_services_train_ferry_departure_arrival_control.txt
+Resource          other_services_car_service_control.txt
+Resource          other_services_ticket_type_control.txt
+Resource          other_services_visa_processing_country_control.txt
+Resource          other_services_remarks_verification.txt
+Resource          other_services_ui_verification.txt
+Resource          other_services_hotel_prepaid_departure_arrival_control.txt
+Resource          other_services_mi_control.txt
+Resource          other_services_insurance_control.txt
+Resource          other_services_vendor_information_control.txt
+Resource          other_services_ticket_cost_control.txt
+Resource          other_services_charges_control.txt
+Resource          other_services_request_control.txt
+Resource          other_services_mco_mpd_control.txt
+Resource          other_services_associated_charges_control.txt
+Resource          other_services_associated_charges_verification.txt
+Resource          other_services_charges_verification.txt
+Resource          other_services_mi_verifications.txt
+Resource          other_services_vendor_info_verification.txt
+
+*** Keywords ***
+Amend PNR Using Cash As FOP
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend PNR Using Cash As FOP
+    Execute Simultaneous Change Handling    Amend PNR Using Cash As FOP
+
+Click Ticket Type Tab
+    Activate Power Express Window
+    Select Tab Control    Ticket Type
+
+Create PNR Using Cash As FOP
+    [Arguments]    ${country}=sg
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC ${country.upper()} OS AUTOMATION    BEAR    ${country.upper()}OTHERS    SINMNL/APR    ${EMPTY}    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Create PNR Using Credit Card As FOP
+    [Arguments]    ${country}=SG
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    ${country}    Convert To Uppercase    ${country}
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC ${country} OS AUTOMATION    BEAR    ${country}OTHERS    SINMNL/ASQ    ${EMPTY}    Client Info
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Select Form Of Payment    VI************1111/D1220
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Generate Exchange Order Creation Date
+    [Arguments]    ${product_id}
+    [Documentation]    ${date_for_eo} is placed in the Finish PNR keyword
+    Set Suite Variable    ${date_for_eo_${product_id}}    ${date_for_eo}
+
+Select Product And Vendor
+    [Arguments]    ${product}    ${vendor}
+    Wait Until Control Object Is Visible    [NAME:OtherServicesExhangeOrdersControl]
+    Select Product    ${product}
+    Select Vendor    ${vendor}
+    Click Continue In Other Svcs
+    Comment    Run Keyword And Ignore Error    Wait Until Control Object Is Visible    [NAME:OtherServicesTabControl]
+    Run Keyword And Continue On Failure    Wait Until Control Object Is Not Visible    [NAME:btnContinue]
+    [Teardown]    Take Screenshot
+
+Set Cancellation Policy Value
+    Run Keyword If    "${cancel_policy.lower()}"=="cancel by"    Verify Specific Line Is Written In The PNR    RIR CANCEL BY ${cancel_by_value} ${cancel_by_uom} PRIOR TO ARRIVAL OR PENALTY APPLIED/S${selected_segment}
+    Run Keyword If    "${cancel_policy.lower()}"=="no cancellation"    Verify Specific Line Is Written In The PNR    RIR FORFEITED IN CASE OF NO SHOW/S${selected_segment}
+    Run Keyword If    "${cancel_policy.lower()}"=="others"    Verify Specific Line Is Written In The PNR    RIR CANCELLATION POLICY: ${others_text}/S${selected_segment}
+
+Get Selected Air Segment From Air Segment Grid
+    ${segment_short}    ${segment_long}    Convert Segment Number To Gds Format
+    Set Suite Variable    ${segment_short}
+    Set Suite Variable    ${segment_long}
+
+Click Amend EO
+    [Arguments]    ${eo_number}
+    SyexCustomLibrary.Click Amend EO    ${eo_number}
+    Wait Until Control Object Is Visible    [NAME:OtherServicesTabControl]
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Click Raise Cheque Button In EO Grid
+    [Arguments]    ${eo_number}    ${country}
+    Set Suite Variable    ${eo_status}    ${actual_eo_collection[7]}
+    Click Button In Eo Grid    ${eo_number}    ${country}    Raise Cheque
+    Comment    Run Keyword If    "${grid_option.lower}" == "amend"    Wait Until Control Object Is Visible    [NAME:OtherServicesTabControl]
+    Wait Until Other Service Loader Is Not Visible
+
+Click PDF Button In EO Grid
+    [Arguments]    ${eo_number}    ${country}
+    Set Suite Variable    ${eo_status}    ${actual_eo_collection[7]}
+    Click Button In Eo Grid    ${eo_number}    ${country}    PDF
+    Run Keyword If    "${grid_option.lower}" == "Pdf"    Wait Until Control Object Is Visible    [NAME:OtherServicesTabControl]
+    Wait Until Other Service Loader Is Not Visible
+    Take Screenshot
+
+Click Email Button In EO Grid
+    [Arguments]    ${country}
+    Click Other Services
+    Comment    Click Send Email Eo    ${eo_number}
+    Click Button In Eo Grid    ${eo_number}    ${country}    email
+    Wait Until Window Exists    Exchange Order    timeout=8    retry_interval=4
+    ${actual_email_confirm_message}    Get Control Text Value    [CLASS:Static; INSTANCE:1]    Exchange Order
+    ${actual_email_confirm_message}    Remove String Using Regexp    ${actual_email_confirm_message}    \\n
+    ${actual_email_confirm_message}    Strip String    ${actual_email_confirm_message}
+    ${actual_email_confirm_message}    Replace String    ${actual_email_confirm_message}    ${SPACE}${SPACE}    ${SPACE}
+    Should Be Equal As Strings    ${actual_email_confirm_message}    Email has been successfully sent to: JIlagan@Carlsonwagonlit.com
+    Send    {ENTER}
+    Get Expected Last Amend Date
+    Take Screenshot
+
+Click Cancel Button In EO Grid
+    [Arguments]    ${eo_number}    ${country}=IN    ${cancel_eo}=yes
+    Click Button In Eo Grid    ${eo_number}    ${country}    Cancel
+    Wait Until Window Exists    Exchange Order Cancel    timeout=8    retry_interval=4
+    ${is_eo_cancelled}    Is Exchange Order Cancelled
+    Run Keyword If    ${is_eo_cancelled}    Log    EO Number "${eo_number}" is already cancelled.    WARN
+    Run Keyword If    "${cancel_eo.lower()}" == "yes" and "${is_eo_cancelled}" == "False"    Run Keywords    Win Activate    Exchange Order Cancel
+    ...    AND    Send    {ALTDOWN}Y{ALTUP}
+    ...    AND    Wait Until Other Service Loader Is Not Visible
+    ...    AND    Wait Until Progress Info is Completed
+    ...    ELSE IF    "${cancel_eo.lower()}" == "no" and "${is_eo_cancelled}" == "False"    Run Keywords    Win Activate    Exchange Order Cancel
+    ...    AND    Send    {ALTDOWN}N{ALTUP}
+    Run Keyword If    ${is_eo_cancelled}    Get Expected Last Amend Date
+    [Teardown]    Take Screenshot  
+    
+
+Create New Booking For Other Services - India
+    [Arguments]    ${client_account}    ${fop}    ${active_air}=1    ${passive_air}=0    ${active_car}=0    ${passive_car}=0
+    ...    ${active_hotel}=0    ${passive_hotel}=0
+    [Documentation]    FOP = INV, CASH, VI, AX, CA
+    Open Power Express And Retrieve Profile    ${version}    test    U003JDC    en-GB    jcabela    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN IN    BEAR    INDIA
+    Run Keyword If    "${client_account}" != "${EMPTY}"    Select Client Account Value    ${client_account}
+    Click New Booking
+    Click Panel    Client Info
+    &{fop_dict}    Create Dictionary    CASH=Cash    INVOICE=Invoice    AX=371134257188217    CA=5555555555554444    VI=4444333322221111
+    ${fop}    Convert To Uppercase    ${fop}
+    ${selected_fop}    Get From Dictionary    ${fop_dict}    ${fop}
+    Run Keyword If    "${fop}" == "CASH" or "${fop}" == "INVOICE"    Select Form Of Payment    ${selected_fop}
+    ...    ELSE    Manually Set Value In Form Of Payment    ${fop}    ${selected_fop}    1225
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Update PNR
+    Run Keyword If    ${active_air} > 0    Book Flight X Months From Now    SINJFK/AJL    ss1y1    fxp/S2-3    4
+    Run Keyword If    ${active_air} > 1    Book Flight X Months From Now    JFKSIN/AJL    ss1y1    fxp/S3-4    4
+    Run Keyword If    ${passive_air} > 0    Book Passive Flight X Months From Now    LAXSIN    AA    5    2
+    Run Keyword If    ${passive_air} > 1    Book Passive Flight X Months From Now    SINHKG    3K    5    6
+    Run Keyword If    ${passive_car} > 0    Book Passive Car Segment X Months From Now    HKG    6    3
+    Run Keyword If    ${passive_car} > 1    Book Passive Car Segment X Months From Now    HKG    6    5
+    Run Keyword If    ${active_car} > 0    Book Active Car Segment X Month From Now    JFK    6    11
+    Run Keyword If    ${active_car} > 1    Book Active Car Segment X Month From Now    JFK    6    14
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+    [Teardown]    Take Screenshot

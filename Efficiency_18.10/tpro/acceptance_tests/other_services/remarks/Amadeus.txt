@@ -1,0 +1,431 @@
+*** Settings ***
+Force Tags
+Resource          ../../../../resources/common/global_resources.txt
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../other_services_verification.txt
+Resource          ../../../../resources/panels/client_info.txt
+Resource          ../../../../resources/panels/other_svcs.txt
+
+*** Test Cases ***
+[SG NB OS] Verify That Exchange Order Remarks And Itinerary Remarks Fields Are Working Correctly
+    [Tags]    US720    US453    backlog    sg    obsolete
+    Create PNR Using Credit Card As FOP    SG
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Select Form Of Payment (FOP) Value    Cash or Invoice
+    Verify Exchange And Itinerary Order Remarks Fields Are working Correctly
+    [Teardown]
+
+[SG OS] Verify That Selected Itinerary Remarks Are Written In The PNR In The Correct Order
+    [Tags]    US720    US453    backlog    sg    obsolete
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Remarks
+    Select Multiple Items in Exchange Order Remarks Left Grid View By Index Range    0    3
+    Click Add Button In Exchange Order Remarks Grid View
+    Click Sort Down Button On A Specific Item In Exchange Order Remarks Grid View By Index    0
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0    1    2
+    Click Add Button In Itinerary Remarks Grid View
+    Click Sort Down Button On An Item In Itinerary Remarks Grid View By Index    0
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0    1    2
+    Click Add Button In Itinerary Remarks Grid View
+    Click Finish PNR    panel=Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    2    @{selected_multiple_io_rmk_list}
+    Verify Exchange Order Remarks Are Not Written In The RIR Lines    @{selected_multiple_eo_rmk_list}
+
+[SG AB] Verify That Selected Itinerary Remarks Are Written In The PNR In The Correct Order
+    [Tags]    US720    US453    backlog    sg    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Set Ticketing Date    1
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Populate Service Info With Values    Vendor Contact    600.0    700.0    Credit Card (CC)    AX    371449635398431
+    ...    02    2024    Test BTA Description    ${EMPTY}
+    Click Tab In Other Services Panel    Remarks
+    Select Multiple Items in Exchange Order Remarks Left Grid View By Index Range    0    3
+    Click Add Button In Exchange Order Remarks Grid View
+    Click Sort Down Button On A Specific Item In Exchange Order Remarks Grid View By Index    0
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0    1    2
+    Click Add Button In Itinerary Remarks Grid View
+    Click Sort Down Button On An Item In Itinerary Remarks Grid View By Index    0
+    Click Finish PNR    panel=Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    3    @{selected_multiple_io_rmk_list}
+    Verify Exchange Order Remarks Are Not Written In The RIR Lines    @{selected_multiple_eo_rmk_list}
+    [Teardown]
+
+[SG OS] Verify That On Finish PNR Selected Itinerary Remarks Are Written In The PNR In The Correct Order
+    [Tags]    US720    US453    backlog    sg    obsolete    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Populate Service Info With Values    Vendor Contact    600.0    700.0    Credit Card (CC)    AX    371449635398431
+    ...    02    2024    Test BTA Description    ${EMPTY}
+    Click Tab In Other Services Panel    Remarks
+    Select Multiple Items in Exchange Order Remarks Left Grid View By Index Range    0    3
+    Click Add Button In Exchange Order Remarks Grid View
+    Click Sort Down Button On A Specific Item In Exchange Order Remarks Grid View By Index    0
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0    1    2
+    Click Add Button In Itinerary Remarks Grid View
+    Click Sort Down Button On An Item In Itinerary Remarks Grid View By Index    0
+    Click Finish PNR    panel=Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    4    @{selected_multiple_io_rmk_list}
+    Verify Exchange Order Remarks Are Not Written In The RIR Lines    @{selected_multiple_eo_rmk_list}
+
+[SG OS] Verify That On Retrieval Of PNR Selected Itinerary Remarks Are Written In The PNR In The Correct Order
+    [Tags]    US720    US453    backlog    sg    obsolete    not_ready
+    Click Other Services
+    Select Product And Vendor    Despatch Charge    DESPATCH DEPARTMENT
+    Populate Service Info With Values    Vendor Contact    600.0    700.0    Credit Card (CC)    AX    371449635398431
+    ...    02    2024    Test BTA Description    ${EMPTY}
+    Click Tab In Other Services Panel    Remarks
+    Select Multiple Items in Exchange Order Remarks Left Grid View By Index Range    0    3
+    Click Add Button In Exchange Order Remarks Grid View
+    Click Sort Down Button On A Specific Item In Exchange Order Remarks Grid View By Index    0
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0    1    2
+    Click Add Button In Itinerary Remarks Grid View
+    Click Sort Down Button On An Item In Itinerary Remarks Grid View By Index    0
+    Click Finish PNR    panel=Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    5    @{selected_multiple_io_rmk_list}
+    Verify Exchange Order Remarks Are Not Written In The RIR Lines    @{selected_multiple_eo_rmk_list}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK NB] Verify That Selected Itinerary Remarks Are Written In The PNR In The Correct Order
+    [Tags]    US720    US453    backlog    hk    not_ready    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ AUTOMATION HK - OS REMARK TAB (US863)    Bear    EightsixThree    SINMNL
+    Click Panel    Delivery
+    Set Ticketing Date    1
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    24 EMERGENCY SERVICE FEE    CWT
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Remarks
+    Select Multiple Items in Exchange Order Remarks Left Grid View By Index Range    0    3
+    Click Add Button In Exchange Order Remarks Grid View
+    Click Sort Down Button On A Specific Item In Exchange Order Remarks Grid View By Index    0
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0    1    2
+    Click Add Button In Itinerary Remarks Grid View
+    Click Sort Down Button On An Item In Itinerary Remarks Grid View By Index    0
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0    1    2
+    Click Add Button In Itinerary Remarks Grid View
+    Click Finish PNR    panel=Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    2    @{selected_multiple_io_rmk_list}
+    Verify Exchange Order Remarks Are Not Written In The RIR Lines    @{selected_multiple_eo_rmk_list}
+
+[HK AB] Verify That Selected Itinerary Remarks Are Written In The PNR In The Correct Order
+    [Tags]    US720    US453    backlog    hk    not_ready    obsolete
+    [Timeout]
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Set Ticketing Date    1
+    Click Finish PNR
+    Click Other Services
+    Select Product And Vendor    24 EMERGENCY SERVICE FEE    CWT
+    Populate Service Info With Values    Vendor Contact    600    707    Credit Card (CC)    AX    371449635398431
+    ...    02    2024    Test BTA Description    ${EMPTY}
+    Click Tab In Other Services Panel    Remarks
+    Select Multiple Items in Exchange Order Remarks Left Grid View By Index Range    0    3
+    Click Add Button In Exchange Order Remarks Grid View
+    Click Sort Down Button On A Specific Item In Exchange Order Remarks Grid View By Index    0
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    0    1    2
+    Click Add Button In Itinerary Remarks Grid View
+    Click Sort Down Button On An Item In Itinerary Remarks Grid View By Index    0
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG NB] Verify That Itinerary And Exchange Order Can Be Entered Manually And Written In The PNR
+    [Tags]    US720    US453    US863    backlog    not_ready    sg
+    ...    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    Handle Generic Window Popup
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG    BEAR    LEN
+    Click New Booking
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP    2    14
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Invoice
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Finish PNR    delay_in_secs=5
+    Click Other Services
+    Select Product    Despatch Charge    #Despatch Charge    #Meet And Greet    #24 Hours Emergency Svcs
+    Select Vendor    DESPATCH DEPARTMENT    #DESPATCH DEPARTMENT    #Carlson Wagonlit GST    #Carlson Wagonlit GST
+    Click Continue In Other Svcs
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Remarks
+    Select Exchange Order Remarks    NO SMOKING
+    Add Remarks In Exchange Order    Test EO remark 1    Test EO remark 2    Test EO remark 3    Test EO remark 4    Test EO remark 5
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Add Remarks In Itinerary    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Click Finish PNR    panel=Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    1    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+
+[SG AB][OS] Verify That Itinerary And Exchange Order Can Be Entered Manually And Written In The PNR
+    [Tags]    US863    backlog    not_ready    sg    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Click Panel    Pspt and Visa
+    Populate Pspt and Visa Panel With Default Values
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Select Delivery Method    Auto Cancel (TKXL)
+    Click Finish PNR
+    Click Other Services
+    Select Product    Meet And Greet    #Despatch Charge    #Meet And Greet    #24 Hours Emergency Svcs
+    Select Vendor    Carlson Wagonlit GST    #DESPATCH DEPARTMENT    #Carlson Wagonlit GST    #Carlson Wagonlit GST
+    Click Continue In Other Svcs
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Remarks
+    Select Exchange Order Remarks    NO SMOKING
+    Add Remarks In Exchange Order    Test EO remark 1    Test EO remark 2    Test EO remark 3    Test EO remark 4    Test EO remark 5
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Add Remarks In Itinerary    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Click Finish PNR    ${EMPTY}    6    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    2    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Comment    Select Exchange Order Remarks    NO SMOKING
+    Comment    Add Remarks In Exchange Order    eo rem test 1    eo rem test 2    eo rem 3
+    Comment    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Comment    Add Remarks In Itinerary    iten rem test 1    iten rem test 2    iten rem test 3
+    Comment    Click Finish PNR    ${EMPTY}    6    Other Svcs
+    Comment    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Comment    Verify Itinerary Remarks Are Re-Written In The RIR Lines    2    iten rem test 1    iten rem test 2    iten rem test 3
+
+[SG OS] Verify That Itinerary And Exchange Order Can Be Entered Manually And Written In The PNR
+    [Tags]    US863    backlog    not_ready    sg    obsolete
+    Click Other Services
+    Select Product    24 Hours Emergency Svcs    #Despatch Charge    #Meet And Greet    #24 Hours Emergency Svcs
+    Select Vendor    Carlson Wagonlit GST    #DESPATCH DEPARTMENT    #Carlson Wagonlit GST    #Carlson Wagonlit GST
+    Click Continue In Other Svcs
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Remarks
+    Select Exchange Order Remarks    NO SMOKING
+    Add Remarks In Exchange Order    Test EO remark 1    Test EO remark 2    Test EO remark 3    Test EO remark 4    Test EO remark 5
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Add Remarks In Itinerary    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Click Finish PNR    ${EMPTY}    6    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    3    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK NB][OS] Verify That Itinerary And Exchange Order Can Be Entered Manually And Written In The PNR
+    [Tags]    US863    backlog    not_ready    hk    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    Handle Generic Window Popup
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - OS REMARK TAB (US863)    Bear    EightsixThree
+    Click New Booking
+    Book Flight X Months From Now    SINMNL    SS1Y1    FXP    2    15
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Invoice
+    Populate Fare Tab With Default Values    Fare Quote 1    fare_restriction_default=true
+    Click Finish PNR
+    Click Other Services
+    Select Product    24 EMERGENCY SERVICE FEE    #24 EMERGENCY SERVICE FEE    #AEL Ticket    #AIR REFUND
+    Select Vendor    CWT    #CWT    #TESTING VENDOR 2    #AIR FRANCE
+    Click Continue In Other Svcs
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Remarks
+    Select Exchange Order Remarks    INFANT INCLUDED
+    Add Remarks In Exchange Order    Test EO remark 1    Test EO remark 2    Test EO remark 3    Test EO remark 4    Test EO remark 5
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Add Remarks In Itinerary    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Click Finish PNR    ${EMPTY}    6    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    1    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+
+[HK AB][OS] Verify That Itinerary And Exchange Order Can Be Entered Manually And Written In The PNR
+    [Tags]    US863    backlog    not_ready    hk    obsolete
+    Comment    Click Clear All
+    Retrieve PNR    ${current_pnr}    5
+    Click Amend Booking
+    Click Read Booking
+    Comment    Click Panel    Client Info
+    Comment    Select Merchant Fee Type    Airline
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Pspt and Visa
+    Populate Pspt and Visa Panel With Default Values
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Select Delivery Method    Amadeus edited TKXL
+    Set Ticketing Date X Months From Now    1
+    Set Follow Up Date X Day Ahead    15
+    Click Finish PNR
+    Click Other Services
+    Select Product    24 EMERGENCY SERVICE FEE    #24 EMERGENCY SERVICE FEE    #AEL Ticket    #AIR REFUND
+    Select Vendor    CWT    #CWT    #TESTING VENDOR 2    #AIR FRANCE
+    Click Continue In Other Svcs
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Remarks
+    Select Exchange Order Remarks    INFANT INCLUDED
+    Add Remarks In Exchange Order    Test EO remark 1    Test EO remark 2    Test EO remark 3    Test EO remark 4    Test EO remark 5
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Add Remarks In Itinerary    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Click Finish PNR    ${EMPTY}    6    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    2    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+
+[HK OS] Verify That Itinerary And Exchange Order Can Be Entered Manually And Written In The PNR
+    [Tags]    US863    backlog    not_ready    hk    obsolete
+    Click Other Services
+    Select Product    24 EMERGENCY SERVICE FEE    #24 EMERGENCY SERVICE FEE    #AEL Ticket    #AIR REFUND
+    Select Vendor    CWT    #CWT    #TESTING VENDOR 2    #AIR FRANCE
+    Click Continue In Other Svcs
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Click Tab In Other Services Panel    Remarks
+    Select Exchange Order Remarks    INFANT INCLUDED
+    Add Remarks In Exchange Order    Test EO remark 1    Test EO remark 2    Test EO remark 3    Test EO remark 4    Test EO remark 5
+    Select Itinerary Remarks    EARLY CHECKIN IS ALLOWED
+    Add Remarks In Itinerary    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    Click Finish PNR    ${EMPTY}    6    Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Itinerary Remarks Are Re-Written In The RIR Lines    3    Test Itinerary Remark 1    Test Itinerary Remark 2    Test Itinerary Remark 3    Test Itinerary Remark 4    Test Itinerary Remark 5
+    [Teardown]
+
+*** Keywords ***
+Add Remarks In Exchange Order
+    [Arguments]    @{free_text_remark}
+    Activate Power Express Window
+    : FOR    ${item}    IN    @{free_text_remark}
+    \    Click Control Button    [NAME:EoAddFreeText]
+    \    Send    ${item}
+    \    Send Keys    {TAB}
+
+Add Remarks In Itinerary
+    [Arguments]    @{free_text_remark}
+    Activate Power Express Window
+    : FOR    ${item}    IN    @{free_text_remark}
+    \    Click Control Button    [NAME:IoAddFreeText]
+    \    Send    ${item}
+    \    Send Keys    {TAB}
+
+Get All Original Data From EO Grid
+    [Documentation]    This Keyword is used to get the original data/remarks from the left exchange order grid. Reusing this keyword in later script will modify(If the Left grid has been modified due to some reason) the variable storing the remarks and result in failure of script.
+    @{all_eo_remarks_list}    Get All Cell Values In Data Grid Table    [NAME:FromEoDataGridView]
+    Set Test Variable    ${all_eo_remarks_list}
+    [Return]    ${all_eo_remarks_list}
+
+Get All Original Data From IO Grid
+    [Documentation]    This Keyword is used to get the original data/remarks from the left Itinerary order grid. Reusing this keyword in later script will modify the variable storing the remarks(If the Left grid has been modified due to some reason) and result in failure of script.
+    @{all_io_remarks_list}    Get All Cell Values In Data Grid Table    [NAME:FromIoDataGridView]
+    Set Test Variable    ${all_io_remarks_list}
+    [Return]    ${all_io_remarks_list}
+
+Get Items In Selected Itinerary List Of Remarks Tab
+    @{get_values}    Get All Cell Values In Data Grid Pane    [NAME:ToIoDataGridView]
+    Lists Should Be Equal    ${selected_multiple_io_rmk_list}    ${get_values}
+
+Note The Last RIR Remark Line In The PNR
+    [Documentation]    This keyword is an abstraction for
+    ...
+    ...    ${last_itinerary_line} Retrieve Last RIR Line
+    ...
+    ...    ...and ensuring that the ${last_itinerary_line}'s value is available at other areas of the Test Case.
+    ${last_itinerary_line}    Retrieve Last RIR Line
+    Set Test Variable    ${last_itinerary_line}
+
+Note The Remarks Inside Selected Exchange Order List
+    @{get_values}    Get All Cell Values In Data Grid Pane    [NAME:ToEoDataGridView]
+    ${items_count}    Get Length    ${get_values}
+    Log    ${get_values}
+    @{selected_multiple_eo_rmk_list}    Create List
+    @{row_list}    Create List
+    : FOR    ${i}    IN RANGE    ${items_count}
+    \    ${get_cell_value}=    Get Cell Value In Data Grid Table    [NAME:ToEoDataGridView]    Row ${i}
+    \    Append To List    ${selected_multiple_eo_rmk_list}    ${get_cell_value}
+    \    Append To List    ${row_list}    Row ${i}
+    Log    ${selected_multiple_eo_rmk_list}
+    Set Test Variable    ${selected_multiple_eo_rmk_list}
+    Take Screenshot
+
+Note The Remarks Inside Selected Itinerary Remarks List
+    @{get_values}    Get All Cell Values In Data Grid Pane    [NAME:ToIoDataGridView]
+    ${items_count}    Get Length    ${get_values}
+    @{selected_multiple_io_rmk_list}    Create List
+    @{row_list}    Create List
+    : FOR    ${i}    IN RANGE    ${items_count}
+    \    ${get_cell_value}=    Get Cell Value In Data Grid Table    [NAME:FromIoDataGridView]    Row ${i}
+    \    Append To List    ${selected_multiple_io_rmk_list}    ${get_cell_value}
+    \    Append To List    ${row_list}    Row ${i}
+    Log    ${selected_multiple_io_rmk_list}
+    Set Test Variable    ${selected_multiple_io_rmk_list}
+    Take Screenshot
+
+Retrieve First RIR Line
+    @{captured_lines}=    Get Regexp Matches    ${pnr_details}    [^\\s](.+?)(?= RIR ${selected_multiple_io_rmk_list[0]})
+    ${first_itinerary_line}=    Catenate    ${EMPTY}    ${captured_lines[0]}
+    [Return]    ${first_itinerary_line}
+
+Retrieve Last RIR Line
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    @{captured_lines}=    Get Regexp Matches    ${pnr_details}    [^\\s](.+?)(?= RIR)
+    ${last_remark_line}=    Catenate    ${EMPTY}    ${captured_lines[-1]}
+    Log    Last line is ${last_remark_line}
+    Set Test Variable    ${last_remark_line}
+    [Return]    ${last_remark_line}
+
+Select One Or More Pre-Defined Other Service Exchange Order Remarks
+    [Arguments]    @{list_of_indices}
+    [Documentation]    This keyword is an alternative to a group of keywords being used for specific purpose. For example:
+    ...
+    ...    Select Multiple Items in Exchange Order Remarks Left Grid View By Index Range
+    ...
+    ...    Click Add Button in Exchange Order Remarks Grid View
+    ...
+    ...    Verify Multiple Selected Exchange Order Remarks Items Are Reflected In Right Grid View
+    ...
+    ...
+    ...    These keywords, altogether has one purpose, select one or more pre-defined exchange order remarks, click add button and ensuring what were selected, they appear as selected exchange order remarks.
+    ...
+    ...
+    ...    [uexr493]
+    Select Multiple Items in Exchange Order Remarks Left Grid View By Index Range    @{list_of_indices}
+    Click Add Button in Exchange Order Remarks Grid View
+    Verify Multiple Selected Exchange Order Remarks Items Are Reflected In Right Grid View
+
+Select One Or More Pre-Defined Other Service Itinerary Remarks
+    [Arguments]    @{list_of_indices}
+    Select Multiple Items in Itinerary Remarks Left Grid View By Index Range    @{list_of_indices}
+    Click Add Button In Itinerary Remarks Grid View
+    Verify Multiple Selected Exchange Order Remarks Items Are Reflected In Right Grid View
+    Verify Multiple Selected Itinerary Remarks Items Are Reflected In Right Grid VIew
+
+Verify That Expected Itinerary Remarks Are Appended At The Bottom Of RIR Lines Group
+    [Arguments]    @{remarks_list}
+    ${first_itinerary_line}=    Retrieve First RIR Line
+    Should Be True    ${first_itinerary_line} > ${last_remark_line}
+    Verify Specific Line Is Written In The PNR
+    Verify Specific CDR Is Not Shown Upon Load

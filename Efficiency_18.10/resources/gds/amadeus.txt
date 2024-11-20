@@ -1,0 +1,867 @@
+*** Settings ***
+Resource          ../common/utilities.txt
+Resource          ../panels/gds_screen.txt
+
+*** Keywords ***
+Activate Amadeus Selling Platform
+    [Arguments]    ${clear_form}=True
+    Comment    Win Activate    SELLING PLATFORM    ${EMPTY}
+    Comment    Handle Amadeus Popup
+    Comment    Control Focus    SELLING PLATFORM    ${EMPTY}    [CLASS:RichEdit20A; INSTANCE:1]
+    Comment    Run Keyword If    ${clear_form} == True    Run Keywords    Send    {SHIFTDOWN}{PAUSE}{SHIFTUP}
+    ...    AND    Sleep    1
+    Activate Power Express Window
+    Click GDS Screen Tab
+
+Activate Amadeus TST Webpage Dialog
+    Win Activate    TST -- Webpage Dialog    ${EMPTY}
+    Comment    Control Click    TST -- Webpage Dialog    ${EMPTY}    [CLASS:Internet Explorer_Server; INSTANCE:1]
+    Sleep    1
+
+Add YQ tax for TST ${segment_number}
+    Activate Amadeus Selling Platform
+    Send    {SHIFTDOWN}{PAUSE}{SHIFTUP}
+    Sleep    2
+    Send    TQT/T${segment_number}{ENTER}
+    Wait Until Window Exists    TST -- Webpage Dialog    60    5
+    Activate Amadeus TST Webpage Dialog
+    Send    {TAB 22}
+    Send    {SPACE}
+    ${list_of_taxes_appeared}    Run Keyword and Return Status    Wait Until Window Exists    List of taxes -- Webpage Dialog    15    1
+    Run Keyword If    ${list_of_taxes_appeared} == False    Wait Until Window Exists    Listes des taxes -- Webpage Dialog    15    1
+    ${tax_window_title}    Set Variable If    ${list_of_taxes_appeared} == False    Listes des taxes -- Webpage Dialog    List of taxes -- Webpage Dialog
+    Win Activate    ${tax_window_title}    ${EMPTY}
+    Send    {TAB 16}
+    Sleep    2
+    Send    3.33
+    Sleep    2
+    Send    {TAB}
+    Sleep    2
+    Send    YQ
+    Sleep    2
+    Send    {ENTER}
+    Wait Until Window Exists    TST -- Webpage Dialog    20    1
+    Send    {ENTER}
+    ${webdialog_appeared}    Run Keyword and Return Status    Wait Until Window Exists    Selling Platform messages -- Webpage Dialog    20    1
+    Run Keyword If    ${webdialog_appeared} == False    Wait Until Window Exists    Selling Platform Messages Selling Platform -- Webpage Dialog    20    1
+    ${webdialog_title}    Set Variable If    ${webdialog_appeared} == False    Selling Platform messages -- Webpage Dialog    Selling Platform Messages Selling Platform -- Webpage Dialog
+    Run Keyword If    ${webdialog_appeared} == True    Run Keywords    Win Activate    ${webdialog_title}
+    ...    AND    Send    {ENTER}
+    Win Close    TST -- Webpage Dialog    ${EMPTY}
+    Sleep    5
+
+Cancel Amadeus PNR
+    [Arguments]    ${current_pnr}    ${emulate_back_to_home_pcc}=True    ${cancel_resa_rail}=False    ${number_of_xe2}=0    ${void_ticket}=False
+    Run Keyword If    '${cancel_resa_rail}' == 'True'    Get Resa Rail PNR    ${current_pnr}
+    Run Keyword If    '${cancel_resa_rail}' == 'True'    Cancel Resa Rail Booking    ${resa_rail_pnr}
+    Run Keyword If    '${void_ticket}' == 'True'    Void Ticket Number For Amadeus    ${current_pnr}
+    Activate Amadeus Selling Platform
+    Enter GDS Command    RT${current_pnr}    IR
+    : FOR    ${INDEX}    IN RANGE    10
+    \    ${data_clipboard}    Get Clipboard Data Amadeus    RTI
+    \    ${has_no_itin}    Run Keyword And Return Status    Should Contain Any    ${data_clipboard}    AUCUN ELEMENT TROUVE    NO ELEMENT FOUND
+    \    ...    ES WURDE KEIN ELEMENT GEFUNDEN
+    \    Exit For Loop If    ${has_no_itin} == True
+    \    Enter GDS Command    TTE/ALL
+    \    ${data_clipboard}    Get Clipboard Data Amadeus    XI
+    \    ${is_restricted_use_xe}    Run Keyword And Return Status    Should Contain    ${data_clipboard}    USE XE
+    \    Run Keyword If    ${is_restricted_use_xe} == True    Enter GDS Command    XE2
+    \    Exit For Loop If    ${is_restricted_use_xe} == False
+    Enter GDS Command    XI
+    ${counter}    Set Variable    0
+    ${number_of_xe2}    Run Keyword If    "${number_of_xe2}" != "${EMPTY}"    Convert To Integer    ${number_of_xe2}
+    ...    ELSE    Set Variable    ${EMPTY}
+    : FOR    ${counter}    IN RANGE    5
+    \    Exit For Loop If    "${number_of_xe2}" == "${EMPTY}" or "${number_of_xe2}" == "0"
+    \    Enter GDS Command    RTI{ENTER}
+    \    ${data_clipboard}    Get Clipboard Data Amadeus
+    \    ${has_no_itin}    Run Keyword And Return Status    Should Contain Any    ${data_clipboard}    AUCUN ELEMENT TROUVE    NO ELEMENT FOUND
+    \    ...    ES WURDE KEIN ELEMENT GEFUNDEN
+    \    Exit For Loop If    ${has_no_itin} == True
+    \    Enter GDS Command    XE2{ENTER}
+    \    ${counter}    Evaluate    ${counter} + 1
+    \    Exit For Loop If    ${counter} == ${number_of_xe2}
+    Enter GDS Command    RFCWTPTEST{ENTER}
+    Comment    Enter GDS Command    QE/FRAWL2378/70C12{ENTER}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${is_simultaneous_changes}    Run Keyword And Return Status    Should Contain Any    ${data_clipboard}    SIMULT    PARALLEL
+    Run Keyword If    ${is_simultaneous_changes} == True    Cancel Amadeus PNR    ${current_pnr}    ${emulate_back_to_home_pcc}    ${cancel_resa_rail}    ${number_of_xe2}
+    Enter GDS Command    ER{ENTER}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${is_simultaneous_changes}    Run Keyword And Return Status    Should Contain Any    ${data_clipboard}    SIMULT    PARALLEL
+    Run Keyword If    ${is_simultaneous_changes} == True    Cancel Amadeus PNR    ${current_pnr}    ${emulate_back_to_home_pcc}    ${cancel_resa_rail}    ${number_of_xe2}
+    Enter GDS Command    IG{ENTER}    RT${current_pnr}{ENTER}    RTI{ENTER}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    Run Keyword And Continue On Failure    Should Contain Any    ${data_clipboard}    AUCUN ELEMENT TROUVE    NO ELEMENT FOUND    ES WURDE KEIN ELEMENT GEFUNDEN    msg=${current_pnr} still has itinerary segments
+    ...    values=False
+    Enter GDS Command    IG{ENTER}
+    Run Keyword If    '${emulate_back_to_home_pcc}'=='True'    Enter GDS Command    JUO{ENTER}
+
+Change Tax Value For TST ${segment_number}
+    Activate Amadeus Selling Platform
+    Send    {SHIFTDOWN}{PAUSE}{SHIFTUP}
+    Sleep    1
+    Send    IR{ENTER}
+    Sleep    2
+    Send    RT${current_pnr}{ENTER}
+    Sleep    2
+    Send    {SHIFTDOWN}{PAUSE}{SHIFTUP}
+    Sleep    1
+    Send    TQT/T${segment_number}{ENTER}
+    Wait Until Window Exists    TST -- Webpage Dialog    60    5
+    Activate Amadeus TST Webpage Dialog
+    Take Screenshot
+    Send    {TAB 22}
+    Send    {SPACE}
+    ${list_of_taxes_appeared}    Run Keyword and Return Status    Wait Until Window Exists    List of taxes -- Webpage Dialog    15    1
+    Run Keyword If    ${list_of_taxes_appeared} == False    Wait Until Window Exists    Listes des taxes -- Webpage Dialog    15    1
+    ${tax_window_title}    Set Variable If    ${list_of_taxes_appeared} == False    Listes des taxes -- Webpage Dialog    List of taxes -- Webpage Dialog
+    Win Activate    ${tax_window_title}    ${EMPTY}
+    Clear Data From Clipboard
+    Send    {TAB}
+    Send    ^c
+    ${data_clipboard} =    Clip Get
+    Take Screenshot
+    ${adjusted_tax_amount} =    Evaluate    ${data_clipboard} + 5
+    Send    ${adjusted_tax_amount}
+    Take Screenshot
+    Send    {ENTER}
+    Wait Until Window Exists    TST -- Webpage Dialog    20    1
+    Send    {ENTER}
+    ${webdialog_appeared}    Run Keyword and Return Status    Wait Until Window Exists    Selling Platform messages -- Webpage Dialog    20    1
+    Run Keyword If    ${webdialog_appeared} == False    Wait Until Window Exists    Selling Platform Messages Selling Platform -- Webpage Dialog    20    1
+    ${webdialog_title}    Set Variable If    ${webdialog_appeared} == False    Selling Platform messages -- Webpage Dialog    Selling Platform Messages Selling Platform -- Webpage Dialog
+    Run Keyword If    ${webdialog_appeared} == True    Run Keywords    Win Activate    ${webdialog_title}
+    ...    AND    Send    {ENTER}
+    Take Screenshot
+    Sleep    1
+    Send    {ESC}
+    Sleep    1
+    Win Close    TST -- Webpage Dialog    ${EMPTY}
+    Sleep    5
+    [Teardown]
+
+Clear Amadeus GDS Screen
+    Activate Amadeus Selling Platform
+    Comment    Send    {SHIFT}+{PAUSE}
+
+Create Amadeus Offer
+    [Arguments]    ${itinerary}    ${seat_select}    ${store_fare}    ${number_of_months}=6    ${number_of_days}=0    ${store_offer}=FXD
+    Book Flight X Months From Now    ${itinerary}    ${seat_select}    ${store_fare}
+    Enter GDS Command    ${store_offer}
+    Select Offer Automatically Based On Recommended List
+
+Create Amadeus Offer Remove Flight
+    [Arguments]    ${segment_number}
+    ${segment_number}    Replace String    ${segment_number}    FXX/    ${EMPTY}
+    Enter GDS Command    FXX/${segment_number}
+    Enter GDS Command    FXT01/P1
+    ${data_clip}    Get Data From GDS Screen    OFS/A
+    Should Not Contain    ${data_clip}    NO FARE DATA FOUND    msg=NO FARE DATA FOUND; Alternate fare will not be created    values=False
+    ENter GDS Command    OFS/A
+
+Create Amadeus Offer Retain Flight
+    [Arguments]    ${segment_number}=${EMPTY}
+    ${segment_number}    Replace String    ${segment_number}    FXD/    ${EMPTY}
+    ${create_offer_retain_flight_command}    Set Variable If    "${segment_number}" != "${EMPTY}"    FXD/${segment_number}    FXD
+    Enter GDS Command    ${create_offer_retain_flight_command}
+    Select Offer Automatically Based On Recommended List
+
+Create Amadeus Rail Using Resarail
+    [Arguments]    ${current_pnr}    ${surname}    ${firstname}    ${title}    ${birthday}    ${delivery_method}
+    ...    ${city_pair}    ${return_pair}=${EMPTY}
+    Activate Amadeus Selling Platform
+    Send    {SHIFT}+{PAUSE}
+    Sleep    1
+    Send    R/RFAG{ENTER}
+    Sleep    1
+    Send    R/RFAG{ENTER}
+    Sleep    1
+    Send    R/NM1${surname}/${firstname} ${title}$D-${birthday}{ENTER}
+    Sleep    2
+    Send    R/NMALL@&NC{ENTER}
+    Sleep    2
+    Send    R/APADF{ENTER}
+    Sleep    2
+    ${trip_date} =    Set Departure Date X Months From Now In Gds Format    2
+    Send    R/AN${trip_date}${city_pair}{ENTER}
+    Sleep    3
+    Send    R/SS1AF1!4G0"IN{ENTER}
+    Sleep    3
+    ${return_date} =    Set Departure Date X Months From Now In Gds Format    3
+    Run Keyword If    '${return_pair}' != '${EMPTY}'    Send    R/AN${return_date}${city_pair}{ENTER}
+    Run Keyword If    '${return_pair}' != '${EMPTY}'    Sleep    3
+    Run Keyword If    '${return_pair}' != '${EMPTY}'    Send    R/SS1AF1!4G0"IN{ENTER}
+    Sleep    3
+    Send    R/FXP$${delivery_method}{ENTER}
+    Sleep    3
+    Send    R/ER{ENTER}
+    Sleep    1
+    Send    R/ER{ENTER}
+    Sleep    1
+    Send    IR{ENTER}
+    Sleep    1
+
+Create Multiple Offers And Retain Segment
+    [Arguments]    ${number_of_offers}
+    Enter GDS Command    FXD
+    ${offer_number}    Set Variable    1
+    ${number_of_offers_counter}    Set Variable    1
+    Convert To Integer    ${offer_number}
+    Convert To Integer    ${number_of_offers_counter}
+    : FOR    ${INDEX}    IN RANGE    10
+    \    ${gds_resp}    Get Clipboard Data Amadeus    OFS/A${offer_number}
+    \    ${is_unable_to_price}    Run Keyword And Return Status    Should Contain    ${gds_resp}    NO FARE FOR BOOKING CODE-TRY OTHER PRICING OPTIONS
+    \    Exit For Loop If    ${offer_number} == ${number_of_offers} and ${is_unable_to_price} == False
+    \    ${offer_number}    Evaluate    ${offer_number} + 1
+
+Create One Way Rail Booking Using Amadeus Rail Display Thru Web
+    [Arguments]    ${office_id}    ${departure_station}    ${destination_station}    ${issuing_mode}    ${rail_company}=${EMPTY}
+    Open Browser    https://sellservermodules.amadeus.com/app_sell/apf/init/airrail?LANGUAGE=GB&FIXED_ATID=${at_id}&SITE=ARAVARAV&CONTEXT_MENU=true&OFFICE_ID=${office_id}&AGENT_SIGN=0001&AGENT_INITIALS=AA&AGENT_DUTY_CODE=SU&CSX_PRF_TYPE=T&CSX_PRF_RECLOC=W12SVN&FORCE_REFRESH=12542168    gc
+    Maximize Browser Window
+    Comment    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    Wait Until Element Is Visible    id=suppPositionPanel    60
+    Run Keyword If    '${rail_company}' != '${EMPTY}'    Run Keywords    Click Element    xpath=//span[contains(@id,'selectRailCompany0_input')]
+    ...    AND    Press Key    xpath=//span[contains(@id,'selectRailCompany0_input')]    ${rail_company}
+    ...    AND    Press Key    xpath=//span[contains(@id,'selectRailCompany0_input')]    \\13
+    Input Text    xpath=//input[contains(@id,'dep0_input')]    ${departure_station}
+    Input Text    xpath=//input[contains(@id,'dest0_input')]    ${destination_station}
+    ${trip_date} =    Set Rail Trip Date X Months From Now    2
+    Input Text    xpath=//input[contains(@id,'date0_input')]    ${trip_date}
+    Input Text    xpath=//input[contains(@id,'time0_input')]    10:00
+    Click Element    xpath=//td[@id='suppPositionBoundRemove_1']
+    Click Element    xpath=//div[@id='buttonSearch']/span
+    Wait Until Element Is Visible    xpath=//div[@class='boundContainer']
+    ${webelements}    ExtendedSelenium2Library.Get Webelements    xpath=//tr[@class="quoteLine \ bookableFare"]
+    Log    ${webelements}
+    Comment    Wait Until Element Is Not Visible    xpath=//div[contains(@id,'xOverlay')]    60
+    Comment    Wait Until Element Is Not Visible    xpath=//div[contains(@id,'xOverlay')]    60
+    Comment    Wait Until Element Is Not Visible    xpath=//div[contains(@id,'xOverlay')]//span[contains(text(),'Please wait')]    60
+    Comment    ${is_error_section_present}    Run Keyword And Return Status    Element Should Be Visible    xpath=//div[@class='errorSection']//li[contains(text(),'Please try again later.')]
+    Comment    Run Keyword If    ${is_error_section_present} == True    Run Keywords    Input Text    xpath=//input[contains(@id,'date0_input')]    ${trip_date}
+    ...    AND    Click Element    xpath=//div[@id='buttonSearch']/span
+    ...    AND    Wait Until Element Is Not Visible    xpath=//div[contains(@id,'xOverlay')]    60
+    Comment    Comment    Wait Until Element Is Not Visible    xpath=//div[contains(@id,'xOverlay')]//span[contains(text(),'Please wait')]    60
+    Comment    Wait Until Element Is Visible    xpath=//div[@id='tabPanel']/span/span[1]//div[@class='proposalBox'][1]//table[@class='quotesViewTable']/tbody/tr[1]//td[@class='buttonTd']    60
+    Comment    Click Element    xpath=//div[@id='tabPanel']/span/span[1]//div[@class='proposalBox'][1]//table[@class='quotesViewTable']/tbody/tr[1]//td[@class='buttonTd']
+    Comment    Execute Javascript    var a=document.getElementsByClassName("imgSelect");a[0].click();    #Selects first segment
+    Comment    Comment    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    Comment    Wait Until Element Is Visible    xpath=//span[contains(text(),'Continue')]    60
+    Comment    Click Element    xpath=//span[contains(text(),'Continue')]
+    Comment    Comment    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    Comment    #Selects Issuing Mode
+    Comment    Wait Until Element Is Visible    xpath=//span[contains(@id,'issuingModeOptions_input')]    60
+    Comment    Click Element    xpath=//span[contains(@id,'issuingModeOptions_input')]
+    Comment    Press Key    xpath=//span[contains(@id,'issuingModeOptions_input')]    ${issuing_mode}
+    Comment    Sleep    1
+    Comment    Press Key    xpath=//span[contains(@id,'issuingModeOptions_input')]    \\13
+    Comment    Run Keyword If    '${issuing_mode}' == 'Ticketless Email'    Input Text    xpath=//span[contains(@id,'EMAIL')]//input[contains(@id, 'input')]    automation@carlsonwagonlit.com
+    ...    ELSE IF    '${issuing_mode}' == 'Ticketless Phone' and '${office_id}' == 'STORA27CT'    Input Text    xpath=//span[contains(@id,'emailFoidSectionEMAIL')]//input[contains(@id, 'input')]    +46701111111
+    Comment    Wait Until Keyword Succeeds    60    1    Element Should Be Visible    xpath=//button[contains(@id,'book')]
+    Comment    ExtendedSelenium2Library.Mouse Down    xpath=//button[contains(@id,'book')]
+    Comment    Click Element    xpath=//button[contains(@id,'book')]    #Clicks Book Button
+    Comment    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    Comment    Wait Until Element Is Visible    xpath=//li/span[@class='eotSuggestion']    60
+    Comment    ${submit_message} =    Get Text    xpath=//li/span[@class='eotSuggestion']
+    Comment    Should Contain    ${submit_message}    Your rail reservation has been successfully processed
+    Comment    ${rail_pnr} =    Get Text    xpath=//div[@class='provider-recloc__line__number']/div[contains(@id,provider-recloc)]
+    Comment    ${amadeus_pnr} =    Get Text    xpath=//div[contains(text(), 'Amadeus record locator')]/following-sibling::div
+    Comment    Capture Page Screenshot
+    Comment    Wait Until Element Is Visible    xpath=//div[@class='saveButton']/span/button    60
+    Comment    Click Element    xpath=//div[@class='saveButton']/span/button
+    Comment    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    Comment    Append To File    C:\\Users\\Public\\Documents\\pnr_created.txt    ${\n}${rail_pnr} - ${GDS_switch} - rail
+    [Teardown]    Comment    Close Browser
+
+Create Resa Rail Single TST
+    [Arguments]    ${surname}    ${firstname}    ${title}    ${birthday}    ${delivery_method}    ${city_pair}
+    ...    ${return_pair}=${EMPTY}    ${passenger_type}=${EMPTY}    ${class_code}=AF
+    Enter GDS Command    IR    R/RFAG    R/RFAG
+    Enter GDS Command    R/NM1${surname}/${firstname} ${title}$D-${birthday}    R/AP442037571611    R/NMALL@&NC    R/NM1.1@$C000844
+    ${trip_date} =    Set Departure Date X Months From Now In Gds Format    2
+    Enter GDS Command    R/AN${trip_date}${city_pair}    R/SS1${class_code}1!4G0"IN
+    ${return_date} =    Set Departure Date X Months From Now In Gds Format    3
+    Run Keyword If    '${return_pair}' != '${EMPTY}'    Enter GDS Command    R/AN${return_date}${return_pair}    R/SS1${class_code}1!4G0"IN
+    Run Keyword If    '${delivery_method}' == 'TKV'    Enter GDS Command    R/FXP$${delivery_method}$P01AW01AD
+    Run Keyword If    '${delivery_method}' != 'TKV'    Enter GDS Command    R/FXP$${delivery_method}${passenger_type}
+    Enter GDS Command    R/ER    R/ER    R/RT    IR    RL
+    Get Resa Rail PNR
+    Get Resa Rail Amount
+
+Create Round Trip Rail Booking Using Amadeus Rail Display Thru Web
+    [Arguments]    ${office_id}    ${departure_station}    ${destination_station}    ${issuing_mode}    ${rail_company}=${EMPTY}
+    Open Browser    https://sellservermodules.amadeus.com/app_sell/apf/init/airrail?LANGUAGE=GB&FIXED_ATID=${at_id}&SITE=ARAVARAV&CONTEXT_MENU=true&OFFICE_ID=${office_id}&AGENT_SIGN=0001&AGENT_INITIALS=AA&AGENT_DUTY_CODE=SU&CSX_PRF_TYPE=T&CSX_PRF_RECLOC=W12SVN&FORCE_REFRESH=12542168    gc
+    Maximize Browser Window
+    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    Wait Until Element Is Visible    suppPositionPanel    60
+    Run Keyword If    '${rail_company}' != '${EMPTY}'    Run Keywords    Click Element    xpath=//span[contains(@id,'selectRailCompany0_input')]
+    ...    AND    Press Key    xpath=//span[contains(@id,'selectRailCompany0_input')]    ${rail_company}
+    ...    AND    Press Key    xpath=//span[contains(@id,'selectRailCompany0_input')]    \\13
+    Input Text    xpath=//input[contains(@id,'dep0_input')]    ${departure_station}
+    Input Text    xpath=//input[contains(@id,'dest0_input')]    ${destination_station}
+    ${trip_date} =    Set Rail Trip Date X Months From Now    2
+    Input Text    xpath=//input[contains(@id,'date0_input')]    ${trip_date}
+    Input Text    xpath=//input[contains(@id,'time0_input')]    10:00
+    ${trip_date2} =    Set Rail Trip Date X Months From Now    2    1
+    Input Text    xpath=//input[contains(@id,'date1_input')]    ${trip_date2}
+    Input Text    xpath=//input[contains(@id,'time1_input')]    10:00
+    Click Element    xpath=//div[@id='buttonSearch']/span
+    Wait Until Element Is Not Visible    xpath=//div[contains(@id,'xOverlay')]    60
+    Wait Until Element Is Not Visible    xpath=//div[contains(@id,'xOverlay')]    60
+    Wait Until Element Is Not Visible    xpath=//div[contains(@id,'xOverlay')]//span[contains(text(),'Please wait')]    60
+    Sleep    2
+    ${is_error_section_present}    Run Keyword And Return Status    Selenium2Library.Element Should Be Visible    xpath=//div[@class='errorSection']//li[contains(text(),'Please try again later.')]
+    Run Keyword If    ${is_error_section_present} == True    Run Keywords    Input Text    xpath=//input[contains(@id,'date0_input')]    ${trip_date}
+    ...    AND    Click Element    xpath=//div[@id='buttonSearch']/span
+    ...    AND    Wait Until Element Is Not Visible    xpath=//div[contains(@id,'xOverlay')]    60
+    Wait Until Element Is Not Visible    xpath=//div[contains(@id,'xOverlay')]//span[contains(text(),'Please wait')]    60
+    #Selects first topmost itinerary
+    Wait Until Element Is Visible    xpath=//div[@id='tabPanel']/span/span[1]//div[@class='proposalBox'][1]//table[@class='quotesViewTable']/tbody/tr[1]//td[@class='buttonTd']    60
+    Click Element    xpath=//div[@id='tabPanel']/span/span[1]//div[@class='proposalBox'][1]//table[@class='quotesViewTable']/tbody/tr[1]//td[@class='buttonTd']
+    Execute Javascript    var a=document.getElementsByClassName("imgSelect");a[0].click();
+    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    #Selects second topmost itinerary
+    Sleep    5
+    Wait Until Element Is Visible    xpath=//div[@id='tabPanel']/span/span[2]//div[@class='proposalBox'][1]//table[@class='quotesViewTable']/tbody/tr[1]//td[@class='buttonTd']    60
+    Click Element    xpath=//div[@id='tabPanel']/span/span[2]//div[@class='proposalBox'][1]//table[@class='quotesViewTable']/tbody/tr[1]//td[@class='buttonTd']
+    Execute Javascript    var b=document.getElementsByClassName("imgSelect");b[1].click();
+    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    Wait Until Element Is Visible    xpath=//span[contains(text(),'Continue')]    60
+    Click Element    xpath=//span[contains(text(),'Continue')]
+    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    #Selects Issuing Mode
+    Wait Until Element Is Visible    xpath=//span[contains(@id,'issuingModeOptions_input')]    60
+    Click Element    xpath=//span[contains(@id,'issuingModeOptions_input')]
+    Press Key    xpath=//span[contains(@id,'issuingModeOptions_input')]    ${issuing_mode}
+    Sleep    1
+    Press Key    xpath=//span[contains(@id,'issuingModeOptions_input')]    \\13
+    Run Keyword If    '${issuing_mode}' == 'Ticketless Email'    Input Text    xpath=//span[contains(@id,'EMAIL')]//input[contains(@id, 'input')]    automation@carlsonwagonlit.com
+    ...    ELSE IF    '${issuing_mode}' == 'Ticketless Phone' and '${office_id}' == 'STORA27CT'    Input Text    xpath=//span[contains(@id,'EMAIL')]//input[contains(@id, 'input')]    +46701111111
+    Wait Until Keyword Succeeds    60    1    Element Should Be Visible    xpath=//button[contains(@id,'book')]
+    Selenium2Library.Mouse Down    xpath=//button[contains(@id,'book')]
+    Click Element    xpath=//button[contains(@id,'book')]    #Clicks Book Button
+    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    Wait Until Element Is Visible    xpath=//li/span[@class='eotSuggestion']    60
+    ${submit_message} =    Get Text    xpath=//li/span[@class='eotSuggestion']
+    Should Contain    ${submit_message}    Your rail reservation has been successfully processed
+    ${rail_pnr} =    Get Text    xpath=//div[@class='provider-recloc__line__number']/div[contains(@id,provider-recloc)]
+    ${amadeus_pnr} =    Get Text    xpath=//div[contains(text(), 'Amadeus record locator')]/following-sibling::div
+    Capture Page Screenshot
+    Wait Until Element Is Visible    xpath=//div[@class='saveButton']/span/button    60
+    Click Element    xpath=//div[@class='saveButton']/span/button
+    Wait Until Element Is Not Visible    xpath//div[contains(@id,'xOverlay']    60
+    Append To File    C:\\Users\\Public\\Documents\\pnr_created.txt    ${\n}${rail_pnr} - ${GDS_switch} - rail
+    [Teardown]    Close Browser
+
+Determine Amadeus Offer Remark Lines
+    [Arguments]    ${current_pnr}
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Set Test Variable    ${counter}    0
+    ${start_line_number}    Get Line Number In Amadeus PNR Remarks    RIR \\*OFFER\\*\\*
+    @{pnr_details_list}    Split To Lines    ${pnr_details}
+    : FOR    ${line}    IN    @{pnr_details_list}
+    \    ${eval_line} =    Run Keyword and Return Status    Should Contain    ${line}    RIR *OFFER**
+    \    ${counter}    Run Keyword If    "${eval_line}" == "True"    Evaluate    ${counter} + 1
+    \    ...    ELSE    Evaluate    ${counter} + 0
+    ${number_of_remarks}    Evaluate    ${counter} - 1
+    ${number_of_remarks}    Convert To Integer    ${number_of_remarks}
+    ${last_line_number}    Evaluate    ${start_line_number} + ${number_of_remarks}
+    Set Test Variable    ${offer_line_numbers}    ${start_line_number}-${last_line_number}
+
+Determine Specific Amadeus Offer Remark Lines
+    [Arguments]    ${current_pnr}    ${offer_number}
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    ${start_line_number}    Get Line Number In Amadeus PNR Remarks    RIR \\*OFFER\\*\\*\\<B\\>PROPOSITION NO ${offer_number}\\<\\/B\\>
+    ${pnr_details}    Get String Between Strings    ${pnr_details}    RIR *OFFER**<B>PROPOSITION NO ${offer_number}</B>*    RIR *OFFER**DETAILS
+    ${last_line_number}    Evaluate    ${start_line_number} + 9
+    Set Test Variable    ${offer_line_numbers}    ${start_line_number}-${last_line_number}
+
+Get Air Segments From GDS
+    ${raw_air_segments}    Get Data From GDS Screen    RTA    True
+    ${air_segments_lines}    Get Lines Matching Regexp    ${raw_air_segments}    \\s+\\d\\s{1}.*
+    @{air_segments_lines}    Split To Lines    ${air_segments_lines}
+    @{air_segments}    Create List
+    : FOR    ${each_item}    IN    @{air_segments_lines}
+    \    ${each_item}    Split String    ${each_item.strip()}    ${SPACE}
+    \    ${each_item}    Remove Empty Value From List    ${each_item}
+    \    ${each_item}    Evaluate    " ".join(${each_item[:10]})
+    \    Append To List    ${air_segments}    ${each_item}
+    \    Log    ${each_item[:8]}
+    ${list_length}    Get Length    ${air_segments}
+    ${air_segments}    Run Keyword If    ${list_length} < 2    Evaluate    "".join(${air_segments})
+    ...    ELSE    Set Variable    ${air_segments}
+    Set Suite Variable    ${air_segments}
+    [Return]    ${air_segments}
+
+Get Amadeus Multiple Rail TSTs Amount
+    [Arguments]    ${rail_tst_1}    ${rail_tst_2}
+    Activate Amadeus Selling Platform
+    Send    {SHIFTDOWN}{PAUSE}{SHIFTUP}
+    Sleep    1
+    Send    TQT/${rail_tst_1}{ENTER}
+    Sleep    2
+    Send    {CTRLDOWN}ac{CTRLUP}
+    Sleep    1
+    ${data_clipboard} =    Get Data From Clipboard
+    ${rail_amount_line}    Get Lines Containing String    ${data_clipboard}    CPN VALUE
+    ${rail_amount_currency}    Fetch From Right    ${rail_amount_line}    -
+    ${rail_amount_nocurrency}    Remove String Using Regexp    ${rail_amount_currency}    [A-Z]
+    Set Test Variable    ${tst_amount_1}    ${rail_amount_nocurrency}
+    Send    {SHIFTDOWN}{PAUSE}{SHIFTUP}
+    Sleep    1
+    Send    TQT/${rail_tst_2}{ENTER}
+    Sleep    2
+    Send    {CTRLDOWN}ac{CTRLUP}
+    Sleep    1
+    ${data_clipboard} =    Get Data From Clipboard
+    ${rail_amount_line}    Get Lines Containing String    ${data_clipboard}    CPN VALUE
+    ${rail_amount_currency}    Fetch From Right    ${rail_amount_line}    -
+    ${rail_amount_nocurrency}    Remove String Using Regexp    ${rail_amount_currency}    [A-Z]
+    Set Test Variable    ${tst_amount_2}    ${rail_amount_nocurrency}
+    ${total_rail_tst}    Evaluate    ${tst_amount_1}+${tst_amount_2}
+    Set Test Variable    ${rail_tst_amount}    ${total_rail_tst}
+    Clear Data From Clipboard
+
+Get Amadeus Offer Amount
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Activate Amadeus Selling Platform
+    Enter GDS Command    RT    RTOF
+    Get Clipboard Data Amadeus
+    ${total_offer_line} =    Get Lines Containing String    ${data_clipboard}    ${fare_tab_index} OFFER
+    ${total_offer_amount} =    Get String Using Marker    ${total_offer_line}    TOTAL    EUR
+    ${total_offer_amount} =    Remove All Non-Integer (retain period)    ${total_offer_amount}
+    [Return]    ${total_offer_amount}
+
+Get Amadeus Rail TST Amount
+    [Arguments]    ${rail_tst_number}
+    Activate Amadeus Selling Platform
+    Send    {SHIFTDOWN}{PAUSE}{SHIFTUP}
+    Sleep    1
+    Send    TQT/${rail_tst_number}{ENTER}
+    Sleep    2
+    Send    {CTRLDOWN}ac{CTRLUP}
+    Sleep    1
+    ${data_clipboard} =    Get Data From Clipboard
+    ${rail_amount_line}    Get Lines Containing String    ${data_clipboard}    CPN VALUE
+    ${rail_amount_currency}    Fetch From Right    ${rail_amount_line}    -
+    ${rail_amount_nocurrency}    Remove String Using Regexp    ${rail_amount_currency}    [A-Z]
+    Set Test Variable    ${rail_tst_amount}    ${rail_amount_nocurrency.strip()}
+
+Get Base Fare From Amadeus
+    [Arguments]    ${segment_number}    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Clear Data From Clipboard
+    Activate Amadeus Selling Platform
+    Enter GDS Command    RT    TQT/${segment_number}
+    Get Clipboard Data Amadeus
+    Get Base Fare, Currency, Tst Number And Segment Airline Code    ${fare_tab}
+    Enter GDS Command    RT{ENTER}
+
+Get Base Fare From TST
+    [Arguments]    ${fare_tab}    ${segment_number}    ${gds_command}=TQT
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT    ${gds_command}/${segment_number}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${equiv_base_fare}    Get String Matching Regexp    (EQUIV\\s+\\w+\\s+\\s+\\d+\.?\\d+)    ${data_clipboard}
+    ${base_fare}    Run Keyword If    "${equiv_base_fare}" == "0"    Get String Matching Regexp    (FARE\\s+.*?\\s+\\w+\\s+\\d+\\.?\\d+)    ${data_clipboard}
+    ...    ELSE    Set Variable    ${equiv_base_fare}
+    ${base_fare}    Remove All Non-Integer (retain period)    ${base_fare}
+    Set Suite Variable    ${base_fare_${fare_tab_index}}    ${base_fare}
+    ${tst0_line}    Get Lines Containing String    ${data_clipboard}    TST0
+    ${tst_line_raw}    Run Keyword If    "${tst0_line}" != "${EMPTY}"    Split String    ${tst0_line}    ${SPACE}
+    ...    ELSE    Split String    ${tst_line_using_segment}    ${SPACE}
+    ${tst_number}    Run Keyword If    "${tst0_line}" != "${EMPTY}"    Remove String Using Regexp    ${tst_line_raw[0]}    TST.0*
+    ...    ELSE    Evaluate    ''.join(${tst_line_raw[:1]})
+    Set Test Variable    ${tst_number_${fare_tab_index}}    T${tst_number}
+    Enter GDS Command    RT
+
+Get Base Fare Value From Amadeus For Fare X Tab
+    [Arguments]    ${fare_tab}    ${currency}
+    ${fare_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${segment_number}    Evaluate    ${fare_index} + 1
+    Retrieve PNR Details From Amadeus    ${current_pnr}    FXB/S${segment_number}
+    ${base_fare}    Get String Matching Regexp    ${currency.upper()}[${SPACE},0-9]+\.[0-9][0-9][${SPACE}]+\    ${pnr_details}
+    ${base_fare}    Remove All Non-Integer (retain period)    ${base_fare}
+    Set Test Variable    ${fare_${fare_index}_base_fare}    ${base_fare}
+    Set Test Variable    ${fare_index}
+    [Teardown]    Take Screenshot
+
+Get Base Fare, Currency, Tst Number And Segment Airline Code
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${base_fare_raw}    Get Lines Containing String    ${data_clipboard}    FARE${SPACE * 2}
+    ${currency}    Get Substring    ${base_fare_raw}    8    11
+    ${base_fare}    Remove All Non-Integer (retain period)    ${base_fare_raw}
+    ${contains_period}    Run Keyword And Return Status    Should Contain    ${base_fare}    .
+    ${base_fare}    Set Variable If    ${contains_period} == True    ${base_fare}    ${base_fare}.00
+    ${tst_number_line}    Get Lines Containing String    ${data_clipboard}    TST0
+    ${tst_number_line}    Split String    ${tst_number_line}    ${SPACE}
+    ${tst_number}    Remove String Using Regexp    ${tst_number_line[0]}    TST.0*
+    ${segment_airline_code_line}    Get Lines Containing String    ${data_clipboard}    .FV${SPACE}
+    ${segment_airline_code}    Fetch From Right    ${segment_airline_code_line.strip()}    ${SPACE}
+    ${grant_total_fare_line}    Get Lines Containing String    ${data_clipboard}    GRAND TOTAL
+    ${total_fare_raw_splitted}    Split String    ${grant_total_fare_line}    ${SPACE}
+    ${total_fare_raw_splitted}    Remove Duplicate From List    ${total_fare_raw_splitted}
+    Set Suite Variable    ${grand_total_fare_${fare_tab_index}}    ${total_fare_raw_splitted[-1]}
+    Set Suite Variable    ${grand_total_fare_with_currency_${fare_tab_index}}    ${total_fare_raw_splitted[-3]}${SPACE}${total_fare_raw_splitted[-1]}
+    Set Suite Variable    ${tst_number_${fare_tab_index}}    ${tst_number}
+    Set Suite Variable    ${currency_${fare_tab_index}}    ${currency}
+    Set Suite Variable    ${grand_total_currency_${fare_tab_index}}    ${grant_total_fare_line[12:15]}
+    Set Suite Variable    ${base_fare_${fare_tab_index}}    ${base_fare}
+    Set Suite Variable    ${segment_airline_code_${fare_tab_index}}    ${segment_airline_code}
+
+Get Base Fare, Total Taxes, YQ Tax And LFCC From TST
+    [Arguments]    ${fare_tab}    ${segment_number}    ${gds_command}=TQT
+    ${fare_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_index}    Set Variable If    "${fare_type}" == "Fare"    ${fare_tab_index}    alt_${fare_tab_index}
+    Comment    Get Base Fare From TST    ${fare_tab}    ${segment_number}
+    Comment    Get Charged Fare From TST    ${fare_tab}    ${segment_number}
+    Comment    Get LFCC From FV Line In TST    ${fare_tab}    ${segment_number}
+    Comment    ${tax}    Evaluate    ${grand_total_fare_${fare_tab_index}} - ${base_fare_${fare_tab_index}}
+    Comment    Set Suite Variable    ${total_tax_${fare_tab_index}}    ${tax}
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT    ${gds_command}/${segment_number}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${equiv_base_fare}    Get String Matching Regexp    (EQUIV\\s+\\w+\\s+\\s+\\d+\.?\\d+)    ${data_clipboard}
+    ${base_fare}    Run Keyword If    "${equiv_base_fare}" == "0"    Get String Matching Regexp    (FARE\\s+.*?\\s+\\w+\\s+\\d+\\.?\\d+)    ${data_clipboard}
+    ...    ELSE    Set Variable    ${equiv_base_fare}
+    ${base_fare}    Remove All Non-Integer (retain period)    ${base_fare}
+    Set Suite Variable    ${base_fare_${fare_tab_index}}    ${base_fare}
+    ##Get YQ Tax
+    ${yq_tax}    Get Lines Containing String    ${data_clipboard}    YQ
+    ${yq_tax}    Get String Matching Regexp    [0-9]+\-YQ    ${yq_tax}
+    ${yq_tax}    Run Keyword If    "${yq_tax}" != "0"    Fetch From Left    ${yq_tax}    -
+    Run Keyword If    "${yq_tax}" == "${EMPTY}" or "${yq_tax}" == "None"    Set Test Variable    ${yq_tax}    0
+    ${yq_tax}    Remove All Non-Integer (retain period)    ${yq_tax}
+    Set Suite Variable    ${yq_tax_${fare_tab_index}}    ${yq_tax}
+    ##Get K3 Tax
+    ${k3_tax}    Get Lines Containing String    ${data_clipboard}    YQ
+    ${k3_tax}    Get String Matching Regexp    [0-9]+\-K3    ${k3_tax}
+    ${k3_tax}    Run Keyword If    "${k3_tax}" != "0"    Fetch From Left    ${k3_tax}    -
+    Run Keyword If    "${k3_tax}" == "${EMPTY}" or "${k3_tax}" == "None"    Set Test Variable    ${k3_tax}    0
+    ${k3_tax}    Remove All Non-Integer (retain period)    ${k3_tax}
+    Set Suite Variable    ${k3_tax_${fare_tab_index}}    ${k3_tax}
+    ###TOTAL
+    ${total_raw}    Get Lines Containing String    ${data_clipboard}    TOTAL${SPACE}${SPACE}${SPACE}
+    ${total_raw_splitted}    Split String    ${total_raw}    ${SPACE}
+    ${total_raw_splitted}    Remove Duplicate From List    ${total_raw_splitted}
+    Set Suite Variable    ${total_${fare_tab_index}}    ${total_raw_splitted[3]}
+    Set Suite Variable    ${total_with_currency_${fare_tab_index}}    ${total_raw_splitted[2]}${SPACE}${total_raw_splitted[3]}
+    ###TOTAL TAX
+    ${total_fare_raw}    Get Lines Containing String    ${data_clipboard}    GRAND TOTAL
+    ${total_fare_raw_splitted}    Split String    ${total_fare_raw}    ${SPACE}
+    ${total_fare_raw_splitted}    Remove Duplicate From List    ${total_fare_raw_splitted}
+    Set Suite Variable    ${grand_total_fare_${fare_tab_index}}    ${total_fare_raw_splitted[-1]}
+    Set Suite Variable    ${grand_total_value_${fare_tab_index}}    ${grand_total_fare_${fare_tab_index}}
+    Set Suite Variable    ${grand_total_fare_with_currency_${fare_tab_index}}    ${total_fare_raw_splitted[-3]}${SPACE}${total_fare_raw_splitted[-1]}
+    Run Keyword If    "${total_${fare_tab_index}}" != "${grand_total_fare_${fare_tab_index}}"    Set Suite Variable    ${grand_total_fare_${fare_tab_index}}    ${total_${fare_tab_index}}
+    ###LFCC
+    ${lfcc}    Get Regexp Matches    ${data_clipboard}    (\\s.*\\d\.FV)(\\s+\\w+)    2
+    ${lfcc}    Convert List To Lines    ${lfcc}
+    Set Suite Variable    ${lfcc_in_tst_${fare_tab_index}}    ${lfcc.strip()}
+    ##TAX
+    ${tax}    Evaluate    ${grand_total_fare_${fare_tab_index}} - ${base_fare_${fare_tab_index}}
+    Set Suite Variable    ${total_tax_${fare_tab_index}}    ${tax}
+    ${tax}    Evaluate    ${grand_total_fare_${fare_tab_index}} - ${base_fare_${fare_tab_index}} - ${yq_tax}
+    Set Suite Variable    ${total_tax_minus_yq_${fare_tab_index}}    ${tax}
+    ##Get TST Number
+    Comment    ${tst0_line}    Get Lines Containing String    ${data_clipboard}    TST0
+    Comment    ${tst0_line}    Get Lines Containing String    ${data_clipboard}    PQR
+    Comment    ${tst_line_raw}    Run Keyword If    "${tst0_line}" != "${EMPTY}"    Split String    ${tst0_line}    ${SPACE}
+    ...    ELSE    Split String    ${tst_line_using_segment}    ${SPACE}
+    Comment    ${tst_number}    Run Keyword If    "${tst0_line}" != "${EMPTY}"    Remove String Using Regexp    ${tst_line_raw[0]}    TST.0*
+    ...    ELSE    Evaluate    ''.join(${tst_line_raw[:1]})
+    Comment    Set Test Variable    ${tst_number_${fare_tab_index}}    T${tst_number}
+    Comment    Enter GDS Command    RT
+    ${tst0_line}    Get Regexp Matches    ${data_clipboard}    (TST0\*\\d|PQR\\s\*?\\d)
+    Set Test Variable    ${tst_number_${fare_tab_index}}    T${tst0_line[-1]}
+
+Get Car Charged Rate From Amadeus
+    [Arguments]    ${match_order}=0    ${car_identifier}=RG
+    [Documentation]    Retrieves expected charged fare from GDS Screen. If there are multiple car segments that have RG or RQ block, make sure to indicate the match order. car_identifier is RG or RQ
+    Retrieve PNR Details From Amadeus    \    RT    False
+    ${charged_rate_list}    Get Regexp Matches    ${pnr_details}    ${car_identifier}-\\s*\\w{3}(\\d*\\.*\\d{0,2})
+    ${expected_car_charged_rate}    Remove All Non-Integer (retain period)    ${charged_rate_list[${match_order}]}
+    Set Suite Variable    ${expected_car_charged_rate}
+
+Get Charged Fare From TST
+    [Arguments]    ${fare_tab}    ${segment_number}
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT    TQT/${segment_number}
+    Get Grand Total Fare From Amadeus    ${fare_tab}
+    Enter GDS Command    RT{ENTER}
+
+Get Clipboard Data Amadeus
+    [Arguments]    ${command}=${EMPTY}
+    Clear Data From Clipboard
+    Comment    Activate Amadeus Selling Platform    False
+    Comment    ${data_clipboard}    Get Control Text Value    [CLASS:RichEdit20A; INSTANCE:1]    SELLING PLATFORM
+    ${data_clipboard}    Get Data From GDS Screen    ${command}    True
+    Log    ${data_clipboard}
+    Set Test Variable    ${data_clipboard}
+    [Teardown]    Take Screenshot
+    [Return]    ${data_clipboard}
+
+Get Grand Total Fare From Amadeus
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${total_fare_raw}    Get Lines Containing String    ${data_clipboard}    GRAND TOTAL
+    ${total_fare_raw_splitted}    Split String    ${total_fare_raw}    ${SPACE}
+    ${total_fare_raw_splitted}    Remove Duplicate From List    ${total_fare_raw_splitted}
+    Set Suite Variable    ${grand_total_fare_${fare_tab_index}}    ${total_fare_raw_splitted[-1]}
+    Set Suite Variable    ${grand_total_fare_with_currency_${fare_tab_index}}    ${total_fare_raw_splitted[-3]}${SPACE}${total_fare_raw_splitted[-1]}
+
+Get High Fare From Amadeus
+    [Arguments]    ${fare_tab}    ${currency}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${high_fare}    Get Regexp Matches    ${data_clipboard}    (01\\s+\\w+\\+*\\w*\\**\\s+\\W\\s+\\W\\s+\\w+\\s+\\W\\s+)(\\d+\.\\d+)    2
+    ${high_fare}    Convert List To Lines    ${high_fare}
+    ${high_fare}    Remove All Non-Integer (retain period)    ${high_fare}
+    Set Test Variable    ${high_fare_${fare_tab_index}}    ${high_fare}
+
+Get High Fare From TST
+    [Arguments]    ${fare_tab}    ${segment_number}
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT    FXA/${segment_number}
+    Get High Fare From Amadeus    ${fare_tab}    ${segment_number}
+    Enter GDS Command    RT{ENTER}
+
+Get LFCC From FV Line In TST
+    [Arguments]    ${fare_tab}    ${segment_number}    ${gds_command}=TQT
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT    ${gds_command}/${segment_number}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${lfcc}    Get Regexp Matches    ${data_clipboard}    (\\s.*\\d\.FV)(\\s+\\w+)    2
+    ${lfcc}    Convert List To Lines    ${lfcc}
+    Set Suite Variable    ${lfcc_in_tst_${fare_tab_index}}    ${lfcc.strip()}
+
+Get Line Number In Amadeus PNR Remarks
+    [Arguments]    ${remark}
+    ${remark_line}    Get Lines Matching Regexp    ${pnr_details}    .*${remark}.*
+    ${remark_line_count}    Get Line Count    ${remark_line}
+    ${line_no}    Get Substring    ${remark_line}    0    3
+    ${line_no}    Remove String Using Regexp    ${line_no}    [^\\d]
+    [Return]    ${line_no}
+
+Get Low Fare From Amadeus
+    [Arguments]    ${fare_tab}    ${currency}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${low_fare}    Get Lines Matching Regexp    ${data_clipboard}    ${currency.upper()}(\\s){2,}[0-9]+(\\.[0-9]*)?\$
+    ${fare_index}    Set Variable If    '${low_fare}' == '${EMPTY}'    -2    -1
+    ${low_fare}    Run Keyword If    '${low_fare}' == '${EMPTY}'    Get Lines Matching Regexp    ${data_clipboard}    ${currency.upper()}(\\s){2,}\\d+\\.?\\d*\\s*\\w{3}\\d+\\.*\\d*\$
+    ...    ELSE    Set Variable    ${low_fare}
+    ${low_fare}    Run Keyword If    '${fare_index}'=='-1'    Split To Lines    ${low_fare}
+    ...    ELSE    Split String    ${low_fare}
+    ${low_fare}    Remove All Non-Integer (retain period)    ${low_fare[${fare_index}]}
+    Set Test Variable    ${low_fare_${fare_tab_index}}    ${low_fare}
+
+Get Low Fare From TST
+    [Arguments]    ${fare_tab}    ${segment_number}    ${currency}
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT    FXL/${segment_number}
+    Get Low Fare From Amadeus    ${fare_tab}    ${currency}
+    Enter GDS Command    RT{ENTER}
+
+Get Offer Details
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${gds_screen_data}    Get Clipboard Data Amadeus    RTOF
+    ${offer_detail_line}    Flatten String    ${gds_screen_data}
+    @{offer_list}    Split String    ${offer_detail_line}    OFFER TOTAL
+    ${flight_details}    Get From List    ${offer_list}    ${fare_tab_index}
+    @{flight_details}    Split String    ${flight_details}    ${SPACE}
+    ${flight_details}    Set Variable    ${flight_details[3:]}
+    ${first_index_length}    Get Length    ${flight_details[1]}
+    ${airline_code}    Run Keyword If    ${first_index_length} < 3    Set Variable    ${flight_details[1]}
+    ...    ELSE    Get Substring    ${flight_details[1]}    0    2
+    ${flight_number}    Run Keyword If    ${first_index_length} < 3    Set Variable    ${flight_details[2]}
+    ...    ELSE    Get Substring    ${flight_details[1]}    2    6
+    ${fare_class}    Run Keyword If    ${first_index_length} < 3    Set Variable    ${flight_details[3]}
+    ...    ELSE    Set Variable    ${flight_details[2]}
+    ${flight_date}    Run Keyword If    ${first_index_length} < 3    Set Variable    ${flight_details[4]}
+    ...    ELSE    Set Variable    ${flight_details[3]}
+    ${flight_origin}    Run Keyword If    ${first_index_length} < 3    Get Substring    ${flight_details[5]}    0    3
+    ...    ELSE    Get Substring    ${flight_details[4]}    0    3
+    ${flight_destination}    Run Keyword If    ${first_index_length} < 3    Get Substring    ${flight_details[5]}    3    6
+    ...    ELSE    Get Substring    ${flight_details[4]}    3    6
+    Run Keyword If    '${GDS_switch}' == 'amadeus' and '${locale}' == 'fr-FR'    Convert English Date To French    ${flight_date}
+    Set Test Variable    ${airline_code}
+    Set Test Variable    ${flight_number}
+    Set Test Variable    ${fare_class}
+    Set Test Variable    ${flight_date}
+    Set Test Variable    ${flight_origin}
+    Set Test Variable    ${flight_destination}
+
+Get TST Details From Amadeus
+    [Arguments]    ${fare_tab}    ${passenger_type}    ${segment_number}    ${tst_number}=${EMPTY}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    Clear Data From Clipboard
+    Activate Amadeus Selling Platform
+    Enter GDS Command    RT    TQT/${passenger_type}/${segment_number}
+    Get Clipboard Data Amadeus
+    ${is_tst_present}    Run Keyword And Return Status    Should Contain    ${data_clipboard}    TST0
+    Set Test Variable    ${is_tst_present}
+    Run Keyword If    "${tst_number}" != "${EMPTY}"    Get Base Fare From Amadeus    ${tst_number}    ${fare_tab}
+    Run Keyword If    ${is_tst_present} == True and "${tst_number}" == "${EMPTY}"    Get Base Fare, Currency, Tst Number And Segment Airline Code    ${fare_tab}
+    ...    ELSE    Run Keywords    Get TST Number    ${segment_number}
+    ...    AND    Get Base Fare From Amadeus    ${tst_number}    ${fare_tab}
+
+Handle Amadeus Popup
+    Sleep    2
+    ${amadeus_viewer_exists} =    Win Exists    Amadeus Viewer    ${EMPTY}
+    Run Keyword If    ${amadeus_viewer_exists} == 1    Win Activate    Amadeus Viewer    ${EMPTY}
+    Run Keyword If    ${amadeus_viewer_exists} == 1    Run Keywords    Send    {TAB}
+    ...    AND    Send    {ENTER}
+    ...    AND    Sleep    2
+    ${webpage_dialog_exists} =    Win Exists    Error -- Webpage Dialog    ${EMPTY}
+    Run Keyword If    ${webpage_dialog_exists} == 1    Win Activate    Error -- Webpage Dialog    ${EMPTY}
+    Run Keyword If    ${webpage_dialog_exists} == 1    Run Keywords    Send    {TAB}
+    ...    AND    Send    {ESCAPE}
+    ...    AND    Sleep    2
+    ${amadeus_dialog_exists} =    Win Exists    Selling Platform messages
+    Run Keyword If    ${amadeus_dialog_exists} == 1    Run Keywords    Win Activate    Selling Platform messages
+    ...    AND    Send    {TAB}
+    ...    AND    Send    {ENTER}
+    ...    AND    Sleep    2
+
+Navigate To Amadeus Command Page
+    Activate Amadeus Selling Platform
+    Control Click    SELLING PLATFORM    ${EMPTY}    [CLASS:Internet Explorer_Server; INSTANCE:1]    ${EMPTY}    1    124
+    ...    45
+    Sleep    2
+
+Retrieve PNR Details From Amadeus
+    [Arguments]    ${current_pnr}=${EMPTY}    ${command}=${EMPTY}    ${refresh_needed}=True
+    Comment    Activate Amadeus Selling Platform
+    Clear Data From Clipboard
+    Run Keyword If    "${current_pnr}" != "${EMPTY}"    Enter GDS Command    RT${current_pnr}
+    Run Keyword If    "${refresh_needed}" == "True"    Enter GDS Command    IR
+    Run Keyword If    "${command}" != "${EMPTY}"    Enter GDS Command    ${command}
+    ${pnr_details}    Set Variable    ${EMPTY}
+    ${previous_clipboard}    Set Variable    ${EMPTY}
+    : FOR    ${index}    IN RANGE    0    50
+    \    ${data_clipboard}    Get Clipboard Data Amadeus
+    \    ${is_not_scrollable}    Run Keyword And Return Status    Should Contain    ${data_clipboard}    REQUESTED DISPLAY NOT SCROLLABLE
+    \    Run Keyword If    """${data_clipboard}""" == """${previous_clipboard}""" or ${is_not_scrollable} == True    Exit For Loop
+    \    ...    ELSE    Set Test Variable    ${previous_clipboard}    ${data_clipboard}
+    \    ${pnr_details} =    Catenate    SEPARATOR=${\n}    ${pnr_details}    ${previous_clipboard}
+    \    Enter GDS Command    MDR
+    ${sorted_pnr_details} =    Sort Pnr Details    ${pnr_details}
+    Set Suite Variable    ${pnr_details}    ${sorted_pnr_details}
+    Log    ${pnr_details}
+    [Teardown]    Take Screenshot
+    [Return]    ${pnr_details}
+
+Retrieve PNR From Amadeus
+    Comment    Activate Amadeus Selling Platform
+    ${pnr_details}    Get Data From GDS Screen    RT{ENTER}    True
+    Set Test Variable    ${pnr_details}
+
+Select Offer Automatically Based On Recommended List
+    ${offer_number}    Set Variable    1
+    ${number_of_offers_counter}    Set Variable    1
+    Convert To Integer    ${offer_number}
+    Convert To Integer    ${number_of_offers_counter}
+    : FOR    ${INDEX}    IN RANGE    10
+    \    ${gds_resp}    Get Clipboard Data Amadeus    OFS/A${offer_number}
+    \    ${is_unable_to_price}    Run Keyword And Return Status    Should Contain    ${gds_resp}    NO FARE FOR BOOKING CODE-TRY OTHER PRICING OPTIONS
+    \    Exit For Loop If    ${is_unable_to_price} == False
+    \    ${offer_number}    Evaluate    ${offer_number} + 1
+
+Get Segment Number From TST
+    Get All TST From Amadeus
+    @{expected_fare_number}    Create List
+    : FOR    ${tst}    IN    @{tst_list}
+    \    ${tst_number}    Get Substring    ${tst}    0    1
+    \    Append To List    ${expected_fare_number}    ${tst_number}
+    [Return]    ${expected_fare_number}
+
+Get All TST From Amadeus
+    ${raw_tst}    Get Data From GDS Screen    TQT    True
+    ${tst_lines}    Get Lines Matching Regexp    ${raw_tst}    (\\s+\\d|\\d)\\s{1}.*    #hk - \\d\\s{1}.*    #sg - \\s+\\d\\s{1}.*
+    @{tst_lines}    Split To Lines    ${tst_lines}
+    @{tst_list}    Create List
+    : FOR    ${each_item}    IN    @{tst_lines}
+    \    ${each_item}    Split String    ${each_item.strip()}    ${SPACE}
+    \    ${each_item}    Remove Empty Value From List    ${each_item}
+    \    ${each_item}    Evaluate    " ".join(${each_item[:10]})
+    \    Append To List    ${tst_list}    ${each_item}
+    Set Suite Variable    ${tst_list}
+    [Return]    ${tst_list}
+
+Get Agent Login ID from Amadeus
+    ${raw_data}    Get Data From GDS Screen    JGD    True
+    ${sign_in_lines}    Get Lines Matching Regexp    ${raw_data}    \\s{5}\\w[SIGN].*    #hk - \\d\\s{1}.*    #sg - \\s+\\d\\s{1}.*
+    ${agent_id}    Get Substring    ${sign_in_lines}    -6
+    Set Suite Variable    ${agent_id}
+    [Return]    ${agent_id}
+
+Get Base Fare, Total Taxes And LFCC
+    [Arguments]    ${fare_tab}    ${segment_number}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Click GDS Screen Tab
+    ${data_clipboard}    Get Clipboard Data Amadeus    TQT/${segment_number}
+    # BASE FARE
+    ${equiv_base_fare}    Get Regexp Matches    ${data_clipboard}    EQUIV\\s+\\w+\\s+\\s(\\d+\\.?\\d*)    1
+    ${base_fare}    Run Keyword If    "${equiv_base_fare}" == "[]"    Get Regexp Matches    ${data_clipboard}    FARE\\s+.*?\\s+\\w+\\s+(\\d+\\.*\\d*)    1
+    ...    ELSE    Set Variable    ${equiv_base_fare}
+    ${base_fare}    Convert List To Lines    ${base_fare}
+    Set Suite Variable    ${base_fare_${fare_tab_index}}    ${base_fare}
+    # TAX
+    ${total_taxes}    Get Regexp Matches    ${data_clipboard}    TX\\d*\\s\\D\\s\\D*\\s*(\\d+\\.?\\d*)-    1
+    ${total_taxes}    Evaluate    sum(map(float, ${total_taxes}))
+    Set Suite Variable    ${total_tax_${fare_tab_index}}    ${total_taxes}
+    # LFCC
+    ${lfcc}    Get Regexp Matches    ${data_clipboard}    (\\s.*\\d\.FV)(\\s+\\w+)    2
+    ${lfcc}    Convert List To Lines    ${lfcc}
+    Set Suite Variable    ${lfcc_in_tst_${fare_tab_index}}    ${lfcc}
+    [Return]    ${base_fare}    ${total_taxes}    ${lfcc}
+
+Get Base Fare From Amadeus Offer
+    [Arguments]    ${fare_tab}    ${gds_command}=TQQ/O1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT    ${gds_command}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${equiv_base_fare}    Get String Matching Regexp    (EQUIV\\s+\\w+\\s+\\s+\\d+\.?\\d+)    ${data_clipboard}
+    ${base_fare}    Run Keyword If    "${equiv_base_fare}" == "0"    Get String Matching Regexp    (FARE\\s+.*?\\s+\\w+\\s+\\d+\\.?\\d+)    ${data_clipboard}
+    ...    ELSE    Set Variable    ${equiv_base_fare}
+    ${base_fare}    Remove All Non-Integer (retain period)    ${base_fare}
+    Set Suite Variable    ${alt_base_fare_${fare_tab_index}}    ${base_fare}
+    ${total_fare_raw}    Get Lines Containing String    ${data_clipboard}    GRAND TOTAL
+    ${total_fare_raw_splitted}    Split String    ${total_fare_raw}    ${SPACE}
+    ${total_fare_raw_splitted}    Remove Duplicate From List    ${total_fare_raw_splitted}
+    Set Suite Variable    ${alt_grand_total_fare_${fare_tab_index}}    ${total_fare_raw_splitted[-1]}
+    Set Suite Variable    ${alt_grand_total_value_${fare_tab_index}}    ${alt_grand_total_fare_${fare_tab_index}}
+    Set Suite Variable    ${alt_grand_total_fare_with_currency_${fare_tab_index}}    ${total_fare_raw_splitted[-3]}${SPACE}${total_fare_raw_splitted[-1]}
+    Enter GDS Command    RT
+
+Get Grand Total Fare From Fare Quote
+    [Arguments]    ${fare_tab}=Fare Quote 1    ${gds_command}=TQT
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${fare_tab_type}    Fetch From Left    ${fare_tab}    ${SPACE}
+    Activate Power Express Window
+    Click GDS Screen Tab
+    Enter GDS Command    RT
+    Enter GDS Command    ${gds_command}
+    ${data_clipboard}    Get Clipboard Data Amadeus
+    ${total_fare_raw}    Get Lines Containing String    ${data_clipboard}    GRAND TOTAL
+    ${total_fare_raw_splitted}    Split String    ${total_fare_raw}    ${SPACE}
+    ${total_fare_raw_splitted}    Remove Duplicate From List    ${total_fare_raw_splitted}
+    Run Keyword If    "${fare_tab_type}"=="Fare"    Set Test Variable    ${grand_total_fare_${fare_tab_index}}    ${total_fare_raw_splitted[-1]}
+    ...    ELSE    Set Test Variable    ${alt_grand_total_fare_${fare_tab_index}}    ${total_fare_raw_splitted[-1]}

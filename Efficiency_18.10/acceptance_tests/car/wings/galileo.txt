@@ -1,0 +1,125 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../car_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That Car Remarks Are Correctly Written In The PNR When 2 Car Segments Are Added
+    [Tags]    us4429    data_dependent
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrTwo
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MSPORD/UA    01Y1    FQ    5
+    Book Active Car Segment    ORD    5    1    5    2    ZI
+    ...    1
+    Book Active Car Segment    ORD    5    3    5    4    ZI
+    ...    2
+    Retrieve PNR Details From Galileo    ${EMPTY}    *I
+    Insert Car Identifier Free Text To Car Segment    ORD    ${pickup_date_1}    TESTONE
+    Enter GDS Command    T.T*
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}    *I
+    Verify Car Identifier Appended To Car Segment Is Correct    ORD    ${pickup_date_1}    SI-TESTONE*C01*
+    Verify Car Identifier Appended To Car Segment Is Correct    ORD    ${pickup_date_2}    SI-*C02*
+
+[AB UK] Verify That Car Remarks Are Correctly Written In The PNR When 2 Car Segments Are Added
+    [Tags]    us4429    data_dependent
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    FXALL
+    Book Flight X Months From Now    ORDMSP/UA    01Y1    FQ    6
+    Book Active Car Segment    MSP    6    1    6    2    ZI
+    ...    3
+    Book Active Car Segment    MSP    6    3    6    4    ZD
+    ...    4
+    Retrieve PNR Details From Galileo    ${EMPTY}    *I
+    Insert Car Identifier Free Text To Car Segment    MSP    ${pickup_date_4}    TESTFOUR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow With 2 New Car Segments Added
+    Retrieve PNR Details From Galileo    ${current_pnr}    *I
+    Verify Car Identifier Appended To Car Segment Is Correct    ORD    ${pickup_date_1}    SI-TESTONE*C01*
+    Verify Car Identifier Appended To Car Segment Is Correct    ORD    ${pickup_date_2}    SI-*C02*
+    Verify Car Identifier Appended To Car Segment Is Correct    MSP    ${pickup_date_3}    SI-*C03*
+    Verify Car Identifier Appended To Car Segment Is Correct    MSP    ${pickup_date_4}    SI-TESTFOUR*C04*
+
+[AB UK] Verify That Car Remarks Are Correctly Written In The PNR When 2 Car Segments Are Updated
+    [Tags]    us4429    data_dependent
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Galileo    ${EMPTY}    *I
+    Remove Car Segment    MSP    ${pickup_date_3}
+    Remove Car Segment    ORD    ${pickup_date_1}
+    Enter GDS Command    *R
+    Book Active Car Segment    LAX    6    7    6    8    ZI
+    ...    5
+    Book Active Car Segment    LAX    6    11    6    12    ZI
+    ...    6
+    Retrieve PNR Details From Galileo    ${EMPTY}    *I
+    Insert Car Identifier Free Text To Car Segment    LAX    ${pickup_date_5}    TESTFIVE
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow With 2 Existing Car Segments Updated
+    Retrieve PNR Details From Galileo    ${current_pnr}    *I
+    Verify Car Identifier Appended To Deleted Car Segment Is No Longer Displayed    ORD    ${pickup_date_1}    SI-TESTONE*C01*
+    Verify Car Identifier Appended To Car Segment Is Correct    ORD    ${pickup_date_2}    SI-*C02*
+    Verify Car Identifier Appended To Deleted Car Segment Is No Longer Displayed    MSP    ${pickup_date_3}    SI-*C03*
+    Verify Car Identifier Appended To Car Segment Is Correct    MSP    ${pickup_date_4}    SI-TESTFOUR*C04*
+    Verify Car Identifier Appended To Car Segment Is Correct    LAX    ${pickup_date_5}    SI-TESTFIVE*C05*
+    Verify Car Identifier Appended To Car Segment Is Correct    LAX    ${pickup_date_6}    SI-*C06*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow With 2 Existing Car Segments Updated
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Galileo    ${EMPTY}    *I
+    Remove Car Segment    MSP    ${pickup_date_3}
+    Remove Car Segment    ORD    ${pickup_date_1}
+    Enter GDS Command    *R
+    Book Active Car Segment    LAX    6    7    6    8    ZI
+    ...    5
+    Book Active Car Segment    LAX    6    11    6    12    ZI
+    ...    6
+    Retrieve PNR Details From Galileo    ${EMPTY}    *I
+    Insert Car Identifier Free Text To Car Segment    LAX    ${pickup_date_5}    TESTFIVE
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+
+Amend Booking Workflow With 2 New Car Segments Added
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    FXALL
+    Book Flight X Months From Now    ORDMSP/UA    01Y1    FQ    6
+    Book Active Car Segment    MSP    6    1    6    2    ZI
+    ...    3
+    Book Active Car Segment    MSP    6    3    6    4    ZD
+    ...    4
+    Retrieve PNR Details From Galileo    ${EMPTY}    *I
+    Insert Car Identifier Free Text To Car Segment    MSP    ${pickup_date_4}    TESTFOUR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+
+Insert Car Identifier Free Text To Car Segment
+    [Arguments]    ${location}    ${pickup_date}    ${free_text}
+    ${car_segment_line}    Get Lines Containing String    ${pnr_details}    ${location} ${pickup_date}
+    ${car_segment_line_no}    Fetch From Left    ${car_segment_line.strip()}    .
+    Activate Power Express Window
+    Log    Command Entered: CAM${car_segment_line_no}O/SI-${free_text}
+    Enter GDS Command    CAM${car_segment_line_no}O/SI-${free_text}
+
+Remove Car Segment
+    [Arguments]    ${location}    ${pickup_date}
+    ${car_segment_line}    Get Lines Containing String    ${pnr_details}    ${location} ${pickup_date}
+    ${car_segment_line_no}    Fetch From Left    ${car_segment_line.strip()}    .
+    Activate Power Express Window
+    Log    Command Entered: X${car_segment_line_no}
+    Enter GDS Command    X${car_segment_line_no}

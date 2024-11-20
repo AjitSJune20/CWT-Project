@@ -1,0 +1,23 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Library           ../../resources/libraries/SyexPerfTestLibrary.py
+
+*** Keywords ***
+New Booking Classic
+
+Click Clear All Contact Tracking
+    Activate Power Express Window
+    Wait Until Control Object Is Enabled    ${btn_clearAll}    ${title_power_express}    true
+    Click Control Button    ${btn_clearAll}
+    ${active_window} =    Win Get Title    [ACTIVE]    Contact Tracking
+    Handle Contact Tracking Popup
+    Mouse Move    858    226
+    Mouse Click
+    Mouse Move    827    326
+    Mouse Click
+    Activate Power Express Window
+    Click Clear All
+
+Handle Contact Tracking Popup
+    ${contact_tracking_popup} =    Win Exists    Contact Tracking    ${EMPTY}
+    Run Keyword If    "${contact_tracking_popup}" == "1"    Control Click    Contact Tracking    ${EMPTY}    [NAME:OKBtn]

@@ -1,0 +1,874 @@
+*** Settings ***
+Resource          global_resources.txt
+
+*** Keywords ***
+Click Amend Booking
+    Wait Until Control Object Is Enabled    [NAME:btnAmendPNR]    ${title_power_express}    true
+    Click Control Button    [NAME:btnAmendPNR]    ${title_power_express}
+    Wait Until Progress Info is Completed
+    Wait Until Progress Info is Completed
+    Set Test Variable    ${bln_CoordsKnown}    False
+    [Teardown]    Take Screenshot
+
+Click Cancel Booking
+    Wait Until Control Object Is Enabled    [NAME:btnCancelPNR]    ${title_power_express}
+    Click Control Button    [NAME:btnCancelPNR]    ${title_power_express}
+    Wait Until Progress Info is Completed
+    Set Test Variable    ${bln_CoordsKnown}    False
+
+Click Clear All
+    Activate Power Express Window
+    Wait Until Progress Info is Completed
+    Wait Until Control Object Is Enabled    ${btn_clearAll}    ${title_power_express}    true
+    Comment    Control Focus    ${title_power_express}    ${EMPTY}    ${btn_clearAll}
+    Comment    Control Click    ${title_power_express}    ${EMPTY}    ${btn_clearAll}
+    Click Control Button    ${btn_clearAll}
+    Wait Until Progress Info is Completed
+    Wait Until Keyword Succeeds    120    2    Verify Progress Info Window is Not Active
+    Wait Until Control Object Is Visible    [NAME:grpPortraitProfileInformation]    ${title_power_express}    true
+    [Teardown]    Take Screenshot
+
+Click Clear All With Timestamp
+    Activate Power Express Window
+    Wait Until Progress Info is Completed
+    Click Control Button    ${btn_clearAll}    ${title_power_express}
+    ${exp_overalltransaction_end_time}    Get Time
+    Set Test Variable    ${exp_overalltransaction_end_time}
+    Wait Until Progress Info is Completed
+    Wait Until Control Object Is Visible    ${cbo_Client}    ${title_power_express}    true
+
+Click Create Shell
+    Click Control Button    [NAME:btnShell]
+    Wait Until Progress Info is Completed
+    Get PNR Record Locator
+    ${date_today} =    SyexDateTimeLibrary.Get Current Date
+    Run Keyword And Continue On Failure    Append To File    ${public_documents_path}/pnr_created.txt    ${\n}${current_pnr} - ${GDS_switch} - ${date_today}
+
+Click New Booking
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Wait Until Control Object Is Enabled    ${btn_newBooking}    ${title_power_express}
+    Click Control Button    ${btn_newBooking}    ${title_power_express}
+    Comment    Wait Until Window Exists    [REGEXPTITLE:Progress Information|Information sur l'avancement]
+    Wait Until Progress Info is Completed
+    Wait Until Progress Info is Completed
+    Verify Error In Status Strip Text    Error while reading values from PNR
+    Comment    Wait Until Control Object Is Not Visible    ${btn_newBooking}    ${title_power_express}    true
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Set Test Variable    ${is_new_booking_worflow}    ${True}
+    [Teardown]    Take Screenshot
+
+Click New Booking With Timestamp
+    Activate Power Express Window
+    Click Control Button    ${btn_newBooking}    ${title_power_express}
+    ${exp_overalltransaction_start_time}    Get Time
+    Set Test Variable    ${exp_overalltransaction_start_time}
+    Wait Until Progress Info is Completed
+    Set Test Variable    ${bln_CoordsKnown}    False
+    [Teardown]    Take Screenshot
+
+Click Panel
+    [Arguments]    ${panel_name}
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Run Keyword If    "${locale}" == "fr-FR"    Translate Panel's Name To French    ${panel_name}
+    Select Panel    ${panel_name}
+    Wait Until Keyword Succeeds    1    30    Verify Panel Is Selected    ${panel_name}    True
+    Run Keyword If    "${locale}" == "fr-FR"    Translate Panel's Name To English    ${panel_name}
+    [Teardown]    Take Screenshot
+
+Click Price Tracking
+    Wait Until Control Object Is Enabled    [NAME:btnPriceTracking]    ${title_power_express}    true
+    Click Control Button    [NAME:btnPriceTracking]    ${title_power_express}
+    Wait Until Progress Info is Completed
+    Wait Until Progress Info is Completed
+    Set Test Variable    ${bln_CoordsKnown}    False
+    [Teardown]    Take Screenshot
+
+Click Quick Amend
+    Click Control Button    [NAME:btnQuickAmend]    ${title_power_express}
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Wait Until Progress Info is Completed
+    Wait Until Control Object Is Visible    [NAME:btnLoadPNR]    ${title_power_express}
+    [Teardown]    Take Screenshot
+
+Click Quick Amend With Timestamp
+    Click Control Button    [NAME:btnQuickAmend]    ${title_power_express}
+    Set Test Variable    ${bln_CoordsKnown}    False
+    ${time}    Get Time
+    Set Test Variable    ${exp_OverallTransactionStartTime}    ${time}
+    Wait Until Progress Info is Completed
+    Wait Until Control Object Is Visible    [NAME:btnLoadPNR]    ${title_power_express}
+    [Teardown]    Take Screenshot
+
+Click Read Booking
+    [Arguments]    ${ignore_progress_info_popup}=False
+    Activate Power Express Window
+    Wait Until Progress Info Is Completed
+    #Line 4 and 5 are created to indicate that Galileo booking is made for testing purpose.
+    ${date}    Set Departure Date X Months From Now In Gds Format    10
+    Run Keyword If    '${gds_switch}' == 'galileo' and ${is_new_booking_worflow} == ${True}    Enter GDS Command    0TURZZBK1MNL${date}-*********TEST BOOKING*************
+    Wait Until Control Object Is Enabled    ${btn_readBooking}
+    Control Focus    ${title_power_express}    ${EMPTY}    ${btn_readBooking}
+    Control Click    ${title_power_express}    ${EMPTY}    ${btn_readBooking}
+    Sleep    5
+    Comment    Run Keyword If    "${gds_switch}" == "amadeus"    Run Keywords    Activate Amadeus Selling Platform    False
+    ...    AND    Activate Power Express Window
+    Run Keyword If    "${ignore_progress_info_popup.lower()}" == "false"    Run Keywords    Wait Until Progress Info is Completed
+    ...    AND    Wait Until Progress Info Is Completed
+    ...    ELSE    Log    Progress Information Window Is Ignored.
+    Set Test Variable    ${bln_done_fare_tab_id}    False
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Set Test Variable    ${fare_coords_known}    False
+    [Teardown]    Take Screenshot
+
+Click Read Booking With Timestamp
+    Activate Power Express Window
+    Click Control Button    ${btn_readBooking}    ${title_power_express}
+    Wait Until Progress Info is Completed
+    ${exp_overalltransaction_read_time}    Get Time
+    Set Test Variable    ${exp_overalltransaction_read_time}
+    Set Test Variable    ${bln_done_fare_tab_id}    False
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Set Test Variable    ${fare_coords_known}    False
+    [Teardown]    Take Screenshot
+
+Click Send Itinerary
+    Wait Until Control Object Is Enabled    [NAME:btnSendItinerary]    ${title_power_express}
+    Click Control Button    [NAME:btnSendItinerary]    ${title_power_express}
+    Wait Until Progress Info is Completed
+    Set Test Variable    ${bln_CoordsKnown}    False
+
+Click Update PNR
+    Wait Until Control Object Is Enabled    ${btn_sendtoPNR}    ${title_power_express}    true
+    Click Control Button    ${btn_sendtoPNR}    ${title_power_express}
+    Sleep    2
+    ${finish_pnr_status}    Get Status Strip Text
+    Should Not Be Equal As Strings    ${finish_pnr_status}    Update Aborted - Please validate all activity panels    msg=Update Aborted - Please validate all activity panels    values=False
+    Comment    Wait Until Window Exists    [REGEXPTITLE:Progress Information|Information sur l'avancement]
+    Wait Until Progress Info is Completed
+    Wait Until Progress Info is Completed
+    [Teardown]    Take Screenshot
+
+Click Tab In Top Left
+    [Arguments]    ${tab_name}
+    Wait Until Control Object Is Visible    [NAME:TopLeftTabControl]    ${title_power_express}    true
+    Mouse Click    LEFT    30    65
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:TopLeftTabControl]
+    Select Tab Control    ${tab_name}
+
+Close Power Express
+    Process Close    PowerExpress.exe
+    Comment    : FOR    ${INDEX}    IN RANGE    1    21
+    Comment    \    ${power_express_exists} =    Win Exists    ${title_power_express}    ${EMPTY}
+    Comment    \    Exit For Loop If    ${power_express_exists} == 0
+    Comment    \    Handle Generic Window Popup
+    Comment    \    Win Close    ${title_power_express}    ${EMPTY}
+    Comment    \    Sleep    2
+
+Create New Booking With Four Segments
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}
+    ...    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    ${city_pair_3}    ${seat_select_3}    ${store_fare_3}
+    ...    ${city_pair_4}    ${seat_select_4}    ${store_fare_4}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}    6
+    Book Flight X Months From Now    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    6    2
+    Book Flight X Months From Now    ${city_pair_3}    ${seat_select_3}    ${store_fare_3}    6    4
+    Book Flight X Months From Now    ${city_pair_4}    ${seat_select_4}    ${store_fare_4}    6    6
+
+Create New Booking With One Way Air Flight And Car Using Default Values
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Comment    Handle Incomplete Contact Details
+    Click New Booking
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    ${city_pair}    6
+    Book Active Car Segment    ${location}
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Create New Booking With One Way Flight Using Default Values
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Run Keyword If    "${client_account}" != "${EMPTY}"    Select Client Account Value    ${client_account}
+    Click New Booking
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    ${city_pair}    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Create New Booking With One Way Flight Using Default Values And Contact Details
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Handle Incomplete Contact Details    717171 ¦ CWT AQUA TEST ACCOUNT ¦ DE Sub 1
+    Click New Booking
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    ${city_pair}    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Create New Booking With Round Trip Air Flight Using Default Values
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}
+    ...    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}    5
+    Book Flight X Months From Now    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    5    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Create New Booking With Round Trip Air Flight and TMU
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}
+    ...    ${tmu_1}    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    ${tmu_2}    ${client_account}=${EMPTY}
+    ...    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}    6
+    Enter GDS Command    ${tmu_1}
+    Book Flight X Months From Now    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    6    3
+    Enter GDS Command    ${tmu_2}
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Create New Booking With Three Segments Using Default Values
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}
+    ...    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    ${city_pair_3}    ${seat_select_3}    ${store_fare_3}
+    ...    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}    6
+    Book Flight X Months From Now    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    6    2
+    Book Flight X Months From Now    ${city_pair_3}    ${seat_select_3}    ${store_fare_3}    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Create New Booking With Timestamp With Round Trip Air Flight Using Default Values
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}
+    ...    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Click New Booking With Timestamp
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}    6
+    Book Flight X Months From Now    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    6    2
+    Click Read Booking With Timestamp
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Create New Booking With Timestamp With Round Trip Air Flight Using Default Values (Incorrect Date Order)
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}
+    ...    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Click New Booking With Timestamp
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ${city_pair_1}    ${seat_select_1}    ${store_fare_1}    6    2
+    Book Flight X Months From Now    ${city_pair_2}    ${seat_select_2}    ${store_fare_2}    6
+    Click Read Booking With Timestamp
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+
+Create Shell PNR Using Default Values
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Comment    Handle Incomplete Contact Details
+    Select Value From Dropdown List    [NAME:ccboAccountNumber]    ${client_account}
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Create Shell
+
+Create Shell PNR Via Keyboard Shortcut
+    Sleep    1
+    Send    {ALTDOWN}E{ALTUP}
+    Wait Until Progress Info is Completed
+    [Teardown]    Take Screenshot
+
+Create Shell PNR Without Retention Line
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${client_account}=${EMPTY}    ${trip_type}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Run Keyword If    "${trip_type.lower()}" == "classic"    Select Type Of Booking    ${trip_type}
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Create Shell
+    Delete Air Segment    2
+    Comment    End And Retrieve PNR    False
+    Enter GDS Command    ER    ER    RT
+
+Determine Current Panels
+    Activate Power Express Window
+    Wait Until Progress Info is Completed
+    Wait Until Control Object Is Visible    [REGEXPCLASS:WindowsForms10.MDICLIENT.app.*]
+    @{panel_list}    Get All Panels
+    ${panel_coordinates}    Create Dictionary
+    ${panel_names_collection}    Create List
+    Set Test Variable    ${panel_translated}    ${False}
+    ${counter} =    Set Variable    0
+    : FOR    ${panel_name}    IN    @{panel_list}
+    \    ${y} =    Evaluate    ${counter}*22 + 388
+    \    Run Keyword If    "${locale}" != "en-US"    Translate Panel's Name To English    ${panel_name}
+    \    Set To Dictionary    ${panel_coordinates}    ${panel_name.upper()}    ${y}
+    \    Append To List    ${panel_names_collection}    ${panel_name}
+    \    ${counter} =    Evaluate    ${counter} + 1
+    Set Test Variable    ${bln_CoordsKnown}    True
+    Set Test Variable    ${panel_coordinates}
+    Set Test Variable    ${panel_names_list}    ${panel_names_collection}
+    Set Test Variable    ${last_panel}    ${panel_names_list[-1]}
+
+Execute Simultaneous Change Handling
+    [Arguments]    ${keyword_name}
+    : FOR    ${INDEX}    IN RANGE    5
+    \    Log    ${simultaneous_changes}
+    \    Log    ${simultaneous_changes_within_progress_info}
+    \    Log    ${final_simultaneous}
+    \    Run Keyword If    ${simultaneous_changes} == ${True} or ${simultaneous_changes_within_progress_info} == ${True} or ${final_simultaneous} == 1    Run Keyword    ${keyword_name}
+    \    Exit For Loop If    ${simultaneous_changes} == ${False} and ${simultaneous_changes_within_progress_info} == ${False} or ${final_simultaneous} == 0
+
+Get Panel Status
+    [Arguments]    ${x}    ${y}
+    Auto It Set Option    PixelCoordMode    2
+    ${actual_bgcolor}    Pixel Get Color    ${x}    ${y}
+    ${actual_bgcolor}    Convert To Hex    ${actual_bgcolor}
+    ${is_panel_red}    Run Keyword And Return Status    Should Contain Any    ${actual_bgcolor}    FF5151    FF5A5A    FF4A4A
+    ...    FF494A
+    ${is_panel_green}    Run Keyword And Return Status    Should Contain Any    ${actual_bgcolor}    7CD107    78CE00    7BCF00
+    ${panel_status}    Set Variable If    ${is_panel_red}    RED    ${is_panel_green}    GREEN    "${actual_bgcolor}" == "FFFFFF"
+    ...    END
+    Auto It Set Option    PixelCoordMode    1
+    [Return]    ${panel_status}
+
+Get Table Column
+    [Arguments]    ${dm_table_name}    ${col_name}
+    ${col} =    Get From Dictionary    ${${dm_table_name}}    ${col_name}
+    [Return]    ${col}
+
+Launch Amadeus GDS
+    [Arguments]    ${password}
+    AutoItLibrary.Run    C:\\Program Files\\Internet Explorer\\iexplore.exe http://amadeusvista.com/
+    Sleep    15
+    Click Object    ${sikuli_image_path}/amadeus_launcher_image.png    ${similarity}    ${timeout}
+    Sleep    20
+    Send    ${password}
+    Send    {ENTER}
+    Sleep    10
+    Send    {ENTER}
+    Sleep    3
+
+Launch Apollo GDS
+    [Arguments]    ${pcc}    ${sign_on_id}    ${password}
+    AutoItLibrary.Run    C:\\fp\\swdir\\viewpoint.exe
+    Wait Until Window Exists    Galileo Desktop    45    10
+    Sleep    20
+    ${apollo_sign_on_shown}=    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/apollo_sign_on_smartpoint.png    ${similarity}    ${timeout}
+    Run Keyword If    "${apollo_sign_on_shown}"=="True"    Send    {ALT DOWN}{F4}{F4}{ALT UP}{ENTER}
+    Sleep    2
+    Send    {ESC}
+    Sleep    2
+    Send    {ALT DOWN}TI{ALT UP}
+    Control Set Text    Sign On    ${EMPTY}    [CLASS:Edit; INSTANCE:1]    ${sign_on_id}
+    Control Set Text    Sign On    ${EMPTY}    [CLASS:Edit; INSTANCE:2]    ${password}
+    Control Click    Sign On    ${EMPTY}    [CLASS:Button; INSTANCE:1]
+    Sleep    2
+    Control Click    Front Page News    ${EMPTY}    [CLASS:Button; INSTANCE:1]
+    Sleep    2
+    Control Click    Emulate    ${EMPTY}    [CLASS:Edit; INSTANCE:1]
+    Send    {BACKSPACE 6}
+    Sleep    2
+    Send    ${pcc}
+    Control Click    Emulate    ${EMPTY}    [CLASS:Button; INSTANCE:1]
+    Wait Until Window Exists    Galileo Desktop    30    3
+    Sleep    3
+    Send    {CTRLDOWN}{SHIFTDOWN}1{CTRLUP}{SHIFTUP}
+    Wait Until Window Exists    Window 1    60    8
+    Sleep    4
+    Send    {TAB}
+
+Launch Galileo GDS
+    [Arguments]    ${pcc}    ${sign_on_id}    ${password}
+    AutoItLibrary.Run    C:\\fp\\swdir\\viewpoint.exe
+    Wait Until Window Exists    Galileo Desktop    45    10
+    Sleep    20
+    ${apollo_sign_on_shown}=    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/apollo_sign_on_smartpoint.png    ${similarity}    ${timeout}
+    Run Keyword If    "${apollo_sign_on_shown}"=="True"    Send    {ALT DOWN}{F4}{F4}{ALT UP}{ENTER}
+    Sleep    2
+    Send    {ESC}
+    Sleep    2
+    Send    {ALT DOWN}TI{ALT UP}
+    Control Set Text    Sign On    ${EMPTY}    [CLASS:Edit; INSTANCE:1]    ${sign_on_id}
+    Control Set Text    Sign On    ${EMPTY}    [CLASS:Edit; INSTANCE:2]    ${password}
+    Control Click    Sign On    ${EMPTY}    [CLASS:Button; INSTANCE:1]
+    Sleep    2
+    Control Click    Front Page News    ${EMPTY}    [CLASS:Button; INSTANCE:1]
+    Sleep    2
+    Control Click    Emulate    ${EMPTY}    [CLASS:Edit; INSTANCE:1]
+    Send    {BACKSPACE 6}
+    Sleep    2
+    Send    ${pcc}
+    Control Click    Emulate    ${EMPTY}    [CLASS:Button; INSTANCE:1]
+    Wait Until Window Exists    Galileo Desktop    30    3
+    Sleep    3
+    Send    {CTRLDOWN}{SHIFTDOWN}1{CTRLUP}{SHIFTUP}
+    Wait Until Window Exists    Window 1    60    8
+    Sleep    4
+    Send    {TAB}
+
+Launch Sabre GDS
+    [Arguments]    ${pcc}    ${sign_on_id}    ${password}
+    ${path} =    Get Home Dir Path
+    AutoItLibrary.Run    ${path}\\AppData\\Local\\Sabre Red Workspace\\Profiles\\${pcc}_${sign_on_id}\\mysabre.exe
+    Wait Until Window Exists    Sabre®    30    5
+    Send    ${password}
+    Send    {TAB}${pcc}{ENTER}
+    Sleep    60
+    Wait Until Window Exists    Sabre®    30    5
+    Send    SI*${sign_on_id}
+    Send    {ENTER}
+    Sleep    3
+    Send    ${password}
+    Send    {ENTER}
+    Sleep    3
+
+Open Power Express And Retrieve Profile
+    [Arguments]    ${version}    ${syex_env}    ${username}    ${locale}    ${user_profile}    ${team}=${EMPTY}
+    ...    ${gds}=${EMPTY}
+    Comment    Close Power Express
+    Run Keyword If    "${use_local_dev_build}" == "True"    Use Local Dev Build    ${username}
+    ...    ELSE    Launch Power Express    ${version}    ${syex_env}    ${username}    ${use_mock_env}
+    Set Suite Variable    ${locale}
+    Run Keyword Unless    '${syex_env.lower()}' == 'master' or '${syex_env.lower()}' == 'emea' or '${syex_env.lower()}' == 'noram'    Set User Settings    ${locale}
+    Run Keyword Unless    '${syex_env.lower()}' == 'master' or '${syex_env.lower()}' == 'emea' or '${syex_env.lower()}' == 'noram'    Select Profile    ${user_profile}
+    Set Suite Variable    ${user_profile}
+    Comment    Select Profile    ${user_profile}
+    Comment    Sleep    25
+    Run Keyword If    "${team}" != "${EMPTY}"    Run Keywords    Clear Team Selection
+    ...    AND    Select Team    ${team}
+    Set Suite Variable    ${current_pnr}    ${EMPTY}
+    Set Suite Variable    ${pcc}    ${EMPTY}
+    Set Suite Variable    ${uid}    ${username}
+    Comment    Run Keyword If    "${amadeus_env}" == "sellco"    Switch Office Id    ${locale}
+    Run Keyword If    "${gds}" != "${EMPTY}"    Select GDS    ${gds}
+    [Teardown]    Take Screenshot
+
+Populate All Panels (Except Given Panels If Any)
+    [Arguments]    @{exclude_panels}
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Activate Power Express Window
+    Determine Current Panels
+    Populate Panels with Red Mark Except The Given Panel(s)    @{exclude_panels}
+    Comment    Verify All Panels Are Green    @{exclude_panels}
+    [Teardown]    Take Screenshot
+
+Populate Panels with Red Mark Except The Given Panel(s)
+    [Arguments]    @{exclude_panels}
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    : FOR    ${panel}    IN    @{exclude_panels}
+    \    Append To List    ${exclude_panels}    ${panel.upper()}
+    ${counter}    Set Variable    0
+    Set Test Variable    ${is_delivery_panel_already_populated}    False
+    ${is_delivery_panel_found}    Run Keyword And Return Status    List Should Contain Value    ${panel_names_list}    Delivery
+    : FOR    ${panel_name}    IN    @{panel_names_list}
+    \    ${exclude_panel_match}    Run keyword and Return Status    List Should Contain Value    ${exclude_panels}    ${panel_name.upper()}
+    \    ${y}    Run Keyword If    ${exclude_panel_match} == False    Get From Dictionary    ${panel_coordinates}    ${panel_name.upper()}
+    \    ${panel_status}    Run Keyword If    ${exclude_panel_match} == False    Get Panel Status    13    ${y}
+    \    Run Keyword If    "${panel_status}" == "RED"    Run Keywords    Click Panel    ${panel_name}
+    \    ...    AND    Populate ${panel_name} Panel With Default Values
+    ${is_delivery_panel_not_excluded} =    Run Keyword And Return Status    List Should Not Contain Value    ${exclude_panels}    DELIVERY
+    Run Keyword If    ${is_delivery_panel_not_excluded} == True and ${is_delivery_panel_already_populated} != True and ${is_delivery_panel_found} == True    Run Keywords    Click Panel    Delivery
+    ...    AND    Populate Delivery Panel With Default Values
+    Click Panel    ${last_panel}
+    [Teardown]    Take Screenshot
+
+Re-Execute ${workflow} If Simultaneous Change Error Is Displayed
+    : FOR    ${INDEX}    IN RANGE    51
+    \    Log    ${simultaneous_changes}
+    \    Log    ${simultaneous_changes_within_progress_info}
+    \    Log    ${final_simultaneous}
+    \    Run Keyword If    '${simultaneous_changes}' == 'True' or ${final_simultaneous} == 1    Run Keyword    ${workflow}
+    \    Exit For Loop If    '${simultaneous_changes}' != 'True' or ${final_simultaneous} == 0
+
+Retrieve PNR
+    [Arguments]    ${pnr}    ${apply_delay}=${EMPTY}    ${skip_clear_all}=False
+    Should Be True    "${pnr}" != "${EMPTY}"    PNR should exist.
+    Comment    Run Keyword If    '${gds_switch}' == 'amadeus'    Run Keywords    Activate Amadeus Selling Platform    False
+    ...    AND    Activate Power Express Window
+    Run Keyword If    "${skip_clear_all}" == "False"    Run Keywords    Click Clear All
+    ...    AND    Wait Until Progress Info is Completed
+    Wait Until Control Object Is Visible    [NAME:ctxtBookingLocator]    \    true
+    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:ctxtBookingLocator]
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:ctxtBookingLocator]
+    Control Set Text    ${title_power_express}    ${EMPTY}    [NAME:ctxtBookingLocator]    ${pnr}
+    Sleep    2
+    Take Screenshot
+    Send    {TAB}
+    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:btnSearchLocator]
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:btnSearchLocator]
+    Wait Until Progress Info is Completed
+    Wait Until Progress Info is Completed
+    Wait Until Keyword Succeeds    180    3    Verify Control Object Is Visible    [NAME:UGridBookings]    handle_popups=true
+    ${apply_delay}    Set Variable If    "${apply_delay}" == "${EMPTY}"    1    ${apply_delay}
+    Sleep    ${apply_delay}
+    [Teardown]    Take Screenshot
+
+Retrieve PNR via Existing Bookings Tab
+    [Arguments]    ${client}    ${last_name}    ${first_name}    ${pnr}    ${apply_delay}=1
+    Should Be True    "${pnr}" != "${EMPTY}"    PNR should exist.
+    Click Clear All
+    Sleep    5
+    Set Client And Traveler    ${client}    ${last_name}    ${first_name}
+    ${existing_booking_tab}    Set Variable If    '${locale}' == 'fr-FR'    servations existantes    '${locale}' == 'de-DE'    Bestehende Buchungen    '${locale}' != 'fr-FR' and '${locale}' != 'de-DE'
+    ...    Existing Bookings
+    Mouse Click    LEFT    30    65
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:TopLeftTabControl]
+    Select Tab Control    ${existing_booking_tab}
+    Set Control Text Value    [NAME:ctxtLocator]    ${pnr}
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:btnSearchPNR]
+    Wait Until Control Object Is Visible    [NAME:UGridBookings]    ${title_power_express}
+    Sleep    ${apply_delay}
+    [Teardown]    Take Screenshot
+
+Retrieve PNR with Timestamp
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${pnr}
+    Retrieve PNR    ${pnr}
+    ${exp_overalltransaction_start_time}    Get Time
+    Set Test Variable    ${exp_overalltransaction_start_time}
+    [Teardown]    Take Screenshot
+
+Search Round Trip Flights
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${city_pair1}    ${seat_select1}    ${num_months1}
+    ...    ${num_days1}    ${city_pair2}    ${seat_select2}    ${num_months2}    ${num_days2}    ${store_fare1}=${EMPTY}
+    ...    ${store_fare2}=${EMPTY}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Handle Incomplete Contact Details
+    Click New Booking
+    Click Panel    Client Info
+    Comment    Click Update PNR
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ${city_pair1}    ${seat_select1}    ${store_fare1}    ${num_months1}    ${num_days1}
+    Book Flight X Months From Now    ${city_pair2}    ${seat_select2}    ${store_fare2}    ${num_months2}    ${num_days2}
+
+Select GDS
+    [Arguments]    ${gds}
+    Activate Power Express Window
+    Handle Generic Window Popup
+    Click GDS Screen Tab
+    ${gds} =    Set Variable    ${gds.lower()}
+    ${db_gds}    Set Variable If    '${gds}' == 'sabre'    1S    '${gds}' == 'apollo'    1V    '${gds}' == 'galileo'
+    ...    1G    '${gds}' == 'amadeus'    1A
+    Set Suite Variable    ${db_gds}
+    Set Suite Variable    ${GDS_switch}    ${gds}
+    Select GDS Value    ${gds}
+    Wait Until Mouse Cursor Wait Is Completed
+    Click GDS Screen Tab
+    Run Keyword If    '${gds}' == 'amadeus'    Enter GDS Command    IG
+    [Teardown]    Take Screenshot
+
+Select Team
+    [Arguments]    @{team_selection}
+    Wait Until Team Selection Window is Active
+    : FOR    ${team}    IN    @{team_selection}
+    \    Wait Until Window Exists    ${team_selection_window}
+    \    Win Activate    ${team_selection_window}    ${EMPTY}
+    \    Select Team Name    ${team}
+    Control Focus    ${team_selection_window}    ${EMPTY}    ${btn_OKSettings}
+    Control Click    ${team_selection_window}    ${EMPTY}    ${btn_OKSettings}
+    Wait Until Progress Info is Completed
+    Handle Generic Window Popup
+    Set Suite Variable    ${selected_team}    ${team}
+    [Teardown]    Take Screenshot
+
+Set User Settings
+    [Arguments]    ${locale}
+    Win Wait    ${title_settings}    ${EMPTY}    60
+    Win Activate    ${title_settings}    ${EMPTY}
+    Control Click    ${user_selection_window}    ${EMPTY}    ${EMPTY}
+    Set Control Text Value    ${cbo_locale}    ${locale}    ${title_settings}
+    Control Click    ${title_settings}    ${EMPTY}    [NAME:chkDisableContactTracking]
+    Control Click    ${title_settings}    ${EMPTY}    ${btn_OKSettings}
+    Set Suite Variable    ${locale}
+    Sleep    2s
+    Verify User Configuration
+
+Translate Panel's Name To English
+    [Arguments]    ${panel_name}
+    Run Keyword If    "${panel_name}" == "Vérifiez la politique"    Set Test Variable    ${panel_name}    Policy Check
+    Run Keyword If    "${panel_name}" == "Réf Client"    Set Test Variable    ${panel_name}    Cust Refs
+    Run Keyword If    "${panel_name}" == "Livraison"    Set Test Variable    ${panel_name}    Delivery
+    Run Keyword If    "${panel_name}" == "Résumer"    Set Test Variable    ${panel_name}    Recap
+    Run Keyword If    "${panel_name}" == "APIS / SFPD"    Set Test Variable    ${panel_name}    APIS/SFPD
+    Set Test Variable    ${panel_translated}    ${True}
+
+Update PNR for EN or GB
+    [Arguments]    @{exclude_panels}
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+    Click Panel    ${last_panel}
+    ${is_update_pnr_present} =    Control Command    ${title_power_express}    ${EMPTY}    ${btn_sendtoPNR}    IsVisible    ${EMPTY}
+    Run Keyword If    ${is_update_pnr_present} == 1    Click Update PNR
+    Set Test Variable    ${bln_CoordsKnown}    False
+
+Verify Actual Panel Contains Expected Panel
+    [Arguments]    ${expected_panel_value}
+    Run Keyword If    "${bln_CoordsKnown}" == "False"    Determine Current Panels
+    List Should Contain Value    ${panel_coordinates}    ${expected_panel_value.upper()}
+    [Teardown]    Take Screenshot
+
+Verify Actual Panel Does Not Contain Expected Panel
+    [Arguments]    ${expected_panel_value}
+    Run Keyword If    "${bln_CoordsKnown}" == "False"    Determine Current Panels
+    List Should Not Contain Value    ${panel_coordinates}    ${expected_panel_value.upper()}
+    [Teardown]    Take Screenshot
+
+Verify Actual Panel Equals To Expected Panel
+    [Arguments]    @{expected_panel_value}
+    ${converted_panel_value}    Create List
+    : FOR    ${each}    IN    @{expected_panel_value}
+    \    Append To List    ${converted_panel_value}    ${each.upper()}
+    Run Keyword If    "${bln_CoordsKnown}" == "False"    Determine Current Panels
+    Run Keyword And Continue On Failure    List Should Contain Sub List    ${panel_coordinates}    ${converted_panel_value}
+
+Verify All Panels Are Green
+    [Arguments]    @{exclude_panels}
+    Determine Current Panels
+    : FOR    ${panel}    IN    @{panel_names_list}
+    \    ${y}    Get From Dictionary    ${panel_coordinates}    ${panel.upper()}
+    \    ${panel_status}    Get Panel Status    13    ${y}
+    \    Should Be True    "${panel_status}" == "GREEN"    ${panel} should be green
+    [Teardown]    Take Screenshot
+
+Verify Control Object Text Contains Expected Value
+    [Arguments]    ${control_object}    ${expected_value}
+    ${actual_value}    Get Control Text Value    ${control_object}
+    Verify Text Contains Expected Value    ${actual_value}    ${expected_value}
+
+Verify Panel Is Green
+    [Arguments]    @{panel}
+    Determine Current Panels
+    : FOR    ${each_panel}    IN    @{panel}
+    \    Dictionary Should Contain Key    ${panel_coordinates}    ${each_panel.upper()}    ${each_panel.upper()} panel should be visible
+    \    ${y}    Get From Dictionary    ${panel_coordinates}    ${each_panel.upper()}
+    \    ${panel_status} =    Get Panel Status    13    ${y}
+    \    Should Be True    "${panel_status}" == "GREEN"    ${each_panel.upper()} panel should be Green
+    [Teardown]    Take Screenshot
+
+Verify Panel Is Red
+    [Arguments]    @{panel}
+    Determine Current Panels
+    : FOR    ${each_panel}    IN    @{panel}
+    \    Dictionary Should Contain Key    ${panel_coordinates}    ${each_panel.upper()}    ${each_panel.upper()} panel should be visible
+    \    ${y}    Get From Dictionary    ${panel_coordinates}    ${each_panel.upper()}
+    \    ${panel_status} =    Get Panel Status    13    ${y}
+    \    Should Be True    "${panel_status}" == "RED"    ${each_panel.upper()} panel should be RED
+    [Teardown]    Take Screenshot
+
+Verify Progress Info Window is Not Active
+    [Arguments]    ${error_message}=${EMPTY}
+    Activate Power Express Window
+    Handle Generic Window Popup    ${error_message}
+    ${is_progress_info_message_present} =    Control Command    [REGEXPTITLE:Progress Information|Information sur l'avancement]    ${EMPTY}    ${EMPTY}    IsVisible    ${EMPTY}
+    Run Keyword If    ${is_progress_info_message_present} == 1    Win Activate    [REGEXPTITLE:Progress Information|Information sur l'avancement]    ${EMPTY}
+    Should Be True    ${is_progress_info_message_present} == 0    msg=Progress Information Window should be completed within 5 minutes
+    Run Keyword If    ${simultaneous_changes} == ${True}    Set Suite Variable    ${simultaneous_changes_within_progress_info}    ${True}
+    ...    ELSE    Set Suite Variable    ${simultaneous_changes_within_progress_info}    ${False}
+
+Verify User Configuration
+    Activate Power Express Window
+    ${is_db_warning_message_present} =    Control Command    Power Express    There is no System User configured    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    Run Keyword Unless    ${is_db_warning_message_present} == 0    Fatal Error    There is no System User configured
+
+Wait Until Progress Info is Completed
+    [Arguments]    ${keyword}=${EMPTY}    ${error_message}=${EMPTY}
+    Set Test Variable    ${retry_popup_status}    False
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    300    5    Verify Progress Info Window is Not Active    ${error_message}
+    Wait Until Mouse Cursor Wait Is Completed
+    Wait Until Keyword Succeeds    300    5    Verify Progress Info Window is Not Active    ${error_message}
+    Activate Power Express Window
+    [Teardown]    Take Screenshot
+
+Wait Until Team Selection Window is Active
+    ${team_selection_window}    Set Variable If    '${locale}' == 'de-DE'    Teamauswahl    '${locale}' == 'fr-FR'    Sélection de l'équipe    Team Selection
+    : FOR    ${INDEX}    IN RANGE    30
+    \    Handle Incomplete Contacts
+    \    ${is_team_selection_window_present}    Win Exists    ${team_selection_window}    ${EMPTY}
+    \    Exit For Loop If    ${is_team_selection_window_present} == 1
+    \    Sleep    5
+    Wait Until Keyword Succeeds    120    3    Verify Control Object Is Visible    [REGEXPCLASS:WindowsForms10.MDICLIENT.app.*]    ${title_power_express}
+    Win Wait    ${team_selection_window}    ${EMPTY}    60
+    Win Activate    ${team_selection_window}    ${EMPTY}
+    Set Test Variable    ${team_selection_window}
+
+Wait Until Progress Bar Is Completed
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    30    3    Verify Control Object Is Not Visible    [REGEXPCLASS:WindowsForms10.msctls_progress32.app.0.*]
+
+Click New Booking Via Shortcut Key
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Send    !n
+    Wait Until Progress Info is Completed
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Set Test Variable    ${is_new_booking_worflow}    ${True}
+    [Teardown]    Take Screenshot
+
+Click Read Booking Via Shortcut Key
+    [Arguments]    ${ignore_progress_info_popup}=False
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    #Line 4 and 5 are created to indicate that Galileo booking is made for testing purpose.
+    ${date}    Set Departure Date X Months From Now In Gds Format    10
+    Run Keyword If    '${gds_switch}' == 'galileo' and ${is_new_booking_worflow} == ${True}    Enter GDS Command    0TURZZBK1MNL${date}-*********TEST BOOKING*************
+    Wait Until Control Object Is Visible    ${btn_readBooking}
+    Wait Until Control Object Is Enabled    ${btn_readBooking}
+    Send    !r
+    Sleep    5
+    Run Keyword If    "${gds_switch}" == "amadeus"    Run Keywords    Activate Amadeus Selling Platform    False
+    ...    AND    Activate Power Express Window
+    Run Keyword If    "${ignore_progress_info_popup.lower()}" == "false"    Wait Until Progress Info Is Completed
+    ...    ELSE    Log    Progress Information Window Is Ignored.
+    Set Test Variable    ${bln_done_fare_tab_id}    False
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Set Test Variable    ${fare_coords_known}    False
+    [Teardown]    Take Screenshot
+
+Click Update PNR Via Shortcut Key
+    Activate Power Express Window
+    Send    !u
+    Wait Until Progress Info is Completed
+    Wait Until Progress Info is Completed
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Set Test Variable    ${is_new_booking_worflow}    ${True}
+
+Click Finish PNR Via Shortcut Key
+    [Arguments]    ${keyword}=${EMPTY}    ${delay_in_secs}=5    ${panel}=Recap
+    Run Keyword If    '${gds_switch}' == 'sabre'    Enter Specific Command On Native GDS    W-ABC TRAVEL¥W-1/123 MAIN ST¥W-2/DALLAS TX 75201    5/
+    Click Panel    ${panel}
+    Wait Until Control Object Is Enabled    [NAME:btnSendPNR]
+    Comment    Click Control Button    [NAME:btnSendPNR]
+    Send    !f
+    Sleep    2
+    Run Keyword If    '${gds_switch}' == 'amadeus'    Handle Parallel Process    ${keyword}
+    Wait Until Progress Info is Completed
+    Get PNR Record Locator
+    Verify PNR Message
+    Set Test Variable    ${bln_CoordsKnown}    False
+    ${pnr_created_folder} =    Set Variable If    '${test_environment}' == 'local'    C:\\Users\\Public\\Documents\\    '${test_environment}' == 'citrix'    D:\\TFS\\
+    ${date_today} =    ExtendedCustomSyExLibrary.Get Current Date
+    Run Keyword And Continue On Failure    Append To File    ${pnr_created_folder}pnr_created.txt    ${\n}${current_pnr} - ${GDS_switch} - ${date_today}
+    Sleep    ${delay_in_secs}
+    Run Keyword If    '${gds_switch}' == 'amadeus'    Run Keywords    Activate Amadeus Selling Platform    False
+    ...    AND    Activate Power Express Window
+    Log    ${current_pnr}
+    [Teardown]    Take Screenshot
+
+Click Quick Amend Via Shortcut Key
+    Activate Power Express Window
+    Send    !q
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Wait Until Progress Info is Completed
+    Wait Until Progress Info is Completed
+
+Click Change Team
+    ${team_name_title}    Set Variable If    "${locale}" == "de-DE"    Team ändern    "${locale}" == "fr-FR"    Changement d'équipe    Change Team
+    Click Button Control    ${team_name_title}    double_click=True
+
+Display Team Selection Window
+    Click Clear All
+    Click Change Team
+    Clear Team Selection
+
+Clear Team Selection
+    Wait Until Team Selection Window is Active
+    Click Control Button    [NAME:cchkSelectUnselect]    ${team_selection_window}
+    Click Control Button    [NAME:cchkSelectUnselect]    ${team_selection_window}
+
+Verify Panel Is Selected
+    [Arguments]    ${expected_selected_panel}    ${click_panel_forcefully}=False
+    Activate Power Express Window
+    Run Keyword If    "${locale}" == "fr-FR"    Translate Panel's Name To French    ${expected_selected_panel}
+    ${is_selected}    Is Panel Selected    ${expected_selected_panel}
+    Run Keyword If    ${is_selected} == False and ${click_panel_forcefully} == True    Click Panel    ${expected_selected_panel}
+    Comment    Should Be True    ${is_selected} == True
+    [Teardown]    Take Screenshot
+
+Click Price Tracking Via Shortcut Key
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:ctxtBookingLocator]
+    Send    !i
+    Wait Until Progress Info is Completed
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Set Test Variable    ${is_new_booking_worflow}    ${True}
+    [Teardown]    Take Screenshot
+
+Change Locale, Profile, Team
+    [Arguments]    ${locale}    ${profile}    ${team}    ${user_id}=${EMPTY}
+    Activate Power Express Window
+    Sleep    2
+    Send    ^!{F9}
+    Wait Until Control Object Is Visible    [NAME:pnlUser]    [REGEXPTITLE:Sélectionnez l'utilisateur système|System User Settings]
+    Control Focus    ${EMPTY}    ${EMPTY}    [NAME:pnlUser]
+    ${win_title}    Win Get Title    [ACTIVE]
+    Win Activate    ${win_title}    ${EMPTY}
+    Win Wait Active    ${win_title}    ${EMPTY}    30
+    Run Keyword If    "${user_id}" != "${EMPTY}"    Set Control Text Value    [NAME:txtUser]    ${user_id}    ${win_title}
+    Set Control Text Value    ${cbo_locale}    ${locale}    ${win_title}
+    Control Click    ${win_title}    ${EMPTY}    ${btn_OKSettings}
+    Set Suite Variable    ${locale}
+    Select Profile    ${profile}
+    Sleep    2
+    ${team_selection_window}    Set Variable If    '${locale}' == 'de-DE'    Teamauswahl    '${locale}' == 'fr-FR'    Sélection de l'équipe    Team Selection
+    ${is_team_selection_window_present}    Win Exists    ${team_selection_window}    ${EMPTY}
+    Run Keyword If    ${is_team_selection_window_present} == 1    Run Keywords    Clear Team Selection
+    ...    AND    Select Team    ${team}
+    Set Suite Variable    ${locale}
+
+Verify Error In Status Strip Text
+    [Arguments]    ${status_strip_text}
+    Activate Power Express Window
+    Set Test Variable    ${status}    ${EMPTY}
+    ${status}    Get Status Strip Text
+    Should Not Contain    ${status.upper()}    ${status_strip_text.upper()}    msg=${status}    values=False
+
+Use Local Dev Build
+    [Arguments]    ${username}
+    Win Activate    PowerExpress - Microsoft Visual Studio    ${EMPTY}
+    Wait For Active Window    PowerExpress - Microsoft Visual Studio    ${EMPTY}
+    Send    {F5}
+    Win Wait    Power Express    ${EMPTY}    300
+    Set Suite Variable    ${username}    ${username}
+
+Drop Test Data To TestDropFolder
+    [Arguments]    ${test_data_file}
+    Sleep    5
+    Copy File    ${CURDIR}/../test_data/${test_data_file}    C:\\Program Files (x86)\\Carlson Wagonlit Travel\\Power Express ${version}\\TestDropFolder
+    Wait Until Progress Info is Completed
+
+Change Itinerary Language
+    [Arguments]    ${language}
+    Click MenuItem Control    Langu    double_click=${True}
+    Click MenuItem Control    ${language}
+
+Change Team
+    [Arguments]    ${team}
+    Click Change Team
+    Clear Team Selection
+    Select Team    ${team}
+
+Verify That Traveler Does Not Match Popup Is Not Displayed After Read Booking
+    [Arguments]    ${ignore_progress_info_popup}=False
+    Activate Power Express Window
+    Wait Until Progress Info Is Completed
+    Wait Until Control Object Is Enabled    ${btn_readBooking}
+    Control Focus    ${title_power_express}    ${EMPTY}    ${btn_readBooking}
+    Control Click    ${title_power_express}    ${EMPTY}    ${btn_readBooking}
+    Sleep    5
+    ${is_ok_button_exists} =    Control Command    ${EMPTY}    ${EMPTY}    [NAME:OKBtn]    IsVisible    ${EMPTY}
+    Should Be True    ${is_ok_button_exists} == 0
+    ${is_text_popup_exists} =    Control Command    ${EMPTY}    ${EMPTY}    The Traveller in the GDS PNR does not match the Active Traveller in Express.    IsVisible    ${EMPTY}
+    Should Be True    ${is_text_popup_exists} == 0
+    Run Keyword If    "${ignore_progress_info_popup.lower()}" == "false"    Run Keywords    Wait Until Progress Info is Completed
+    ...    AND    Wait Until Progress Info Is Completed
+    ...    ELSE    Log    Progress Information Window Is Ignored.
+    [Teardown]    Take Screenshot

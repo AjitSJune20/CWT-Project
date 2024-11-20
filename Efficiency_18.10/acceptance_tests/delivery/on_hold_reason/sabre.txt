@@ -1,0 +1,393 @@
+*** Settings ***
+Force Tags        sabre    noram
+Resource          ../delivery_verification.txt
+Resource          ../../policy_check/policy_check_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Customer References'
+    [Tags]    us2444
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2839    AUTOONEFIVEONETWO    NORAMTRVLRTWO    DENLAX‡UA    ${EMPTY}    AIR FARE
+    ...    CUST REFS    DELIVERY
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking    TICK
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Verify On Hold Booking Reason Is Checked    Awaiting Customer References
+    Verify On Hold Booking Reason Is Disabled    Awaiting Customer References
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HOLD AWAITING.CUSTOMER.REFERENCES
+
+[QA] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Customer References'
+    [Tags]    us2444
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    This booking is ‘On Hold – Awaiting CDR’. Save time by using the ‘Quick Amend’ button to add the missing data and finish the booking!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    Cust Refs    DELIVERY    RECAP
+    Comment    Click Panel    Policy Check
+    Comment    Select Policy Status    Philippine Airlines Prohibited    TA - Traveller Booker Advised
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Customer References
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Re-Execute Quick Amend If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *M‡    0
+    Verify Specific Line Is Not Written In The PNR    HOLD AWAITING.CUSTOMER.REFERENCES
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddCDR
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddCDR    ${exp_OverallTransactionStartTime}
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Not Visible
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Approval'
+    [Tags]    us2447    us6920
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With Round Trip Air Flight Using Default Values    Sabre 15 - Auto ¦ US2839    AUTOONEFIVEONETWO    NORAMTRVLRTWO    DENLAX‡UA    01Y1    ${EMPTY}
+    ...    LAXDEN‡UA    01Y1    WPRQ    ${EMPTY}    AIR FARE
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HOLD AWAITING.APPROVAL
+    Verify Specific Line Is Written In The PNR    U*21
+
+[QA] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Approval'
+    [Tags]    us2447    us6920
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    This booking is ‘On Hold – Awaiting Approval’. Save time by using the ‘Quick Amend’ button to add the missing data and finish the booking!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    DELIVERY    RECAP
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Approval
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Re-Execute Quick Amend If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U*21
+    Verify Specific Line Is Not Written In The PNR    HOLD AWAITING.APPROVAL
+    Verify Entry is Present in Perf Log File    BusinessFunctionMetric.AmendBookingAddSimpleApproval
+    Verify Entry is Present in Application Usage DB    AmendBookingAddSimpleApproval    ${exp_OverallTransactionStartTime}
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Not Visible
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Secure Flight Data'
+    [Tags]    us2445
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2839    AUTOONEFIVEONETWO    NORAMTRVLRTWO    DENLAX‡UA    ${EMPTY}    AIR FARE
+    ...    CUST REFS    DELIVERY
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Panel With Default Values
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Verify On Hold Booking Reason Is Checked    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Disabled    Awaiting Secure Flight Data
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HOLD AWAITING.SECURE.FLIGHT.DATA
+
+[QA] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Secure Flight Data'
+    [Tags]    us2445
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    This booking is ‘On Hold – Awaiting SFPD’, save time by using the ‘Quick Amend’ button to add the missing data and finish the booking!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    APIS/SFPD    DELIVERY    RECAP
+    Click Panel    APIS/SFPD
+    Verify APIS/SFPD Not Known Checkbox Is Unticked And Disabled
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Secure Flight Data
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Re-Execute Quick Amend If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *M‡    0
+    Verify Specific Line Is not Written In The PNR    M‡ONHOLD-WAIT DATA SECURE FLIGHT
+    Verify Entry is Present in Perf Log File    BusinessFunctionMetric.AmendBookingAddSFPD
+    Verify Entry is Present in Application Usage DB    AmendBookingAddSFPD    ${exp_OverallTransactionStartTime}
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Not Visible
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Policy Check'
+    [Tags]    us2446    us6920
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With Round Trip Air Flight Using Default Values    Sabre 15 - Auto ¦ US2839    AUTOONEFIVEONETWO    NORAMTRVLRTWO    DENLAX‡UA    01Y1    ${EMPTY}
+    ...    LAXDEN‡UA    01Y1    WPRQ    ${EMPTY}    AIR FARE    POLICY CHECK
+    ...    DELIVERY    CLIENT INFO
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Policy Check
+    Verify Policy Name Is Displayed    No Hotel Booked
+    Select Policy Status    Requires approval prior to ticketing    AA - Awaiting Approval
+    Select Policy Status Using Index Number    0    CH - Booked by Client
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Verify On Hold Booking Reason Is Disabled    Awaiting Approval
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *M‡    0
+    Comment    Verify Specific Line Is Written In The PNR    HOLD AWAITING.POLICY.CHECK
+    Verify Specific Line Is Written In The PNR    ONHOLD-AWAITING APPROVAL
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *.    0
+    Verify Specific Line Is Written In The PNR    U*21
+
+[QA] Verify That Quick Steps Is Working For 'On-Hold - Awaiting Policy Check'
+    [Tags]    us2446    us6920
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    This booking is ‘On Hold – Policy Check Awaiting Approval’. Save time by using the ‘Quick Amend’ button to add the missing data and finish the booking!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    POLICY CHECK    DELIVERY    RECAP
+    Click Panel    Policy Check
+    Select Policy Status Using Index Number    1    TA - Traveller Booker Advised
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Approval
+    Populate Delivery Panel Without On Hold Reason
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Quick Amend For Awaiting Policy Check
+    Execute Simultaneous Change Handling    Quick Amend For Awaiting Policy Check
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *M‡    0
+    Verify Specific Line Is Not Written In The PNR    M‡ONHOLD-WAITING FOR VALIDATION
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *.    0
+    Verify Specific Line Is Written In The PNR    U*21
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddPolicyApproval
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddPolicyApproval    ${exp_OverallTransactionStartTime}
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Not Visible
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Delivery Method Droplist And Reason For Placing Booking On Hold list Are Correct
+    [Tags]    us36    ge    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    375532696401818    1220
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ    6    5
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Delivery Method Dropdown Values    Add Ticket Details Later    E-Ticket    Ticket on Departure
+    Verify On Hold Booking Reason Is Displayed    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Displayed    Awaiting Customer References
+    Verify On Hold Booking Reason Is Displayed    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Displayed    Awaiting Approval
+    Verify On Hold Booking Reason Is Not Displayed    Awaiting Itinerary Segment
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[AB] Verify That Delivery Method Droplist And Reason For Placing Booking On Hold list Are Correct
+    [Tags]    us36    ge    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Delivery Method Dropdown Values    Add Ticket Details Later    E-Ticket    Ticket on Departure
+    Verify On Hold Booking Reason Is Displayed    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Displayed    Awaiting Customer References
+    Verify On Hold Booking Reason Is Displayed    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Displayed    Awaiting Approval
+    Verify On Hold Booking Reason Is Not Displayed    Awaiting Itinerary Segment
+    Populate All Panels (Except Given Panels If Any)
+    Enter GDS Command    IR    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow Verify That Delivery Method Droplist And Reason For Placing Booking On Hold list Are Correct If Simultaneous Change Error Is Displayed
+
+[SI] Verify That Delivery Method Droplist And Reason For Placing Booking On Hold list Are Correct
+    [Tags]    us36    ge    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Displayed    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Displayed    Awaiting Customer References
+    Verify On Hold Booking Reason Is Displayed    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Displayed    Awaiting Approval
+    Verify On Hold Booking Reason Is Not Displayed    Awaiting Itinerary Segment
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That TAW Line Is Written And PNR Is Sent To Queue 60 When Multiple On Hold Checkboxes Are Ticked
+    [Tags]    us44    us76    us75    ge    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    375532696401818    1220
+    Book Flight X Months From Now    SINKUL‡MH    01Y1    WPRQ    6    5
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Panel    Policy Check
+    Select Policy Status    Malaysia Prohibited    AA - Awaiting Approval
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Customer References
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Verify On Hold Booking Reason Is Not Displayed    Awaiting Itinerary Segment
+    Set Follow Up Date Using Current Date
+    Get Default Ticketing Date
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T    use_copy_content_from_sabre=False
+    Verify TAW Line For On-Hold Reason Is Written In The PNR    H6L4    060    Awaiting Customer References
+    Verify TAW Line For On-Hold Reason Is Not Written In The PNR    H6L4    060    Awaiting Secure Flight Data
+    Verify TAW Line For On-Hold Reason Is Not Written In The PNR    H6L4    060    Awaiting Fare Details
+    Verify TAW Line For On-Hold Reason Is Not Written In The PNR    H6L4    060    Awaiting Approval
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *QH    use_copy_content_from_sabre=False
+    Verify The PNR Is Sent To Correct Queue Number    H6L4    060
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That TAW Line Is Written And PNR Is Sent To Queue 420 When On Hold Checkboxes Are Not Ticked
+    [Tags]    apac    us44    us76    us75    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    375532696401818    1220
+    Book Flight X Months From Now    SINKUL‡MH    01Y1    WPRQ    6    5
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Panel    Policy Check
+    Select Policy Status    Malaysia Prohibited    HA - Has authority to travel
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Click Panel    Cust Refs
+    Set CDR Value    SSO    1
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Customer References
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Approval
+    Populate Delivery Panel Without On Hold Reason
+    Set Ticketing Date Using Current Date
+    Get Default Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T    use_copy_content_from_sabre=False
+    Verify TAW Line For No On-Hold Reason Is Written In The PNR    H6L4    401
+    Verify TAW Line For On-Hold Reason Is Not Written In The PNR    H6L4    401    Awaiting Secure Flight Data
+    Verify TAW Line For On-Hold Reason Is Not Written In The PNR    H6L4    401    Awaiting Fare Details
+    Verify TAW Line For On-Hold Reason Is Not Written In The PNR    H6L4    401    Awaiting Approval
+    Verify TAW Line For On-Hold Reason Is Not Written In The PNR    H6L4    401    Awaiting Customer References
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *QH    use_copy_content_from_sabre=False
+    Verify The PNR Is Sent To Correct Queue Number    H6L4    401
+
+[AB] Verify That TAW Line Is Written Based On Values From Ticketing Date Field And PNR Is Sent To Queue 60 When Awaiting Approval Is Ticked
+    [Tags]    us44    us76    us75    ge    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Policy Check
+    Select Policy Status    Malaysia Prohibited    HA - Has authority to travel
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Click Panel    Cust Refs
+    Set CDR Value    SSO    1
+    Click Panel    Delivery
+    Tick On Hold Reasons    Awaiting Approval
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Customer References
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Populate Delivery Panel Without On Hold Reason
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Set Follow Up Date Using Current Date
+    Get Default Ticketing Date
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow Verify That TAW Line Is Written Based On Values From Ticketing Date Field And PNR Is Sent To Queue 60 When Awaiting Approval Is Ticked If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T    use_copy_content_from_sabre=False
+    Verify TAW Line For On-Hold Reason Is Written In The PNR    H6L4    060    Awaiting Approval
+    Verify TAW Line For On-Hold Reason Is Not Written In The PNR    H6L4    060    Awaiting Secure Flight Data
+    Verify TAW Line For On-Hold Reason Is Not Written In The PNR    H6L4    060    Awaiting Fare Details
+    Verify TAW Line For On-Hold Reason Is Not Written In The PNR    H6L4    060    Awaiting Customer References
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *QH    use_copy_content_from_sabre=False
+    Verify The PNR Is Sent To Correct Queue Number    H6L4    060
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow Verify That Delivery Method Droplist And Reason For Placing Booking On Hold list Are Correct
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Delivery Method Dropdown Values    E-Ticket    Queue to AQUA QC
+    Verify On Hold Booking Reason Is Displayed    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Displayed    Awaiting Customer References
+    Verify On Hold Booking Reason Is Displayed    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Displayed    Awaiting Approval
+    Verify On Hold Booking Reason Is Not Displayed    Awaiting Itinerary Segment
+    Populate All Panels (Except Given Panels If Any)
+    Enter GDS Command    IR    IR
+    Click Finish PNR
+
+Amend Booking Workflow Verify That TAW Line Is Written Based On Values From Ticketing Date Field And PNR Is Sent To Queue 60 When Awaiting Approval Is Ticked
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Click Panel    Cust Refs
+    Set CDR Value    SSO    1
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Cust Refs
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Secure Flight Data
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Customer References
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Get Default Ticketing Date
+    Populate Delivery Panel Without On Hold Reason
+    Enter GDS Command    IR    IR
+    Click Finish PNR
+
+Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend With Timestamp
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Sleep    5
+
+Quick Amend For Awaiting Policy Check
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    This booking is ‘On Hold – Policy Check Awaiting Approval’. Save time by using the ‘Quick Amend’ button to add the missing data and finish the booking!
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    POLICY CHECK    DELIVERY    RECAP
+    Click Panel    Policy Check
+    Verify Policy Status Is Blank By Default    Requires approval prior to ticketing
+    Verify Policy Status Does Not Contain Option    Requires approval prior to ticketing    AA - Awaiting Approval
+    Select Policy Status    Requires approval prior to ticketing    TA - Traveller Booker Advised
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery panel Is Disabled
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Approval
+    Populate Delivery Panel Without On Hold Reason
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Quick Amend For Awaiting Policy Check

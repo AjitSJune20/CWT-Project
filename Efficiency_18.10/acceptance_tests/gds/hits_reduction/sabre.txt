@@ -1,0 +1,122 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    sabre
+Force Tags        sabre
+Resource          ../gds_verification.txt
+
+*** Test Cases ***
+[NB FR] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657    us2727    emea    valid_fail    de7350    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre FR 15 - Auto ¦ US2447    Optimize    AutoTrvlrOne
+    Delete Current Specific Log File    SyExPerfLog
+    Click New Booking
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQR
+    Book Flight X Months From Now    MSPORD¥UA    01Y1    WPRQ¥S1    2
+    Delete Current Specific Log File    SyExPerfLog
+    Click Read Booking
+    Verify Fare Details Command Is Only Sent Once    SyExPerfLog    *PQR
+    Verify Fare Details Command Is Only Sent Once    SyExPerfLog    *PQ1
+    Populate All Panels (Except Given Panels If Any)
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    "*A"
+
+[AB FR] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657    us2733    us2727    emea    valid_fail    de7350
+    ...    not_ready
+    Delete Current Specific Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    RetrieveBFByPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    GetPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    BusinessFunctionMetric.RetrievePNRIDCallerBox
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQR
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQ1
+    Delete Current Specific Log File    SyExPerfLog
+    Click Amend Booking
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQR
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQ1
+    Book Flight X Months From Now    ORDMSP¥UA    01Y1    WPRQ¥S3    5
+    Delete Current Specific Log File    SyExPerfLog
+    Click Read Booking
+    Verify Fare Details Command Is Only Sent Once    SyExPerfLog    *PQR
+    Verify Fare Details Command Is Only Sent Once    SyExPerfLog    *PQ1
+    Comment    Verify Fare Details Command Is Only Sent Once    SyExPerfLog    *PQ3
+    Populate All Panels (Except Given Panels If Any)
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow If Simultaneous Change Error Is Displayed
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    "*A"
+
+[SI FR] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657    us2733    us2727    emea    not_ready
+    Delete Current Specific Log File    SyExPerfLog
+    Retrieve PNR via Existing Bookings Tab    Sabre FR 15 - Auto ¦ US2447    Optimize    AutoTrvlrOne    ${current_pnr}
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    RetrieveBFByPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    GetPNR
+    Verify PNR Retrieve Function Is Only Triggered Once    SyExPerfLog    BusinessFunctionMetric.RetrievePNRExistingPNRBox
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQR
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQ1
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQ2
+    Delete Current Specific Log File    SyExPerfLog
+    Click Send Itinerary
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQR
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQ1
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQ2
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+    Re-Execute Send Itinerary Workflow If Simultaneous Change Error Is Displayed
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    "*A"
+
+[CB FR] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2657    us2727    emea    not_ready
+    Retrieve PNR    ${current_pnr}
+    Delete Current Specific Log File    SyExPerfLog
+    Click Cancel Booking
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQR
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQ1
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQ2
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+    Re-Execute Cancel Booking Workflow If Simultaneous Change Error Is Displayed
+    Verify PNR Retrieve Command Is Only Sent Once    SyExPerfLog    "*A"
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB US] Verify That No Redundant GDS Entries Are Sent
+    [Tags]    us2727    noram    valid_fail    de7350
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 15 - Auto ¦ US2727    AutoFifteenTwelve    OptimizeTrvlrTwelve
+    Click New Booking
+    Click Panel    Client Info
+    Delete Current Specific Log File    SyExPerfLog
+    Click Update PNR
+    Verify No Fare Details Command Is Sent    SyExPerfLog    *PQR
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Amend Booking Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    ORDMSP¥UA    01Y1    WPRQ¥S2    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+
+Send Itinerary Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR
+
+Cancel Booking Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Delete Current Specific Log File    SyExPerfLog
+    Click Finish PNR

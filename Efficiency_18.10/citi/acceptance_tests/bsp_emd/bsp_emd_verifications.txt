@@ -1,0 +1,518 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+Resource          ../../../resources/common/utilities.txt
+Resource          ../../../resources/panels/bsp_emd.txt
+Resource          ../air_fare/air_fare_verifications.txt
+
+*** Keywords ***
+Generate Test Data For Ticket
+    [Arguments]    ${ticket_variety}    ${country}
+    Run Keyword If    "${ticket_variety.upper()}" == "CONJUNCTION" and "${country.upper()}" == "SG"    Run Keywords    Set Suite Variable    ${conjunction_ticket_collection_sg}    ${ticket_collection}
+    ...    AND    Set Suite Variable    ${conjunction_ticket_number_collection_sg}    ${conjunction_ticket_number_collection}
+    ...    AND    Set Suite Variable    ${conjunction_airline_number_collection_sg}    ${airline_number_collection}
+    ...    ELSE IF    "${ticket_variety.upper()}" == "SINGLE" and "${country.upper()}" == "SG"    Run Keywords    Set Suite Variable    ${single_ticket_collection_sg}    ${ticket_collection}
+    ...    AND    Set Suite Variable    ${single_ticket_number_collection_sg}    ${ticket_number_collection}
+    ...    AND    Set Suite Variable    ${single_airline_number_collection_sg}    ${airline_number_collection}
+    ...    ELSE IF    "${ticket_variety.upper()}" == "MULTIPLE" and "${country.upper()}" == "SG"    Run Keywords    Set Suite Variable    ${multiple_ticket_collection_sg}    ${ticket_collection}
+    ...    AND    Set Suite Variable    ${multiple_ticket_number_collection_sg}    ${ticket_number_collection}
+    ...    AND    Set Suite Variable    ${multiple_airline_number_collection_sg}    ${airline_number_collection}
+    ...    ELSE IF    "${ticket_variety.upper()}" == "SINGLE" and "${country.upper()}" == "AU"    Run Keywords    Set Suite Variable    ${single_ticket_collection_au}    ${ticket_collection}
+    ...    AND    Set Suite Variable    ${single_ticket_number_collection_au}    ${ticket_number_collection}
+    ...    AND    Set Suite Variable    ${single_airline_number_collection_au}    ${airline_number_collection}
+    ...    ELSE IF    "${ticket_variety.upper()}" == "SINGLE" and "${country.upper()}" == "NZ"    Run Keywords    Set Suite Variable    ${single_ticket_collection_nz}    ${ticket_collection}
+    ...    AND    Set Suite Variable    ${single_ticket_number_collection_nz}    ${ticket_number_collection}
+    ...    AND    Set Suite Variable    ${single_airline_number_collection_nz}    ${airline_number_collection}
+
+Get Ticket And Airline Number In The GDS
+    [Arguments]    ${number_of_tickets}    ${is_conjunction}=FALSE    ${ticket_variety}=MULTIPLE
+    ${ctr}    Set Variable    0
+    Activate Travelport Window
+    Activate Travelport Terminal Window
+    Sleep    1
+    Send    {CTRLDOWN}S{CTRLUP}
+    Sleep    1
+    Send    I{ENTER}
+    Sleep    2
+    Send    *${current_pnr}{ENTER}
+    Sleep    4
+    Send    *R{ENTER}
+    Sleep    1
+    Send    *HTE{ENTER}
+    Sleep    10
+    ${ticket_number_pattern_single}    Set Variable If    "${is_conjunction.upper()}" == "TRUE" and "${ticket_variety.upper()}" == "SINGLE"    TKT:\ [0-9]{3}\ [0-9]{4}\ [0-9]{6}\-[0-9]{3}    TKT:\ [0-9]{3}\ [0-9]{4}\ [0-9]{6}
+    ${ticket_number_pattern_multiple}    Set Variable If    "${is_conjunction.upper()}" == "TRUE" and "${ticket_variety.upper()}" == "MULTIPLE"    [0-9]{13}\-[0-9]{3}    [0-9]{13}
+    ${ticket_number_pattern}    Set Variable If    "${ticket_variety.upper()}" == "MULTIPLE"    ${ticket_number_pattern_multiple}    ${ticket_number_pattern_single}
+    Get Clipboard Data Travelport
+    ${ticket_collection}    Create List
+    : FOR    ${index}    IN RANGE    0    ${number_of_tickets}
+    \    ${index}    Evaluate    ${index} + 1
+    \    ${ticket_line}    Run Keyword If    "${ticket_variety.upper()}" == "MULTIPLE"    Get Lines Containing String    ${data_clipboard}    *TE00${index}
+    \    ...    ELSE    Get Lines Using Regexp    ${data_clipboard}    ${ticket_number_pattern}
+    \    ${ticket_number}    Get String Matching Regexp    ${ticket_number_pattern}    ${ticket_line}
+    \    ${ticket_number}    Remove All Non-Integer (retain period)    ${ticket_number}
+    \    Append To List    ${ticket_collection}    ${ticket_number}
+    Log List    ${ticket_collection}
+    ${ticket_number_collection}    Create List
+    ${airline_number_collection}    Create List
+    ${conjunction_ticket_number_collection}    Create List
+    : FOR    ${ticket}    IN    @{ticket_collection}
+    \    ${ctr}    Evaluate    ${ctr} + 1
+    \    ${airline_number}    Get Substring    ${ticket}    \    3
+    \    ${ticket_number}    Get Substring    ${ticket}    3
+    \    ${ticket_length}    Get Length    ${ticket_number}
+    \    ${conjunction_ticket_number}    Run Keyword If    ${ticket_length} >= 13    Get Substring    ${ticket_number}    ${EMPTY}
+    \    ...    10
+    \    ...    ELSE    Set Variable    ${EMPTY}
+    \    ${conjunction_ticket_number_2}    Run Keyword If    ${ticket_length} >= 13    Get Substring    ${ticket_number}    10
+    \    ...    ELSE    Set Variable    ${EMPTY}
+    \    ${conjunction_ticket_number}    Catenate    SEPARATOR=-    ${conjunction_ticket_number}    ${conjunction_ticket_number_2}
+    \    Append To List    ${conjunction_ticket_number_collection}    ${conjunction_ticket_number.strip()}
+    \    Append To List    ${airline_number_collection}    ${airline_number.strip()}
+    \    Append To List    ${ticket_number_collection}    ${ticket_number.strip()}
+    Set Test Variable    ${ticket_collection}
+    Set Test Variable    ${ticket_number_collection}
+    Set Test Variable    ${airline_number_collection}
+    Set Test Variable    ${conjunction_ticket_number_collection}
+    Take Screenshot
+
+Verify Airline Code Field Is Pre-populated With Correct Airline Code
+    [Arguments]    ${expected_airline_code}
+    Get Airline Code Value
+    Run Keyword And Continue On Failure    Should Be Equal    ${airline_code}    ${expected_airline_code}
+
+Verify BSP/EMD Fields Are Blank
+    Verify Control Object Text Value Is Correct    [NAME:AirlineCodeTextbox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:TicketNumberComboBox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:IssuedInExchangeForTicketTextBox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:SellingFareTextbox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:Tax1Textbox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:Tax1TaxCodeTextbox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:ReferenceFareTextbox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:ReferenceFareTextbox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:MissedSavingCodeComboBox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:RealizedSavingCodeComboBox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:ClassCodeComboBox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:ClassCodeComboBox]    ${EMPTY}
+    Verify Control Object Text Value Is Correct    [NAME:DestinationTextbox]    ${EMPTY}
+    Take Screenshot
+
+Verify BSP/EMD Fields Are Disabled
+    Verify Field Is Disabled Based On Background Color    [NAME:IssuedInExchangeForTicketTextBox]
+    Verify Field Is Disabled Based On Background Color    [NAME:VendorNameComboBox]
+    Verify Field Is Disabled Based On Background Color    [NAME:NettCostTextbox]
+    Verify Field Is Disabled Based On Background Color    [NAME:CommissionAmountTextbox]
+    Verify Field Is Disabled Based On Background Color    [NAME:TotalSellingFareTextbox]
+
+Verify BSP/EMD Fields Are Optional
+    Verify Field Is Optional Based On Background Color    [NAME:Tax2Textbox]
+    Verify Field Is Optional Based On Background Color    [NAME:Tax2TaxCodeTextbox]
+    Verify Field Is Optional Based On Background Color    [NAME:TransactionFeeTextbox]
+
+Verify BSP/EMD Fields Are Required
+    Set Ticket Number    ${EMPTY}
+    Verify Field Is Required Based On Background Color    [NAME:AirlineCodeTextbox]
+    Verify Field Is Required Based On Background Color    [NAME:TicketNumberComboBox]
+    Verify Field Is Required Based On Background Color    [NAME:SellingFareTextbox]
+    Verify Field Is Required Based On Background Color    [NAME:Tax1Textbox]
+    Verify Field Is Required Based On Background Color    [NAME:Tax1TaxCodeTextbox]
+    Verify Field Is Required Based On Background Color    [NAME:ReferenceFareTextbox]
+    Verify Field Is Required Based On Background Color    [NAME:ReferenceFareTextbox]
+    Verify Field Is Required Based On Background Color    [NAME:MissedSavingCodeComboBox]
+    Verify Field Is Required Based On Background Color    [NAME:RealizedSavingCodeComboBox]
+    Verify Field Is Required Based On Background Color    [NAME:ClassCodeComboBox]
+    Verify Field Is Required Based On Background Color    [NAME:ClassCodeComboBox]
+    Verify Field Is Required Based On Background Color    [NAME:DestinationTextbox]
+    Set Selling Fare    200
+    Set Commission Percentage    ${EMPTY}
+    Verify Field Is Required Based On Background Color    [NAME:CommissionTextbox]
+    Set Tax Amount 2    10
+    Verify Field Is Required Based On Background Color    [NAME:Tax2TaxCodeTextbox]
+    Set Tax Amount 2    ${EMPTY}
+    Set Tax Code 2    XT
+    Verify Field Is Required Based On Background Color    [NAME:Tax2Textbox]
+    Set Tax Code 2    ${EMPTY}
+    Take Screenshot
+
+Verify BSP/EMD Invalid Values
+    Set Passenger ID    0
+    Verify Error Icon Should Exist
+    Set Passenger ID    1
+    Set Selling Fare    TX2
+    Verify Error Icon Should Exist
+    Set Selling Fare    1500
+    Set Tax Amount 1    TX2
+    Verify Error Icon Should Exist
+    Set Tax Amount 1    101
+    Verify Error Icon Should Not Exist
+    Set Tax Amount 1    3
+    Set Tax Amount 2    TX2
+    Verify Error Icon Should Exist
+    Set Tax Amount 2    101
+    Verify Error Icon Should Not Exist
+    Set Tax Amount 2    3
+    Set Commission Percentage    TX2
+    Verify Error Icon Should Exist
+    Set Commission Percentage    101
+    Verify Error Icon Should Exist
+    Set Commission Percentage    3
+    Set Transaction Fee    TX2
+    Verify Error Icon Should Exist
+    Set Transaction Fee    50
+    Set Reference Fare    TX2
+    Verify Error Icon Should Exist
+    Set Reference Fare    1500
+    Set Low Fare    TX2
+    Verify Error Icon Should Exist
+    Set Low Fare    800
+    Verify Error Icon Should Not Exist
+
+Verify BSP/EMD Panel Is Green
+    Set Selling Fare    1500
+    Set Tax Amount 1    3
+    Set Tax Code 1    TX
+    Set Tax Amount 2    3
+    Set Tax Code 2    TX
+    Set Reference Fare    1500
+    Set Low Fare    800
+    Select Missed Saving Code    B - Corporate Contract Accepted
+    Select Realized Saving Code    CF - Client Negotiated Fare Saving Accepted
+    Select Class Code    YC - Economy Client Fare
+    Set Lowest Fare Carrier Code    PR
+    Set Destination    MNL
+    Select Route Code    INTL
+    Run Keyword And Continue On Failure    Verify Panel Is Green    BSP/EMD
+
+Verify BSP/EMD Panel Is Red
+    Set Selling Fare    1500
+    Set Tax Amount 1    3
+    Set Tax Code 1    TX
+    Set Reference Fare    1500
+    Set Low Fare    800
+    Select Missed Saving Code    B - Corporate Contract Accepted
+    Select Realized Saving Code    CF - Client Negotiated Fare Saving Accepted
+    Select Class Code    YC - Economy Client Fare
+    Set Lowest Fare Carrier Code    PR
+    Set Destination    MNL
+    Select Route Code    INTL
+    Verify Panel Is Green    BSP/EMD
+    Set Passenger ID    0
+    Verify Panel Is Red    BSP/EMD
+    Set Passenger ID    1
+    Set Selling Fare    TX2
+    Verify Panel Is Red    BSP/EMD
+    Set Selling Fare    1500
+    Set Tax Amount 1    TX2
+    Verify Panel Is Red    BSP/EMD
+    Set Tax Amount 1    101
+    Verify Panel Is Green    BSP/EMD
+    Set Tax Amount 1    3
+    Set Tax Amount 2    TX2
+    Verify Panel Is Red    BSP/EMD
+    Set Tax Amount 2    101
+    Verify Panel Is Green    BSP/EMD
+    Set Tax Amount 2    3
+    Set Commission Percentage    TX2
+    Verify Panel Is Red    BSP/EMD
+    Set Commission Percentage    101
+    Verify Panel Is Red    BSP/EMD
+    Set Commission Percentage    3
+    Set Transaction Fee    TX2
+    Verify Panel Is Red    BSP/EMD
+    Set Transaction Fee    50
+    Set Reference Fare    TX2
+    Verify Panel Is Red    BSP/EMD
+    Set Reference Fare    1500
+    Set Low Fare    TX2
+    Verify Panel Is Red    BSP/EMD
+    Set Low Fare    800
+
+Verify Bsp Air Ticket Remarks Are Written In The DI Lines For BSP/EMD
+    [Arguments]    ${airline_code}    ${ticket_number}    ${passenger_id}    ${selling_fare}    ${commission_amount}    ${nett_cost}
+    ...    ${tax_amount_1}    ${tax_code_1}    ${tax_amount_2}    ${tax_code_2}    ${fop_vendor_code}    ${credit_card_number}
+    ...    ${month}    ${year}    ${reference_fare}    ${low_fare}    ${missed_saving_code}    ${realized_saving_code}
+    ...    ${destination}    ${class_code}    ${lfcc}    ${fop_type}    ${country}
+    ${vendor_code}    ${product_code}    Identify Vendor And Product Code    ${country}    TRUE    BSP AIR TICKET
+    ${credit_card_code}    Identify Form Of Payment Code    ${fop_vendor_code}    ${country}
+    ${fop_charge}    Evaluate    ${selling_fare} + ${tax_amount_1} + ${tax_amount_2}
+    ${fop_charge}    Convert To Float    ${fop_charge}
+    ${expiry_year}    Get Substring    ${year}    -2
+    ${bsp_air_ticket_remark_5th}    Set Variable If    "${fop_type.upper()}" == "CX"    FREE TEXT-MSX/F${credit_card_code}/CCN${fop_vendor_code}${credit_card_number}EXP${month}${expiry_year}/D${fop_charge}    "${fop_type.upper()}" == "CC"    FREE TEXT-MSX/FCC/CCN${fop_vendor_code}${credit_card_number}EXP${month}${expiry_year}/D${fop_charge}    "${fop_type.upper()}" == "CASH/INVOICE"
+    ...    FREE TEXT-MSX/FS
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MS/${product_code}/V${vendor_code}/AC${airline_code}/TK${ticket_number}/PX${passenger_id}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/S${selling_fare}/SF${selling_fare}/C${commission_amount}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/NF${nett_cost}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/TX${tax_amount_1}${tax_code_1}${tax_amount_2}${tax_code_2}
+    Verify Specific Remark Is Written In The PNR    ${bsp_air_ticket_remark_5th}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/R${reference_fare}/L${low_fare}/E${missed_saving_code}/FF30-${realized_saving_code}/FF7-${destination}/FF8-${class_code}/FF81-${lfcc}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/FF34-AB/FF35-OTH/FF36-M/FF38-ET
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/FF BSP AIR TICKET
+
+Verify Commission Amount Is Computed Correctly
+    Get Commission Amount
+    Get Selling Fare
+    Get Commission Percentage
+    ${computed_commission_amount}    EVALUATE    ${selling_fare}*${commission_percentage}/100
+    ${computed_commission_amount}    Convert To Float    ${computed_commission_amount}
+    Run Keyword And Continue On Failure    Should Be Equal    ${commission_amount}    ${computed_commission_amount}
+
+Verify Commission Percentage Error Icon
+    Set Commission Percentage    100.01
+    Verify Error Icon Should Exist
+    Set Commission Percentage    99
+    Verify Error Icon Should Not Exist
+    Set Commission Percentage    ABC
+    Verify Error Icon Should Exist
+
+Verify Credit Card Number Is Correct
+    [Arguments]    ${credit_card_number_value}    ${is_masked}=False
+    ${last_4_digits}    Get Substring    ${credit_card_number_value}    -4
+    Get Credit Card Number
+    Run Keyword And Continue On Failure    Run Keyword If    "${is_masked.upper()}" == "TRUE"    Should Be Equal    ${credit_card_number}    ************${last_4_digits}
+    ...    ELSE    Should Be Equal    ${credit_card_number}    ${credit_card_number_value}
+
+Verify Error Icon Should Exist
+    ${is_error_icon_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/error_symbol1.PNG    ${similarity}    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    ${is_error_icon_exist}
+    Comment    Hover Object    ${sikuli_image_path}/error_symbol1.PNG    ${similarity}    ${timeout}
+    Comment    ${is_error_icon_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/bsp_emd_invalid_value.png    ${similarity}    ${timeout}
+    Comment    Run Keyword And Continue On Failure    Should Be True    ${is_error_icon_exist}
+    Take Screenshot
+
+Verify Error Icon Should Not Exist
+    ${is_error_icon_exist}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}/error_symbol1.PNG    ${similarity}    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    "${is_error_icon_exist}" == "False"
+    Take Screenshot
+
+Verify Exchange Ticket Number Error Icon When Selected Ticket Is Same With Ticket Number
+    Set Ticket Number    ${ticket_number_collection[0]}
+    Set Exchange Ticket Number    ${ticket_number_collection[0]}
+    Verify Error Icon Should Exist
+
+Verify Exchange Ticket Number Field Is Pre-populated With Correct Ticket Numbers
+    [Arguments]    @{expected_ticket_numbers}
+    Get Exchange Ticket Number Value
+    Run Keyword And Continue On Failure    List Should Contain Sub List    ${exchange_ticket_numbers}    ${expected_ticket_numbers}
+
+Verify Expiry Month Is Correct
+    [Arguments]    ${expiry_month_value}
+    Get Expiry Month
+    Run Keyword And Continue On Failure    Should Be Equal    ${expiry_month}    ${expiry_month_value}
+    Take Screenshot
+
+Verify Expiry Year Is Correct
+    [Arguments]    ${expiry_year_value}
+    Get Expiry Year
+    ${expiry_year_last_2_digit}    Get Substring    ${expiry_year}    -2
+    Run Keyword And Continue On Failure    Should Be Equal    ${expiry_year_last_2_digit}    ${expiry_year_value}
+
+Verify FOP Fields Are Disabled When Cash/Invoice
+    Verify Control Object Is Disabled    [NAME:FopVendorComboBox]
+    Verify Control Object Is Disabled    [NAME:CardNumberTextbox]
+    Verify Control Object Is Disabled    [NAME:MonthExpiryComboBox]
+    Verify Control Object Is Disabled    [NAME:YearExpiryComboBox]
+
+Verify FOP Fields Are Disabled When Credit Card
+    Verify Control Object Is Disabled    [NAME:CardNumberTextbox]
+
+Verify FOP Fields Are Enabled When Cash/Invoice
+    Verify Field Is Enabled    [NAME:FopComboBox]
+
+Verify FOP Fields Are Enabled When Credit Card
+    Verify Field Is Enabled    [NAME:FopComboBox]
+    Verify Field Is Enabled    [NAME:FopVendorComboBox]
+    Verify Field Is Enabled    [NAME:MonthExpiryComboBox]
+    Verify Field Is Enabled    [NAME:YearExpiryComboBox]
+
+Verify FOP Fields Are Pre-populated Correctly
+    [Arguments]    ${fop_type_value}    ${vendor_type_value}    ${card_number_value}    ${expiry_date_value}
+    Verify Form Of Payment Type Is Correct    ${fop_type_value}
+    Verify Vendor Type Is Correct    ${vendor_type_value}
+    Run Keyword If    "${card_number_value}" == "${EMPTY}"    Verify Credit Card Number Is Correct    ${card_number_value}    False
+    ...    ELSE    Verify Credit Card Number Is Correct    ${card_number_value}    True
+    ${expiry_month_value}    Get Substring    ${expiry_date_value}    \    2
+    ${expiry_year_value}    Get Substring    ${expiry_date_value}    -2
+    Verify Expiry Month Is Correct    ${expiry_month_value}
+    Verify Expiry Year Is Correct    ${expiry_year_value}
+
+Verify Fee Remarks Are Written In The DI Lines For BSP/EMD
+    [Arguments]    ${route_code}    ${vendor_code}    ${product_code}    ${validating_carrier}    ${fee_text}    ${fee_amount}
+    ...    ${card_type}    ${card_number}    ${exp_month}    ${exp_year}    ${fop_type}    ${country}
+    ...    ${x_times}=1
+    ${credit_card_code}    Identify Form Of Payment Code    ${card_type}    ${country}
+    ${fee_remark_1st}    Set Variable If    ("${country}" == "AU" or "${country}" == "NZ") and "${route_code.upper()}" == "DOM"    FREE TEXT-MS/${product_code}/V${vendor_code}/VC1/AC${validating_carrier}/TK/PX1    FREE TEXT-MS/${product_code}/V${vendor_code}/AC${validating_carrier}/TK/PX1
+    ${fee_remark_3rd}    Set Variable If    "${credit_card_code.upper()}" == "FS" and "${fop_type.upper()}" == "CASH/INVOICE"    FREE TEXT-MSX/FS    FREE TEXT-MSX/F${credit_card_code}/CCN${card_type}${card_number}EXP${exp_month}${exp_year}/D${fee_amount}
+    Run Keyword If    ${x_times} >= 2    Run Keywords    Verify Specific Remark Is Written X Times In The PNR    ${fee_remark_1st}    ${x_times}
+    ...    AND    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-MSX/S${fee_amount}/SF${fee_amount}/C${fee_amount}    ${x_times}
+    ...    AND    Verify Specific Remark Is Written X Times In The PNR    ${fee_remark_3rd}    ${x_times}
+    ...    AND    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-MSX/FF34-AB/FF35-OTH/FF36-M/FF47-CWT    ${x_times}
+    ...    AND    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-MSX/FF ${fee_text}    ${x_times}
+    ...    ELSE    Run Keywords    Verify Specific Remark Is Written In The PNR    ${fee_remark_1st}
+    ...    AND    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/S${fee_amount}/SF${fee_amount}/C${fee_amount}
+    ...    AND    Verify Specific Remark Is Written In The PNR    ${fee_remark_3rd}
+    ...    AND    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/FF34-AB/FF35-OTH/FF36-M/FF47-CWT
+    ...    AND    Verify Specific Remark Is Written In The PNR    FREE TEXT-MSX/FF ${fee_text}
+
+Verify Field Is Disabled Based On Background Color
+    [Arguments]    ${control_object}    ${expected_hex_color}=F0F0F0
+    Verify Control Object Background Color    ${control_object}    ${expected_hex_color}
+
+Verify Field Is Enabled
+    [Arguments]    ${control_object}
+    Verify Control Object Is Enabled    ${control_object}
+
+Verify Field Is Optional Based On Background Color
+    [Arguments]    ${control_object}    ${expected_hex_color}=FFFFFF
+    Verify Control Object Background Color    ${control_object}    ${expected_hex_color}
+
+Verify Field Is Required Based On Background Color
+    [Arguments]    ${control_object}    ${expected_hex_color}=FFD700
+    Verify Control Object Background Color    ${control_object}    ${expected_hex_color}
+
+Verify Form Of Payment Type Is Correct
+    [Arguments]    ${fop_type_value}
+    Get Form Of Payment Type
+    Run Keyword And Continue On Failure    Should Be Equal    ${fop_type}    ${fop_type_value}
+    Take Screenshot
+
+Verify Issued In Exchange For Ticket Field Is Blank
+    Verify Control Object Text Value Is Correct    [NAME:IssuedInExchangeForTicketTextBox]    ${EMPTY}
+
+Verify Merchant Fee Amount Is Computed Correctly
+    [Arguments]    ${route_code}    ${country}
+    Get Total Selling Fare
+    Get Selling Fare
+    Get Tax Amount 1
+    Get Tax Amount 2
+    Get Merchant Fee
+    ${merchant_fee_percentage}    Set Variable If    "${country}" == "AU" or "${country}" == "NZ"    0.03    0.02
+    ${computed_merchant_fee}    Evaluate    (${selling_fare} + ${tax_amount_1} + ${tax_amount_2}) * ${merchant_fee_percentage}
+    Comment    ${computed_merchant_fee}    Round Up HK    ${computed_merchant_fee}
+    ${expected_merchant_fee}    Run Keyword If    ("${route_code.upper()}" == "DOM" or "${route_code.upper()}" == "INT" or "${route_code.upper()}" == "TTAS" or "${route_code.upper()}" == "${EMPTY}") and ("${country}" == "AU" or "${country}" == "NZ" )    Round Off    ${computed_merchant_fee}
+    ...    ELSE    Round Up Hk    ${computed_merchant_fee}
+    ${gst_value_rounded}    Run Keyword If    "${route_code.upper()}" == "DOM" and "${country}" == "AU"    Evaluate    ${expected_merchant_fee} * .1
+    ...    ELSE IF    "${route_code.upper()}" == "DOM" and "${country}" == "NZ"    Evaluate    ${expected_merchant_fee} * .15
+    ...    ELSE    Set Variable    0
+    ${gst_value_rounded}    Round Off    ${gst_value_rounded}
+    ${expected_merchant_fee}    Convert to Float    ${expected_merchant_fee}
+    ${gst_value_rounded}    Convert to Float    ${gst_value_rounded}
+    ${expected_merchant_fee_gst}    Evaluate    ${expected_merchant_fee} + ${gst_value_rounded}
+    ${expected_merchant_fee_gst}    Convert To Float    ${expected_merchant_fee_gst}
+    Run Keyword And Continue On Failure    Should Be Equal    ${merchant_fee}    ${expected_merchant_fee_gst}
+    Set Suite Variable    ${merchant_fee_no_gst}    ${expected_merchant_fee}
+    Transaction Fee Data In Powerbase
+
+Verify Merchant Fee Field Is Not Displayed
+    Verify Control Object Is Not Visible    [NAME:MerchantFeeTextbox]
+
+Verify Merchant Fee Remarks Are Written In The DI Lines For BSP/EMD
+    [Arguments]    ${route_code}    ${validating_carrier}    ${fee_text}    ${fee_amount}    ${card_type}    ${card_number}
+    ...    ${exp_month}    ${exp_year}    ${fop_type}    ${country}    ${x_times}=1
+    ${vendor_code}    ${product_code}    Identify Vendor And Product Code    ${country}    True    Merchant Fee
+    ${expiry_year}    Get Substring    ${exp_year}    -2
+    Verify Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code}    ${vendor_code}    ${product_code}    ${validating_carrier}    ${fee_text.upper()}    ${fee_amount}
+    ...    ${card_type}    ${card_number}    ${exp_month}    ${expiry_year}    ${fop_type}    ${country}
+    ...    ${x_times}
+
+Verify Nett Cost Is Computed Correctly
+    Get Nett Cost
+    Get Selling Fare
+    Get Commission Amount
+    ${computed_nett_cost}    Evaluate    ${selling_fare} - ${commission_amount}
+    ${computed_nett_cost}    Convert to Float    ${computed_nett_cost}
+    Run Keyword And Continue On Failure    Should Be Equal    ${nett_cost}    ${computed_nett_cost}
+
+Verify Ticket Number Error Icon When Selected Ticket Is Same With Exchange Ticket Number
+    Verify Error Icon Should Exist
+
+Verify Ticket Number Field Is Pre-populated With Correct Ticket Numbers
+    [Arguments]    @{expected_ticket_numbers}
+    Get Ticket Number Value
+    Run Keyword And Continue On Failure    List Should Contain Sub List    ${ticket_numbers}    ${expected_ticket_numbers}
+
+Verify Ticket Number Is Defaulted To Correct Ticket Number
+    [Arguments]    ${expected_ticket_number}
+    ${actual_ticket_number}    Get Control Text Value    [NAME:TicketNumberComboBox]
+    Run Keyword And Continue On Failure    Should Be Equal    ${actual_ticket_number.strip()}    ${expected_ticket_number}
+
+Verify Tickets Are Successfully Issued
+    [Arguments]    ${emulate_pcc_command}=SEM/781P/AG
+    Enter Specific Command On Native GDS    I    ${emulate_pcc_command}
+    Activate Travelport Window
+    Send    *${current_pnr}{ENTER}
+    Sleep    5
+    Send    *R{ENTER}
+    Sleep    5
+    Send    TKPDTD{ENTER}
+    Sleep    15
+    Get Clipboard Data Travelport
+    Verify Text Contains Expected Value    ${data_clipboard}    ELECTRONIC TKT GENERATED
+    Take Screenshot
+
+Verify Total Selling Fare Is Computed Correctly
+    Get Total Selling Fare
+    Get Selling Fare
+    Get Tax Amount 1
+    Get Tax Amount 2
+    Get Merchant Fee
+    Get Transaction Fee
+    ${computed_total_selling_fare}    EVALUATE    ${selling_fare} + ${tax_amount_1} + ${tax_amount_2} + ${merchant_fee} + ${transaction_fee}
+    ${computed_total_selling_fare}    Convert to Float    ${computed_total_selling_fare}
+    Run Keyword And Continue On Failure    Should Be Equal    ${total_selling_fare}    ${computed_total_selling_fare}
+
+Verify Total Selling Fare With No Merchant Fee
+    Get Total Selling Fare
+    Get Selling Fare
+    Get Tax Amount 1
+    Get Tax Amount 2
+    Get Transaction Fee
+    ${computed_total_selling_fare}    EVALUATE    ${selling_fare} + ${tax_amount_1} + ${tax_amount_2} + ${transaction_fee}
+    ${computed_total_selling_fare}    Convert to Float    ${computed_total_selling_fare}
+    Run Keyword And Continue On Failure    Should Be Equal    ${total_selling_fare}    ${computed_total_selling_fare}
+
+Verify Transaction Fee Remarks Are Written In The DI Lines For BSP/EMD
+    [Arguments]    ${route_code}    ${validating_carrier}    ${fee_text}    ${fee_amount}    ${card_type}    ${card_number}
+    ...    ${exp_month}    ${exp_year}    ${fop_type}    ${country}    ${x_times}=1
+    ${bsp_vendor_code}    ${bsp_product_code}    Identify Vendor And Product Code    ${country}    True    Transaction Fee
+    ${expiry_year}    Get Substring    ${exp_year}    -2
+    Verify Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code}    ${bsp_vendor_code}    ${bsp_product_code}    ${validating_carrier}    ${fee_text.upper()}    ${fee_amount}
+    ...    ${card_type}    ${card_number}    ${exp_month}    ${expiry_year}    ${fop_type}    ${country}
+    ...    ${x_times}
+
+Verify Vendor Type Is Correct
+    [Arguments]    ${vendor_type_value}
+    Get Vendor Type
+    Run Keyword And Continue On Failure    Should Be Equal    ${vendor_type}    ${vendor_type_value}
+    Take Screenshot
+
+Verify Void Ticket Number Error Icon Is Exist
+    Verify Error Icon Should Exist
+
+Verify Void Ticket Number Error Icon Is Not Exist
+    Verify Error Icon Should Not Exist
+
+Void Tickets
+    [Arguments]    ${ticket_numbers}    ${emulate_command}=SEM/781P/AG
+    Activate Travelport Window
+    Activate Travelport Terminal Window
+    Send    {CTRLDOWN}S{CTRLUP}
+    Sleep    3
+    Send    I{ENTER}
+    Sleep    2
+    Send    ${emulate_command}{ENTER}
+    Sleep    2
+    Send    *${current_pnr}{ENTER}
+    Sleep    3
+    Send    *R{ENTER}
+    Sleep    1
+    : FOR    ${ticket_item}    IN    @{ticket_numbers}
+    \    ${ticket_length}    Get Length    ${ticket_item}
+    \    ${ticket}    Run Keyword If    ${ticket_length} >= 13    Get Substring    ${ticket_item}    ${EMPTY}
+    \    ...    13
+    \    ...    ELSE    Set Variable    ${ticket_item}
+    \    Send    TRV/${ticket}{ENTER}
+    \    Sleep    5
+    \    Get Clipboard Data Travelport
+    \    Run Keyword And Continue On Failure    Should Contain    ${data_clipboard}    CHANGED TO VOID STATUS
+    \    Send    IR{ENTER}
+    \    Sleep    5
+    Take Screenshot

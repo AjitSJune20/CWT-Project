@@ -1,0 +1,552 @@
+*** Settings ***
+Force Tags        galileo    apac
+Resource          ../cust_refs_verification.txt
+Resource          ../../gds/gds_verifications.txt
+
+*** Test Cases ***
+[NB SG] Verify That CDRs Are Retrieved From New CDR Table And DI Remarks Are Written To The PNR
+    [Tags]    citi
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Set Client And Traveler    Citigroup ¦ SG-Citigroup    TEST    ALBERT
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Retrieve PNR Details From Travelport    ${EMPTY}    *ALL
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/1234567890
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/CC12345
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQ    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Centre    GEID    Deal Code    No Hotel Reason Code    Revenue/Non Revenue Generating    Traveler Type Alpha Policy Cod
+    ...    MSL 8    MSL 9    Waitlist
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    GEID    1234567890
+    Verify CDR Values Defined Are Retrieved    Cost Centre    CC12345
+    Verify CDR Values Defined Are Retrieved    Traveler Type Alpha Policy Cod    C
+    Set CDR Value    Deal Code    ABCDE12345
+    Set CDR Value    No Hotel Reason Code    5
+    Set CDR Value    Revenue/Non Revenue Generating    NO
+    Set CDR Value    MSL 8    8888888888
+    Set CDR Value    MSL 9    9999999999
+    Set CDR Value    Waitlist    FGHIJ12345
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/CC12345
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF20/ABCDE12345
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/1234567890
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF14/8888888888
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF15/9999999999
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF19/5
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF18/NO
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF16/C
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF71/FGHIJ12345
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF13    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF20    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF12    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF14    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF15    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF19    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF18    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF16    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF71    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB SG] Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR
+    [Tags]    citi
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Centre    GEID    Deal Code    No Hotel Reason Code    Revenue/Non Revenue Generating    Traveler Type Alpha Policy Cod
+    ...    MSL 8    MSL 9    Waitlist
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    GEID    1234567890
+    Verify CDR Values Defined Are Retrieved    Cost Centre    CC12345
+    Verify CDR Values Defined Are Retrieved    Deal Code    ABCDE12345
+    Verify CDR Values Defined Are Retrieved    No Hotel Reason Code    5
+    Verify CDR Values Defined Are Retrieved    Revenue/Non Revenue Generating    NO
+    Verify CDR Values Defined Are Retrieved    MSL 8    8888888888
+    Verify CDR Values Defined Are Retrieved    MSL 9    9999999999
+    Verify CDR Values Defined Are Retrieved    Waitlist    FGHIJ12345
+    Set CDR Value    GEID    0987654321
+    Set CDR Value    Cost Centre    BB67890
+    Set CDR Value    Deal Code    12345ABCDE
+    Set CDR Value    No Hotel Reason Code    7
+    Set CDR Value    Revenue/Non Revenue Generating    RN
+    Set CDR Value    MSL 8    7878787878
+    Set CDR Value    MSL 9    9898989898
+    Set CDR Value    Traveler Type Alpha Policy Cod    D
+    Set CDR Value    Waitlist    12345FGHIJ
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow In Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR For SG If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/BB67890
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF20/12345ABCDE
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/0987654321
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF14/7878787878
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF15/9898989898
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF19/7
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF18/RN
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF16/D
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF71/12345FGHIJ
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF13    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF20    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF12    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF14    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF15    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF19    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF18    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF16    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF71    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB MY] Verify That CDRs Are Retrieved From New CDR Table And DI Remarks Are Written To The PNR
+    [Tags]    citi    us484
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/34RY/AG
+    Comment    Click Clear All
+    Set Client And Traveler    Citigroup ¦ MY-Citigroup    TEST    MALAYSIA
+    Click Contact Tab In Caller Panel
+    Set Mobile Number    1-1-1
+    Tick Traveler Checkbox
+    Click New Booking
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQ    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Center    GEID    DEALCODE    No Hotel Reason Code    Revenue/Non Revenue Generating    Travler Type Alpha Policy Code
+    ...    MSL 8    MSL 9    OFFLINE.
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    Cost Center    7267267267
+    Verify CDR Values Defined Are Retrieved    MSL 8    726
+    Verify CDR Values Defined Are Retrieved    MSL 9    837
+    Verify CDR Values Defined Are Retrieved    OFFLINE.    8
+    Set CDR Value    Cost Center    OL111111
+    Set CDR Value    DEALCODE    ${EMPTY}
+    Set CDR Value    GEID    2222222222
+    Set CDR Value    MSL 8    8888888888
+    Set CDR Value    MSL 9    9999999999
+    Set CDR Value    No Hotel Reason Code    5
+    Set CDR Value    OFFLINE.    5
+    Set CDR Value    Revenue/Non Revenue Generating    NO
+    Set CDR Value    Travler Type Alpha Policy Code    M
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/OL111111
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF11/2222222222
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/8888888888
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF14/9999999999
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF18/5
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF16/5
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF17/NO
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF15/M
+    Verify Specific Remark Is Not Written In The PNR    FREE TEXT-FF19
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF11    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF12    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF13    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF14    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF15    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF16    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF17    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF18    1
+    [Teardown]
+
+[AB MY] Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR
+    [Tags]    citi    us484
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Center    GEID    DEALCODE    No Hotel Reason Code    Revenue/Non Revenue Generating    Travler Type Alpha Policy Code
+    ...    MSL 8    MSL 9    OFFLINE.
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    Cost Center    OL111111
+    Verify CDR Values Defined Are Retrieved    GEID    2222222222
+    Verify CDR Values Defined Are Retrieved    DEALCODE    ${EMPTY}
+    Verify CDR Values Defined Are Retrieved    MSL 8    8888888888
+    Verify CDR Values Defined Are Retrieved    MSL 9    9999999999
+    Verify CDR Values Defined Are Retrieved    No Hotel Reason Code    5
+    Verify CDR Values Defined Are Retrieved    OFFLINE.    5
+    Verify CDR Values Defined Are Retrieved    Revenue/Non Revenue Generating    NO
+    Verify CDR Values Defined Are Retrieved    Travler Type Alpha Policy Code    M
+    Set CDR Value    Cost Center    CC111111
+    Set CDR Value    GEID    2222223333
+    Set CDR Value    DEALCODE    ABCDE12345
+    Set CDR Value    No Hotel Reason Code    3
+    Set CDR Value    Revenue/Non Revenue Generating    RG
+    Set CDR Value    Travler Type Alpha Policy Code    D
+    Set CDR Value    MSL 8    8888889999
+    Set CDR Value    MSL 9    9999998888
+    Set CDR Value    Travler Type Alpha Policy Code    G
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow In Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR For MY If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF11/2222223333
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/CC111111
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/8888889999
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF14/9999998888
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF15/G
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF16/5
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF17/RG
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF18/3
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF19/ABCDE12345
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF11    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF12    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF13    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF14    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF15    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF16    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF17    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF18    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF19    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AU] Verify That CDRs Are Retrieved From New CDR Table And DI Remarks Are Written To The PNR
+    [Tags]    citi    us484
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/34RP/AG
+    Set Client And Traveler    Citigroup ¦ Citi AU    TEST    DEBORAH
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Click Panel    Cust Refs
+    Verify CDR Fields Defined Are Retrieved    Cost Center    GEID    MSL 10    MSL 8    MSL 9    Travler Type Alpha Policy Code
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    Travler Type Alpha Policy Code    G
+    Set CDR Value    Cost Center    OL111111
+    Set CDR Value    GEID    2222222222
+    Set CDR Value    MSL 8    1111111111
+    Set CDR Value    MSL 9    2222222222
+    Set CDR Value    MSL 10    3333333333
+    Set CDR Value    Travler Type Alpha Policy Code    G
+    Click Panel    Client Info
+    Click Update PNR
+    Retrieve PNR Details From Travelport    ${EMPTY}    *DI
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/2222222222
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/OL111111
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF14/1111111111
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF15/2222222222
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF70/3333333333
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF16/G
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQ    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Center    GEID    MSL 10    MSL 8    MSL 9    Travler Type Alpha Policy Code
+    Verify CDR Values Defined Are Retrieved    Cost Center    OL111111
+    Verify CDR Values Defined Are Retrieved    GEID    2222222222
+    Verify CDR Values Defined Are Retrieved    MSL 8    1111111111
+    Verify CDR Values Defined Are Retrieved    MSL 9    2222222222
+    Verify CDR Values Defined Are Retrieved    MSL 10    3333333333
+    Verify CDR Values Defined Are Retrieved    Travler Type Alpha Policy Code    G
+    Set CDR Value    Cost Center    AB111111
+    Set CDR Value    GEID    2222224444
+    Set CDR Value    MSL 8    1111112222
+    Set CDR Value    MSL 9    2222223333
+    Set CDR Value    MSL 10    3333334444
+    Set CDR Value    Travler Type Alpha Policy Code    C
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/AB111111
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/2222224444
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF14/1111112222
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF15/2222223333
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF70/3333334444
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF16/C
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF12    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF13    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF14    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF15    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF16    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF70    1
+
+[AB AU] Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR
+    [Tags]    citi    us484
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Center    GEID    MSL 10    MSL 8    MSL 9    Travler Type Alpha Policy Code
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    Cost Center    AB111111
+    Verify CDR Values Defined Are Retrieved    GEID    2222224444
+    Verify CDR Values Defined Are Retrieved    MSL 8    1111112222
+    Verify CDR Values Defined Are Retrieved    MSL 9    2222223333
+    Verify CDR Values Defined Are Retrieved    MSL 10    3333334444
+    Verify CDR Values Defined Are Retrieved    Travler Type Alpha Policy Code    C
+    Set CDR Value    Cost Center    CC111111
+    Set CDR Value    GEID    2222223333
+    Set CDR Value    MSL 8    8888889999
+    Set CDR Value    MSL 9    9999998888
+    Set CDR Value    MSL 10    4444333333
+    Set CDR Value    Travler Type Alpha Policy Code    G
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow In Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR For AU If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/CC111111
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/2222223333
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF14/8888889999
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF15/9999998888
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF70/4444333333
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF16/G
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF12    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF13    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF14    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF15    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF16    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF70    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB NZ] Verify That CDRs Are Retrieved From New CDR Table And DI Remarks Are Written To The PNR
+    [Tags]    citi    us484
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    CITI APAC
+    Enter GDS Command    SEM/34VP/AG
+    Select GDS    Galileo
+    Set Client And Traveler    Citigroup ¦ NZ-Citi    ANG    SWEE
+    Set Mobile Number    1-1-1
+    Click New Booking
+    Click Panel    Cust Refs
+    Verify CDR Fields Defined Are Retrieved    Cost Center    DealCode    GEID    MSL 10    MSL 8    MSL 9
+    ...    OFFLINE.    Revenue/Non Revenue Generating    Travler Type Alpha Policy Code
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    Cost Center    14170905
+    Verify CDR Values Defined Are Retrieved    MSL 8    4135
+    Verify CDR Values Defined Are Retrieved    MSL 9    4147
+    Verify CDR Values Defined Are Retrieved    Travler Type Alpha Policy Code    G
+    Set CDR Value    DealCode    DEALCODE
+    Set CDR Value    GEID    1234567890
+    Set CDR Value    MSL 10    101010
+    Set CDR Value    OFFLINE.    5
+    Set CDR Value    Revenue/Non Revenue Generating    NR
+    Click Panel    Client Info
+    Click Update PNR
+    Retrieve PNR Details From Travelport    ${EMPTY}    *DI
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/14170905
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF20/DEALCODE
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/1234567890
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF70/101010
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF14/4135
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF15/4147
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF17/5
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF18/NR
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF16/G
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQ    6
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Center    GEID    MSL 10    MSL 8    MSL 9    Travler Type Alpha Policy Code
+    Verify CDR Values Defined Are Retrieved    Cost Center    14170905
+    Verify CDR Values Defined Are Retrieved    MSL 8    4135
+    Verify CDR Values Defined Are Retrieved    MSL 9    4147
+    Verify CDR Values Defined Are Retrieved    DealCode    DEALCODE
+    Verify CDR Values Defined Are Retrieved    GEID    1234567890
+    Verify CDR Values Defined Are Retrieved    MSL 10    101010
+    Verify CDR Values Defined Are Retrieved    OFFLINE.    5
+    Verify CDR Values Defined Are Retrieved    Revenue/Non Revenue Generating    NR
+    Verify CDR Values Defined Are Retrieved    Travler Type Alpha Policy Code    G
+    Set CDR Value    Cost Center    1111111111
+    Set CDR Value    MSL 8    5314
+    Set CDR Value    MSL 9    7414
+    Set CDR Value    DealCode    CODEDEAL
+    Set CDR Value    GEID    0123456789
+    Set CDR Value    MSL 10    010101
+    Set CDR Value    OFFLINE.    5
+    Set CDR Value    Revenue/Non Revenue Generating    NS
+    Set CDR Value    Travler Type Alpha Policy Code    D
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/1111111111
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF20/CODEDEAL
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/0123456789
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF70/010101
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF14/5314
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF15/7414
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF17/5
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF18/NS
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF16/D
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF13    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF20    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF12    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF70    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF14    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF15    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF17    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF18    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF16    1
+    [Teardown]
+
+[AB NZ] Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR
+    [Tags]    citi    us484
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Center    GEID    MSL 10    MSL 8    MSL 9    Travler Type Alpha Policy Code
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    Cost Center    1111111111
+    Verify CDR Values Defined Are Retrieved    MSL 8    5314
+    Verify CDR Values Defined Are Retrieved    MSL 9    7414
+    Verify CDR Values Defined Are Retrieved    DealCode    CODEDEAL
+    Verify CDR Values Defined Are Retrieved    GEID    0123456789
+    Verify CDR Values Defined Are Retrieved    MSL 10    010101
+    Verify CDR Values Defined Are Retrieved    OFFLINE.    5
+    Verify CDR Values Defined Are Retrieved    Revenue/Non Revenue Generating    NS
+    Verify CDR Values Defined Are Retrieved    Travler Type Alpha Policy Code    D
+    Set CDR Value    Cost Center    12121212
+    Set CDR Value    MSL 8    8888
+    Set CDR Value    MSL 9    9999
+    Set CDR Value    DealCode    CUDDIL
+    Set CDR Value    GEID    9876543210
+    Set CDR Value    MSL 10    2020202
+    Set CDR Value    OFFLINE.    7
+    Set CDR Value    Revenue/Non Revenue Generating    RG
+    Set CDR Value    Travler Type Alpha Policy Code    M
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow In Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR For NZ If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF13/12121212
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF20/CUDDIL
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF12/9876543210
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF70/2020202
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF14/8888
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF15/9999
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF17/7
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF18/RG
+    Verify Specific Remark Is Written In The PNR    FREE TEXT-FF16/M
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF13    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF20    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF12    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF70    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF14    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF15    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF17    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF18    1
+    Verify Specific Remark Is Written X Times In The PNR    FREE TEXT-FF16    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow In Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR For AU
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Center    GEID    MSL 10    MSL 8    MSL 9    Travler Type Alpha Policy Code
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    Cost Center    AB111111
+    Verify CDR Values Defined Are Retrieved    GEID    2222224444
+    Verify CDR Values Defined Are Retrieved    MSL 8    1111112222
+    Verify CDR Values Defined Are Retrieved    MSL 9    2222223333
+    Verify CDR Values Defined Are Retrieved    MSL 10    3333334444
+    Verify CDR Values Defined Are Retrieved    Travler Type Alpha Policy Code    C
+    Set CDR Value    Cost Center    CC111111
+    Set CDR Value    GEID    2222223333
+    Set CDR Value    MSL 8    8888889999
+    Set CDR Value    MSL 9    9999998888
+    Set CDR Value    MSL 10    4444333333
+    Set CDR Value    Travler Type Alpha Policy Code    G
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+
+Amend Booking Workflow In Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR For MY
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Center    GEID    DEALCODE    No Hotel Reason Code    Revenue/Non Revenue Generating    Travler Type Alpha Policy Code
+    ...    MSL 8    MSL 9    OFFLINE.
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    Cost Center    OL111111
+    Verify CDR Values Defined Are Retrieved    GEID    2222222222
+    Verify CDR Values Defined Are Retrieved    DEALCODE    ${EMPTY}
+    Verify CDR Values Defined Are Retrieved    MSL 8    8888888888
+    Verify CDR Values Defined Are Retrieved    MSL 9    9999999999
+    Verify CDR Values Defined Are Retrieved    No Hotel Reason Code    5
+    Verify CDR Values Defined Are Retrieved    OFFLINE.    5
+    Verify CDR Values Defined Are Retrieved    Revenue/Non Revenue Generating    NO
+    Verify CDR Values Defined Are Retrieved    Travler Type Alpha Policy Code    M
+    Set CDR Value    Cost Center    CC111111
+    Set CDR Value    GEID    2222223333
+    Set CDR Value    DEALCODE    ABCDE12345
+    Set CDR Value    No Hotel Reason Code    3
+    Set CDR Value    Revenue/Non Revenue Generating    RG
+    Set CDR Value    Travler Type Alpha Policy Code    D
+    Set CDR Value    MSL 8    8888889999
+    Set CDR Value    MSL 9    9999998888
+    Set CDR Value    Travler Type Alpha Policy Code    G
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+
+Amend Booking Workflow In Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Centre    GEID    Deal Code    No Hotel Reason Code    Revenue/Non Revenue Generating    Traveler Type Alpha Policy Cod
+    ...    MSL 8    MSL 9    Waitlist
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    GEID    1234567890
+    Verify CDR Values Defined Are Retrieved    Cost Centre    CC12345
+    Verify CDR Values Defined Are Retrieved    Deal Code    ABCDE12345
+    Verify CDR Values Defined Are Retrieved    No Hotel Reason Code    5
+    Verify CDR Values Defined Are Retrieved    Revenue/Non Revenue Generating    NO
+    Verify CDR Values Defined Are Retrieved    MSL 8    8888888888
+    Verify CDR Values Defined Are Retrieved    MSL 9    9999999999
+    Verify CDR Values Defined Are Retrieved    Waitlist    FGHIJ12345
+    Set CDR Value    GEID    0987654321
+    Set CDR Value    Cost Centre    BB67890
+    Set CDR Value    Deal Code    12345ABCDE
+    Set CDR Value    No Hotel Reason Code    7
+    Set CDR Value    Revenue/Non Revenue Generating    RN
+    Set CDR Value    MSL 8    7878787878
+    Set CDR Value    MSL 9    9898989898
+    Set CDR Value    Traveler Type Alpha Policy Cod    D
+    Set CDR Value    Waitlist    12345FGHIJ
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+
+Amend Booking Workflow In Verify CDRs Are Retrieved From The PNR And Existing DI Remarks Are Updated After Finish PNR For NZ
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Fields Defined Are Retrieved    Cost Center    GEID    MSL 10    MSL 8    MSL 9    Travler Type Alpha Policy Code
+    Verify CDR Fields Retrieved Are Not Duplicate
+    Verify CDR Values Defined Are Retrieved    Cost Center    1111111111
+    Verify CDR Values Defined Are Retrieved    MSL 8    5314
+    Verify CDR Values Defined Are Retrieved    MSL 9    7414
+    Verify CDR Values Defined Are Retrieved    DealCode    CODEDEAL
+    Verify CDR Values Defined Are Retrieved    GEID    0123456789
+    Verify CDR Values Defined Are Retrieved    MSL 10    010101
+    Verify CDR Values Defined Are Retrieved    OFFLINE.    5
+    Verify CDR Values Defined Are Retrieved    Revenue/Non Revenue Generating    NS
+    Verify CDR Values Defined Are Retrieved    Travler Type Alpha Policy Code    D
+    Set CDR Value    Cost Center    12121212
+    Set CDR Value    MSL 8    8888
+    Set CDR Value    MSL 9    9999
+    Set CDR Value    DealCode    CUDDIL
+    Set CDR Value    GEID    9876543210
+    Set CDR Value    MSL 10    2020202
+    Set CDR Value    OFFLINE.    7
+    Set CDR Value    Revenue/Non Revenue Generating    RG
+    Set CDR Value    Travler Type Alpha Policy Code    M
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR

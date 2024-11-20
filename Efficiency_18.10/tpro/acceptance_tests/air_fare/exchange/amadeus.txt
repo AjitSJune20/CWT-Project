@@ -1,0 +1,539 @@
+*** Settings ***
+Resource          ../air_fare_verification.txt
+
+*** Test Cases ***
+[NB SG] Create Exchange Ticket PNR
+    [Tags]    us313    sg    horton    for_update
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Create New Booking With Round Trip Air Flight Using Default Values    APAC SYN CORP ¦ APAC SG OS AUTOMATION    BEAR    SGOTHERS    SINHKG/ACX    SS1Y1    FXP/S2
+    ...    HKGMNL/APR    SS1Y1    FXP/S3    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Finish PNR
+    Verify Tickets Are Successfully Issued    S2
+    Verify Tickets Are Successfully Issued    S3
+    Get Ticket Number From PNR
+
+[NB SG] Verify That Ticket Exchange Remarks Are Written And Fees Are Computed Correctly
+    [Tags]    us313    sg    horton    for_update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Exchange Ticketed PNR    S3    MNLLAX/APR    SS1Y1
+    Click Read Booking    True
+    Verify Exchange Pop-up Window Is Displayed    is an exchange ticket transaction.The additional collection amount will pre-populate into the charged fare box.If an EMD is needed, use the EMD sub-tab to add EMD details into the PNR.    verification_mode=contains    multi_line_search_flag=true
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 1    AX    378282246310005    1220
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Set Commission Rebate Percentage    2.00
+    Set Merchant Fee Percentage Field    2.00
+    Set Markup Percentage    Fare Quote 1    2.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 1    Client Rebate    has_client_cwt_comm_agreement=Yes
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1    Client Rebate
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    SG
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Realised Savings Code Default Value    EX - Exchange
+    Get Base Fare, Taxes, Total Fare And LFCC From Exchange Ticket    Fare Quote 2    S3
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    # High, Charged And Low Fare
+    Verify High Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Charged Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Low Fare Value Is Same From Exchange TST    Fare Quote 2
+    # Calculation Upon Loading
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    Client Rebate    is_exchange=true
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    # Calculation Upon Changing Values
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 2    AX    378282246310005    1220
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Set Commission Rebate Percentage    2.00
+    Set Merchant Fee Percentage Field    2.00
+    Set Markup Percentage    Fare Quote 2    2.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 2    Client Rebate    has_client_cwt_comm_agreement=Yes
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    Client Rebate    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    SG
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 2
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1
+    Verify Exchange Itinerary Remark    Fare Quote 2    x_times=1
+    Verify FOP Remark Per TST Is Written    Fare Quote 1    S2    AX378282246310005/D1220    SG    CWT
+    Verify FOP Remark Per TST Is Written    Fare Quote 2    S3    AX378282246310005/D1220    SG    CWT
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    AX378282246310005/D1220    SG
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 2    S3    03    AX378282246310005/D1220    SG
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 1    S2    02    AX378282246310005/D1220    SG    CWT
+    Verify Merchant Fee Remarks Per TST Are Correct    Fare Quote 2    S3    03    AX378282246310005/D1220    SG    CWT
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 1    S2    02    AX378282246310005/D1220    SG
+    Verify Commission Rebate Remarks Per TST Are Correct    Fare Quote 2    S3    03    AX378282246310005/D1220    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    void_ticket=True
+
+[NB HK] Create Exchange Ticket PNR
+    [Tags]    us313    hk    horton    for_update
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    Create New Booking With Round Trip Air Flight Using Default Values    APAC SYN CORP ¦ APAC HK OS AUTOMATION    BEAR    HKOTHERS    SINHKG/ACX    SS1Y1    FXP/S2
+    ...    HKGMNL/APR    SS1Y1    FXP/S3    Client Info
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Finish PNR
+    Verify Tickets Are Successfully Issued    S2
+    Verify Tickets Are Successfully Issued    S3
+    Get Ticket Number From PNR
+
+[AB HK] Verify That Ticket Exchange Remarks Are Written And Fees Are Computed Correctly For Single Exchange
+    [Tags]    us313    sg    horton    for_update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Exchange Ticketed PNR    S3    MNLLAX/APR    SS1Y1
+    Click Read Booking    True
+    Verify Exchange Pop-up Window Is Displayed    is an exchange ticket transaction.The additional collection amount will pre-populate into the charged fare box.If an EMD is needed, use the EMD sub-tab to add EMD details into the PNR.    verification_mode=contains    multi_line_search_flag=true
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    # Fare Quote 1
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Cash
+    Set Transaction Fee    600
+    Set Fuel Surcharge Field    30
+    Set Commission Rebate Percentage    2
+    Set Markup Percentage    Fare Quote 1    2
+    # Get Air Fare Details
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Get LFCC Field Value    Fare Quote 1
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Get Savings Code    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    # Defaulting Of Realised
+    Verify Realised Savings Code Default Value    EX - EXCHANGE
+    # Get Air Fare Details
+    Get Base Fare, Taxes, Total Fare And LFCC From Exchange Ticket    Fare Quote 2    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Get LFCC Field Value    Fare Quote 2
+    # High, Charged And Low Fare
+    Verify High Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Charged Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Low Fare Value Is Same From Exchange TST    Fare Quote 2
+    # Calculation Upon Loading
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    # Calculation Upon Changing Values
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 2    AX    378282246310005    1220
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Set Commission Rebate Percentage    2.00
+    Set Merchant Fee Percentage Field    2.00
+    Set Markup Percentage    Fare Quote 2    2.00
+    Set Transaction Fee    600
+    Set Fuel Surcharge Field    30
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 2
+    Get Savings Code    Fare Quote 2
+    Click Panel    Recap
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Ticket Exchange For Single Exchange
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Total Amount Itinerary Remarks Is Written    Fare Quote 1
+    Verify Exchange Itinerary Remark    Fare Quote 2    is_apac=True
+    Verify Accounting Remarks For Main Sale    Fare Quote 1    S2    02    Cash    country=HK    is_exchange=True
+    Verify Accounting Remarks For Main Sale    Fare Quote 2    S3    03    AX378282246310005/D1220    CWT    country=HK
+    ...    is_exchange=True
+
+[AB HK] Verify That Ticket Exchange Remarks Are Written And Fees Are Computed Correctly For Multiple Exchange
+    [Tags]    us313    sg    horton    for_update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Exchange Ticketed PNR    S2    SINHKG/ACX    SS1Y1    5
+    Click Read Booking    True
+    Verify Exchange Pop-up Window Is Displayed    is an exchange ticket transaction.The additional collection amount will pre-populate into the charged fare box.If an EMD is needed, use the EMD sub-tab to add EMD details into the PNR.    verification_mode=contains    multi_line_search_flag=true
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    # High, Charged And Low Fare
+    Verify High Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Charged Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Low Fare Value Is Same From Exchange TST    Fare Quote 2
+    # Calculation Upon Initial Load
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    # Get Air Fare Details
+    Get Base Fare, Taxes, Total Fare And LFCC From Exchange Ticket    Fare Quote 1    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Get Savings Code    Fare Quote 1
+    Get LFCC Field Value    Fare Quote 1
+    # Nett Fare
+    Set Nett Fare Field    Fare Quote 1    3600
+    Set Transaction Fee    250
+    Set Markup Percentage    Fare Quote 1    5.00
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 1    AX    378282246310005    1220
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 1
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Get Savings Code    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    # Get Air Fare Details
+    Get Base Fare, Taxes, Total Fare And LFCC From Exchange Ticket    Fare Quote 2    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Get Savings Code    Fare Quote 2
+    Get LFCC Field Value    Fare Quote 2
+    # High, Charged And Low Fare
+    Verify High Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Charged Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Low Fare Value Is Same From Exchange TST    Fare Quote 2
+    # Defaulting Of Realised
+    Verify Realised Savings Code Default Value    EX - EXCHANGE
+    # Calculation Upon Initial Load
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    # Calculation Upon Changing Values
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 2    AX    378282246310005    1220
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Set Transaction Fee    600
+    Set Fuel Surcharge Field    30
+    Set Commission Rebate Percentage    2.00
+    Set Markup Percentage    Fare Quote 2    2.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    # Calculation Upon Changing Values
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 2    Cash
+    Set Commission Rebate Percentage    25
+    Set Markup Percentage    Fare Quote 2    20
+    Set Transaction Fee    350
+    Set Fuel Surcharge Field    50
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    # Nett Fare
+    Set Nett Fare Field    Fare Quote 2    3600
+    Set Transaction Fee    250
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 2
+    Get Savings Code    Fare Quote 2
+    Click Panel    Recap
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Ticket Exchange For Multiple Exchange
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Exchange Itinerary Remark    Fare Quote 1    is_apac=True
+    Verify Exchange Itinerary Remark    Fare Quote 2    is_apac=True
+    Verify Accounting Remarks For Main Sale    Fare Quote 1    S3    03    AX378282246310005/D1220    Airline    country=HK
+    ...    is_exchange=True
+    Verify Accounting Remarks For Main Sale    Fare Quote 2    S2    02    Cash    country=HK    is_exchange=True
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    void_ticket=True
+
+*** Keywords ***
+Amend Ticket Exchange For Multiple Exchange
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Exchange Ticketed PNR    S2    SINHKG/ACX    SS1Y1    5
+    Click Read Booking    True
+    Verify Exchange Pop-up Window Is Displayed    is an exchange ticket transaction.The additional collection amount will pre-populate into the charged fare box.If an EMD is needed, use the EMD sub-tab to add EMD details into the PNR.    verification_mode=contains    multi_line_search_flag=true
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    # High, Charged And Low Fare
+    Verify High Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Charged Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Low Fare Value Is Same From Exchange TST    Fare Quote 2
+    # Calculation Upon Initial Load
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    # Get Air Fare Details
+    Get Base Fare, Taxes, Total Fare And LFCC From Exchange Ticket    Fare Quote 1    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Get Savings Code    Fare Quote 1
+    Get LFCC Field Value    Fare Quote 1
+    # Nett Fare
+    Set Nett Fare Field    Fare Quote 1    3600
+    Set Transaction Fee    250
+    Set Markup Percentage    Fare Quote 1    5.00
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 1    AX    378282246310005    1220
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    CWT
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 1
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Get Savings Code    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    # Get Air Fare Details
+    Get Base Fare, Taxes, Total Fare And LFCC From Exchange Ticket    Fare Quote 2    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Get Savings Code    Fare Quote 2
+    Get LFCC Field Value    Fare Quote 2
+    # High, Charged And Low Fare
+    Verify High Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Charged Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Low Fare Value Is Same From Exchange TST    Fare Quote 2
+    # Defaulting Of Realised
+    Verify Realised Savings Code Default Value    EX - EXCHANGE
+    # Calculation Upon Initial Load
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    # Calculation Upon Changing Values
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 2    AX    378282246310005    1220
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Set Transaction Fee    600
+    Set Fuel Surcharge Field    30
+    Set Commission Rebate Percentage    2.00
+    Set Markup Percentage    Fare Quote 2    2.00
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    # Calculation Upon Changing Values
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Cash
+    Set Commission Rebate Percentage    25
+    Set Markup Percentage    Fare Quote 2    20
+    Set Transaction Fee    350
+    Set Fuel Surcharge Field    50
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 2
+    Get Savings Code    Fare Quote 2
+    Click Panel    Recap
+    Click Finish PNR
+
+Amend Ticket Exchange For Single Exchange
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Exchange Ticketed PNR    S3    MNLLAX/APR    SS1Y1
+    Click Read Booking    True
+    Verify Exchange Pop-up Window Is Displayed    is an exchange ticket transaction.The additional collection amount will pre-populate into the charged fare box.If an EMD is needed, use the EMD sub-tab to add EMD details into the PNR.    verification_mode=contains    multi_line_search_flag=true
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    # Fare Quote 1
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Cash
+    Set Transaction Fee    600
+    Set Fuel Surcharge Field    30
+    Set Commission Rebate Percentage    2
+    Set Markup Percentage    Fare Quote 1    2
+    # Get Air Fare Details
+    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Get LFCC Field Value    Fare Quote 1
+    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 1
+    Verify Merchant Fee Fields Are Disabled    Fare Quote 1
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 1
+    Verify MarkUp Amount Value Is Correct    Fare Quote 1    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 1
+    Get Savings Code    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    # Defaulting Of Realised
+    Verify Realised Savings Code Default Value    EX - EXCHANGE
+    # Get Air Fare Details
+    Get Base Fare, Taxes, Total Fare And LFCC From Exchange Ticket    Fare Quote 2    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Get LFCC Field Value    Fare Quote 2
+    # High, Charged And Low Fare
+    Verify High Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Charged Fare Value Is Same From Exchange TST    Fare Quote 2
+    Verify Low Fare Value Is Same From Exchange TST    Fare Quote 2
+    # Calculation Upon Loading
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    # Calculation Upon Changing Values
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 2    AX    378282246310005    1220
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 2    CWT
+    Set Commission Rebate Percentage    2.00
+    Set Merchant Fee Percentage Field    2.00
+    Set Markup Percentage    Fare Quote 2    2.00
+    Set Transaction Fee    600
+    Set Fuel Surcharge Field    30
+    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Verify Commission Rebate Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Merchant Fee Amount Is Correct Based On Computed Value    Fare Quote 2
+    Verify Fare Including Airline Taxes Value Is Correct Based On Computed Value    Fare Quote 2    is_exchange=true
+    Verify MarkUp Amount Value Is Correct    Fare Quote 2    HK
+    Verify Total Amount Value Is Correct Based On Computed Value    Fare Quote 2
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 2
+    Get Savings Code    Fare Quote 2
+    Click Panel    Recap
+    Click Finish PNR
+
+Add FOP From Ticketed PNR
+    [Arguments]    ${fop}
+    Enter GDS Command    IG    RT${current_pnr}
+    Enter GDS Command    FPCC${fop}    RFTESTPNR    ER    ER    IR
+    ${rtf_lines}    Get Clipboard Data Amadeus    RTF
+    Verify Text Contains Expected Value    ${rtf_lines}    \\d+\\sFP\\s.\*    true
+    [Teardown]    Take Screenshot
+
+Exchange Ticketed PNR
+    [Arguments]    ${segment_number}    ${city_pair}    ${seat_select}    ${month}=7    ${day}=1
+    ${number}    Remove All Non-Integer (retain period)    ${segment_number}
+    Enter GDS Command    IR    XE${number}
+    Book Flight X Months From Now    ${city_pair}    ${seat_select}    \    ${month}    ${day}
+    ${number}    Evaluate    ${number} - 2
+    ${ticket_number}    Get From List    ${ticket_numbers}    ${number}
+    Enter GDS Command    FXQ/${segment_number}/TKT${ticket_number}
+    [Teardown]    Take Screenshot
+
+Get Base Fare, Taxes, Total Fare And LFCC From Exchange Ticket
+    [Arguments]    ${fare_tab}    ${segment_number}    ${country}=SG
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${number}    Remove All Non-Integer (retain period)    ${segment_number}
+    ${number}    Evaluate    ${number} - 2
+    ${ticket_number}    Get From List    ${ticket_numbers}    ${number}
+    Enter GDS Command    FXF/${segment_number}/TKT${ticket_number}
+    ${data_cliboard}    Get Clipboard Data Amadeus
+    #Getting Currency Based on Country
+    ${currency}    Get Currency    ${country}
+    #Getting Base Fare
+    ${base_fare_raw}    Get Lines Containing String    ${data_cliboard}    FARE BALANCE
+    ${base_fare_splitted}    Split String    ${base_fare_raw}    ${SPACE}
+    ${base_fare_splitted}    Remove Duplicate From List    ${base_fare_splitted}
+    #Getting Tax Balance
+    ${tax_balance_raw}    Get Lines Containing String    ${data_cliboard}    TAX BALANCE
+    ${tax_balance_splitted}    Split String    ${tax_balance_raw}    ${SPACE}
+    ${tax_balance_splitted}    Remove Duplicate From List    ${tax_balance_splitted}
+    #Getting Total Add Coll
+    ${total_add_coll_raw}    Get Lines Containing String    ${data_cliboard}    TOTAL ADD COLL
+    ${total_add_coll_splitted}    Split String    ${total_add_coll_raw}    ${SPACE}
+    ${total_add_coll_splitted}    Remove Duplicate From List    ${total_add_coll_splitted}
+    ${lfcc_in_tst_raw}    Get Lines Containing String    ${data_cliboard}    BG CXR:
+    ${lfcc_in_tst_splitted}    Split String    ${lfcc_in_tst_raw}    ${SPACE}
+    ${lfcc_in_tst_splitted}    Remove Duplicate From List    ${lfcc_in_tst_splitted}
+    Set Suite Variable    ${base_fare_${fare_tab_index}}    ${base_fare_splitted[4]}
+    Set Suite Variable    ${total_tax_${fare_tab_index}}    ${tax_balance_splitted[-1]}
+    Set Suite Variable    ${grand_total_value_${fare_tab_index}}    ${total_add_coll_splitted[5]}
+    Set Suite Variable    ${lfcc_in_tst_${fare_tab_index}}    ${lfcc_in_tst_splitted[2]}
+    [Teardown]    Take Screenshot
+
+Get Ticket Number From PNR
+    Enter GDS Command    IG    RT${current_pnr}
+    ${ticket_numbers}    Create List
+    ${rtf_lines}    Get Clipboard Data Amadeus    RTTN
+    ${fp_lines}    Get Lines Using Regexp    ${rtf_lines}    FA PAX \\d{3}\-\\d{10}
+    ${fp_lines}    Split To Lines    ${fp_lines}
+    : FOR    ${fp_line}    IN    @{fp_lines}
+    \    ${line}    Fetch From Right    ${fp_line}    FA PAX${SPACE}
+    \    ${ticket_number}    Fetch From Left    ${line}    \/
+    \    Append To List    ${ticket_numbers}    ${ticket_number}
+    Set Suite Variable    ${ticket_numbers}
+
+Remove FP Line From The PNR
+    Enter GDS Command    IG    RT${current_pnr}
+    ${rtf_lines}    Get Clipboard Data Amadeus    RTF
+    ${fp_line}    Get Lines Using Regexp    ${rtf_lines}    \\d+\\sFP\\s.\*
+    ${line_number}    Fetch From Left    ${fp_line}    FP
+    Enter GDS Command    XE${line_number.strip()}    RFTESTPNR    ER    ER    IR
+    ${rtf_lines}    Get Clipboard Data Amadeus    RTF
+    Verify Text Does Not Contain Value    ${rtf_lines}    \\d+\\sFP\\s.\*    true
+    [Teardown]    Take Screenshot
+
+Verify Tickets Are Successfully Issued
+    [Arguments]    ${segment_number}
+    Enter GDS Command    IG    RT${current_pnr}
+    Enter GDS Command    TTP/${segment_number}
+    ${message}    Get Clipboard Data Amadeus
+    Verify Text Contains Expected Value    ${message}    OK ETICKET
+    [Teardown]    Take Screenshot
+
+Verify High Fare Value Is Same From Exchange TST
+    [Arguments]    ${fare_tab}
+    [Documentation]    Execute Get Base Fare, Taxes And Total Fare From Exchange Ticket Prior To This Keyword
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify High Fare Field Value    ${grand_total_value_${fare_tab_index}}    ${fare_tab}
+    [Teardown]    Take Screenshot
+
+Verify Charged Fare Value Is Same From Exchange TST
+    [Arguments]    ${fare_tab}
+    [Documentation]    Execute Get Base Fare, Taxes And Total Fare From Exchange Ticket Prior To This Keyword
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Charged Fare Field Value    ${grand_total_value_${fare_tab_index}}    ${fare_tab}
+    [Teardown]    Take Screenshot
+
+Verify Low Fare Value Is Same From Exchange TST
+    [Arguments]    ${fare_tab}
+    [Documentation]    Execute Get Base Fare, Taxes And Total Fare From Exchange Ticket Prior To This Keyword
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Low Fare Field Value    ${grand_total_value_${fare_tab_index}}    ${fare_tab}
+    [Teardown]    Take Screenshot
+
+Verify Accounting Remarks For Main Sale
+    [Arguments]    ${fare_tab}    ${segment_number}    ${segment_long}    ${form_of_payment}    ${merchant}=${EMPTY}    ${country}=SG
+    ...    ${is_exchange}=False
+    [Documentation]    ${fare_tab} = Fare Quote 1
+    ...    ${segment_number} = S2
+    ...    ${segment_long} = 02 --> this fall to travcom segment relate (ie. SG02)
+    ...    ${form_of_payment} = AX378282246310005/D1220 or Cash
+    ...    ${merchant} = CWT or Airline
+    ...    ${country} = SG
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    ${fare_tab}    ${segment_number}
+    Verify LFCC Accounting Remark Is Written    ${fare_tab}    ${segment_number}
+    Verify Routing Accounting Remarks Are Written    ${fare_tab}    ${segment_number}
+    Verify FF30, FF8 and EC Account Remarks Are Written    ${fare_tab}    ${segment_number}
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    ${segment_number}
+    #Verify PC Accounting Remark Is Written    ${segment_number}
+    Verify FOP Remark Per TST Is Written    ${fare_tab}    ${segment_number}    ${form_of_payment}    ${country}    ${merchant}    is_exchange=${is_exchange}
+    Verify Transaction Fee Remark Per TST Are Correct    ${fare_tab}    ${segment_number}    ${segment_long}    ${form_of_payment}    ${country}
+    Verify Merchant Fee Remarks Per TST Are Correct    ${fare_tab}    ${segment_number}    ${segment_long}    ${form_of_payment}    ${country}    ${merchant}
+    Verify Commission Rebate Remarks Per TST Are Correct    ${fare_tab}    ${segment_number}    ${segment_long}    ${form_of_payment}    ${country}    ${is_exchange}
+    Run Keyword If    "${country}" == "HK"    Verify Fuel Surcharge Remark Per TST Are Correct    ${fare_tab}    ${segment_number}    ${segment_long}    ${form_of_payment}

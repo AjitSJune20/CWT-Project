@@ -1,0 +1,64 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../delivery_verification.txt
+
+*** Test Cases ***
+[1G EMEA] [SI] Verify That Correct Queue Minder Is Added When User Confirmation Is Selected As Itinerary Type
+    [Documentation]    SO:
+    ...
+    ...    Itinerary - Enable E-ticket = Yes
+    ...
+    ...    Itinerary Product = CWT Itinerary
+    [Tags]    us5444
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values    Galileo Legacy - Auto ¦ Fare Remarks    AutoLegacy    EmeaTrvlrThree    LHRCDG/AF    ${EMPTY}
+    Enter GDS Command    T.T*
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Not Displayed
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Tick Receive Itinerary Checkbox
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Send Itinierary Selecting Confirmation As Itinerary Type
+    Verify Queue Minder Remark Is Present In PNR    C0D    70
+
+[1G EMEA] [SI] Verify That Correct Queue Minder Is Added When User E-ticket Notification Is Selected As Itinerary Type
+    [Tags]    us5444
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Select E-Ticket Notification Radio Button
+    Tick Receive Itinerary Checkbox
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Send Itinerary Selecting E-Ticket As Itinerary Type
+    Verify Queue Minder Remark Is Present In PNR    C0D    71
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Send Itinierary Selecting Confirmation As Itinerary Type
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Tick Receive Itinerary Checkbox
+    Click Finish PNR
+
+Send Itinerary Selecting E-Ticket As Itinerary Type
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Panel    Delivery
+    Verify Itinerary Type Section Is Displayed
+    Verify Confirmation Is Selected As Default Itinerary Type
+    Select E-Ticket Notification Radio Button
+    Tick Receive Itinerary Checkbox
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR

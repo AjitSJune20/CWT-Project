@@ -1,0 +1,54 @@
+*** Settings ***
+Force Tags        emea    apollo
+Resource          ../policy_check_verification.txt
+Resource          ../../business_rules/business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Policy Advise Is Shown for Policy Name Air Cabin
+    [Tags]    us4629
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4618    Auto    Maurice
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Click Update PNR
+    Book Flight X Months From Now    LAXJFK+AA    01J1    T:$BS1    6
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    Permitted over 1200 miles (one way)    True
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Delivery Panel Without On Hold Reason
+    Click Panel    Policy Check
+    Select Policy Status    Business Class out of policy    AA - Awaiting Approval
+    Click Panel    Recap
+    Click Finish PNR
+
+[QA] Verify That Policy Advise Is Shown For Policy Name Air Cabin
+    [Tags]    us4629
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    Permitted over 1200 miles (one way)    True
+    Populate Delivery Panel Without On Hold Reason
+    Click Panel    Policy Check
+    Select Policy Status    Business Class out of policy    TA - Traveller Booker Advised
+    Click Finish PNR
+
+[AB] Verify That Policy Advise Is Shown For Policy Name Air Cabin
+    [Tags]    us4629
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    LAXJFK+AA    01J1    T:$BS1    6    5
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    Permitted over 1200 miles (one way)    True
+    Verify Out of Policy Is Shown    Air Cabin    Business Class out of policy
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Policy Check
+    Populate Policy Check Panel With Default Values
+    Click Panel    Recap
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***

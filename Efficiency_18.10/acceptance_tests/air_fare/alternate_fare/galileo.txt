@@ -1,0 +1,521 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../air_fare_verification.txt
+
+*** Test Cases ***
+[NB HK] Verify That RI Lines Are Written For Multiple Alternate Fares
+    [Tags]    us3354    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo HK 16 - Auto ¦ US3528    AutoSixteenFour    ApacTrvlrFour    HKGSYD/QF    01Y1    FQS1
+    ...    SYDHKG/QF    01Y1    FQS2    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Set LFCC Field    QF
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Set LFCC Field    PR
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 1
+    Populate Alternate Fare Details    CDG-LHR-MNL    AA/QF    12345    FULL    TEST DETAILS FOR FARE 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 2
+    Populate Alternate Fare Details    MNL-LHR-CDG    QF/AA    67890    FULL    TEST DETAILS FOR FARE 2
+    Get Alternate Fare Details    Alternate Fare 2
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    20
+    Set Commission Rebate Percentage    10
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    25
+    Set Commission Rebate Percentage    5
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Alternate Fare Remarks Are Written In The PNR    1    AMERICAN AIRLINES,QANTAS AIRWAYS    PARIS/LONDON/MANILA
+    Verify Alternate Fare Remarks Are Written In The PNR    2    QANTAS AIRWAYS,AMERICAN AIRLINES    MANILA/LONDON/PARIS
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That RI Lines Are Written For Multiple Alternate Fares
+    [Tags]    us3354    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Create New Booking With Three Segments Using Default Values    Galileo SG 16 - Auto ¦ US3354    AutoSixteenFour    ApacTrvlrFive    SINSYD/QF    01Y1    FQS1
+    ...    SYDMEL/VA    01Y2    FQS2    MELSIN/EK    01Y1    FQS3
+    ...    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Verify Fare Tab Is Visible    Fare 1    Fare 2    Fare 2
+    Select Fare Type    Corporate fare
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Nett Remit Fare
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Published Fare
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 1
+    Populate Alternate Fare Details Using Copy Air Button    TEST    100    YC - Economy Client Fare
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 2
+    Populate Alternate Fare Details Using Copy Air Button    TEST    250    YC - Economy Client Fare
+    Click Fare Tab    Alternate Fare 1
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Get Alternate Fare Details    Alternate Fare 2
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Click Fare Tab    Fare 3
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    5.00
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Alternate Fare Remarks Are Written In The PNR    1    QANTAS AIRWAYS,V AUSTRALIA,EMIRATES    SINGAPORE/SYDNEY/MELBOURNE/SINGAPORE
+    Verify Alternate Fare Remarks Are Written In The PNR    2    QANTAS AIRWAYS,V AUSTRALIA,EMIRATES    SINGAPORE/SYDNEY/MELBOURNE/SINGAPORE
+    [Teardown]
+
+[AB SG] Verify That RI Lines Are Written For Multiple Alternate Fares
+    [Tags]    us3354    apac
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Nett Remit Fare
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Published Fare
+    Click Fare Tab    Alternate Fare 1
+    Select Fare Restriction    Fully Flexible
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Select Fare Restriction    Fully Flexible
+    Get Alternate Fare Details    Alternate Fare 2
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 3
+    Populate Alternate Fare Details Using Copy Air Button    TEST    300    YC - Economy Client Fare
+    Select Fare Restriction    Fully Flexible
+    Get Alternate Fare Details    Alternate Fare 3
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Click Fare Tab    Fare 3
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    5.00
+    Enter GDS Command    IR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow In Verify That RI Lines Are Written For Multiple Alternate Fares If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Alternate Fare Remarks Are Written In The PNR    1    QANTAS AIRWAYS,V AUSTRALIA,EMIRATES    SINGAPORE/SYDNEY/MELBOURNE/SINGAPORE
+    Verify Alternate Fare Remarks Are Written In The PNR    2    QANTAS AIRWAYS,V AUSTRALIA,EMIRATES    SINGAPORE/SYDNEY/MELBOURNE/SINGAPORE
+    Verify Alternate Fare Remarks Are Written In The PNR    3    QANTAS AIRWAYS,V AUSTRALIA,EMIRATES    SINGAPORE/SYDNEY/MELBOURNE/SINGAPORE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Alternate Fare Tab Details Are Displaying Correctly
+    [Tags]    us437    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With One Way Flight Using Default Values    Galileo 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrTwo    LAXCDG/AF    ${EMPTY}    AIR FARE
+    ...    DELIVERY
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Auto Ticket
+    Get Single Flight Details    LAXCDG
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Set Alternate Fare Details With New Line Details    THISTEST1
+    Retrieve PNR Details From Galileo    \    *R
+    Verify Alternate Fare With New Line Details    Alternate Fare 1
+    Populate Alternate Fare With Default Values    Alternate Fare 1
+    Set Alternate Fare Amount    100
+    Get Alternate Fare Details    Alternate Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Enter GDS Command    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Offer Remarks Are Written For Galileo    Alternate Fare 1
+
+[AB UK] Verify That Alternate Fare Tab Details Are Displaying Correctly
+    [Tags]    us437    emea
+    Retrieve PNR    ${current_pnr}
+    Delete Fare Quote and Flight Segment    FXALL    XI
+    Enter GDS Command    R.CWTPTEST    ER    ER
+    Click Amend Booking
+    Book Flight One Way    LAXCDG/AF    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Set Alternate Fare Airline    AF
+    Verify Total Alternate Fare    100.00
+    Set Alternate Fare Details With New Line Details    THISTEST2
+    Retrieve PNR Details From Galileo    \    *R
+    Verify Alternate Fare With New Line Details    Alternate Fare 1
+    Set Alternate Fare Amount    100
+    Get Alternate Fare Details    Alternate Fare 1
+    Enter GDS Command    T.T*
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Workflow In Verifying Alternate Fare Details
+    Retrieve PNR Details From Galileo    ${current_pnr}
+    Verify Offer Remarks Are Written For Galileo    Alternate Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Alternate Fare Is Not Included In The Total Cost For Multiple Fares
+    [Tags]    us3654    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Create New Booking With Three Segments Using Default Values    Galileo SG 16 - Auto ¦ US3654    AutoSixteenSeven    ApacTrvlrFourteen    SINSYD/QF    01Y1    FQS1
+    ...    SYDSIN/QF    01Y1    FQS2    SINSYD/QF    01Y1    FQS3
+    ...    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Select Alternate Fare Class Code
+    Select Fare Restriction    Fully Flexible
+    Set Alternate Fare Amount    300.00
+    Click Add Alternate Fare
+    Click Copy Alternate Fare
+    Select Alternate Fare Class Code
+    Select Fare Restriction    Fully Flexible
+    Set Alternate Fare Amount    200.00
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *RI
+    Verify Total For All Tickets Is Not Written In The PNR For Fare Quote 1
+    Verify Total For All Tickets Is Not Written In The PNR For Fare Quote 2
+    Verify Total For All Tickets Does Not Include 2 Alternate Fare In The Total Cost For 3 Fare
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That The Total Cost Is Written Only Once For Multiple Fares
+    [Tags]    us3654    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Create New Booking With Three Segments Using Default Values    Galileo HK 16 - Auto ¦ US2816    AutoSixteenTwo    ApacTrvlrThree    HKGSYD/QF    01Y1    FQS1
+    ...    SYDHKG/QF    01Y1    FQS2    HKGSYD/QF    01Y1    FQS3
+    ...    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *RI
+    Verify Total For All Tickets Is Not Written In The PNR For Fare Quote 1
+    Verify Total For All Tickets Is Not Written In The PNR For Fare Quote 2
+    Verify Total Cost Is Written Only Once For 3 Fare
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB NZ] Verify That The Total Cost Is Not Written For Multiple Segments With A Single Filed Fare
+    [Tags]    us3654    apac
+    Open Power Express And Retrieve Profile    ${version}    test    U003WXR    en-GB    AutomationNZ    NZ AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Three Segments Using Default Values    Galileo NZ 16 - Auto ¦ US3654    AutoSixteenSeven    ApacTrvlrFifteen    AKLSYD/QF    01Y1    ${EMPTY}
+    ...    SYDAKL/QF    01Y1    ${EMPTY}    AKLMEL/QF    01Y1    FQ
+    ...    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Turnaround    MEL
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *RI
+    Verify Specific Remark Is Not Written In The PNR    TOTAL FOR ALL TICKETS:
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Transaction Fee And Merchant Fee Are Displayed In Alternate Fare Tab And Remarks Are Written
+    [Tags]    us4581    us4733    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationSG    SG AUTO GALILEO
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    SEM/781Q/AG
+    Set Client And Traveler    Galileo SG 16 - Auto ¦ US4581    AUTOMATIONSIXTEEN    TRAVELERNINE
+    Click New Booking
+    Update PNR for EN or GB
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    12/20
+    Book Flight X Months From Now    SINSYD/QF    01Y1    FQS1
+    Book Flight X Months From Now    SYDSIN/QF    01Y1    FQS2    6    4
+    Enter GDS Command    TMU1FS
+    Enter GDS Command    TMU2FS
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Get Merchant Fee Percentage Value    Fare 1
+    Get Transaction Fee Amount Value    Fare 1
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    3
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 1
+    Verify Transaction Fee Is Displayed
+    Verify Merchant Fee Is Displayed
+    Populate Alternate Fare Details    SIN-SYD    VA    2000.00    FULL    TEST DETAILS FOR FARE 1
+    Verify Transaction Fee Is Pre-Populated With The Correct Value
+    Verify Merchant Fee Is Pre-Populated With The Correct Value
+    Set Alternate Fare Transaction Fee    55.00
+    Set Alternate Fare Merchant Fee    12.00
+    Click Copy Alternate Fare
+    Verify Transaction Fee Is Pre-Populated With The Correct Value
+    Verify Merchant Fee Is Pre-Populated With The Correct Value
+    Get Total Alternate Fare Amount X Tab    Alternate Fare 1    SG
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 2
+    Verify Transaction Fee Is Displayed
+    Verify Merchant Fee Is Displayed
+    Populate Alternate Fare Details    SIN-SYD    VA    3000.00    FULL    TEST DETAILS FOR FARE 2
+    Verify Transaction Fee Is Pre-Populated With The Correct Value
+    Verify Merchant Fee Is Pre-Populated With The Correct Value
+    Get Total Alternate Fare Amount X Tab    Alternate Fare 2    SG
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Alternate Fare Additional Fees Are Written In The PNR    Alternate Fare 1    SGD
+    Verify Alternate Fare Additional Fees Are Written In The PNR    Alternate Fare 2    SGD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Merchant Transaction And Fuel Surcharge Fields Are Not Displayed When SOs Are Set To No
+    [Tags]    us4581    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo HK 16 - Auto ¦ US4581 SO set to NO    AutomationSixteen    TravelerThree    HKGSYD/QF    01Y1    FQS1
+    ...    SYDHKG/QF    01Y1    FQS2    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 1
+    Populate Alternate Fare Details    HKG-SYD    VA    12345    FULL    TEST DETAILS FOR FARE 1
+    Get Alternate Fare Total Fare Value
+    Verify Merchant Fee Is Not Displayed
+    Verify Transaction Fee Is Not Displayed
+    Verify Fuel Surcharge Is Not Displayed
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    20
+    Set Commission Rebate Percentage    10
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    25
+    Set Commission Rebate Percentage    5
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Alternate Fare Total and Total Amount Are Written In The PNR    1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Merchant Transaction And Fuel Surcharge Fields Are Displayed In Alternate Fare Tab And Remarks Are Written
+    [Tags]    us4581    us4733    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    ${EMPTY}
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo HK 16 - Auto ¦ US5481    AutomationSixteen    TravelerOne
+    Click New Booking
+    Update PNR for EN or GB
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    12/20
+    Book Flight X Months From Now    HKGSYD/QF    01Y1    FQS1
+    Enter GDS Command    TMU1FS
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Click Pricing Extras Tab
+    Get Merchant Fee Percentage Value    Fare 1
+    Get Transaction Fee Amount Value    Fare 1
+    Get Fuel Surcharge Value    Fare 1
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 1
+    Verify Transaction Fee Is Displayed
+    Verify Merchant Fee Is Displayed
+    Verify Fuel Surcharge Is Displayed
+    Populate Alternate Fare Details    HKG-SYD    VA    1000    FULL    TEST DETAILS FOR FARE 1
+    Verify Transaction Fee Is Pre-Populated With The Correct Value
+    Verify Merchant Fee Is Pre-Populated With The Correct Value
+    Verify Fuel Surcharge Is Pre-populated With The Correct Value
+    Set Alternate Fare Transaction Fee    100
+    Set Alternate Fare Merchant Fee    5
+    Set Alternate Fare Fuel Surcharge    15
+    Click Copy Alternate Fare
+    Verify Transaction Fee Is Pre-Populated With The Correct Value
+    Verify Merchant Fee Is Pre-Populated With The Correct Value
+    Verify Fuel Surcharge Is Pre-populated With The Correct Value
+    Get Total Alternate Fare Amount X Tab    Alternate Fare 1    HK
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 2
+    Verify Transaction Fee Is Displayed
+    Verify Merchant Fee Is Displayed
+    Verify Fuel Surcharge Is Displayed
+    Populate Alternate Fare Details    HKG-SYD    JQ    2500    FULL    TEST DETAILS FOR FARE 2
+    Verify Transaction Fee Is Pre-Populated With The Correct Value
+    Verify Merchant Fee Is Pre-Populated With The Correct Value
+    Verify Fuel Surcharge Is Pre-populated With The Correct Value
+    Get Total Alternate Fare Amount X Tab    Alternate Fare 2    HK
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    2
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Alternate Fare Additional Fees Are Written In The PNR    Alternate Fare 1    HKD
+    Verify Alternate Fare Additional Fees Are Written In The PNR    Alternate Fare 2    HKD
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow In Verify That RI Lines Are Written For Multiple Alternate Fares
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Nett Remit Fare
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Published Fare
+    Click Fare Tab    Alternate Fare 1
+    Select Fare Restriction    Fully Flexible
+    Get Alternate Fare Details    Alternate Fare 1
+    Click Fare Tab    Alternate Fare 2
+    Select Fare Restriction    Fully Flexible
+    Get Alternate Fare Details    Alternate Fare 2
+    Click Add Alternate Fare
+    Click Fare Tab    Alternate Fare 3
+    Populate Alternate Fare Details Using Copy Air Button    TEST2    100    YC - Economy Client Fare
+    Select Fare Restriction    Fully Flexible
+    Get Alternate Fare Details    Alternate Fare 3
+    Click Fare Tab    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Click Fare Tab    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0.00
+    Click Fare Tab    Fare 3
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    5.00
+    Click Finish PNR
+
+Amend Booking Workflow In Verifying Alternate Fare Details
+    Retrieve PNR    ${current_pnr}
+    Delete Fare Quote and Flight Segment    FXALL    XI
+    Enter GDS Command    R.CWTPTEST    ER    ER
+    Click Amend Booking
+    Book Flight One Way    LAXCDG/AF    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Fare Tab    Alternate Fare 1
+    Set Alternate Fare Airline    AF
+    Verify Total Alternate Fare    100.00
+    Set Alternate Fare Details With New Line Details    THISTEST2
+    Retrieve PNR Details From Travelport    \    *R
+    Verify Alternate Fare With New Line Details    Alternate Fare 1
+    Set Alternate Fare Amount    100
+    Get Alternate Fare Details    Alternate Fare 1
+    Enter GDS Command    T.T*
+    Click Finish PNR
+
+Book Flight One Way
+    [Arguments]    ${city_pair}    @{exclude_panels}
+    Book One Way Flight X Months From Now    ${city_pair}    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+    ${city_pair}    Get Substring    ${city_pair}    \    6
+    Set Test Variable    ${city_pair}
+
+Verify Alternate Fare Additional Fees Are Written In The PNR
+    [Arguments]    ${alternate_fare_tab}    ${currency}
+    ${fare_tab_index}    Fetch From Right    ${alternate_fare_tab}    ${SPACE}
+    ${merchant_name}    Set Variable If    "${currency}" == "HKD"    *OFFER**CC CONVENIENCE FEE    *OFFER**MERCHANT FEE
+    ${transaction_fee_amount}    Run Keyword If    "${currency}" == "HKD"    Convert To String    ${transaction_value_alt_${fare_tab_index}}
+    ...    ELSE    Set Variable    ${transaction_value_alt_${fare_tab_index}}
+    ${merchant_fee_amount}    Run Keyword If    "${currency}" == "HKD"    Convert To String    ${merchant_value_alt_${fare_tab_index}}
+    ...    ELSE    Set Variable    ${merchant_value_alt_${fare_tab_index}}
+    ${transaction_fee_amount}    Run Keyword If    "${currency}" == "HKD"    Fetch From Left    ${transaction_fee_amount}    .
+    ...    ELSE    Set Variable    ${transaction_fee_amount}
+    ${merchant_fee_amount}    Run Keyword If    "${currency}" == "HKD"    Fetch From Left    ${merchant_fee_amount}    .
+    ...    ELSE    Set Variable    ${merchant_fee_amount}
+    Verify Specific Remark Is Written In The PNR    *OFFER**FARE INCLUDING AIRLINE TAXES: ${currency} ${total_fare_value_alt_${fare_tab_index}}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**TRANSACTION FEE: ${currency} ${transaction_fee_amount}*
+    Verify Specific Remark Is Written In The PNR    ${merchant_name}: ${currency} ${merchant_fee_amount}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**TOTAL AMOUNT: ${currency} ${total_alternate_fare_amount_${fare_tab_index}}*
+
+Verify Alternate Fare Total and Total Amount Are Written In The PNR
+    [Arguments]    ${alternate_fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${alternate_fare_tab}    ${SPACE}
+    Verify Specific Remark Is Written In The PNR    *OFFER**FARE INCLUDING AIRLINE TAXES: HKD ${total_fare_value_alt_${fare_tab_index}}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**TOTAL AMOUNT: HKD ${total_fare_value_alt_${fare_tab_index}}*
+
+Verify Alternate Fare With New Line Details
+    [Arguments]    ${fare_tab_value}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    ${route_line} =    Get Lines Containing String    ${pnr_details}    ${city_pair}
+    ${route_details} =    Get Substring    ${route_line}    4    26
+    ${actual_alt_fare_details}    Get Control Text Value    [NAME:ctxtDetailsOffer_alt_${fare_tab_index}]
+    ${route_det} =    Remove String    ${route_details}    ${SPACE}
+    ${actual_det} =    Remove String    ${actual_alt_fare_details}    ${SPACE}
+    Should Contain    ${actual_det}    ${route_det}
+    [Teardown]    Take Screenshot
+
+Verify Fuel Surcharge Is ${expected}
+    ${fuel_surcharge_field}    Determine Multiple Object Name Based On Active Tab    ctxtFuelSurchargeOffer_alt
+    Run Keyword If    "${expected}" == "Displayed"    Verify Control Object Is Visible    ${fuel_surcharge_field}
+    ...    ELSE IF    "${expected}" == "Not Displayed"    Verify Control Object Is Not Visible    ${fuel_surcharge_field}
+
+Verify Fuel Surcharge Is Pre-populated With The Correct Value
+    [Arguments]    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Alternate Fare Fuel Surcharge Value    ${fare_tab}
+    Run Keyword And Continue On Failure    Should Be Equal    ${alternate_fare_fuel_surcharge_value_${fare_tab_index}}    ${fuel_surcharge_value_${fare_tab_index}}
+
+Verify Merchant Fee Is ${expected}
+    ${merchant_fee_offer_field}    Determine Multiple Object Name Based On Active Tab    ctxtMerchantFeeOffer_alt
+    Run Keyword If    "${expected}" == "Displayed"    Verify Control Object Is Visible    ${merchant_fee_offer_field}
+    ...    ELSE IF    "${expected}" == "Not Displayed"    Verify Control Object Is Not Visible    ${merchant_fee_offer_field}
+
+Verify Merchant Fee Is Pre-Populated With The Correct Value
+    [Arguments]    ${fare_tab}=Alternate Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Alternate Fare Merchant Value    ${fare_tab}
+    Get Alternate Fare Total Fare Value    ${fare_tab}
+    ${merchant_fee_percentage_value}    Evaluate    ${merchant_fee_percentage_value_${fare_tab_index}} / 100
+    ${calculated_alternate_merchant_fee}    Evaluate    ${merchant_fee_percentage_value} * ${total_fare_value_alt_${fare_tab_index}}
+    ${calculated_alternate_merchant_fee}    Convert To Number    ${calculated_alternate_merchant_fee}    0
+    Run Keyword And Continue On Failure    Should Be Equal As Numbers    ${calculated_alternate_merchant_fee}    ${merchant_value_alt_${fare_tab_index}}
+
+Verify Total Cost Is Written Only Once For ${number} Fare
+    Get Total For All Tickets From Galileo For X Number Of Fares    ${number}
+    ${total_for_all_tickets_value}    Convert To String    ${total_for_all_tickets_value}
+    ${total_for_all_tickets_value}    Run Keyword If    "${currency}" == "HKD"    Fetch From Left    ${total_for_all_tickets_value}    .
+    ...    ELSE    Set Variable    ${total_for_all_tickets_value}
+    Verify Text Contains Expected Value X Times Only    ${pnr_details}    TOTAL FOR ALL TICKETS: ${currency} ${total_for_all_tickets_value}    1
+
+Verify Total For All Tickets Does Not Include ${alternate_fare_number} Alternate Fare In The Total Cost For ${number} Fare
+    Get Total For All Tickets From Galileo For X Number Of Fares    ${number}
+    ${total_for_all_tickets_value}    Convert To String    ${total_for_all_tickets_value}
+    ${total_for_all_tickets_value}    Run Keyword If    "${currency}" == "HKD"    Fetch From Left    ${total_for_all_tickets_value}    .
+    ...    ELSE    Set Variable    ${total_for_all_tickets_value}
+    Run Keyword If    "${alternate_fare_number}" != "0"    Run Keywords    Get Total For All Tickets Value With Alternate Fare Total Fare    ${alternate_fare_number}
+    ...    AND    Verify Text Does Not Contain Value    ${pnr_details}    TOTAL FOR ALL TICKETS: ${currency} ${fare_total_with_alternate}
+
+Verify Total For All Tickets Is Not Written In The PNR For Fare Quote ${fare_quote_number}
+    ${end_line}    Determine If Next Quote Exists    ${fare_quote_number}
+    ${subset}    Get String Between Strings    ${pnr_details}    QUOTE NUMBER: ${fare_quote_number}    ${end_line}
+    Verify Text Does Not Contain Value    ${subset}    TOTAL FOR ALL TICKETS:
+
+Verify Transaction Fee Is ${expected}
+    ${transaction_fee_offer_field}    Determine Multiple Object Name Based On Active Tab    ctxtTransactionFeeOffer_alt
+    Run Keyword If    "${expected}" == "Displayed"    Verify Control Object Is Visible    ${transaction_fee_offer_field}
+    ...    ELSE IF    "${expected}" == "Not Displayed"    Verify Control Object Is Not Visible    ${transaction_fee_offer_field}
+
+Verify Transaction Fee Is Pre-Populated With The Correct Value
+    [Arguments]    ${fare_tab}=Alternate Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Alternate Fare Transaction Value    ${fare_tab}
+    Run Keyword And Continue On Failure    Should Be Equal    ${transaction_value_alt_${fare_tab_index}}    ${transaction_fee_value_${fare_tab_index}}

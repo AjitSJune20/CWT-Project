@@ -1,0 +1,86 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          performance_test_resource.txt
+
+*** Variables ***
+@{travelers_Amadeus}    Amadeus DE 15 - Auto ¦ US2447,AutoSeventeenFive,PerfOne    Amadeus DE 15 - Auto ¦ US2447,AutoSeventeenFive,PerfTwo    Amadeus DE 15 - Auto ¦ US2447,AutoSeventeenFive,PerfThree    Amadeus DE 15 - Auto ¦ US2447,AutoSeventeenFive,PerfFour    Amadeus DE 15 - Auto ¦ US2447,AutoSeventeenFive,PerfFive    Amadeus DE 15 - Auto ¦ US2447,AutoSeventeenFive,PerfSix    Amadeus DE 15 - Auto ¦ US2447,AutoSeventeenFive,PerfSeven
+...               Amadeus DE 15 - Auto ¦ US2447,AutoSeventeenFive,PerfEight    Amadeus DE 15 - Auto ¦ US2447,AutoSeventeenFive,PerfNine    Amadeus DE 15 - Auto ¦ US2447,AutoSeventeenFive,PerfTen
+@{city_pairs_Amadeus}    MNLDXB    DXBMNL    MNLDXB    DXBMNL    MNLDXB    DXBMNL    MNLDXB
+...               DXBMNL    MNLDXB    DXBMNL
+
+*** Test Cases ***
+Set Performance Test Variables
+    Set Suite Variable    ${start_time}    ${EMPTY}
+    Set Suite Variable    ${end_time}    ${EMPTY}
+    Set Suite Variable    ${time}    ${EMPTY}
+    Set Suite Variable    ${converted_time}    ${EMPTY}
+    Set Suite Variable    ${client}    ${EMPTY}
+    Set Suite Variable    ${trav_last_name}    ${EMPTY}
+    Set Suite Variable    ${trav_first_name}    ${EMPTY}
+    Set Suite Variable    ${simultaneous_changes}    ${EMPTY}
+    Set Suite Variable    ${city_pair}    ${EMPTY}
+    Set Suite Variable    ${temp_pnr}    ${EMPTY}
+    ${pnr_list} =    Create List
+    Set Suite Variable    ${pnr_list}
+    ${list_set_client_traver}=    Create List
+    Set Suite Variable    ${list_set_client_traver}
+    ${list_new_booking}=    Create List
+    Set Suite Variable    ${list_new_booking}
+    ${list_update_pnr} =    Create List
+    Set Suite Variable    ${list_update_pnr}
+    ${list_read_booking_new}=    Create List
+    Set Suite Variable    ${list_read_booking_new}
+    ${list_read_booking_amend}=    Create List
+    Set Suite Variable    ${list_read_booking_amend}
+    ${list_finish_pnr_new}=    Create List
+    Set Suite Variable    ${list_finish_pnr_new}
+    ${list_finish_pnr_amend}=    Create List
+    Set Suite Variable    ${list_finish_pnr_amend}
+    ${list_finish_pnr_si}=    Create List
+    Set Suite Variable    ${list_finish_pnr_si}
+    ${list_finish_pnr_cancel}=    Create List
+    Set Suite Variable    ${list_finish_pnr_cancel}
+    ${list_amend_booking}=    Create List
+    Set Suite Variable    ${list_amend_booking}
+    ${list_send_itin}=    Create List
+    Set Suite Variable    ${list_send_itin}
+    ${list_cancel_booking}=    Create List
+    Set Suite Variable    ${list_cancel_booking}
+
+Performance Test - Amadeus
+    [Documentation]    Documentation for other required steps to be documented here.
+    ...
+    ...    <TODO>
+    ...    1. Document Performance Monitor steps
+    ...    2. Document SQL Query to be used to pull up execution times on performance items for this performance test
+    [Tags]    performance_tests
+    Performance - Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    : FOR    ${INDEX}    IN RANGE    0    2
+    \    Get Client And Traveler    Amadeus    ${INDEX}
+    \    Get City Pair    Amadeus    ${INDEX}
+    \    Performance - Create New Booking With One Way Flight Using Default Values    ${client}    ${trav_last_name}    ${trav_first_name}    ${city_pair}    ${EMPTY}
+    \    ...    Client Info    Air Fare
+    \    Populate Fare Tab With Default Values    Fare 1
+    \    Select Panel    Client Info
+    \    Select Form Of Payment    Cash
+    \    Performance - Click Finish PNR    Finish PNR From New Booking    ${list_finish_pnr_new}
+    \    Append PNR To PNR list
+    \    Click Clear All
+    : FOR    ${pnr}    IN    @{pnr_list}
+    \    ${temp_pnr}=    Fetch From Right    ${pnr}    ,
+    \    Set Suite Variable    ${current_pnr}    ${temp_pnr}
+    \    Performance - Amend Booking
+    \    Re-Execute Performance - Amend Booking If Simultaneous Change Error Is Displayed
+    : FOR    ${pnr}    IN    @{pnr_list}
+    \    ${temp_pnr}=    Fetch From Right    ${pnr}    ,
+    \    Set Suite Variable    ${current_pnr}    ${temp_pnr}
+    \    Performance - Send Itinerary
+    \    Re-Execute Performance - Send Itinerary If Simultaneous Change Error Is Displayed
+    : FOR    ${pnr}    IN    @{pnr_list}
+    \    ${temp_pnr}=    Fetch From Right    ${pnr}    ,
+    \    Set Suite Variable    ${current_pnr}    ${temp_pnr}
+    \    Performance - Cancel Booking
+    \    Re-Execute Performance - Cancel Booking If Simultaneous Change Error Is Displayed
+    Display Average Execution Times

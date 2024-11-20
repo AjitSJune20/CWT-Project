@@ -1,0 +1,496 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../car_verification.txt
+
+*** Test Cases ***
+[CS DE] Verify That Car Remarks Are Correctly Written In The PNR When 2 Car Segments Are Added
+    [Tags]    us4429    data_dependent    de    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus DE 15 - Auto ¦ US2447    AutoSeventeenFive    PerfEight
+    Click New Booking
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Create Shell
+    [Teardown]    Click Clear All
+
+[AB DE] Verify That Car Remarks Are Correctly Written In The PNR When 2 Car Segments Are Added
+    [Tags]    us4429    data_dependent    de    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    MELSYD/AVA    SS1Y1    FXB    5
+    Book Active Car Segment    SYD    5    1    5    2    ZI
+    ...    1
+    Book Active Car Segment    SYD    5    3    5    4    ZI
+    ...    2
+    Retrieve PNR Details from Amadeus    \    RT    False
+    Insert Car Identifier Free Text To Car Segment    SYD    ${pickup_date_1}    TESTONE
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow With 2 New Car Segments Added If Simultaneous Change Error Is Displayed
+    Enter Specific Command On Native GDS    RT
+    Verify Car Identifier Appended To Car Segment Is Correct    SYD    ${pickup_date_1}    SI-TESTONE *C01*
+    Verify Car Identifier Appended To Car Segment Is Correct    SYD    ${pickup_date_2}    SI-*C02*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[[1A FR][EMEA][NB] Verify that High/Charged/Low Rate are populated as 0.00 when car segment is On Request(For In Policy, Out Policy and No policy)
+    [Documentation]    *Segments Details:*
+    ...
+    ...    In Policy: \ \ \ ZE, ORY , ICAR
+    ...    Out Policy: \ ZI, CDG, IDMR
+    ...    No Policy: \ \ ZR, LAX, PFCAR
+    ...
+    ...    On Request-In Policy(Without RG/RQ Rate): EP, CFE, SDMR
+    ...    On Request-Out Policy(Without RG/RQ Rate): ZI, JFK,CCAR
+    [Tags]    data_dependent    US4804
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ 1A FR Car Panel Testing    Smith    Walden
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Book Active Car Segment (In Policy\No Policy)    ORY    5    1    5    4    ZE
+    ...    ICAR    1
+    Book Active Car Segment X Month From Now (EMEA)    ZI    CDG    IDMR    5    2    2
+    ...    1
+    Book Active Car Segment (In Policy\No Policy)    LAX    5    3    5    5    ZR
+    ...    PFAR    2
+    Book Active Car Segment(On Request)    EP    CFE    SDMR    6    1    1
+    Book Active Car Segment(On Request)    ZI    JFK    CCAR    6    3    2
+    Book Flight X Months From Now    MELSYD/AVA    SS1Y1    FXB    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Populate Air Fare Restrictions Using Default Values
+    Click Panel    Car
+    Click Car Tab    ORY - ${pickup_date_1}
+    Verify Car-High, Low and Charged Rate Amount are Equal
+    Verify Car-Currency FIeld is Grayed Out
+    Verify Car-Rate Type Field is Populated Correctly    jour
+    Verify Car-Missed Saving Code Field is Populated Correctly    L - Lowest rate accepted
+    Populate Car Tab With Values (EMEA)    ${EMPTY}    ${EMPTY}    ${EMPTY}    R - Preferred supplier not in city    L - Lowest rate accepted    P - Pre Paid
+    ...    Non    11.33    Inclus    Non
+    Click Car Tab    CDG - ${departure_date_1}
+    Verify Car- High and Charged Rate Amount are Equal
+    Verify Car-Low Rate Field is Empty
+    Set Car Low Rate    ${actual_car_charged_rate}
+    Verify Car-Currency FIeld is Grayed Out
+    Verify Car-Rate Type Field is Populated Correctly    jour
+    Populate Car Tab With Values (EMEA)    ${EMPTY}    ${EMPTY}    ${EMPTY}    R - Preferred supplier not in city    L - Lowest rate accepted    P - Pre Paid
+    ...    Non    11.33    Inclus    Non
+    Click Car Tab    LAX - ${pickup_date_2}
+    Verify Car-High, Low and Charged Rate Amount are Equal
+    Verify Car-Currency FIeld is Grayed Out
+    Verify Car-Rate Type Field is Populated Correctly    jour
+    Verify Car-Missed Saving Code Field is Populated Correctly    L - Lowest rate accepted
+    Populate Car Tab With Values (EMEA)    ${EMPTY}    ${EMPTY}    ${EMPTY}    R - Preferred supplier not in city    L - Lowest rate accepted    P - Pre Paid
+    ...    Non    11.33    Inclus    Non
+    Click Car Tab    LYS - ${car_departure_date_1}
+    Verify Car-High, Low and Charged Rate Amout is Zero
+    Verify Car-Currency FIeld is Grayed Out
+    Verify Car-Rate Type Field is Populated Correctly    jour
+    Verify Car-Missed Saving Code Field is Populated Correctly    L - Lowest rate accepted
+    Populate Car Tab With Values (EMEA)    ${EMPTY}    ${EMPTY}    ${EMPTY}    R - Preferred supplier not in city    L - Lowest rate accepted    P - Pre Paid
+    ...    Non    11.33    Inclus    Non
+    Click Car Tab    JFK - ${car_departure_date_2}
+    Verify Car-High, Low and Charged Rate Amout is Zero
+    Verify Car-Currency FIeld is Grayed Out
+    Verify Car-Rate Type Field is Populated Correctly    jour
+    Populate Car Tab With Values (EMEA)    ${EMPTY}    ${EMPTY}    ${EMPTY}    R - Preferred supplier not in city    L - Lowest rate accepted    P - Pre Paid
+    ...    Non    11.33    Inclus    Non
+    Click Panel    Résumer
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Car Remarks Are Correctly Written In The PNR When 2 Car Segments Are Added
+    [Tags]    us4429    fr    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ 1A FR Car Panel Testing    Auto    Mocha
+    Click New Booking
+    Book Flight X Months From Now    MELSYD/AVA    SS1Y1    FXB    5
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Book Active Car Segment    SYD    5    1    5    2    ZI
+    ...    1
+    Book Active Car Segment    SYD    5    3    5    4    ZI
+    ...    2
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RT    False
+    Insert Car Identifier Free Text To Car Segment    SYD    ${pickup_date_1}    TESTONE
+    Populate All Panels (Except Given Panels If Any)
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Enter Specific Command On Native GDS    RT
+    Verify Car Identifier Appended To Car Segment Is Correct    SYD    ${pickup_date_1}    SI-TESTONE *C01*
+    Verify Car Identifier Appended To Car Segment Is Correct    SYD    ${pickup_date_2}    SI-*C02*
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify Correct Car Remarks For Domestic
+    [Tags]    ca    US6750    us6942
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Select Trip Type Value    Business
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    YWGYYZ/AAC    SS1Y1    FXP    1
+    Book Active Car Segment Simple    YYZ    1    1    1    2
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Ticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Select New Missed Saving Code For Car    2
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    ${backoffice_remark}
+    Store Previous CA Backoffice Car Remark
+
+[AB CA] Verify Correct Car Remarks For Domestic
+    [Tags]    ca    US6750    us6942
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Ticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Take Screenshot
+    Verify That Missed Saving Code Is Read From PNR    ${previous_remark}
+    Select New Missed Saving Code For Car    3
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Click Finish PNR    Amend Booking For CA Car Panel Remarks Domestic
+    Execute Simultaneous Change Handling    Amend Booking For CA Car Panel Remarks Domestic
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    ${backoffice_remark}
+    Verify Specific Line Is Not Written In The PNR    ${previous_remark}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify Correct Car Remarks For Transborder
+    [Tags]    ca    US6750    us6942
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Select Trip Type Value    Business
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXYYZ/AAC    SS1Y1    FXP    1
+    Book Active Car Segment Simple    YYZ    1    1    1    2
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Unticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Select New Missed Saving Code For Car    2
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    ${backoffice_remark}
+    Store Previous CA Backoffice Car Remark
+
+[AB CA] Verify Correct Car Remarks For Transborder
+    [Tags]    ca    US6750
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Unticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Take Screenshot
+    Select New Missed Saving Code For Car    3
+    Take Screenshot
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Click Finish PNR    Amend Booking For CA Car Panel Remarks Trans And International
+    Execute Simultaneous Change Handling    Amend Booking For CA Car Panel Remarks Trans And International
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    ${backoffice_remark}
+    Verify Specific Line Is Not Written In The PNR    ${previous_remark}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify Correct Car Remarks For International
+    [Tags]    ca    US6750    us6942
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Select Trip Type Value    Business
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRYYZ/AAC    SS1Y1    FXP    1
+    Book Active Car Segment Simple    YYZ    1    1    1    2
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Unticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Select New Missed Saving Code For Car    4
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    ${backoffice_remark}
+    Store Previous CA Backoffice Car Remark
+
+[AB CA] Verify Correct Car Remarks For International
+    [Tags]    ca    US6750    us6942
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Unticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Take Screenshot
+    Select New Missed Saving Code For Car    3
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Click Finish PNR    Amend Booking For CA Car Panel Remarks Trans And International
+    Execute Simultaneous Change Handling    Amend Booking For CA Car Panel Remarks Trans And International
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    ${backoffice_remark}
+    Verify Specific Line Is Not Written In The PNR    ${previous_remark}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify Correct Passive Car Segment Remarks For International
+    [Tags]    ca    US6750
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub1    AutoOneEighteen    CanadaTrvlrOne
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub1
+    Select Trip Type Value    Business
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRYYZ/AAC    SS1Y1    FXP    1
+    Book Passive Car Segment Amadeus    FRA    1    1    1    2
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Unticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Comment    Populate Car Panel With Available Values
+    Select New Missed Saving Code For Car    4
+    Generate CA Backoffice Car Remark    1    1    FRA
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    ${backoffice_remark}
+    Store Previous CA Backoffice Car Remark
+
+[AB CA] Verify Correct Passive Car Segment Remarks For International
+    [Tags]    ca    US6750
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Unticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Take Screenshot
+    Verify That Missed Saving Code Is Read From PNR    ${previous_remark}
+    Comment    Populate Car Panel With Available Values
+    Select New Missed Saving Code For Car    5
+    Generate CA Backoffice Car Remark    1    1    FRA
+    Click Finish PNR    Amend Booking For CA Car Panel Remarks Trans And International Passive Car Segment
+    Execute Simultaneous Change Handling    Amend Booking For CA Car Panel Remarks Trans And International Passive Car Segment
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR Only Once    ${backoffice_remark}
+    Verify Specific Line Is Not Written In The PNR    ${previous_remark}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow With 2 New Car Segments Added
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    MELSYD/AVA    SS1Y1    FXB    5
+    Book Active Car Segment    SYD    5    1    5    2    ZI
+    ...    1
+    Book Active Car Segment    SYD    5    3    5    4    ZI
+    ...    2
+    Retrieve PNR Details from Amadeus    \    \    false
+    Insert Car Identifier Free Text To Car Segment    SYD    ${pickup_date_1}    TESTONE
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+
+Amend Booking For CA Car Panel Remarks Domestic
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Ticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Take Screenshot
+    Verify That Missed Saving Code Is Read From PNR    ${previous_remark}
+    Select New Missed Saving Code For Car    3
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Click Finish PNR    Amend Booking For CA Car Panel Remarks Domestic
+
+Amend Booking For CA Car Panel Remarks Trans And International
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Unticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Take Screenshot
+    Select New Missed Saving Code For Car    3
+    Generate CA Backoffice Car Remark    1    1    YYZ
+    Click Finish PNR    Amend Booking For CA Car Panel Remarks Trans And International
+
+Amend Booking For CA Car Panel Remarks Trans And International Passive Car Segment
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    pspt_and_visa_verification.Verify Domestic Trip Checkbox Is Unticked
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Panel    Car
+    Take Screenshot
+    Verify That Missed Saving Code Is Read From PNR    ${previous_remark}
+    Select New Missed Saving Code For Car    5
+    Generate CA Backoffice Car Remark    1    1    FRA
+    Click Finish PNR    Amend Booking For CA Car Panel Remarks Trans And International
+
+Insert Car Identifier Free Text To Car Segment
+    [Arguments]    ${location}    ${pickup_date}    ${free_text}
+    ${car_segment_line}    Get Lines Containing String    ${pnr_details}    ${location} ${pickup_date}
+    ${car_segment_line_no}    Fetch From Left    ${car_segment_line.strip()}    CCR
+    ${car_segment_line_no}    Set Variable    ${car_segment_line_no.strip()}
+    Activate Power Express Window
+    Log    Command Entered: ${car_segment_line_no}/SI-${free_text}
+    Enter GDS Command    ${car_segment_line_no}/SI-${free_text}
+
+Book Active Car Segment(On Request)
+    [Arguments]    ${car_vendor}    ${city}    ${car_type}    ${departure_months}=6    ${departure_days}=0    ${car_index}=${EMPTY}
+    ...    ${identifier}=${EMPTY}
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    ${departure_date} =    Set Departure Date X Months From Now In Gds Format    ${departure_months}    ${departure_days}
+    Run Keyword If    '${GDS_switch}' == 'amadeus'    Enter GDS Command    CS${car_vendor}${city}${departure_date}-7/VT-${car_type}/BN-C00002634/ARR-1000/RT-1100/DO-CFET02*/PUP-LYSE01*
+    Set Suite Variable    ${car_departure_date_${car_index}}    ${departure_date}
+    Set Suite Variable    ${car_city_${identifier}}    ${city}
+
+Verify Car-High, Low and Charged Rate Amount are Equal
+    Get Car High Rate
+    Get Car Low Rate
+    Get Car Charged Rate
+    Should Be Equal    ${actual_car_charged_rate}    ${actual_car_high_rate}
+    Should Be Equal    ${actual_car_charged_rate}    ${actual_car_low_rate}
+    Should Be Equal    ${actual_car_high_rate}    ${actual_car_low_rate}
+
+Verify Car-Rate Type Field is Populated Correctly
+    [Arguments]    ${expected_car_rate_type}
+    Get Car Rate Type
+    Should Be Equal    ${actual_car_rate_type}    ${expected_car_rate_type}
+
+Verify Car-Missed Saving Code Field is Populated Correctly
+    [Arguments]    ${expected_car_missed_savings}
+    Get Car Missed Savings Code
+    Should Be Equal    ${actual_car_missed_savings}    ${expected_car_missed_savings}
+
+Verify Car-Currency Field is Disabled
+    Verify Control Object Is Disabled    [NAME:txtCurrency]
+
+Populate Car Tab With Values (EMEA)
+    [Arguments]    ${hi_rate}    ${lo_rate}    ${charged_rate}    ${realised_savings}    ${missed_savings}    ${payment_type}
+    ...    ${commissionable}    ${commission}    ${vat}    ${car_preferred}    ${rate_type}=${EMPTY}
+    Activate Power Express Window
+    Run Keyword Unless    '${hi_rate}'=='${EMPTY}'    Set Car High Rate    ${hi_rate}
+    Run Keyword Unless    '${lo_rate}'=='${EMPTY}'    Set Car Low Rate    ${lo_rate}
+    Run Keyword Unless    '${charged_rate}'=='${EMPTY}'    Set Car Charged Rate    ${charged_rate}
+    Select Car Realised Savings Code    ${realised_savings}
+    Run Keyword Unless    '${missed_savings}'=='${EMPTY}'    Select Car Missed Savings Code    ${missed_savings}
+    Select Payment Type    ${payment_type}
+    Select Commissionable    ${commissionable}
+    Run Keyword If    '${commissionable.upper()}'=='YES'    Set Car Commission    ${commission}
+    Run Keyword Unless    '${vat}'=='${EMPTY}'    Select VAT    ${vat}
+    Select Car Preferred    ${car_preferred}
+    Run Keyword Unless    '${rate_type}'=='${EMPTY}'    Select Car Rate Type    ${rate_type}
+    [Teardown]    Take Screenshot
+
+Select Car Preferred
+    [Arguments]    ${Preferred_value}
+    Select Value From Dropdown List    [NAME:cbPReffered]    ${Preferred_value}
+
+Verify Control Object Field is Grayed Out
+    [Arguments]    ${object_name}
+    Verify Control Object Background Color    ${object_name}    F0F0F0
+
+Verify Car-Currency FIeld is Grayed Out
+    Verify Control Object Field is Grayed Out    [NAME:txtCurrency]
+
+Verify Car- High and Charged Rate Amount are Equal
+    Get Car High Rate
+    Get Car Charged Rate
+    Should Be Equal    ${actual_car_charged_rate}    ${actual_car_high_rate}
+
+Verify Car- Low Rate is Blank
+    Get Car Low Rate
+    Verify Control Object Text Value Is Correct    [NAME:ctxtLowFare]    ${EMPTY}    Low Rate Field should be blank
+
+Verify Car-Low Rate Field is Empty
+    Get Car Low Rate
+    Should Be Equal    ${actual_car_low_rate}    ${EMPTY}
+
+Verify Car-High, Low and Charged Rate Amout is Zero
+    Get Car High Rate
+    Get Car Low Rate
+    Get Car Charged Rate
+    Should Be Equal    ${actual_car_charged_rate}    0,00
+    Should Be Equal    ${actual_car_high_rate}    0,00
+    Should Be Equal    ${actual_car_low_rate}    0,00
+
+Book Active Car Segment X Month From Now (EMEA)
+    [Arguments]    ${car_vendor}    ${city}    ${car_type}    ${departure_months}=6    ${departure_days}=0    ${rate_type_value}=2
+    ...    ${car_index}=${EMPTY}    ${identifier}=${EMPTY}    ${identifier}=${EMPTY}
+    [Documentation]    Example of Rate Type
+    ...    --------------------------------
+    ...    Rate Type \ \ \ \ \ \ \ Value
+    ...    -------------------------
+    ...    Daily-------------- \ 1
+    ...    Weekly---------- - 7
+    ...    Monthly----------- 30
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    ${departure_date} =    Set Departure Date X Months From Now In Gds Format    ${departure_months}    ${departure_days}
+    Run Keyword If    '${GDS_switch}' == 'amadeus'    Enter GDS Command    CS${car_vendor}${city}${departure_date}-${rate_type_value}/VT-${car_type}/RC-B-/ARR-1000-1000
+    Set Suite Variable    ${car_departure_date${identifier}}    ${departure_date}
+    Set Suite Variable    ${car_city${identifier}}    ${city}
+    Run Keyword If    ${car_index} != "${EMPTY}"    Set Suite Variable    ${departure_date_${car_index}}    ${departure_date}
+
+Book Active Car Segment (In Policy\No Policy)
+    [Arguments]    ${location}    ${pdate_num}=2    ${pdays_num}=0    ${rdate_num}=2    ${rdays_num}=1    ${car_vendor}=${EMPTY}
+    ...    ${car_type}=ICAR    ${car_index}=${EMPTY}
+    ${pickup_date} =    Set Departure Date X Months From Now In Gds Format    ${pdate_num}    ${pdays_num}
+    ${return_date} =    Set Departure Date X Months From Now In Gds Format    ${rdate_num}    ${rdays_num}
+    ${car_vendor_with_separator}    Set Variable If    "${car_vendor}" != "${EMPTY}"    /${car_vendor}    ${EMPTY}
+    ${car_availability_command} =    Set Variable If    '${GDS_switch}' == 'amadeus'    CA${car_vendor}${location}${pickup_date}-${return_date}/ARR-1000-1200/VT-${car_type}    '${GDS_switch}' == 'apollo' or '${GDS_switch}' == 'galileo'    CAL${pickup_date}-${return_date}${location}/ARR-2P/DT-2P${car_vendor_with_separator}    '${GDS_switch}' == 'sabre'
+    ...    CF${location}/${pickup_date}-${return_date}/0900-0900/ICAR
+    ${car_sell_command} =    Set Variable If    '${GDS_switch}' == 'amadeus'    CS1    '${GDS_switch}' == 'apollo' or '${GDS_switch}' == 'galileo'    01A1    '${GDS_switch}' == 'sabre'
+    ...    0C1
+    Enter GDS Command    ${car_availability_command}    ${car_sell_command}
+    Run Keyword If    "${car_index}" != "${EMPTY}"    Set Suite Variable    ${pickup_date_${car_index}}    ${pickup_date}
+
+Book Passive Car Segment Amadeus
+    [Arguments]    ${location}    ${pdate_num}=2    ${pdays_num}=0    ${rdate_num}=2    ${rdays_num}=1    ${car_type}=CCMR
+    ...    ${car_index}=${EMPTY}
+    ${pickup_date} =    Set Departure Date X Months From Now In Gds Format    ${pdate_num}    ${pdays_num}
+    ${return_date} =    Set Departure Date X Months From Now In Gds Format    ${rdate_num}    ${rdays_num}
+    ${car_booking_command} =    Set Variable If    '${GDS_switch}' == 'amadeus'    CU1AHK1${location}${pickup_date}-${return_date}${car_type}/SUC-EP/SUN-EUROPCAR/SD-${pickup_date}/ST-1700/ED-${return_date}M/ET-1700/TTL-100.00USD/DUR-DAILY/MI-50KM FREE/CF-123456
+    Enter GDS Command    ${car_booking_command}
+    Run Keyword If    "${car_index}" != "${EMPTY}"    Set Suite Variable    ${pickup_date_${car_index}}    ${pickup_date}
+
+Store Previous CA Backoffice Car Remark
+    Set Suite Variable    ${previous_remark}    ${backoffice_remark}
+
+Verify That Missed Saving Code Is Read From PNR
+    [Arguments]    ${backoffice_remark}
+    ${missed_saving_raw}=    Get Control Text Value    [NAME:cbMissedSaving]
+    ${missed_saving_code_combo}=    Fetch From Left    ${missed_saving_raw}    ${SPACE}-
+    ${missed_saving_code_pnr}=    Fetch From Right    ${backoffice_remark}    -
+    Run Keyword If    "${missed_saving_code_combo}" != "${missed_saving_code_pnr}"    Fail    MISSED SAVING CODE FROM PNR REMARK IS NOT EQUAL TO DEFAULT MISSED SAVING CODE

@@ -1,0 +1,45 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verify Enabled Buttons After New Booking
+    Activate Power Express Window
+    Set Test Variable    ${locale}    en-GB
+    Verify Control Object Is Enabled    [NAME:btnClear]
+    Verify Control Object Is Enabled    [NAME:btnShell]
+    Verify Control Object Is Enabled    [NAME:btnSendPNR]
+
+Verify Enabled Buttons After Update PNR
+    Activate Power Express Window
+    Set Test Variable    ${locale}    en-GB
+    Verify Control Object Is Enabled    [NAME:btnClear]
+    Verify Control Object Is Enabled    [NAME:btnLoadPNR]
+
+Verify Enabled Buttons After Read Booking
+    Activate Power Express Window
+    Set Test Variable    ${locale}    en-GB
+    Verify Control Object Is Enabled    [NAME:btnClear]
+    Verify Control Object Is Enabled    [NAME:btnLoadPNR]
+    Click Panel    Recap
+    Verify Control Object Is Enabled    [NAME:btnSendPNR]
+
+Verify Enabled Buttons After Amend Booking
+    Activate Power Express Window
+    Set Test Variable    ${locale}    en-GB
+    Verify Control Object Is Enabled    [NAME:btnClear]
+    Verify Control Object Is Enabled    [NAME:btnLoadPNR]
+
+Verify Enabled Buttons After Create Shell
+    Activate Power Express Window
+    Set Test Variable    ${locale}    en-GB
+    Verify Control Object Is Enabled    [NAME:btnClear]
+    Verify Control Object Is Enabled    [NAME:btnLoadPNR]
+
+Verify Panels Are Arranged Correctly
+    Activate Power Express Window
+    @{actual_panels}    Get All Panels
+    @{expected_panels}    Create List    Client Info    Cust Refs    Policy Check    Air Fare    Pspt and Visa
+    ...    APIS/SFPD    Delivery    Recap    Complete
+    Log List    ${actual_panels}
+    Log List    ${expected_panels}
+    Lists Should Be Equal    ${actual_panels}    ${expected_panels}    msg=Panels should be equal and arranged correctly

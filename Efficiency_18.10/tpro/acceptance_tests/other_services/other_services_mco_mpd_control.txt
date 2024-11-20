@@ -1,0 +1,143 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Get MCO Info Values
+    ${mco_type_of_service}    Get Control Text Value    [NAME:TypeOfServiceTextBox]
+    ${mco_location_of_issuance}    Get Control Text Value    [NAME:LocationOfIssuanceTextBox]
+    ${mco_contact}    Get Control Text Value    [NAME:ContactTextBox]
+    ${mco_fop}    Get Control Text Value    [NAME:FopTextBox]
+    ${mco_equiv_amt_paid}    Get Control Text Value    [NAME:EquivalentAmtPaidTextBox]
+    ${mco_headline_currency}    Get Control Text Value    [NAME:HeadlineCurrencyTextBox]
+    ${mco_taxes}    Get Control Text Value    [NAME:TaxesTextBox]
+    ${mco_exchange_rate}    Get Control Text Value    [NAME:RateOfExchangeTextBox]
+    ${mco_issue_in_exchange_for}    Get Control Text Value    [NAME:McoIssueInExchangeForTextBox]
+    ${mco_in_conjunction_with}    Get Control Text Value    [NAME:InConjunctionWithTextBox]
+    ${mco_original_fop}    Get Control Text Value    [NAME:OriginalFopTextBox]
+    ${mco_original_place_of_issue}    Get Control Text Value    [NAME:OriginalPlaceOfIssueTextBox]
+    Set Suite Variable    ${mco_type_of_service}
+    Set Suite Variable    ${mco_location_of_issuance}
+    Set Suite Variable    ${mco_contact}
+    Set Suite Variable    ${mco_fop}
+    Set Suite Variable    ${mco_equiv_amt_paid}
+    Set Suite Variable    ${mco_headline_currency}
+    Set Suite Variable    ${mco_taxes}
+    Set Suite Variable    ${mco_exchange_rate}
+    Set Suite Variable    ${mco_issue_in_exchange_for}
+    Set Suite Variable    ${mco_in_conjunction_with}
+    Set Suite Variable    ${mco_original_fop}
+    Set Suite Variable    ${mco_original_place_of_issue}
+
+Get MCO Remarks Value
+    ${mco_free_text}    Get Control Text    [NAME:FreeTextTextBox]
+    ${mco_added_remarks}    Get List Items    [NAME:RemarksDataGridView]
+
+Populate MCO Free Text Remark
+    [Arguments]    ${free_text}
+    Set Control Text Value    [NAME:FreeTextTextBox]    ${free_text}
+    Set Suite Variable    ${free_text}
+    Wait Until Control Object Is Enabled    [NAME:AddButton]    ${title_power_express}
+    Click Control Button    [NAME:AddButton]    ${title_power_express}
+
+Populate Optional MCO Info Fields
+    [Arguments]    ${issue_in_exchange_for}=${EMPTY}    ${in_conjunction_with}=${EMPTY}    ${original_fop}=${EMPTY}    ${original_place_of_issue}=${EMPTY}
+    [Timeout]
+    Set Issue In Exchange For    ${issue_in_exchange_for}
+    Set In Conjunction With    ${in_conjunction_with}
+    Set Original FOP    ${original_fop}
+    Set Original Place Of Issue    ${original_place_of_issue}
+
+Populate Required MCO Info Fields
+    [Arguments]    ${type_of service}    ${location_of_issuance}    ${contact}    ${fop}    ${amt_paid}    ${headline_currency}
+    ...    ${taxes}    ${rate_of_exchange}
+    Set Type Of Service    ${type_of service}
+    Set Location Of Issuance    ${location_of_issuance}
+    Set Contact    ${contact}
+    Set FOP    ${fop}
+    Set Equivalent Amt Paid    ${amt_paid}
+    Set Headline Currency    ${headline_currency}
+    Set Taxes    ${taxes}
+    Set Rate Of Exchange    ${rate_of_exchange}
+
+Set Contact
+    [Arguments]    ${contact}
+    Set Control Text Value    [NAME:ContactTextBox]    ${contact}
+
+Set Equivalent Amt Paid
+    [Arguments]    ${amt_paid}
+    Set Control Text Value    [NAME:EquivalentAmtPaidTextBox]    ${amt_paid}
+
+Set FOP
+    [Arguments]    ${fop}
+    Set Control Text Value    [NAME:FopTextBox]    ${fop}
+
+Set Headline Currency
+    [Arguments]    ${headline_currency}
+    Set Control Text Value    [NAME:HeadlineCurrencyTextBox]    ${headline_currency}
+
+Set In Conjunction With
+    [Arguments]    ${in_conjunction_with}
+    Set Control Text Value    [NAME:InConjunctionWithTextBox]    ${in_conjunction_with}
+
+Set Issue In Exchange For
+    [Arguments]    ${issue_in_exchange_for}
+    ${object}    Determine Multiple Object Name Based On Active Tab    McoIssueInExchangeForTextBox,IssueInExchangeForTextBox,Charges_IssueInExchangeForTextBox,IssueInExchangeForTextbox    False
+    Set Control Text Value    ${object}    ${issue_in_exchange_for}
+
+Set Location Of Issuance
+    [Arguments]    ${location_of_issuance}
+    Set Control Text Value    [NAME:LocationOfIssuanceTextBox]    ${location_of_issuance}
+
+Set Original FOP
+    [Arguments]    ${original_fop}
+    Set Control Text Value    [NAME:OriginalFopTextBox]    ${original_fop}
+
+Set Original Place Of Issue
+    [Arguments]    ${original_place_of_issue}
+    Set Control Text Value    [NAME:OriginalPlaceOfIssueTextBox]    ${original_place_of_issue}
+
+Set Rate Of Exchange
+    [Arguments]    ${rate_of_exchange}
+    Set Control Text Value    [NAME:RateOfExchangeTextBox]    ${rate_of_exchange}
+
+Set Taxes
+    [Arguments]    ${taxes}
+    Set Control Text Value    [NAME:TaxesTextBox]    ${taxes}
+
+Set Type Of Service
+    [Arguments]    ${type_of service}
+    Set Control Text Value    [NAME:TypeOfServiceTextBox]    ${type_of service}
+
+Tick Request MCO Checkbox
+    ${object}    Determine Multiple Object Name Based On Active Tab    [NAME:RequestMcoCheckBox]    False
+    Tick Checkbox    ${object}
+
+UnTick Request MCO Checkbox
+    ${object}    Determine Multiple Object Name Based On Active Tab    [NAME:RequestMcoCheckBox]    False
+    UnTick Checkbox    ${objec
+
+Verify MCO Info Field Values
+    [Arguments]    ${expected_mco_type_of_service}    ${expected_mco_location_of_issuance}    ${expected_mco_contact}    ${expected_mco_fop}    ${expected_mco_equiv_amt_paid}    ${expected_mco_headline_currency}
+    ...    ${expected_mco_taxes}    ${expected_mco_exchange_rate}    ${expected_mco_issue_in_exchange_for}=${EMPTY}    ${expected_mco_in_conjunction_with}=${EMPTY}    ${expected_mco_original_fop}=${EMPTY}    ${expected_mco_original_place_of_issue}=${EMPTY}
+    Get MCO Info Values
+    Comment    Get MCO Remarks Value
+    Verify Actual Value Matches Expected Value    ${mco_type_of_service}    ${expected_mco_type_of_service}
+    Verify Actual Value Matches Expected Value    ${mco_location_of_issuance}    ${expected_mco_location_of_issuance}
+    Verify Actual Value Matches Expected Value    ${mco_contact}    ${expected_mco_contact}
+    Verify Actual Value Matches Expected Value    ${mco_fop}    ${expected_mco_fop}
+    Verify Actual Value Matches Expected Value    ${mco_equiv_amt_paid}    ${expected_mco_equiv_amt_paid}
+    Verify Actual Value Matches Expected Value    ${mco_headline_currency}    ${expected_mco_headline_currency}
+    Verify Actual Value Matches Expected Value    ${mco_taxes}    ${expected_mco_taxes}
+    Verify Actual Value Matches Expected Value    ${mco_exchange_rate}    ${expected_mco_exchange_rate}
+    Verify Actual Value Matches Expected Value    ${mco_issue_in_exchange_for}    ${expected_mco_issue_in_exchange_for}
+    Verify Actual Value Matches Expected Value    ${mco_in_conjunction_with}    ${expected_mco_in_conjunction_with}
+    Verify Actual Value Matches Expected Value    ${mco_original_fop}    ${expected_mco_original_fop}
+    Verify Actual Value Matches Expected Value    ${mco_original_place_of_issue}    ${expected_mco_original_place_of_issue}
+
+Verify Remarks in MCO/MPD tab
+    [Arguments]    ${exp_free_text_remarks}
+    ${actual_free_text_remarks}    Get All MCO MPD Remarks From Remarks Grid
+    Log List    ${actual_free_text_remarks}
+    Log List    ${exp_free_text_remarks}
+    : FOR    ${exp_remark}    IN    ${actual_free_text_remarks}
+    \    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_free_text_remarks}    ${exp_free_text_remarks}

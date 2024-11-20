@@ -1,0 +1,126 @@
+*** Settings ***
+Force Tags        amadeus    apac    transaction_fees
+Resource          ../../../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          ../air_fare_verification.txt
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../air_fare_verification.txt
+
+*** Test Cases ***
+[NB SG] Verify That Transaction Fee Is Correct When Offline Flat Amount Is Used
+    [Tags]    us521    team_c    sg
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN SG    BEAR    ARLENE    SINHKG/ASQ    \    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    TEST CARD/AX***********0009/D0822/CVV****
+    Select Merchant On Fare Quote Tab    Airline
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    SG    Offline    Flat
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    TEST CARD/AX375000000000009/D0822/CVV****    SG
+    [Teardown]
+
+[NB SG] Verify That Transaction Fee Is Correct When Offline Range Amount Is Used
+    [Tags]    us521    team_c    sg
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN SG 3    BEAR    MONT    SINHKG/ASQ    \    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    SG    Offline    Range
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    Cash    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Transaction Fee Is Correct When Offline Range Percentage Is Used
+    [Tags]    us521    sg    team_c
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 4    BEAR    KMB
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINHKG/ASQ    SS1Y1    FXP    5
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    SG    Offline    Range    Percentage
+    Manually Set Form Of Payment - Card Details On Fare Quote Tab    Fare Quote 1    AX    378282246310005    1220
+    Select Merchant On Fare Quote Tab    CWT
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    AX378282246310005/D1220    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Transaction Fee Is Correct When Offline Range Fee Percentage With Cap Is Used
+    [Tags]    us521    sg    team_c
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumsg    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 5    BEAR    HILTON
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINHKG/ASQ    SS1Y1    FXP    5
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    SG    Offline    Range    Cap
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    KBTEST/MC************4445/D0526
+    Select Merchant On Fare Quote Tab    Airline
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    KBTEST/MC1111222233334445/D0526    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Transaction Fee Is Correct When Offline Flat Percentage Is Used
+    [Tags]    us521    team_c    hk
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumhk    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    US826 HK Airline Setup ¦ HK US826 No Setup    BEAR    SOYBEAN    HKGSIN/ASQ    \    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Invoice
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Offline    Flat    Percentage
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    Invoice    HK
+    Comment    Get Transaction Fee From DB (From City)    \    Offline    \    I    SIN
+    ...    to_city_code=HKG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Transaction Fee Is Correct When Offline City Is Used
+    [Tags]    us521    team_c    hk    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsumhk    APAC QA
+    ...    Amadeus
+    Create New Booking With One Way Flight Using Default Values    APAC SYN CORP ¦ APAC SYN HK    BEAR    HONG    HKGSIN/ASQ    \    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment Value On Fare Quote Tab    Fare Quote 1    Invoice
+    Get Base Fare, Total Taxes And LFCC    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Verify Transaction Fee Value Is Correct    Fare Quote 1    HK    Offline    Flat    Percentage
+    Populate Fare Quote Tabs with Default Values
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus
+    Verify Transaction Fee Remark Per TST Are Correct    Fare Quote 1    S2    02    Invoice    SG
+    Comment    Get Transaction Fee From DB (From City)    \    Offline    \    I    SIN
+    ...    to_city_code=HKG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

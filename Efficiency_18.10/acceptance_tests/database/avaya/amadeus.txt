@@ -1,0 +1,400 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    amadeus
+Force Tags        amadeus
+Resource          ../database_verification.txt
+
+*** Test Cases ***
+Verify Portrait Request Info Are Logged Into CTIIntegrationUsage Using Search By Traveler GUID
+    [Tags]    us6363    us6365    us6432    de7457    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003KXR    fr-FR    kronquillofr    FR QA Team Amadeus
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ FR - Amadeus Sub2    Kristine    Syex
+    Drop Test Data To TestDropFolder    1-amadeus-testcall-guid.notification.xml
+    Wait Until Progress Info is Completed
+    Verify Test Data Notification Is Saved To Database    1
+    Verify Portrait Request XML Contains Correct Values Using Search By Traveler GUID
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Wait Until Progress Info Is Completed
+    Verify Search Traveller OTT Value Is NULL    Search Traveller CTI Guid
+    Click Clear All
+    Verify OTT Start Time Is Logged Correctly And Search Traveller Value Is Not NULL    Search Traveller CTI Guid
+    [Teardown]    Click Clear All
+
+Verify Portrait Request Info Are Logged Into CTIIntegrationUsage Using Search By VDN and External ID
+    [Tags]    us6363    us6365    us6432    fr
+    Drop Test Data To TestDropFolder    3.1-amadeus-testcall-client-extid.notification.xml
+    Wait Until Progress Info is Completed
+    Sleep    10
+    Verify Test Data Notification Is Saved To Database    3
+    Verify Portrait Request XML Contains Correct Values Using Search By VDN and External ID
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Wait Until Progress Info Is Completed
+    Click Clear All
+    Verify OTT Start Time Is Logged Correctly And Search Traveller Value Is Not NULL    Search Traveller CTI No Guid
+    [Teardown]    Click Clear All
+
+Verify Portrait Request Info Are Logged Into CTIIntegrationUsage Using Search By VDN and PIN (Single Client)
+    [Tags]    us6363    us6365    us6432    de7457    fr
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ FR - Amadeus Sub2    Kristine    Syex
+    Drop Test Data To TestDropFolder    3.2-amadeus-testcall-client-pin.notification.xml
+    Wait Until Progress Info is Completed
+    Verify Test Data Notification Is Saved To Database    1
+    Verify Portrait Request XML Contains Correct Values Using Search By VDN and PIN (Single Client)
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Wait Until Progress Info Is Completed
+    Verify Search Traveller OTT Value Is NULL    Search Traveller CTI No Guid
+    Click Clear All
+    Verify OTT Start Time Is Logged Correctly And Search Traveller Value Is Not NULL    Search Traveller CTI No Guid
+    [Teardown]    Click Clear All
+
+Verify Portrait Request Info Are Logged Into CTIIntegrationUsage Using Search By ANI
+    [Tags]    us6363    us6365    us6432    de7457    fr
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ FR - Amadeus Sub2    Kristine    Syex
+    Drop Test Data To TestDropFolder    4-amadeus-testcall-ani.notification.xml
+    Wait Until Progress Info is Completed
+    Verify Test Data Notification Is Saved To Database    2
+    Verify Portrait Request XML Contains Correct Values Using Search By ANI
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Wait Until Progress Info Is Completed
+    Verify Search Traveller OTT Value Is NULL    Search Traveller CTI No Guid
+    Click Clear All
+    Verify OTT Start Time Is Logged Correctly And Search Traveller Value Is Not NULL    Search Traveller CTI No Guid
+    [Teardown]    Click Clear All
+
+Verify Portrait Request Info Are Logged Into CTIIntegrationUsage Using Search By VDN and PIN (Multiple Client)
+    [Tags]    us6363    us6365    us6432    de7457    fr
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ FR - Amadeus Sub2    Kristine    Syex
+    Drop Test Data To TestDropFolder    5-amadeus-testcall-vdn-pin.notification.xml
+    Wait Until Progress Info is Completed
+    Verify Test Data Notification Is Saved To Database    2
+    Verify Portrait Request XML Contains Correct Values Using Search By VDN and PIN (Multiple Client)
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Wait Until Progress Info Is Completed
+    Verify Search Traveller OTT Value Is NULL    Search Traveller CTI No Guid
+    Click Clear All
+    Verify OTT Start Time Is Logged Correctly And Search Traveller Value Is Not NULL    Search Traveller CTI No Guid
+    [Teardown]    Click Clear All
+
+Verify Portrait Request Info Are Logged Into CTIIntegrationUsage Using Search By Traveler GUID, VDN and PIN (Multiple Client)
+    [Tags]    us6363    us6365    us6432    de7457    fr
+    Set Client And Traveler    FR Amadeus 1 - SyEx ¦ FR - Amadeus Sub2    Kristine    Syex
+    Drop Test Data To TestDropFolder    6-amadeus-testcall-guid-vdn-pin.notification.xml
+    Wait Until Progress Info is Completed
+    Verify Test Data Notification Is Saved To Database    3
+    Verify Portrait Request XML Contains Correct Values Using Search By GUID, VDN and PIN (Multiple Client)
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Wait Until Progress Info Is Completed
+    Verify Search Traveller OTT Value Is NULL    Search Traveller CTI No Guid
+    Click Clear All
+    Verify OTT Start Time Is Logged Correctly And Search Traveller Value Is Not NULL    Search Traveller CTI No Guid
+    [Teardown]    Click Clear All
+
+Verify Portrait Request Info Are Logged Into CTIIntegrationUsage Using Search By Email
+    [Tags]    us6363    us6365    us6432    de7457    fr
+    Change Locale, Profile, Team    en-US    tchua    FR QA Team Amadeus    u002txc
+    Click Search Email
+    Wait Until Progress Info is Completed
+    Verify Test Data Notification Is Saved To Database    1
+    Verify Portrait Request XML Contains Correct Values Using Search Email
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Wait Until Progress Info Is Completed
+    Click Clear All
+    Verify OTT Start Time Is Logged Correctly And Search Traveller Value Is Not NULL    Search Traveller CTI No Guid
+    [Teardown]    Click Clear All
+
+Verify that Power Express Stop looking for the profile automatically when No Match is returned from the CTI server
+    [Tags]    US6615    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Drop Test Data To TestDropFolder    1.1-amadeus-testcall-NOGuid.notification.xml
+    Wait Until Progress Info is Completed
+    Activate Power Express Window
+    Verify Error(Expected) In Status Strip Text    L"appelant n'a pas été trouvé avec les informations de la téléphonie. Merci de rechercher avec le nom de famille
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.SearchTravellerFailure-NoMatchfromCTIServer
+    Verify Search Traveller OTT Value is null for NON-GUID    Search Traveller CTI Guid
+
+[NB FR] Verify That A Pop Up With Name Will Displayed For Pending Call In Not Ready State Using CTI SO Set To Yes
+    [Tags]    US6726    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR QA Team Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - CTI Pending Call    Juarez    Rosalie
+    Click New Booking
+    Update PNR for EN or GB
+    Click Read Booking
+    Drop Test Data To TestDropFolder    7-amadeus-testcall-single.notification.xml
+    Verify CTI \ Translation Message In The Pop Up    Vous avez reçu un appel de Mrs MICHELLE NORMANDIE de chez FR Amadeus 1 - SyEx    Appel en attente
+    Click Auto Clear All And Retrieve Profile Button    Appel en attente
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Verify Application Event Is Logged In Database    CTI Pending Call - Clear All
+    Click Clear All
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - CTI Pending Call    Juarez    Rosalie
+    Click New Booking
+    Update PNR for EN or GB
+    Click Read Booking
+    Drop Test Data To TestDropFolder    7-amadeus-testcall-single.notification.xml
+    Verify CTI \ Translation Message In The Pop Up    Vous avez reçu un appel de Mrs MICHELLE NORMANDIE de chez FR Amadeus 1 - SyEx    Appel en attente
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Drop Test Data To TestDropFolder    10-amadeus-testcall-long-name.notification.xml
+    Verify Application Event Is Logged In Database    CTI Pending Call - Auto Closed on New Call
+    Verify CTI \ Translation Message In The Pop Up    Vous avez reçu un appel de ThisIsA LongLong NameForTesting PendingCall de chez FR Am ...    Appel en attente
+    Click Auto Clear All And Retrieve Profile Button    Appel en attente
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Verify Application Event Is Logged In Database    CTI Pending Call - Clear All
+    [Teardown]
+
+[NB DE] Verify That A Pop Up Without Name Will Displayed For Pending Call In Not Ready State Using CTI SO Set To Yes
+    [Tags]    uk    us6726
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE QA Team Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - CTI Pending Call    Juarez    Rosalie
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    Update PNR for EN or GB
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Drop Test Data To TestDropFolder    9-amadeus-testcall-no-match.notification.xml
+    Verify CTI \ Translation Message In The Pop Up    Eingehender Anruf    Wartender Anruf
+    Click Auto Clear All Button    Wartender Anruf
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Verify Application Event Is Logged In Database    Search Traveller Failure-No Match from CTI Server
+
+[AB DE] Verify That A Pop Up With Name Will Displayed For Pending Call In Not Ready State Using CTI SO Set To Yes
+    [Tags]    uk    us6726
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Drop Test Data To TestDropFolder    7-amadeus-testcall-single.notification.xml
+    Verify CTI \ Translation Message In The Pop Up    Eingehender Anruf von Mrs MICHELLE NORMANDIE von FR Amadeus 1 - SyEx    Wartender Anruf
+    Click Remain in Current State Button    Wartender Anruf
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Verify Application Event Is Logged In Database    CTI Pending Call - Remain in Current State
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That No Pop Up Will Displayed For Pending Call in Not Ready State Using CTI SO Set To No
+    [Tags]    fr    us6726
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AUTOArranger    TestARR
+    Tick Traveler Checkbox
+    Click New Booking
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP
+    Click Read Booking
+    Drop Test Data To TestDropFolder    7-amadeus-testcall-single.notification.xml
+    Verify Error(Expected) In Status Strip Text    Appel en attente
+    Click Clear All
+    Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    Verify OTT Start Time Is Logged Correctly And Search Traveller Value Is Not NULL    Search Traveller CTI Guid
+    [Teardown]
+
+[NB][FR]Verify that Power Express lookup for Dial Number in ClientTelephony Table at SubUnit Level first followed by ClientTelephony Table at TopUnit Level
+    [Documentation]    *This Script lookup for Dial Number in ClientTelephony Table at SubUnit Level , If No match found at Sub Unit level in ClientTelephony Table then It looks for Dial number at TopUnit level in ClientTelephony Table*
+    ...
+    ...    *_Table Hierarchy for Dial number lookup is as follows:_*
+    ...
+    ...    1. GetClientSubUnitTelephony \ \ \ \ : This Table is for "ClientTelephony -> clientsubUnit"
+    ...
+    ...    2. GetClientTopUnitTelephony \ \ \ \ : This Table is for "ClientTelephony -> clienttopUnit"
+    ...
+    ...    3. GetClientSubListForDN \ \ \ \ \ \ \ \ \ \ \ \ : This Table is for ClientSubUnitTelephony
+    ...
+    ...    4. GetClientTopListForDN \ \ \ \ \ \ \ \ \ \ \ \ : This Table is for ClientTopUnitTelephony
+    [Tags]    us6914    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003KXR    fr-FR    kronquillofr    FR QA Team Amadeus
+    #ClientTelephony -> clientsubUnit lookup
+    Delete Current Specific Log File    DBDataLog
+    Drop Test Data To TestDropFolder    12.1-amadeus-ClientTelephony-clientsubUnit.notification.xml
+    Wait Until Progress Info is Completed
+    Verify Entry is Present in DBData Log File    ProcedureName="spExpress_GetClientSubUnitTelephony_v1"
+    Verify Entry is Not Present in DBData Log FIle    ProcedureName="spExpress_GetClientTopUnitTelephony_v1"
+    Verify Entry is Not Present in DBData Log FIle    ProcedureName="dbo.spExpress_GetClientSubListForDN_v1"
+    Verify Entry is Not Present in DBData Log FIle    ProcedureName="dbo.spExpress_GetClientTopListForDN_v1"
+    Click Clear All
+    #ClientTelephony -> clientTopUnit lookup
+    Delete Current Specific Log File    DBDataLog
+    Drop Test Data To TestDropFolder    12.2-amadeus-ClientTelephony-clientTopUnit.notification.xml
+    Wait Until Progress Info is Completed
+    Verify Entry is Present in DBData Log File    ProcedureName="spExpress_GetClientSubUnitTelephony_v1"
+    Verify Entry is Present in DBData Log File    ProcedureName="spExpress_GetClientTopUnitTelephony_v1"
+    Verify Entry is Not Present in DBData Log FIle    ProcedureName="dbo.spExpress_GetClientSubListForDN_v1"
+    Verify Entry is Not Present in DBData Log FIle    ProcedureName="dbo.spExpress_GetClientTopListForDN_v1"
+    [Teardown]    Click Clear All
+
+[NB][FR]Verify that Power Express lookup for Dial Number in ClientTelephony SubUnit,TopUnit,ClientSubUnitTelephony,ClientTopUnitTelephony Respectively
+    [Documentation]    *_Table Hierarchy for Dial number lookup is as follows:_*
+    ...
+    ...    1. GetClientSubUnitTelephony \ \ \ \ : This Table is for "ClientTelephony -> clientsubUnit"
+    ...
+    ...    2. GetClientTopUnitTelephony \ \ \ \ : This Table is for "ClientTelephony -> clienttopUnit"
+    ...
+    ...    3. GetClientSubListForDN \ \ \ \ \ \ \ \ \ \ \ \ : This Table is for ClientSubUnitTelephony
+    ...
+    ...    4. GetClientTopListForDN \ \ \ \ \ \ \ \ \ \ \ \ : This Table is for ClientTopUnitTelephony
+    [Tags]    us6914    fr
+    #ClientSubUnitTelephony
+    Delete Current Specific Log File    DBDataLog
+    Drop Test Data To TestDropFolder    12.3-amadeus-sub.telephony.notification.xml
+    Wait Until Progress Info is Completed
+    Verify Entry is Present in DBData Log File    ProcedureName="spExpress_GetClientSubUnitTelephony_v1"
+    Verify Entry is Present in DBData Log File    ProcedureName="spExpress_GetClientTopUnitTelephony_v1"
+    Verify Entry is Present in DBData Log File    ProcedureName="dbo.spExpress_GetClientSubListForDN_v1"
+    Verify Entry is Not Present in DBData Log FIle    ProcedureName="dbo.spExpress_GetClientTopListForDN_v1"
+    Click Clear All
+    #ClientTopUnitTelephony
+    Delete Current Specific Log File    DBDataLog
+    Drop Test Data To TestDropFolder    12.4-amadeus-top.telephony.notification.xml
+    Wait Until Progress Info is Completed
+    Verify Entry is Present in DBData Log File    ProcedureName="spExpress_GetClientSubUnitTelephony_v1"
+    Verify Entry is Present in DBData Log File    ProcedureName="spExpress_GetClientTopUnitTelephony_v1"
+    Verify Entry is Present in DBData Log File    ProcedureName="dbo.spExpress_GetClientSubListForDN_v1"
+    Verify Entry is Present in DBData Log File    ProcedureName="dbo.spExpress_GetClientTopListForDN_v1"
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Get CTI Integration Usage Id
+    ${computer_name}    Evaluate    os.environ['COMPUTERNAME']    os
+    @{resultset_cti_integration_usage}    Execute Query    select top 1 * from CTIIntegrationUsage where ComputerName = '${computer_name}' order by 1 desc    ApplicationUsage_Test
+    Set Test Variable    ${resultset_cti_integration_usage}
+    ${cti_integration_usage_id}    Set Variable    ${resultset_cti_integration_usage[0][0]}
+    ${application_usage_id}    Set Variable    ${resultset_cti_integration_usage[0][19]}
+    [Return]    ${cti_integration_usage_id}    ${application_usage_id}
+
+Verify Portrait Request XML Contains Correct Values Using Search By Traveler GUID
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[0][2]}
+    Should Not Be Empty    ${xml_parsed}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Attribute Should Be    ${xml_parsed}    guid    A:632D767    .//Traveler
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByTravelerGuid    .//SearchOption
+
+Verify Portrait Request XML Contains Correct Values Using Search By VDN and External ID
+    #first
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[0][2]}
+    Should Not Be Empty    ${xml_parsed}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Text Should Be    ${xml_parsed}    177535092    .//SearchOption/DialNumber
+    XML.Element Text Should Be    ${xml_parsed}    11833391    .//SearchOption/Pin
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByDialNumberPin    .//SearchOption
+    #second
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[1][2]}
+    Should Not Be Empty    ${xml_parsed}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Attribute Should Be    ${xml_parsed}    guid    A:19732    .//ClientTopGuid
+    XML.Element Text Should Be    ${xml_parsed}    00-00000000    .//TravelerPhoneNumber
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByTravelerPhoneNumber    .//SearchOption
+    #third
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[2][2]}
+    Should Not Be Empty    ${xml_parsed}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Attribute Should Be    ${xml_parsed}    clientTopGuid    A:19732    .//Client
+    XML.Element Attribute Should Be    ${xml_parsed}    clientSubGuid    A:225D6    .//Client
+    XML.Element Attribute Should Be    ${xml_parsed}    type    EmplId    .//TravelerExternalId
+    XML.Element Attribute Should Be    ${xml_parsed}    externalId    11833391    .//TravelerExternalId
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByTravelerExternalId    .//SearchOption
+
+Verify Portrait Request XML Contains Correct Values Using Search By VDN and PIN (Single Client)
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[0][2]}
+    Should Not Be Empty    ${xml_parsed}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Attribute Should Be    ${xml_parsed}    clientTopGuid    A:175F1    .//SearchOption/Client
+    XML.Element Attribute Should Be    ${xml_parsed}    clientSubGuid    A:427A8    .//SearchOption/Client
+    XML.Element Text Should Be    ${xml_parsed}    13542150    .//SearchOption/Pin
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByTravelerPin    .//SearchOption
+
+Verify Portrait Request XML Contains Correct Values Using Search By ANI
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[0][2]}
+    Should Not Be Empty    ${xml_parsed}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Text Should Be    ${xml_parsed}    33-24-5320987    .//SearchOption/TravelerPhoneNumber
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByTravelerPhoneNumber    .//SearchOption
+
+Verify Portrait Request XML Contains Correct Values Using Search By VDN and PIN (Multiple Client)
+    #first
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[0][2]}
+    Should Not Be Empty    ${xml_parsed}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Text Should Be    ${xml_parsed}    8669505733    .//SearchOption/DialNumber
+    XML.Element Text Should Be    ${xml_parsed}    11278885    .//SearchOption/Pin
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByDialNumberPin    .//SearchOption
+    #second
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[1][2]}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Text Should Be    ${xml_parsed}    33245320980    .//SearchOption/TravelerPhoneNumber
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByTravelerPhoneNumber    .//SearchOption
+
+Verify Portrait Request XML Contains Correct Values Using Search Email
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[0][2]}
+    Should Not Be Empty    ${xml_parsed}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Text Should Be    ${xml_parsed}    KWang2@Carlsonwagonlit.com    .//TravelerEmail
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByTravelerEmail    .//SearchOption
+
+Verify Test Data Notification Is Saved To Database
+    [Arguments]    ${expected_row_count}
+    ${cti_integration_usage_id}    ${application_usage_id}    Get CTI Integration Usage Id
+    @{resultset_cti_integration_usage_request}    Execute Query    select top 10 * from CTIIntegrationUsageRequest where CTIIntegrationUsageId = ${cti_integration_usage_id} order by 1 desc    ApplicationUsage_Test
+    ${resultset_length}    Get Length    ${resultset_cti_integration_usage_request}
+    Should Be Equal As Integers    ${expected_row_count}    ${resultset_length}    msg=Row count should be ${expected_row_count}
+    Set Test Variable    ${resultset_cti_integration_usage_request}
+
+Verify CTI Integration Usage ID Contains The Correct Application Usage ID Value
+    ${cti_integration_usage_id}    ${application_usage_id}    Get CTI Integration Usage Id
+    @{resultset_application_usage}    Execute Query    select top 1 * from ApplicationUsage where ApplicationUsageId = ${application_usage_id} order by 1 desc    ApplicationUsage_Test
+    Should Be Equal    ${resultset_cti_integration_usage[0][6]}    ${resultset_application_usage[0][9]}    CTI Usage Subunit is NOT the same as Application Usage Subunit
+    Should Be Equal    ${resultset_cti_integration_usage[0][8]}    ${resultset_application_usage[0][6]}    CTI Usage System User Guid is NOT the same as Application Usage System User Guid
+    Should Be Equal    ${resultset_cti_integration_usage[0][4]}    ${resultset_application_usage[0][5]}    CTI Usage Computer Name is NOT the same as Application Usage Computer Name
+
+Verify Portrait Request XML Contains Correct Values Using Search By GUID, VDN and PIN (Multiple Client)
+    #first
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[0][2]}
+    Should Not Be Empty    ${xml_parsed}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Text Should Be    ${xml_parsed}    9517534560    .//SearchOption/DialNumber
+    XML.Element Text Should Be    ${xml_parsed}    23192351    .//SearchOption/Pin
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByDialNumberPin    .//SearchOption
+    #second
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[1][2]}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Attribute Should Be    ${xml_parsed}    guid    A:8DCDD    .//ClientTopGuid
+    XML.Element Text Should Be    ${xml_parsed}    1-9807000    .//SearchOption/TravelerPhoneNumber
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByTravelerPhoneNumber    .//SearchOption
+    #third
+    ${xml_parsed}    XML.Parse Xml    ${resultset_cti_integration_usage_request[2][2]}
+    XML.Log Element    ${xml_parsed}
+    XML.Element Attribute Should Be    ${xml_parsed}    clientTopGuid    A:8DCDD    .//Client
+    XML.Element Attribute Should Be    ${xml_parsed}    clientSubGuid    A:C8861    .//Client
+    XML.Element Attribute Should Be    ${xml_parsed}    type    EmplId    .//TravelerExternalId
+    XML.Element Attribute Should Be    ${xml_parsed}    externalId    23192351    .//TravelerExternalId
+    XML.Element Attribute Should Be    ${xml_parsed}    {http://www.w3.org/2001/XMLSchema-instance}type    searchByTravelerExternalId    .//SearchOption
+
+Verify Search Traveller OTT Value Is NULL
+    [Arguments]    ${application_event_description}
+    &{application_event_dict}    Create Dictionary    Search By EMail=41    Search Traveller=42    Search Traveller CTI Guid=48    Search Traveller CTI No Guid=49
+    ${application_event_id}    Get From Dictionary    ${application_event_dict}    ${application_event_description}
+    ${computer_name}    Evaluate    os.environ['COMPUTERNAME']    os
+    @{search_traveller}    Execute Query    select top 2 * from applicationusage where computername = '${computer_name}' and ApplicationEventId = 42 order by applicationusageid desc    ApplicationUsage_Test
+    Log List    ${search_traveller}
+    Should Be Equal    ${search_traveller[0][-1]}    ${None}
+
+Verify Search Traveller OTT Value is null for NON-GUID
+    [Arguments]    ${application_event_description}
+    Comment    &{application_event_dict}    Create Dictionary    Search Traveller CTI Guid=48    Search Traveller CTI No Guid=49
+    Comment    ${application_event_id}    Get From Dictionary    ${application_event_dict}    ${application_event_description}
+    ${computer_name}    Evaluate    os.environ['COMPUTERNAME']    os
+    @{search_traveller}    Execute Query    select top 2 * from applicationusage where computername = '${computer_name}' and ApplicationEventId = 110 order by applicationusageid desc    ApplicationUsage_Test
+    Log List    ${search_traveller}
+    Should Be Equal    ${search_traveller[0][-1]}    ${None}
+    Should Be Equal    ${search_traveller[1][-1]}    ${None}
+
+Verify Pending Call Pop Up Is Displayed
+    ${pendingcall_exist}    Wait Until Control Object Is Visible    [Name:PendingCallDialog]
+    Should Be True    ${pendingcall_exist} == 1
+
+Verify Entry is Present in DBData Log File
+    [Arguments]    ${str_value}
+    ${dbdatalog_file}    Determine Log File Name and Path    DBDataLog
+    ${dbdatalog_file_value}    OperatingSystem.Get File    ${dbdatalog_file}
+    ${value_exist}    Run Keyword and Return Status    Should Contain    ${dbdatalog_file_value}    ${str_value}
+    Should Be True    ${value_exist} == True    "${str_value}" should EXISTS in DBData Log: ${dbdatalog_file}
+
+Verify Entry is Not Present in DBData Log FIle
+    [Arguments]    ${str_value}
+    ${dbdatalog_file}    Determine Log File Name and Path    DBDataLog
+    ${dbdatalog_file_value}    OperatingSystem.Get File    ${dbdatalog_file}
+    ${value_exist}    Run Keyword and Return Status    Should Not Contain    ${dbdatalog_file_value}    ${str_value}
+    Run Keyword If    "${value_exist}" == "True"    Log    PASSED: "${str_value}" Does Not Exist in Perf Log: ${dbdatalog_file}
+    ...    ELSE    Run Keyword and Continue On Failure    Fail    FAILED: "${str_value}" Exists in Perf Log: ${dbdatalog_file}

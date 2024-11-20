@@ -1,0 +1,113 @@
+*** Settings ***
+Force Tags        galileo
+Resource          ../id_traveller_verification.txt
+Resource          ../../complete/complete_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That Traveller/Contact Panel Is Separated To Traveller And Contact Panels After A Linked Contact Is Selected
+    [Tags]    uat    emea    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    LinkedTraveller    John
+    Verify Tab Is Visible    Traveller/Contact
+    Verify Tab Is Not Visible    Traveller    Contact
+    Select Linked Contact
+    Verify Tab Is Not Visible    Traveller/Contact
+    Verify Tab Is Visible    Traveller    Contact
+    [Teardown]    Click Clear All
+
+[NB UK] Verify That Phone Number Is Written In The PNR When Passenger Name Contains Apostrophe
+    [Tags]    uat    emea    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    Traveller    D'antoni
+    Verify PCC/CompanyProfile/TravellerProfile Is Correct    Traveller    1G/46T/AUTOGALILEOSTAR1/TRAVELLER DAN21670833
+    Click New Booking
+    Retrieve PNR Details From Galileo
+    Verify Specific Line Is Written In The PNR    CTCM*DANTONI TRAVELLER-63-1234567
+    Verify Specific Line Is Written In The PNR    CTCB*DANTONI TRAVELLER-63-7654321
+    [Teardown]    Click Clear All
+
+[NB UK] Verify That PNR Is Created When Using New Non Portrait Traveller
+    [Tags]    uat    uk    emea
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO
+    Set Last Name    LinkedTraveller
+    Click Search Portrait Profile
+    Click Create Traveller Profile
+    Populate Add New Traveller    General    John    Dela Cruz    automation@carlsonwagonlit.com    63    919
+    ...    1234566    \    Test
+    Verify Tab Is Visible    Traveller/Contact
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking    TICK
+    Verify Traveller Details Is Written    John    Dela Cruz    63-919-1234566    automation@carlsonwagonlit.com
+    [Teardown]    Click Clear All
+
+[NB UK] Verify That PCC/CompanyProfile/TravellerProfile Dropdown Is Populated For Numerous Travellers
+    [Tags]    uat    uk    emea    pilot    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Pilot    u002txc    en-GB    AutomationUK    UK Head Office Test Team
+    Select GDS    Galileo
+    Set Client And Traveler    UK STAFF TEST ¦ UK-STAFF TEST    Metro    Nemi
+    Verify First Name Is Correct    Traveller/Contact    Nemi
+    Verify Last Name Is Correct    Traveller/Contact    Metro
+    Verify Email Address Is Correct    Traveller/Contact    nemi@metro.co.uk
+    Verify Telephone Is Correct    Traveller/Contact    44-203-3531147
+    Click Clear All
+    [Teardown]    Emulate PCC    46T
+
+[NB SG] Verify That Traveler Can Be Searched And Selected
+    [Tags]    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellarsg    SG AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo SG 17 - Auto ¦ APAC OFF    BEAR    LEN
+    Click Traveller/Contact Tab In Caller Panel
+    Verify Traveller/Contact Tab Is Present
+    Verify First Name    LEN
+    Verify Last Name    BEAR
+    Verify Traveller Check Box Is Checked
+    Verify Contact Check Box Is Checked
+    [Teardown]    Click Clear All
+
+[NB SG] Verify That Arranger Can Be Searched And Selected Before The Traveler
+    [Tags]    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellarsg    SG AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo SG 17 - Auto ¦ APAC OFF    BEAR    JONA
+    Click Contact Tab In Caller Panel
+    Verify Contact Tab Is Present
+    Verify First Name    JONA
+    Verify Last Name    BEAR
+    Verify Traveller Check Box Is Not Checked
+    Verify Contact Check Box Is Checked
+    Set Client And Traveler    Galileo SG 17 - Auto ¦ APAC OFF    BEAR    LEN
+    Click Traveller Tab In Caller Panel
+    Verify Traveller Tab Is Present
+    Verify First Name    LEN
+    Verify Last Name    BEAR
+    Verify Traveller Check Box Is Checked
+    Verify Contact Check Box Is Not Checked
+    [Teardown]    Click Clear All
+
+[NB SG] Verify That Traveler Can Be Searched And Selected Before The Arranger
+    [Tags]    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellarsg    SG AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo SG 17 - Auto ¦ APAC OFF    BEAR    LEN
+    Click Traveller/Contact Tab In Caller Panel
+    Verify Traveller/Contact Tab Is Present
+    Verify First Name    LEN
+    Verify Last Name    BEAR
+    Verify Traveller Check Box Is Checked
+    Verify Contact Check Box Is Checked
+    Set Client And Traveler    Galileo SG 17 - Auto ¦ APAC OFF    BEAR    JONA
+    Click Contact Tab In Caller Panel
+    Verify Contact Tab Is Present
+    Verify First Name    JONA
+    Verify Last Name    BEAR
+    Verify Traveller Check Box Is Not Checked
+    Verify Contact Check Box Is Checked
+    [Teardown]    Click Clear All
+
+*** Keywords ***

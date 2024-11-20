@@ -1,0 +1,246 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../resources/common/utilities.txt
+Resource          ../id_traveller/id_traveller_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify That PSPT & Visa And APIS/SFPD Panel Are Displayed As Expected And Remarks Are Written When SOs Are Set To NO
+    [Tags]    uk    us6893    us6868
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - US6868    AutoOneNineteen    EmeaTrvlrOne
+    Verify Client Account List Is Correct    593725 ¦ BZW TEST ¦ UK - US6868    717171 ¦ DC April test ¦ UK - US6868
+    Verify Client Account Is Not In The List    587381 ¦ AC NIELSEN TEST ¦ UK - US6868
+    Select Client Account    717171 ¦ DC April test ¦ UK - US6868
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRORD/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Click Panel    APIS/SFPD
+    Populate APIS Other Information And Visa Details    London    United Kingdom    London    United Kingdom    TEST    9876543
+    ...    01/12/2015
+    Tick Address Not Unknown
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DOCS AC HK1 P/GB/12309834/GB/13FEB90/F/01JAN20/AUTOONENINETEEN/EMEATRVLRONE/S2    \    True
+    Verify Specific Line Is Written In The PNR    SSR DOCS AC HK1 P/GB/12309834/GB/13FEB90/F/01JAN20/AUTOONENINETEEN/EMEATRVLRONE/S3    \    True
+    Verify SSR DOCO And DOCA Remarks Are Written    SSR DOCO AC HK1 LONDON/V/9876543/TEST/01DEC15/GB/S2    SSR DOCO AC HK1 LONDON/V/9876543/TEST/01DEC15/GB/S3    SSR DOCA AC HK1 R/GB/LONDON/S2    SSR DOCA AC HK1 R/GB/LONDON/S3
+    Verify RMP Remarks Are Written    RMP P AND V : RESID COUNTRY GB    RMP P AND V : VISA CHECK CANADA - NOT REQUIRED - 1    RMP P AND V : VISA CHECK UNITED STATES - REQUIRED - 1
+    Verify Specific Line Is Written In The PNR    RMS DT-0:CZ-GB:DN-12309834:EX-1/1/2022:DV-YES:RC-GB
+    Verify PSPT And VISA Itinerary Remarks Are Written    RIR PASSPORT AND VISA INFORMATION    RIR TRAVELLERS NATIONALITY: UNITED KINGDOM    RIR VALID PASSPORT HELD: YES    RIR VISA CHECK: CANADA NOT REQUIRED    RIR VISA CHECK: UNITED STATES REQUIRED
+    Click Clear All
+
+[AB UK] Verify That PSPT & Visa And APIS/SFPD Panel Are Not displayed And Remarks Are Retained When PNR Is Retrieved On Meetings And Events Team And SO Are Set To Yes
+    [Tags]    uk    us6893
+    Change Team    UK Meetings And Events
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Client Account Value In Amend    --Select--
+    Verify Pspt and Visa And APIS/SFPD Panels Are Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend For PSPT & Visa And APIS SFPD Panel Remarks Are Retained
+    Execute Simultaneous Change Handling    Amend For PSPT & Visa And APIS SFPD Panel Remarks Are Retained
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DOCS AC HK1 P/GB/12309834/GB/13FEB90/F/01JAN20/AUTOONENINETEEN/EMEATRVLRONE/S2    \    True
+    Verify Specific Line Is Written In The PNR    SSR DOCS AC HK1 P/GB/12309834/GB/13FEB90/F/01JAN20/AUTOONENINETEEN/EMEATRVLRONE/S3    \    True
+    Verify SSR DOCO And DOCA Remarks Are Written    SSR DOCO AC HK1 LONDON/V/9876543/TEST/01DEC15/GB/S2    SSR DOCO AC HK1 LONDON/V/9876543/TEST/01DEC15/GB/S3    SSR DOCA AC HK1 R/GB/LONDON/S2    SSR DOCA AC HK1 R/GB/LONDON/S3
+    Verify Specific Line Is Written In The PNR    RMS DT-0:CZ-GB:DN-12309834:EX-1/1/2022:DV-YES:RC-GB
+    Verify RMP Remarks Are Written    RMP P AND V : RESID COUNTRY GB    RMP P AND V : VISA CHECK CANADA - NOT REQUIRED - 1    RMP P AND V : VISA CHECK UNITED STATES - REQUIRED - 1
+    Verify PSPT And VISA Itinerary Remarks Are Written    RIR PASSPORT AND VISA INFORMATION    RIR TRAVELLERS NATIONALITY: UNITED KINGDOM    RIR VALID PASSPORT HELD: YES    RIR VISA CHECK: CANADA NOT REQUIRED    RIR VISA CHECK: UNITED STATES REQUIRED
+    Verify Specific Line Is Written In The PNR    AI AN0717171
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    [Teardown]
+
+[SI UK] Verify That PSPT & Visa And APIS/SFPD Remarks Are Retained When PNR Is Retrieved On Meetings And Events Team And SO Are Set To Yes
+    [Tags]    uk    us6893
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Send Itin For PSPT & Visa And APIS SFPD Panel Remarks Are Retained
+    Execute Simultaneous Change Handling    Send Itin For PSPT & Visa And APIS SFPD Panel Remarks Are Retained
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DOCS AC HK1 P/GB/12309834/GB/13FEB90/F/01JAN20/AUTOONENINETEEN/EMEATRVLRONE/S2    \    True
+    Verify Specific Line Is Written In The PNR    SSR DOCS AC HK1 P/GB/12309834/GB/13FEB90/F/01JAN20/AUTOONENINETEEN/EMEATRVLRONE/S3    \    True
+    Verify SSR DOCO And DOCA Remarks Are Written    SSR DOCO AC HK1 LONDON/V/9876543/TEST/01DEC15/GB/S2    SSR DOCO AC HK1 LONDON/V/9876543/TEST/01DEC15/GB/S3    SSR DOCA AC HK1 R/GB/LONDON/S2    SSR DOCA AC HK1 R/GB/LONDON/S3
+    Verify Specific Line Is Written In The PNR    RMS DT-0:CZ-GB:DN-12309834:EX-1/1/2022:DV-YES:RC-GB
+    Verify RMP Remarks Are Written    RMP P AND V : RESID COUNTRY GB    RMP P AND V : VISA CHECK CANADA - NOT REQUIRED - 1    RMP P AND V : VISA CHECK UNITED STATES - REQUIRED - 1
+    Verify PSPT And VISA Itinerary Remarks Are Written    RIR PASSPORT AND VISA INFORMATION    RIR TRAVELLERS NATIONALITY: UNITED KINGDOM    RIR VALID PASSPORT HELD: YES    RIR VISA CHECK: CANADA NOT REQUIRED    RIR VISA CHECK: UNITED STATES REQUIRED
+    Comment    Verify Specific Line Is Written In The PNR    AI AN0717171
+    Comment    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That PSPT and Visa And APIS/SFPD Panel Are Not Displayed And Remarks Are Not Written For M&E Team
+    [Tags]    uk    us6893    us6868
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK Meetings And Events
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - US6868    AutoOneNineteen    EmeaTrvlrOne
+    Verify Client Account List Is Correct    587381 ¦ AC NIELSEN TEST ¦ UK - US6868
+    Verify Client Account Is Not In The List    593725 ¦ BZW TEST ¦ UK - US6868    717171 ¦ DC April test ¦ UK - US6868
+    Select Client Account    587381 ¦ AC NIELSEN TEST ¦ UK - US6868
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LHRORD/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Verify Pspt and Visa And APIS/SFPD Panels Are Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    SSR DOCS AC HK1 P/GB/12309834/GB/13FEB90/F/01JAN20/AUTOONENINETEEN/EMEATRVLRONE/S2    \    True
+    Verify Specific Line Is Not Written In The PNR    SSR DOCS AC HK1 P/GB/12309834/GB/13FEB90/F/01JAN20/AUTOONENINETEEN/EMEATRVLRONE/S3    \    True
+    Verify Specific Line Is Not Written In The PNR    SSR DOCO AC HK1 LONDON/V/9876543/TEST/01DEC15/GB/S2
+    Verify Specific Line Is Not Written In The PNR    SSR DOCO AC HK1 LONDON/V/9876543/TEST/01DEC15/GB/S3
+    Verify Specific Line Is Not Written In The PNR    SSR DOCA AC HK1 R/GB/LONDON/S2
+    Verify Specific Line Is Not Written In The PNR    SSR DOCA AC HK1 R/GB/LONDON/S3
+    Verify Specific Line Is Not Written In The PNR    RMP P AND V : RESID COUNTRY GB
+    Verify Specific Line Is Not Written In The PNR    RMP P AND V : VISA CHECK CANADA - NOT REQUIRED - 1
+    Verify Specific Line Is Not Written In The PNR    RMP P AND V : VISA CHECK UNITED STATES - REQUIRED - 1
+    Verify Specific Line Is Not Written In The PNR    RMS DT-0:CZ-GB:DN-12309834:EX-1/1/2020:DV-YES:RC-GB
+    Verify Specific Line Is Not Written In The PNR    RIR PASSPORT AND VISA INFORMATION
+    Verify Specific Line Is Not Written In The PNR    RIR TRAVELLERS NATIONALITY: UNITED KINGDOM
+    Verify Specific Line Is Not Written In The PNR    RIR VALID PASSPORT HELD: YES
+    Verify Specific Line Is Not Written In The PNR    RIR VISA CHECK: CANADA NOT REQUIRED
+    Verify Specific Line Is Not Written In The PNR    RIR VISA CHECK: UNITED STATES REQUIRED
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Client Account Number Is Correct    Traveller/Contact    587381 ¦ AC NIELSEN TEST ¦ UK - US6868
+    Click Read Booking
+    Verify Pspt and Visa And APIS/SFPD Panels Are Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend For PSPT And Visa And APIS/SFPD Remarks Are Not Written For M&E Team
+    Execute Simultaneous Change Handling    Amend For PSPT And Visa And APIS/SFPD Remarks Are Not Written For M&E Team
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    SSR DOCS AC HK1 P/GB/12309834/GB/13FEB90/F/01JAN20/AUTOONENINETEEN/EMEATRVLRONE/S2    \    True
+    Verify Specific Line Is Not Written In The PNR    SSR DOCS AC HK1 P/GB/12309834/GB/13FEB90/F/01JAN20/AUTOONENINETEEN/EMEATRVLRONE/S3    \    True
+    Verify Specific Line Is Not Written In The PNR    SSR DOCO AC HK1 LONDON/V/9876543/TEST/01DEC15/GB/S2
+    Verify Specific Line Is Not Written In The PNR    SSR DOCO AC HK1 LONDON/V/9876543/TEST/01DEC15/GB/S3
+    Verify Specific Line Is Not Written In The PNR    SSR DOCA AC HK1 R/GB/LONDON/S2
+    Verify Specific Line Is Not Written In The PNR    SSR DOCA AC HK1 R/GB/LONDON/S3
+    Verify Specific Line Is Not Written In The PNR    RMP P AND V : RESID COUNTRY GB
+    Verify Specific Line Is Not Written In The PNR    RMP P AND V : VISA CHECK CANADA - NOT REQUIRED - 1
+    Verify Specific Line Is Not Written In The PNR    RMP P AND V : VISA CHECK UNITED STATES - REQUIRED - 1
+    Verify Specific Line Is Not Written In The PNR    RMS DT-0:CZ-GB:DN-12309834:EX-1/1/2020:DV-YES:RC-GB
+    Verify Specific Line Is Not Written In The PNR    RIR PASSPORT AND VISA INFORMATION
+    Verify Specific Line Is Not Written In The PNR    RIR TRAVELLERS NATIONALITY: UNITED KINGDOM
+    Verify Specific Line Is Not Written In The PNR    RIR VALID PASSPORT HELD: YES
+    Verify Specific Line Is Not Written In The PNR    RIR VISA CHECK: CANADA NOT REQUIRED
+    Verify Specific Line Is Not Written In The PNR    RIR VISA CHECK: UNITED STATES REQUIRED
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That PSPT & Visa And APIS/SFPD Panel Are Displayed And Remarks Are Written When SOs Are Set To NO
+    [Tags]    uk    us6893    us6868
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne
+    Verify Client Account List Is Correct    717171 ¦ CWT AQUA TEST ACCOUNT ¦ UAT CLASSIC
+    Click New Booking
+    Book Flight X Months From Now    LHRORD/AAC    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Click Check Visa Requirements
+    Click Panel    APIS/SFPD
+    Populate APIS Other Information And Visa Details    Sydney    Australie    Sydney    Australie    TEST    9876543
+    ...    01/12/2015
+    Tick Address Not Unknown
+    Populate All Panels (Except Given Panels If Any)    Pspt and Visa    APIS/SFPD
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DOCS AC HK1 P/CG/1111111/CG/23JUL90/F/10JAN25/AUTOFIFTEENCLASSIC/EMEAUATCLASSICONE/S2    \    True
+    Verify Specific Line Is Written In The PNR    SSR DOCS AC HK1 P/CG/1111111/CG/23JUL90/F/10JAN25/AUTOFIFTEENCLASSIC/EMEAUATCLASSICONE/S3    \    True
+    Verify SSR DOCO And DOCA Remarks Are Written    SSR DOCO AC HK1 SYDNEY/V/9876543/TEST/01DEC15/AU/S2    SSR DOCO AC HK1 SYDNEY/V/9876543/TEST/01DEC15/AU/S3    SSR DOCA AC HK1 R/AU/SYDNEY/S2    SSR DOCA AC HK1 R/AU/SYDNEY/S3
+    Verify RMP Remarks Are Written    RMP P AND V : VISA CHECK CANADA - OBLIGATOIRE - 1    RMP P AND V : VISA CHECK ROYAUME-UNI - OBLIGATOIRE - 1    RMP P AND V : VISA CHECK ETATS-UNIS - OBLIGATOIRE - 1
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-CG:DN-1111111:EX-1/10/2025:DV-OUI:RC-CG
+    Verify PSPT And VISA Itinerary Remarks Are Written    RIR PASSEPORT ET VISA INFORMATION    RIR NATIONALITE DU VOYAGEUR: CG    RIR VALIDITE DU PASSEPORT: OUI    RIR CONTROLE DE VISA: CANADA OBLIGATOIRE    RIR CONTROLE DE VISA: ROYAUME-UNI OBLIGATOIRE    RIR CONTROLE DE VISA: ETATS-UNIS OBLIGATOIRE
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    UK Meetings And Events
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Pspt and Visa And APIS/SFPD Panels Are Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend For FR PSPT & Visa And APIS SFPD Panel Remarks Are Retained
+    Execute Simultaneous Change Handling    Amend For FR PSPT & Visa And APIS SFPD Panel Remarks Are Retained
+    Retrieve PNR Details    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    SSR DOCS AC HK1 P/CG/1111111/CG/23JUL90/F/10JAN25/AUTOFIFTEENCLASSIC/EMEAUATCLASSICONE/S2    \    True
+    Verify Specific Line Is Written In The PNR    SSR DOCS AC HK1 P/CG/1111111/CG/23JUL90/F/10JAN25/AUTOFIFTEENCLASSIC/EMEAUATCLASSICONE/S3    \    True
+    Verify Specific Line Is Written In The PNR    AI AN0717171
+    Verify Specific Line Is Written In The PNR    RM *0106*0717171
+    Verify SSR DOCO And DOCA Remarks Are Written    SSR DOCO AC HK1 SYDNEY/V/9876543/TEST/01DEC15/AU/S2    SSR DOCO AC HK1 SYDNEY/V/9876543/TEST/01DEC15/AU/S3    SSR DOCA AC HK1 R/AU/SYDNEY/S2    SSR DOCA AC HK1 R/AU/SYDNEY/S3
+    Verify RMP Remarks Are Written    RMP P AND V : VISA CHECK CANADA - OBLIGATOIRE - 1    RMP P AND V : VISA CHECK ROYAUME-UNI - OBLIGATOIRE - 1    RMP P AND V : VISA CHECK ETATS-UNIS - OBLIGATOIRE - 1
+    Verify Specific Line Is Written In The PNR    RMS DT-13:CZ-CG:DN-1111111:EX-1/10/2025:DV-OUI:RC-CG
+    Verify PSPT And VISA Itinerary Remarks Are Written    RIR PASSEPORT ET VISA INFORMATION    RIR NATIONALITE DU VOYAGEUR: CG    RIR VALIDITE DU PASSEPORT: OUI    RIR CONTROLE DE VISA: CANADA OBLIGATOIRE    RIR CONTROLE DE VISA: ROYAUME-UNI OBLIGATOIRE    RIR CONTROLE DE VISA: ETATS-UNIS OBLIGATOIRE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Pspt and Visa And APIS/SFPD Panels Are Not Displayed
+    Verify Actual Panel Does Not Contain Expected Panel    Pspt and Visa
+    Verify Actual Panel Does Not Contain Expected Panel    APIS/SFPD
+    [Teardown]    Take Screenshot
+
+Verify Client Account List Is Correct
+    [Arguments]    @{expected_client_accounts}
+    ${actual_client_account}    Get Dropdown Values    [NAME:ccboAccountNumber]
+    Run Keyword And Continue On Failure    List Should Contain Sub List    ${actual_client_account}    ${expected_client_accounts}
+    [Teardown]    Take Screenshot
+
+Verify Client Account Is Not In The List
+    [Arguments]    @{expected_client_accounts}
+    ${actual_client_account}    Get Dropdown Values    [NAME:ccboAccountNumber]
+    Run Keyword And Continue On Failure    List Should Not Contain Value    ${actual_client_account}    ${expected_client_accounts}
+    [Teardown]    Take Screenshot
+
+Verify SSR DOCO And DOCA Remarks Are Written
+    [Arguments]    @{ssr_remarks}
+    : FOR    ${ssr_line}    IN    @{ssr_remarks}
+    \    Verify Specific Line Is Written In The PNR    ${ssr_line}
+
+Verify RMP Remarks Are Written
+    [Arguments]    @{rmp_remarks}
+    : FOR    ${rmp_line}    IN    @{rmp_remarks}
+    \    Verify Specific Line Is Written In The PNR    ${rmp_line}
+
+Verify PSPT And VISA Itinerary Remarks Are Written
+    [Arguments]    @{itinerary_remarks}
+    : FOR    ${itinerary_line}    IN    @{itinerary_remarks}
+    \    Verify Specific Line Is Written In The PNR    ${itinerary_line}
+
+Verify Client Account Value In Amend
+    [Arguments]    @{client_account}
+    Verify Control Object Is Disabled    [NAME:ccboAccountNumber]
+    Verify Control Object Text Contains Expected Value    [NAME:ccboAccountNumber]    @{client_account}
+
+Amend For PSPT & Visa And APIS SFPD Panel Remarks Are Retained
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Client Account Value In Amend    --Select--
+    Verify Pspt and Visa And APIS/SFPD Panels Are Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Send Itin For PSPT & Visa And APIS SFPD Panel Remarks Are Retained
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend For FR PSPT & Visa And APIS SFPD Panel Remarks Are Retained
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Pspt and Visa And APIS/SFPD Panels Are Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend For PSPT And Visa And APIS/SFPD Remarks Are Not Written For M&E Team
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Client Account Number Is Correct    Traveller/Contact    587381 ¦ AC NIELSEN TEST ¦ UK - US6868
+    Click Read Booking
+    Verify Pspt and Visa And APIS/SFPD Panels Are Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

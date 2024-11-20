@@ -1,0 +1,60 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          pspt_and_visa_verification.txt
+
+*** Test Cases ***
+[NB UK] Verify Countries Are Captured In Timatic Window On Pspt and Visa Panel For Multiple Domestic Trip With Different Country
+    [Tags]    US5695
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    apollo
+    Set Client And Traveler    Apollo 15 - Auto ¦ US1434    AutoFifteenEight    NoramTrvlrThree
+    Click New Booking
+    Book Flight X Months From Now    JFKMUC+LH    01Y1    T:$BS1    6    1
+    Book Flight X Months From Now    LHRCDG+AF    01Y1    T:$BS2    6    5
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Client Info
+    Click Update PNR
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Countries Visited    Germany    France    United Kingdom
+    [Teardown]    Click Clear All
+
+[1V NORAM][NB] Verify Countries Are Captured With Correct Visa Information In Domestic RT Flight With Diff Nationality Docs For Timatic On
+    [Tags]    US5337    US5696    US5695    US3844    DE6819
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With Round Trip Air Flight Using Default Values    Apollo 15 - Auto ¦ US1434    AutoFifteenEight    NoramTrvlrThree    FRAHAM+LH    01Y1    T:$BS1
+    ...    HAMMUC+LH    01Y1    T:$BS2    ${EMPTY}    Pspt and Visa
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Click Check Visa Requirements No ESTA
+    Verify Travel Document Details Are Correct    Passport    United States    EB0987654    12/20/2020    Yes    0
+    Get Passport & Visa Info Panel Text
+    Verify That Countries Visited And Visa Status Is Correct    Germany    Not Required
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Retrieve PNR Details From Travelport
+    Verify Specific Line Is Written In The PNR    TRAVELLERS NATIONALITY: US
+    Verify Specific Line Is Written In The PNR    VISA CHECK: GERMANY NOT REQUIRED
+
+[1V NORAM][AB] Verify Countries Are Captured With Correct Visa Information In International Multi Flight With Diff Nationality Docs For Timatic On
+    [Tags]    US5337    US5696    US5695    US3844    DE6819
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter Command In Native GDS    XI    XT
+    Book Flight X Months From Now    HAMMUC+LH    01Y1    T:$BS3    6    8
+    Book Flight X Months From Now    MUCHAM+LH    01Y1    T:$BS4    6    13
+    Comment    Book Flight X Months From Now    MNLSIN#PR    01Y1    T:$BS5    6    20
+    Book Flight X Months From Now    JFKMUC+LH    01Y1    T:$BS6    6    25
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Checkbox Is Unticked    ${check_box_domestic_trip}
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Travel Document Details Are Correct    Passport    United States    Eb0987654    12/20/2020    Yes    0
+    Comment    Verify That Countries Visited And Visa Status Is Correct    France    Not Required
+    Verify That Countries Visited And Visa Status Is Correct    Germany    Not Required
+    Comment    Verify That Countries Visited And Visa Status Is Correct    Philippines    Unable to Confirm
+    Comment    Verify That Countries Visited And Visa Status Is Correct    Singapore    Not Required
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

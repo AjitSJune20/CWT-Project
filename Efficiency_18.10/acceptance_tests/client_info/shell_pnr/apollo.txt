@@ -1,0 +1,28 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../../../sanity_tests/resource_sanity.txt
+Resource          ../client_info_verification.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Shell PNR Retention Line Is Removed Upon Finish PNR
+    [Tags]    de4339
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ DE4339    AutoSixteenSeven    NoramTrvlrOne
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Verify All Panels Are Green
+    Click Create Shell
+    Verify Shell PNR Successfully Created
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    TUR ZZ BK1 \ XXX    true
+    Activate Power Express Window
+    Book Flight X Months From Now    ORDMSP+AA    01Y1    T:$B    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    TUR ZZ BK1 \ XXX    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

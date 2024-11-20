@@ -1,0 +1,42 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+Resource          ../../../resources/common/utilities.txt
+
+*** Keywords ***
+Verify that the correct environment is written in the logs
+    ${communication}    Set Variable If    "${gds_switch.lower()}" == "amadeus"    Gds-AmadeusSecoCommunication    "${gds_switch.lower()}" == "sabre"    Platform="nSRW"
+    ${classname}    Set Variable If    "${gds_switch.lower()}" == "amadeus"    ClassName="AmadeusCommunication"    "${gds_switch.lower()}" == "sabre"    ClassName="SabreWSCommunication"
+    ${new_platform}    Set Variable If    "${gds_switch.lower()}" == "amadeus"    Platform="SellConnect"    "${gds_switch.lower()}" == "sabre"    Platform="nSRW"
+    ${old_platform}    Set Variable If    "${gds_switch.lower()}" == "amadeus"    Platform="Classic"    "${gds_switch.lower()}" == "sabre"    Platform="Sabre Red"
+    ${perf_file}    Determine Log File Name and Path    SyExPerfLog
+    ${perf_file_value}    OperatingSystem.Get File    ${perf_file}
+    ${communication_flag}    Run Keyword and return Status    Should Contain    ${perf_file_value}    ${communication}
+    ${logs}    Get Lines Containing String    ${perf_file_value}    ${classname}
+    @{logs}    Split To Lines    ${logs}
+    LOG LIST    ${logs}
+    Should Not Be Empty    ${logs}    Sabre / Amadeus communication does not exist in the perf logs
+    : FOR    ${every_line}    IN    @{logs}
+    \    Run Keyword If    ${communication_flag} == True    Should Contain    ${every_line}    ${new_platform}
+    \    ...    ELSE    Should Contain    ${every_line}    ${old_platform}
+    \    Run Keyword If    ${communication_flag} == True    Should Not Contain    ${every_line}    ${old_platform}
+    \    ...    ELSE    Should Not Contain    ${every_line}    ${new_platform}
+
+Verify That TravellerGuid Is Added To The Performance Logs
+    [Arguments]    ${traveller_guid}
+    ${perf_file}    Determine Log File Name and Path    SyExPerfLog
+    ${perf_file_value}    OperatingSystem.Get File    ${perf_file}
+    ${gds_logs}    Get Lines Containing String    ${perf_file_value}    MethodName="GetProfileDetail"
+    @{gds_logs}    Split To Lines    ${gds_logs}
+    LOG LIST    ${gds_logs}
+    : FOR    ${every_line}    IN    @{gds_logs}
+    \    Run Keyword And Continue On Failure    Should Contain    ${every_line}    TravellerGuid="${traveller_guid}"
+
+Verify That NameSearchCriteria And ClientSearchCriteria Are Added To The Performance Logs For PortraitService
+    [Arguments]    ${name_search}    ${client_search}
+    ${perf_file}    Determine Log File Name and Path    SyExPerfLog
+    ${perf_file_value}    OperatingSystem.Get File    ${perf_file}
+    ${gds_logs}    Get Lines Containing String    ${perf_file_value}    ClassName="PortraitService" MethodName="GetProfileSummaryListByName"
+    @{gds_logs}    Split To Lines    ${gds_logs}
+    LOG LIST    ${gds_logs}
+    : FOR    ${every_line}    IN    @{gds_logs}
+    \    Run Keyword And Continue On Failure    Should Contain    ${every_line}    NameSearchCriteria="${name_search}" ClientSearchCriteria="${client_search}"

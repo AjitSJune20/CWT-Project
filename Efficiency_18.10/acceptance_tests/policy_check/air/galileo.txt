@@ -1,0 +1,58 @@
+*** Settings ***
+Force Tags        galileo    emea
+Resource          ../policy_check_verification.txt
+Resource          ../../business_rules/business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Policy Advise Is Shown For Policy Name Air Cabin
+    [Tags]    us4629
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo 16 - Auto ¦ US4072    AutoSeventeenTwo    EmeaTvlrOne
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Book Flight X Months From Now    FRAHAM/LH    01C1    FQ    8
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    Air Cabin advice US4629 Test
+    Select Policy Status    Business Class out of policy    AA - Awaiting Approval
+    Select Policy Status    Requires approval prior to ticketing    AA - Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Finish PNR
+
+[QA] Verify That Policy Advise Is Shown For Policy Name Air Cabin
+    [Tags]    us4629
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    Air Cabin advice US4629 Test
+    Select Policy Status    Business Class out of policy    TA - Traveller/Booker Advised
+    Select Policy Status    Requires approval prior to ticketing    TA - Traveller/Booker Advised
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Quick Amend
+
+[AB] Verify That Policy Advise Is Shown For Policy Name Air Cabin
+    [Tags]    us4629
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    FRALHR/LH    01C1    FQ/S2    8    5
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    Air Cabin advice US4629 Test
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Panel    Policy Check
+    Verify Policy Advice Is Displayed    Air Cabin    Business Class out of policy    Air Cabin advice US4629 Test
+    Select Policy Status    Business Class out of policy    TA - Traveller/Booker Advised
+    Select Policy Status    Requires approval prior to ticketing    TA - Traveller/Booker Advised
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR

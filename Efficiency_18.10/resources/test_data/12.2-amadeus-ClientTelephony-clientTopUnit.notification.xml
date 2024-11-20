@@ -1,0 +1,11 @@
+<VoiceInteractionCreated 
+NotificationId="f03c08f5-9f28-478e-9cce-540b62d530b8" 
+ObjectId="VI3:3dfe4024-812e-43db-bb0a-af52725df087" 
+TimeStamp="2012-11-09-14:16:08.2273" 
+WorkItemId="WI2:89bb1bf2-7d18-4b5d-a398-ece02484d412" 
+RemoteUser="612-618-9320" 
+Topic="CTI Turbo Test" 
+Outbound="False" 
+RemoteAddress="987654321" 
+PromptedDigits="" 
+UUI="2x!33987654321!123456" />

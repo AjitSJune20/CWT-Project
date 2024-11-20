@@ -1,0 +1,10 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verify Unused Document Has Been Sent To PNR
+    [Arguments]    @{row_number}
+    ${all_unused_documents}    Get All Unused Document
+    : FOR    ${row_number}    IN    @{row_number}
+    \    ${unused_document_detail}    Get One Unused Document    ${row_number}
+    \    Should Contain    ${unused_document_detail}    -> PNR

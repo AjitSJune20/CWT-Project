@@ -1,0 +1,298 @@
+{
+  "CaseInfo": {
+    "CaseNumber": "SendAPTest4",
+    "Workflow": "Send Itinerary",
+    "RecordLocator": "UAV33I",
+    "APIntegration": "MLP1",
+    "Travelers": {
+      "isCaseTraveler": "true",
+      "isCaseArranger": "true",
+      "isCaseSponsor": "false",
+      "TravelerGDSLookUpResponseType": {
+        "ResponseMsgList": {
+          "ResponseMessage": [
+            {
+              "message": "SUCCESS"
+            }
+          ],
+          "responseCode": "10000",
+          "dateTime": "2019-04-02T19:00:18-0700"
+        },
+			  "Traveler": {
+				"Client": {
+				  "ClientTop": {
+					"Address": null,
+					"Any": null,
+					"guid": "A:87D34",
+					"departmentCode": null,
+					"name": "Amadeus FR 16 - Auto",
+					"AnyAttr": null
+				  },
+				  "ClientSub": [
+					{
+					  "clientMasterCode": null,
+					  "Address": null,
+					  "Any": null,
+					  "guid": "A:88ED3",
+					  "departmentCode": null,
+					  "name": "US1423",
+					  "AnyAttr": null
+					}
+				  ],
+				  "Any": null
+				},
+				"TravelerType": {
+				  "guid": "A:5D5CC",
+				  "name": null,
+				  "type": "General",
+				  "typeCode": null,
+				  "AnyAttr": null
+				},
+				"ClientTopTravelerType": null,
+				"BaseTravelerType": null,
+				"TravelerExternalIds": null,
+				"Item": {
+				  "Person": {
+					"Name": {
+					  "namePrefix": "Ms",
+					  "firstName": "NoramTrvlrFive",
+					  "middleName": null,
+					  "lastName": "AutoSixteenTwo",
+					  "nameSuffix": null,
+					  "preferredName": null,
+					  "localLanguageLastName": null,
+					  "localLanguageFirstName": null,
+					  "AnyAttr": null
+					},
+					"Citizenships": null,
+					"CountryOfResidency": null,
+					"Languages": {
+					  "Language": [
+						{
+						  "languageCode": "fr_FR",
+						  "preferredSpecified": false,
+						  "AnyAttr": null
+						}
+					  ],
+					  "Any": null
+					},
+					"Any": null,
+					"gender": "Female",
+					"birthDate": null,
+					"passengerType": "Adult",
+					"AnyAttr": null
+				  },
+				  "Preferences": {
+					"PersonalPreferences": {
+					  "PrivacyOptions": [
+						{
+						  "type": "Data Protection Act",
+						  "clientDpsOption": "NotApplicable",
+						  "clientInformationServiceOptionSpecified": false,
+						  "lastDecisionDate": null,
+						  "acceptanceFlagSpecified": false,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						}
+					  ],
+					  "PersonRemark": null,
+					  "Any": null
+					},
+					"AirPreferences": {
+					  "Seat": {
+						"deck": "No Preference",
+						"location": "No Preference",
+						"side": "No Preference",
+						"position": "No Preference",
+						"facingDirection": null,
+						"type": "Aisle",
+						"sippCode": null,
+						"remark": null,
+						"AnyAttr": null
+					  },
+					  "Meals": [
+						{
+						  "remark": null,
+						  "mealCode": "NPML",
+						  "mealFrequency": null,
+						  "AnyAttr": null
+						}
+					  ],
+					  "AirSpecialRequest": null,
+					  "Any": null,
+					  "smokingPreference": "Non Smoking",
+					  "eTicketFlag": true,
+					  "eTicketFlagSpecified": true,
+					  "homeAirport": null,
+					  "homeCity": null,
+					  "remark": null,
+					  "errorGroupIdRef": null,
+					  "AnyAttr": null
+					},
+					"CarPreferences": {
+					  "Any": null,
+					  "class": "Intermediate",
+					  "type": "Car",
+					  "airConditioningFlag": true,
+					  "airConditioningFlagSpecified": true,
+					  "automaticTransmissionFlag": true,
+					  "automaticTransmissionFlagSpecified": true,
+					  "smokingPreference": null,
+					  "remark": null,
+					  "errorGroupIdRef": null,
+					  "AnyAttr": null
+					},
+					"HotelPreferences": {
+					  "Any": null,
+					  "roomType": "No Preference",
+					  "bedType": "No Preference",
+					  "propertyClass": null,
+					  "smokingPreference": "Non Smoking",
+					  "remark": null,
+					  "errorGroupIdRef": null,
+					  "AnyAttr": null
+					},
+					"RailPreferences": {
+					  "Seat": {
+						"deck": null,
+						"location": null,
+						"side": null,
+						"position": null,
+						"facingDirection": "No Preference",
+						"type": "Aisle",
+						"sippCode": null,
+						"remark": null,
+						"AnyAttr": null
+					  },
+					  "Meals": null,
+					  "Any": null,
+					  "homeStation": null,
+					  "smokingPreference": "No Preference",
+					  "remark": null,
+					  "errorGroupIdRef": null,
+					  "AnyAttr": null
+					},
+					"Any": null
+				  },
+				  "PersonalCarList": null,
+				  "ContactInfo": {
+					"Addresses": null,
+					"EmailAddresses": [
+					  {
+						"type": "Work",
+						"emailAddress": "rmartinez2@carlsonwagonlit.com",
+						"receiveEInvoice": false,
+						"receiveEInvoiceSpecified": true,
+						"receiveEItinerary": false,
+						"receiveEItinerarySpecified": true,
+						"errorGroupIdRef": null,
+						"AnyAttr": null
+					  }
+					],
+					"Telephones": [
+					  {
+						"usage": "Mobile",
+						"deviceType": "Voice",
+						"country": null,
+						"countryAccessCode": null,
+						"areaCode": null,
+						"phoneNumber": "1-33-9807060",
+						"stdFmtPhoneNumber": "1-339807060",
+						"extension": null,
+						"preferred": false,
+						"preferredSpecified": true,
+						"errorGroupIdRef": null,
+						"AnyAttr": null
+					  }
+					],
+					"MobileDevices": null,
+					"EmergencyContacts": {
+					  "Refused": false,
+					  "RefusedSpecified": true,
+					  "EmergencyContact": [
+						{
+						  "Telephone": null,
+						  "EmailAddress": null,
+						  "Any": null,
+						  "name": null,
+						  "relationship": null,
+						  "countryCode": null,
+						  "errorGroupIdRef": null,
+						  "AnyAttr": null
+						}
+					  ]
+					},
+					"Any": null
+				  },
+				  "CreditCards": null,
+				  "TravelDocuments": {
+					"Visas": null,
+					"Passports": null,
+					"NationalIds": null,
+					"DriverLicenses": null,
+					"Vaccinations": null,
+					"Redress": null,
+					"KnownTraveler": null,
+					"Any": null
+				  },
+				  "DiscountCards": null,
+				  "Memberships": null,
+				  "Relationships": null,
+				  "ReportingFields": null,
+				  "CounselorComments": null,
+				  "ETicketFormOfIdList": null,
+				  "Any": null,
+				  "isVerified": false,
+				  "isVerifiedSpecified": true,
+				  "errorGroupIdRef": null,
+				  "AnyAttr": null
+				},
+				"GDSList": [
+				  {
+					"ClientGDSInfo": [
+					  {
+						"TravelerGDSInfo": [
+						  {
+							"TempClientSub": null,
+							"TempClientTopTravelerType": null,
+							"TempBaseTravelerType": null,
+							"gdsProfileId": "",
+							"travelerRecordLocator": null,
+							"globalIndexId": "TESTE11PDWOREI",
+							"idGeneratedBySvs": true,
+							"idGeneratedBySvsSpecified": true,
+							"isGDSProfileTemp": false,
+							"isGDSProfileTempSpecified": true,
+							"pnrBuilderId": null,
+							"pnrBuilderName": null
+						  }
+						],
+						"lineDefName": "Amadeus",
+						"companyProfileName": "AUTOAMADEUSSTAR2FR",
+						"psuedoCityOfficeId": "PARWL210G",
+						"clientRecordLocator": null,
+						"useExternalIdFlag": false,
+						"useExternalIdFlagSpecified": true
+					  }
+					],
+					"name": "AMADEUS"
+				  }
+				],
+				"Any": null,
+				"guid": "B:40404A67",
+				"pin": "21782505",
+				"activationDate": "2017-05-16",
+				"expirationDate": "2200-01-30",
+				"scheduledPurgeDate": null,
+				"status": "Active",
+				"changeVersion": "86",
+				"isArranger": false,
+				"isArrangerSpecified": true,
+				"isAuthorizer": false,
+				"isAuthorizerSpecified": true,
+				"AnyAttr": null
+        }
+      }
+    }
+  }
+}

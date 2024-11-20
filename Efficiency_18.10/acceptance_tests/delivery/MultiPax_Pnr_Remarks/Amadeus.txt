@@ -1,0 +1,216 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../delivery_verification.txt
+Resource          ../../../resources/gds/amadeus.txt
+
+*** Test Cases ***
+[FI NB] Classic: Verify that Back Office Remarks (AGM) Are Written Based On Muliple Passenger Relation
+    [Tags]    us6903    uk    classic    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    FI Head Office Test Team
+    Select GDS    Amadeus
+    Set Client And Traveler    Finland Sales ¦ FI-Power Tools Test Company    Navis    Debbie
+    Select Client Account Value    23683 ¦ TEST LOCAL CLIENT FINLAND ¦ FI-Power Tools Test Company
+    Click New Booking
+    Add Multiple Traveler    NM3POLO/LISA Mrs/Marco Mr (CHD)/Riza Ms (INF/ANN/10JAN18)
+    Book Flight X Months From Now Without Pricing    LHRCDG/AAF    SS4Y3    6
+    Fare Quote Per Passanger Type    S5    P1-2    P3    P4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *ACERMK-EML1-AUTOMATION@CARLSONWAGONLIT.COM/P1-4
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM/P1-4
+
+[FI AB] Classic: Verify that Back Office Remarks (AGM) Are Written Based On Muliple Passenger Relation
+    [Tags]    us6903    uk    classic    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Update Email Address on Delivery Panel    0    amendemail@test.com
+    Click Finish PNR    Amend Booking for Multipax AGM Remarks
+    Execute Simultaneous Change Handling    Amend Booking for Multipax AGM Remarks
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *ACERMK-EML1-AMENDEMAIL@TEST.COM/P1-4
+    Verify Specific Remark Is Not Written In The PNR    RM *ACERMK-EML1-AUTOMATION@CARLSONWAGONLIT.COM/P1-4
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL AMENDEMAIL@TEST.COM/P1-4
+    Verify Specific Remark Is Not Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM/P1-4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SE NB] Classic: Verify that Back Office Remarks (Wings ) Are Written Based On Muliple Passenger Relation
+    [Tags]    us6903    uk    classic    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    SE QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    Power Express EMEA test ¦ SE-AMADEUS RAIL TEST    Cala    Carlson
+    Click New Booking
+    Add Multiple Traveler    NM3POLO/LISA Mrs/Marco Mr (CHD)/Riza Ms (INF/ANN/10JAN18)
+    Book Flight X Months From Now Without Pricing    LHRCDG/AAF    SS4Y3    6
+    Fare Quote Per Passanger Type    S5    P1-2    P3    P4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Add Email Address On Deliver Panel    1    newbooking.0651@test.com
+    Tick Receive Invoice Checkbox    1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *0651*NEWBOOKING.0651@TEST.COM/P1-4
+    Verify Specific Remark Is Written In The PNR    RM *0702*AUTOMATION@CARLSONWAGONLIT.COM/P1-4
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM/P1-4
+
+[SE AB] Classic: Verify that Back Office Remarks (Wings ) Are Written Based On Muliple Passenger Relation
+    [Tags]    us6903    uk    classic    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Update Email Address on Delivery Panel    0    amend0702@test.com
+    Update Email Address on Delivery Panel    1    amend0651@test.com
+    Select Delivery Method Using Default Value
+    Click Finish PNR    Amend Booking for Multipax Wings Remarks
+    Execute Simultaneous Change Handling    Amend Booking for Multipax Wings Remarks
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *0651*AMEND0651@TEST.COM/P1-4
+    Verify Specific Remark Is Not Written In The PNR    RM *0651*NEWBOOKING.0651@TEST.COM/P1-4
+    Verify Specific Remark Is Written In The PNR    RM *0702*AMEND0702@TEST.COM/P1-4
+    Verify Specific Remark Is Not Written In The PNR    RM *0702*AUTOMATION@CARLSONWAGONLIT.COM/P1-4
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL AMEND0702@TEST.COM/P1-4
+    Verify Specific Remark Is Not Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM/P1-4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SE NB] Classic: Verify that Back Office Remarks (Wings ) Are Written Based On Single Passenger Relation
+    [Tags]    uk    classic    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    SE QA Team Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    Power Express EMEA test ¦ SE-AMADEUS RAIL TEST    Cala    Carlson
+    Click New Booking
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Add Email Address On Deliver Panel    1    newbooking.0651@test.com
+    Tick Receive Invoice Checkbox    1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *0651*NEWBOOKING.0651@TEST.COM
+    Verify Specific Remark Is Written In The PNR    RM *0702*AUTOMATION@CARLSONWAGONLIT.COM
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+
+[SE AB] Classic: Verify that Back Office Remarks (Wings ) Are Written Based On Single Passenger Relation
+    [Tags]    uk    classic    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Update Email Address on Delivery Panel    0    amend0702@test.com
+    Update Email Address on Delivery Panel    1    amend0651@test.com
+    Select Delivery Method Using Default Value
+    Click Finish PNR    Amend Booking for SinglePax Wings Remarks
+    Execute Simultaneous Change Handling    Amend Booking for SinglePax Wings Remarks
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *0651*AMEND0651@TEST.COM
+    Verify Specific Remark Is Not Written In The PNR    RM *0651*NEWBOOKING.0651@TEST.COM
+    Verify Specific Remark Is Written In The PNR    RM *0702*AMEND0702@TEST.COM
+    Verify Specific Remark Is Not Written In The PNR    RM *0702*AUTOMATION@CARLSONWAGONLIT.COM
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL AMEND0702@TEST.COM
+    Verify Specific Remark Is Not Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[FI NB] Classic: Verify that Back Office Remarks (AGM) Are Written Based On Single Passenger Relation
+    [Tags]    uk    classic    classic    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    FI Head Office Test Team
+    Select GDS    Amadeus
+    Set Client And Traveler    Finland Sales ¦ FI-Power Tools Test Company    Navis    Debbie
+    Select Client Account Value    23683 ¦ TEST LOCAL CLIENT FINLAND ¦ FI-Power Tools Test Company
+    Click New Booking
+    Book Flight X Months From Now    LHRCDG/AAF    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *ACERMK-EML1-AUTOMATION@CARLSONWAGONLIT.COM
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+
+[[FI AB] Classic: Verify that Back Office Remarks (AGM) Are Written Based On Single Passenger Relation
+    [Tags]    uk    classic    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Update Email Address on Delivery Panel    0    amendemail@test.com
+    Click Finish PNR    Amend Booking for SinglePax AGM Remarks
+    Execute Simultaneous Change Handling    Amend Booking for SinglePax AGM Remarks
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Remark Is Written In The PNR    RM *ACERMK-EML1-AMENDEMAIL@TEST.COM
+    Verify Specific Remark Is Not Written In The PNR    RM *ACERMK-EML1-AUTOMATION@CARLSONWAGONLIT.COM
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTRZ
+    Verify Specific Remark Is Written In The PNR    RMZ CONF*SEND TO MAIL AMENDEMAIL@TEST.COM
+    Verify Specific Remark Is Not Written In The PNR    RMZ CONF*SEND TO MAIL AUTOMATION@CARLSONWAGONLIT.COM
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Add Email Address On Deliver Panel
+    [Arguments]    ${index}    ${email_address}
+    Click Control Button    ${button_addrecipients}
+    Set Control Text Value    [NAME:ctxtEmail${index}]    ${email_address}
+
+Update Email Address on Delivery Panel
+    [Arguments]    ${index}    ${email_address}
+    Set Control Text Value    [NAME:ctxtEmail${index}]    ${email_address}
+
+Amend Booking for Multipax AGM Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Update Email Address on Delivery Panel    0    amendemail@test.com
+    Click Finish PNR    Amend Booking for Multipax AGM Remarks
+
+Amend Booking for Multipax Wings Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Update Email Address on Delivery Panel    0    amend0702@test.com
+    Update Email Address on Delivery Panel    1    amend0651@test.com
+    Select Delivery Method Using Default Value
+    Click Finish PNR    Amend Booking for Multipax Wings Remarks
+
+Amend Booking for SinglePax Wings Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Update Email Address on Delivery Panel    0    amend0702@test.com
+    Update Email Address on Delivery Panel    1    amend0651@test.com
+    Select Delivery Method Using Default Value
+    Click Finish PNR    Amend Booking for SinglePax Wings Remarks
+
+Amend Booking for SinglePax AGM Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Update Email Address on Delivery Panel    0    amendemail@test.com
+    Click Finish PNR    Amend Booking for SinglePax AGM Remarks

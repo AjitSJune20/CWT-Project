@@ -1,0 +1,47 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../third_party_verification.txt
+
+*** Test Cases ***
+[1A EMEA][NB]Verify That Min Max Fields Are Mandatory For Non Light PNR Clipper
+    [Tags]    de7024    18.1    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus 210 - Auto ¦ DE7024 Clipper    AutoOneeFiveTwo    EmeaTrvlrTwo    CDGLHR/AAF    ${EMPTY}    Air Fare
+    Click Panel    Air Fare
+    Verify That Min And Max Stay Fields Are Mandatory
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    Verify Do Not Send To OBT Checkbox Is Not Ticked
+    Tick Do Not Send To OBT Checkbox
+    Verify Do Not Send To Itinerary Checkbox Is Ticked
+    Untick Do Not Send Itinerary Checkbox
+    Click Panel    Recap
+    Verify Clipper Options Compliancy Dropdown Is Displayed
+    Set Clipper Compliancy Value    Oui
+    Click Finish PNR
+
+[1A EMEA][AB]Verify That Min Max Fields Are Mandatory For Non Light PNR Clipper
+    [Tags]    de7024    18.1    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    Enter GDS Command    XE2
+    Book Flight X Months From Now    ORYNCE/AAF    SS1Y1    FXP    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify That Min And Max Stay Fields Are Mandatory
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Client Fees
+    Verify Client Fees Type Default Value    Clipper
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify That Min And Max Stay Fields Are Mandatory
+    Verify Control Object Field Is Mandatory    [NAME:ccboMinStayOBT_1]
+    Verify Control Object Field Is Mandatory    [NAME:ccboMaxStayOBT_1]

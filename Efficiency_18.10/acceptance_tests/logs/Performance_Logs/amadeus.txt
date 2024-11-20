@@ -1,0 +1,113 @@
+*** Settings ***
+Force Tags        amadeus    emea    logs
+Resource          ../../../resources/common/global_resources.txt
+Resource          ../../../resources/common/utilities.txt
+Resource          performance_logs_verification.txt
+Library           ../../../resources/libraries/SyexPerfTestLibrary.py
+
+*** Test Cases ***
+[NB_FR] Verify that the correct GDS is written as value to the new field Platform in the Performance Log
+    [Tags]    fr    us6381    us6382    us6614    notready    manual
+    Delete Log File    SyExPerfLog
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Sabre
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR Legacy - Auto ¦ US681    AutoLegacy    ${EMPTY}    CDGLHR/AAF
+    Verify That TravellerGuid Is Added To The Performance Logs    B:403BE468
+    Click Finish PNR
+    Verify that the correct environment is written in the logs
+    Verify That NameSearchCriteria And ClientSearchCriteria Are Added To The Performance Logs For PortraitService    AUTOLEGACY    Amadeus FR Legacy - Auto ¦ US681
+
+[AB_FR]Verify that the correct GDS is written as value to the new field Platform in the Performance Log
+    [Tags]    fr    us6382    notready    manual
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete All Segments
+    Book One Way Flight X Months From Now    LHRCDG/AAF    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Verify that the correct GDS is written as value to the new field Platform in the Performance Logs
+    Verify that the correct environment is written in the logs
+    Delete Log File    SyExPerfLog
+
+[QA_FR] Verify that the correct GDS is written as value to the new field Platform in the Performance Log
+    [Tags]    fr    us6382    notready    manual
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Quick Amend
+    Verify that the correct environment is written in the logs
+
+[SI_FR] Verify that the correct GDS is written as value to the new field Platform in the Performance Log
+    [Tags]    fr    us6382    notready    manual
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Send Itinerary Verify that the correct GDS is written as value to the new field Platform in the Performance Logs
+    Verify that the correct environment is written in the logs
+
+[CB_FR] Verify that the correct GDS is written as value to the new field Platform in the Performance Log
+    [Tags]    fr    us6382    notready    manual
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR
+    Verify that the correct environment is written in the logs
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB_FR] Verify that last name and subunit are added as NameSearchCriteria and ClientSearchCriteria in the Portrait Service logs in Performance logs
+    [Tags]    us6381    us6614    fr
+    Delete Log File    SyExPerfLog
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR Legacy - Auto ¦ US681    AutoLegacy    ${EMPTY}
+    Verify That NameSearchCriteria And ClientSearchCriteria Are Added To The Performance Logs For PortraitService    AUTOLEGACY    Amadeus FR Legacy - Auto ¦ US681
+    Verify That TravellerGuid Is Added To The Performance Logs    B:403BE468
+    Delete Log File    SyExPerfLog
+    Click Clear All
+    Set Client    Amadeus FR Legacy - Auto ¦ US681
+    Search PIN Portrait    123
+    Verify That NameSearchCriteria And ClientSearchCriteria Are Added To The Performance Logs For PortraitService    123    Amadeus FR Legacy - Auto ¦ US681
+    Click Clear All
+
+*** Keywords ***
+Verify that the correct Amadeus environment is written in the logs
+    ${perf_file}    Determine Log File Name and Path    SyExPerfLog
+    ${perf_file_value}    OperatingSystem.Get File    ${perf_file}
+    ${is_selco}    Run Keyword and return Status    Should Contain    ${perf_file_value}    Gds-AmadeusSecoCommunication
+    ${amadeus_logs}    Get Lines Containing String    ${perf_file_value}    ClassName="AmadeusCommunication"
+    @{amadeus_logs}    Split To Lines    ${amadeus_logs}
+    LOG LIST    ${amadeus_logs}
+    : FOR    ${every_line}    IN    @{amadeus_logs}
+    \    Run Keyword And Continue On Failure    Run Keyword If    ${is_selco} == True    Should Contain    ${every_line}    Platform="SellConnect"
+    \    ...    ELSE    Should Contain    ${every_line}    Platform="Classic"
+
+Amend Booking Verify that the correct GDS is written as value to the new field Platform in the Performance Logs
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Air Segment    2
+    Click Read Booking
+    Populate Panels with Red Mark Except The Given Panel(s)    ${EMPTY}
+    Click Finish PNR    Amend Booking Verify that the correct GDS is written as value to the new field Platform in the Performance Logs
+
+Send Itinerary Verify that the correct GDS is written as value to the new field Platform in the Performance Logs
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Finish PNR    Send Itinerary Verify that the correct GDS is written as value to the new field Platform in the Performance Logs
+
+Quick Amend
+    Delete Log File    SyExPerfLog
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Quick Amend

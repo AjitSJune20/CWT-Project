@@ -1,0 +1,92 @@
+*** Settings ***
+Force Tags        sabre    noram
+Resource          ../delivery_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[NB] Verify That 8TL Line Is Written In The PNR
+    [Tags]    us2839
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2839    AUTOONEFIVEONETWO    NORAMTRVLRTWO    MSPORD¥AA    ${EMPTY}    Air Fare
+    ...    Delivery    Client Info
+    Click Panel    Client Info
+    Untick Not Known At Time Of Booking For Form Of Payment
+    Click Panel    Air Fare
+    Select Missed Saving Code Value    7 - Low fare within policy threshold
+    Click Panel    Delivery
+    Select Delivery Method    8TL Auto Cancel TAW
+    Verify Ticketing Time Limit Field Is Visible
+    Verify Ticketing Time Limit Field Is Enabled
+    Verify Ticketing Time Limit Field Value    900P
+    Verify Time Limit Remarks Field Is Visible
+    Verify Time Limit Remarks Field Is Enabled
+    Verify Time Limit Remarks Field Value    ${EMPTY}
+    Verify That Follow Up Date Is Not Visible
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Verify Ticketing Time Limit Field Is Enabled
+    Verify Ticketing Date Field Value Is Current Date
+    Select Ticketing Time Limit    1000P
+    Set Time Limit Remarks    TEST TEST TEST 143
+    Set Email Address In Delivery Panel    automation@carlson.com
+    Click Panel    Client Info
+    Populate Client Info Panel With Default Values
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify 8TL Line Is Written In The PNR    1000P    TEST.TEST.TEST.143
+    Verify Specific Line Is Written In The PNR    T‡TKT1-8TL-DIN‡S1    \    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify Delivery Method Is Black And Gold During New Booking With Only Car, Hotel Or Limo Segments Only
+    [Tags]    us5854
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Guitarists    Doe    Jane
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/143217346/
+    Click New Booking
+    Update PNR for EN or GB
+    Enter GDS Command    0CARZIGK1MSP20SEP-24SEP/ICAR/RG-USD35.99/CF-ABC123
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Field Is Mandatory    [NAME:ccboDeliveryMethod]
+    Comment    Verify Delivery Method Dropdown Values    1 Invoice only Car    2 Invoice only Hotel    3 Invoice only Limo
+    [Teardown]    Click Clear All
+
+[AB] Verify Delivery Method Is Black And Gold During New Booking With Only Car, Hotel Or Limo Segments Only
+    [Tags]    us5854
+    [Timeout]
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Guitarists    Doe    Jane
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/143217346/
+    Click New Booking
+    Book One Way Flight X Months From Now    MANAMS¥KL    6
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI
+    Enter GDS Command    /0/0HHTMXGK1MSPIN20SEP-OUT24SEP/MX MOTEL 6 MINNEAPOLISBROOKLYN C/CORP/79.00/SP-56822/G/SI-¤2741 FREEWAY BLVD‡BROOKLYN CENTER MN 55430‡FONE 1-763-560-9789‡FAX 1-763-560-9796¤/CF-ABC123
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Control Object Field Is Mandatory    [NAME:ccboDeliveryMethod]
+    Comment    Verify Delivery Method Dropdown Values    1 Invoice only Car    2 Invoice only Hotel    3 Invoice only Limo
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Parse Current Date According To Sabre 8TL Format
+    ${month}    Get Time    'Month'
+    ${day}    Get Time    'Day'
+    ${year}    Get Time    'Year'
+    ${day_name}    Get Weekday Name    ${year}    ${month}    ${day}
+    ${month_name}    Get Month Name    ${month}
+    Set Test Variable    ${day}
+
+Verify 8TL Line Is Written In The PNR
+    [Arguments]    ${ticketing_time_limit_value}    ${time_limit_remarks_value}
+    Parse Current Date According To Sabre 8TL Format
+    Verify Specific Line Is Written In The PNR    TL${ticketing_time_limit_value}/${day}${month_name}-${day_name}/${time_limit_remarks_value.upper()}    \    true

@@ -1,0 +1,124 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+
+*** Test Cases ***
+[1A][NB FR] Verify That Traveller Is Automatically Identified And Prepopulate The Information In The Info Fields
+    Set Suite Variable    ${GDS_switch}    amadeus
+    Set Suite Variable    ${locale}    fr-FR
+    Set Suite Variable    ${syex_env}    TEST
+    Set Suite Variable    ${gds}    amadeus
+    Drop Test Data To Pega Test DropFolder    test-nb-amadeus_1pax.pega.json
+    Click New Booking
+    Book Flight X Months From Now    NCEORY/AAF    SS1Y1    FXP/S2    5
+    Book Flight X Months From Now    ORYNCE/AAF    SS1Y1    FXP/S3    5    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    @{exclude_panels}
+    Click Panel    Pspt and Visa
+    Verify Domestic Trip Checkbox Is Ticked
+    Untick Domestic Trip
+    Populate Pspt And Visa With Values    Passport: Normal    Philippines    EB0987654    12/20/2020    ${EMPTY}
+    Click Check Visa Requirements No ESTA
+    Verify Travel Document Details Are Correct    Passport: Normal    Philippines    EB0987654    12/20/2020    Oui
+    Get Passport & Visa Info Panel Text
+    Verify That Countries Visited And Visa Status Is Correct    France    Obligatoire
+    Click GDS Screen Tab
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    NATIONALITE DU VOYAGEUR: PH
+    Verify Specific Line Is Written In The PNR    CONTROLE DE VISA: FRANCE OBLIGATOIRE
+
+[1A][AB FR] Verify That Traveller Is Automatically Identified And Prepopulate The Information In The Info Fields
+    Set Suite Variable    ${GDS_switch}    amadeus
+    Set Suite Variable    ${locale}    fr-FR
+    Set Suite Variable    ${syex_env}    TEST
+    Set Suite Variable    ${gds}    amadeus
+    Drop Test Data To Pega Test DropFolder    test-ab-amadeus_1pax.pega.json
+    Enter Command In Native GDS    XI    XT
+    Book Flight X Months From Now    TLSMRS    SS1Y1    ${EMPTY}    5    1
+    Book Flight X Months From Now    MRSTLS    SS1Y1    ${EMPTY}    5    5
+    Book Flight X Months From Now    FRAMUC    SS1Y1    ${EMPTY}    5    8
+    Book Flight X Months From Now    MUCFRA    SS1Y1    ${EMPTY}    5    13
+    Book Flight X Months From Now    MNLSIN    SS1Y1    ${EMPTY}    5    20
+    Book Flight X Months From Now    JFKMUC    SS1Y1    ${EMPTY}    5    25
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Domestic Trip Checkbox Is Unticked
+    Populate Pspt And Visa With Values    Passport: Normal    Philippines    EB0987654    12/20/2020    ${EMPTY}
+    Click Check Visa Requirements No ESTA
+    Verify Passport & Visa Info Panel Is Displayed
+    Verify Travel Document Details Are Correct    Passport: Normal    Philippines    EB0987654    12/20/2020    Oui
+    Verify That Countries Visited And Visa Status Is Correct    France    Obligatoire
+    Verify That Countries Visited And Visa Status Is Correct    Allemagne    Obligatoire
+    Verify That Countries Visited And Visa Status Is Correct    Etats-Unis    Obligatoire
+
+[1A][SI FR] Verify That Traveller Is Automatically Identified And Prepopulate The Information In The Info Fields
+    Set Suite Variable    ${GDS_switch}    amadeus
+    Set Suite Variable    ${locale}    fr-FR
+    Set Suite Variable    ${syex_env}    TEST
+    Set Suite Variable    ${gds}    amadeus
+    Drop Test Data To Pega Test DropFolder    test-si-amadeus_1pax.pega.json
+    Populate All Panels (Except Given Panels If Any)
+    Verify That Traveler Does Not Match Popup Is Not Displayed After Read Booking
+    Click Finish PNR
+
+[1A][CI FR] Verify That Traveller Is Automatically Identified And Prepopulate The Information In The Info Fields
+    Set Suite Variable    ${GDS_switch}    amadeus
+    Set Suite Variable    ${locale}    fr-FR
+    Set Suite Variable    ${syex_env}    TEST
+    Set Suite Variable    ${gds}    amadeus
+    Drop Test Data To Pega Test DropFolder    test-ci-amadeus_1pax.pega.json
+    Populate All Panels (Except Given Panels If Any)
+    Verify That Traveler Does Not Match Popup Is Not Displayed After Read Booking
+    Click Finish PNR
+
+[1A][AB FR] Verify That Traveller Is Automatically Identified And Prepopulate In The Info Field For Multi Pax
+    Set Suite Variable    ${GDS_switch}    amadeus
+    Set Suite Variable    ${locale}    fr-FR
+    Set Suite Variable    ${syex_env}    TEST
+    Set Suite Variable    ${gds}    amadeus
+    Drop Test Data To Pega Test DropFolder    test-ab-amadeus_2pax-1trav-1spon.pega.json
+    Enter Command In Native GDS    XI    XT
+    Book Flight X Months From Now    JFKMUC    SS1Y1    ${EMPTY}    5    25
+    Click Read Booking
+    Click Panel    Pspt and Visa
+    Verify Domestic Trip Checkbox Is Unticked
+    Populate Pspt And Visa With Values    Passport: Normal    Philippines    EB0987654    12/20/2020    ${EMPTY}
+    Click Check Visa Requirements No ESTA
+    Verify Passport & Visa Info Panel Is Displayed
+
+*** Keywords ***
+Get Information From Contact Tab In Power Express
+    [Arguments]    ${tab_name}
+    Get First Name From Contact Tab    ${tab_name}
+    Get Last Name From Contact Tab    ${tab_name}
+    Get Email Address From Contact Tab    ${tab_name}
+    Get PCC/CompanyProfile/TravellerProfile From Contact Tab    ${tab_name}
+    Get Client Account Number From Contact Tab    ${tab_name}
+    Get Trip Type From Contact Tab
+    [Return]    ${actual_firstname}    ${actual_lastname}    ${actual_email}    ${actual_pcc_company_traveller_profile}    ${actual_client_account}
+
+Verify Contact Tab Name
+    [Arguments]    ${expected_name}
+    Click Tab In Contact Details    ${tab_name}
+    Should Be Equal    ${actual_firstname}    ${expected_name}
+
+Open Power Express And Retrieve Profile From Agent Platform
+    [Arguments]    ${version}    ${syex_env}    ${username}=${EMPTY}    ${ap_parameter}=${EMPTY}    ${sysuserguid}=${EMPTY}
+    Run Keyword If    "${use_local_dev_build}" == "True"    Use Local Dev Build    ${username}
+    ...    ELSE    Launch Power Express    ${version}    ${syex_env}    ${username}    ${use_mock_env}
+    ...    ${ap_parameter}    ${sysuserguid}
+    Set Suite Variable    ${locale}
+    Run Keyword Unless    '${syex_env.lower()}' == 'master' or '${syex_env.lower()}' == 'emea' or '${syex_env.lower()}' == 'noram'    Set User Settings    ${locale}
+    Run Keyword Unless    '${syex_env.lower()}' == 'master' or '${syex_env.lower()}' == 'emea' or '${syex_env.lower()}' == 'noram'    Select Profile    ${user_profile}
+    Set Suite Variable    ${user_profile}
+    Run Keyword If    "${team}" != "${EMPTY}"    Run Keywords    Clear Team Selection
+    ...    AND    Select Team    ${team}
+    Set Suite Variable    ${current_pnr}    ${EMPTY}
+    Set Suite Variable    ${pcc}    ${EMPTY}
+    Set Suite Variable    ${uid}    ${username}
+
+Drop Test Data To Pega Test DropFolder
+    [Arguments]    ${test_data_file}
+    Sleep    5
+    Copy File    ${CURDIR}/../test_data/${test_data_file}    C:\\Program Files (x86)\\Carlson Wagonlit Travel\\Power Express ${version}\\PegaTestDropFolder
+    Wait Until Progress Info is Completed

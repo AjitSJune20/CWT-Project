@@ -1,0 +1,74 @@
+*** Settings ***
+Force Tags        sabre    noram
+Resource          ../delivery_verification.txt
+Resource          ../../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Header And Ticket Text Is Written In The PNR
+    [Tags]    us3589    de6093    us2012
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4929    Patel    Vivek
+    Set Telephone    1-1-1
+    Click New Booking
+    Book One Way Flight X Months From Now    MSPORD‡UA    6
+    Click Update PNR
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Select Missed Saving Code Value    7 - Low fare within policy threshold
+    Click Panel    Delivery
+    Select Delivery Method    E-Ticket
+    Verify That Subject Line Dropdown Is Visible
+    Set Subject Line Value    HOTEL BOOKING CONFIRMED
+    Set Header And Ticket Text Values    SAMPLE HEADER TEXT    SAMPLE TICKET TEXT
+    Untick Do Not Send Itinerary Checkbox
+    Enter GDS Command    W-TEST COMPANY‡TEST ADDRESS
+    Enter GDS Command    5/MR TESTUSER SYEX
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *RITOP**SAMPLE HEADER TEXT*
+    Verify Specific Line Is Written In The PNR    *TICKET**SAMPLE TICKET TEXT*
+    Verify Specific Line Is Written In The PNR    Z‡*CONF*SUBJECT 11*
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *QH
+    Verify Specific Line Is Written In The PNR    ON \ PL2F 0050/011    \    true
+    Verify Specific Line Is Not Written In The PNR    ON \ X36C 0062/000    \    true
+
+[SI] Verify That Header And Ticket Text Is Written In The PNR
+    [Tags]    us3589    us2012
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible
+    Verify That Correct Subject Line is Selected    HOTEL BOOKING CONFIRMED
+    Set Subject Line Value    ${EMPTY}
+    Populate Delivery Panel With Default Values
+    Set Header And Ticket Text Values    SECOND HEADER TEXT    SECOND TICKET TEXT
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Send Itinerary Workflow
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    Z‡*CONF*SUBJECT
+    Verify Specific Line Is Written In The PNR    *RITOP**SECOND HEADER TEXT*
+    Verify Specific Line Is Written In The PNR    *TICKET**SECOND TICKET TEXT*
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *QH
+    Verify Specific Line Is Written In The PNR    ON \ X36C 0062/000
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Send Itinerary Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Verify That Subject Line Dropdown Is Visible
+    Verify That Correct Subject Line is Selected    HOTEL BOOKING CONFIRMED
+    Set Subject Line Value    ${EMPTY}
+    Populate Delivery Panel With Default Values
+    Set Header And Ticket Text Values    SECOND HEADER TEXT    SECOND TICKET TEXT
+    Click Finish PNR
+
+Set Header And Ticket Text Values
+    [Arguments]    ${header_text}    ${ticket_text}
+    Set Control Text Value    [NAME:txtHeader]    ${header_text}
+    Set Control Text Value    [NAME:txtTicket]    ${ticket_text}

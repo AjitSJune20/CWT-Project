@@ -1,0 +1,354 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Library           ../../resources/libraries/RailLibrary.py
+
+*** Keywords ***
+Cancel Sabre Rail PNR
+    [Arguments]    ${current_pnr}    ${sabre_rail_pnr}
+    Select Sabre Tab    Area A
+    Enter Specific Command On Native GDS    IR    *${current_pnr}
+    Select Sabre Tab    Sabre Rail
+    Select Rail Vendor    SNCF
+    Retrieve Rail PNR    ${sabre_rail_pnr}
+    Click Rail Cancel
+    Click Rail Sync to Sabre
+    Click Rail Sync to Sabre
+    Verify Rail PNR Is Successfully Cancelled
+    Click Rail Ignore PNR
+    Select Sabre Tab    Area A
+    Send    ^!{BS}
+    Enter Specific Command On Native GDS    *R    XI    6CWTPTEST    ER
+    Retrieve PNR Details From Sabre Red    \    *I
+    Verify Specific Line Is Written In The PNR    NO ITIN
+    Enter Specific Command On Native GDS    IG
+    [Teardown]    COmment    Click Clear All
+
+Click Create New PNR
+    [Arguments]    ${create_new_pnr_option}
+    Activate Sabre Red Workspace
+    Click Sabre Uia Object    ${create_new_pnr_option}    Button
+    Sleep    2
+    Wait Until Window Does Not Exists    Progress Information    15    1    Loading Sabre Profile in progress
+
+Click Rail Book Button
+    Activate Sabre Red Workspace
+    ImageHorizonLibrary.Click Image    ${sikuli_image_path}/book_button.png
+    Sleep    5
+    Wait Until Window Does Not Exists    Progress Information    60    5    Booking in progress
+    Sleep    2
+    Wait Until Window Does Not Exists    Progress Information    30    3    Sync to Sabre in progress
+    Get Rail SNCF PNR Locator
+    Get Rail Estimated Price
+    [Teardown]    Take Screenshot
+
+Click Rail Cancel
+    Activate Sabre Red Workspace
+    ImageHorizonLibrary.Click Image    ${sikuli_image_path}/cancel_action.png
+    Sleep    2
+    ${window_station_search_result}    Win Exists    Cancel itinerary    ${EMPTY}
+    Run Keyword If    ${window_station_search_result} == 1    Control Click    Cancel itinerary    ${EMPTY}    ${btn_sr_cancel_itinerary_yes}
+    Sleep    2
+    ${error_window}    Win Exists    Error    ${EMPTY}
+    Run Keyword If    ${error_window} == 1    Execute Simultaneous Handling On Rail Cancel
+    Wait Until Window Does Not Exists    Progress Information    30    3    Cancel itinerary in progress
+    Sleep    2
+    Wait Until Window Does Not Exists    Progress Information    30    3    Sync to Sabre in progress
+    Sleep    2
+    [Teardown]    Take Screenshot
+
+Click Rail Display PNR
+    Click Sabre Uia Object    Display PNR    Button
+    Sleep    2
+    Wait Until Window Does Not Exists    Progress Information    30    3    Loading PNR in progress
+    Wait Until Window Does Not Exists    Progress Information    30    3    Loading PNR
+    [Teardown]    Take Screenshot
+
+Click Rail Ignore PNR
+    Activate Sabre Red Workspace
+    ImageHorizonLibrary.Click Image    ${sikuli_image_path}/ignore_pnr_button.png
+    Sleep    2
+    ${window_station_search_result}    Win Exists    Ignore PNR    ${EMPTY}
+    Run Keyword If    ${window_station_search_result} == 1    Control Click    Ignore PNR    ${EMPTY}    ${btn_sr_ignore_pnr_yes}
+    [Teardown]    Take Screenshot
+
+Click Rail Next Button
+    [Arguments]    ${workflow}=${EMPTY}
+    Comment    Select Rail Workflow    ${workflow}
+    ImageHorizonLibrary.Click Image    ${sikuli_image_path}/next_button.png
+    Sleep    2
+    [Teardown]    Take Screenshot
+
+Click Rail Search Button
+    Activate Sabre Red Workspace
+    ImageHorizonLibrary.Click Image    ${sikuli_image_path}/search_button.png
+    Wait Until Window Does Not Exists    Progress Information    30    3    Searching in progress
+    [Teardown]    Take Screenshot
+
+Click Rail Search PNR
+    Click Sabre Uia Object    Search    Button
+    Sleep    2
+    Wait Until Window Does Not Exists    Progress Information    30    3    Loading PNR
+
+Click Rail Select Button
+    Activate Sabre Red Workspace
+    ImageHorizonLibrary.Click Image    ${sikuli_image_path}/select_button.png
+    Sleep    2
+    [Teardown]    Take Screenshot
+
+Click Rail Sync to Sabre
+    Activate Sabre Red Workspace
+    Sleep    2
+    ImageHorizonLibrary.Click Image    ${sikuli_image_path}/sync_to_sabre_button.png
+    ${sync_to_sabre_message_box}    Win Exists    Sync to Sabre    ${EMPTY}
+    Run Keyword If    ${sync_to_sabre_message_box} == 1    Control Click    Sync to Sabre    ${EMPTY}    ${btn_sync_to_sabre_yes}
+    Sleep    5
+    Wait Until Window Does Not Exists    Progress Information    30    3    Sync to Sabre in progress
+    Mouse Move    540    15
+    [Teardown]    Take Screenshot
+
+Create Shell PNR For Sabre Rail
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Create Shell
+    ${date_today} =    ExtendedCustomSyExLibrary.Get Current Date
+    Run Keyword And Continue On Failure    Append To File    ${public_documents_path}\\pnr_created.txt    ${\n}${current_pnr} - ${GDS_switch} - ${date_today} - Shell For Rail
+    Set Suite Variable    ${sabre_rail_pnr}    ${EMPTY}
+    Enter Specific Command On Native GDS    IG    AAAL9H7    *${current_pnr}
+
+Get Rail Estimated Price
+    Activate Sabre Red Workspace
+    ${new_title_SabreRed} =    Decode Bytes To String    ${title_SabreRed}    UTF-8
+    ${get_rail_pnr_text}    Win Get Text    ${new_title_SabreRed}    ${EMPTY}
+    @{splitted_lines}    Split To Lines    ${get_rail_pnr_text}
+    Log List    ${splitted_lines}
+    ${estimated_index}    Collections.Get Index From List    ${splitted_lines}    Estimated total price:
+    ${price_index_start}    Evaluate    ${estimated_index} + 1
+    ${price_index_end}    Evaluate    ${estimated_index} + 2
+    ${estimated_price}    Collections.Get Slice From List    ${splitted_lines}    ${price_index_start}    ${price_index_end}
+    ${estimated_price}    Evaluate    u''.join(${estimated_price})
+    Set Suite Variable    ${estimated_price}
+    Log    ${estimated_price}
+    [Teardown]
+
+Get Rail Expand Bar State
+    Activate Sabre Red Workspace
+    &{expand_bar_state}    Create Dictionary
+    Mouse Wheel    UP    20
+    ${is_connection_options_collapsed} =    Does Exist    ${sikuli_image_path}/connection_options_collapsed.png
+    ${is_travelers_collapsed} =    Does Exist    ${sikuli_image_path}/travelers_collapsed.png
+    Mouse Wheel    DOWN    20
+    ${is_fares_criteria_collapsed} =    Does Exist    ${sikuli_image_path}/fares_criteria_collapsed.png
+    Mouse Wheel    DOWN    20
+    ${is_fares_criteria_for_tgv_eurostar_collapsed} =    Does Exist    ${sikuli_image_path}/fares_criteria_for_tgv_eurostar_collapsed.png
+    Run Keyword If    ${is_connection_options_collapsed} == True    Collections.Set To Dictionary    ${expand_bar_state}    Connection options    Collapsed
+    ...    ELSE    Collections.Set To Dictionary    ${expand_bar_state}    Connection options    Expanded
+    Run Keyword If    ${is_travelers_collapsed} == True    Collections.Set To Dictionary    ${expand_bar_state}    Travelers    Collapsed
+    ...    ELSE    Collections.Set To Dictionary    ${expand_bar_state}    Travelers    Expanded
+    Run Keyword If    ${is_fares_criteria_collapsed} == True    Collections.Set To Dictionary    ${expand_bar_state}    Fares criteria    Collapsed
+    ...    ELSE    Collections.Set To Dictionary    ${expand_bar_state}    Fares criteria    Expanded
+    Run Keyword If    ${is_fares_criteria_for_tgv_eurostar_collapsed} == True    Collections.Set To Dictionary    ${expand_bar_state}    Fares criteria for TVG/Eurostar    Collapsed
+    ...    ELSE    Collections.Set To Dictionary    ${expand_bar_state}    Fares criteria for TVG/Eurostar    Expanded
+    Log Dictionary    ${expand_bar_state}
+    Set Test Variable    ${expand_bar_state}
+    [Return]    ${expand_bar_state}
+
+Get Rail SNCF PNR Locator
+    Activate Sabre Red Workspace
+    ${sabre_rail_pnr}    Get Sncf Pnr Locator
+    ${date_today} =    ExtendedCustomSyExLibrary.Get Current Date
+    Run Keyword And Continue On Failure    Append To File    ${public_documents_path}\\pnr_created.txt    ${\n}${sabre_rail_pnr} - Sabre SNCF PNR - ${date_today}
+    Set Suite Variable    ${sabre_rail_pnr}
+    [Teardown]    Take Screenshot
+
+Populate Rail Discount
+    [Arguments]    ${fce_code}    ${promo_code}
+    Set Value In Rail Edit Field    FCE Code    ${fce_code}
+    Set Value In Rail Edit Field    Promo Code [CUI]    ${promo_code}
+    [Teardown]    Take Screenshot
+
+Populate Rail More Criteria
+    [Arguments]    ${fare_restriction}    ${passenger_type}=${EMPTY}    ${class_of_service}=${EMPTY}    ${fare_code}=${EMPTY}
+    Select Checkbox State    ${fare_restriction}    Enable
+    Run Keyword If    "${passenger_type}" != "${EMPTY}"    Set Value In Rail Edit Field    Passenger type    ${passenger_type}
+    Run Keyword If    "${class_of_service}" != "${EMPTY}"    Set Value In Rail Edit Field    Class of Service    ${class_of_service}
+    Run Keyword If    "${fare_code}" != "${EMPTY}"    Set Value In Rail Edit Field    Fare code    ${fare_code}
+    [Teardown]    Take Screenshot
+
+Populate Rail Negotiated Fares
+    [Arguments]    ${class_of_service}=${EMPTY}    ${passenger_code}=${EMPTY}
+    Run Keyword If    "${class_of_service}" != "${EMPTY}"    Set Value In Rail Edit Field    Class of Service    ${class_of_service}    2
+    Run Keyword If    "${passenger_code}" != "${EMPTY}"    Set Value In Rail Edit Field    Passenger code    ${passenger_code}
+    [Teardown]    Take Screenshot
+
+Populate Rail Passenger Details
+    [Arguments]    ${email}    ${date_of_birth}
+    Set Rail Email    ${email}
+    Set Rail Date Of Birth    ${date_of_birth}
+
+Retrieve Rail PNR
+    [Arguments]    ${sabre_rail_pnr}
+    Comment    Set Value In Rail Edit Field    pnrLocator    ${sabre_rail_pnr}    \    uia
+    Retrieve Sabre Rail PNR    ${sabre_rail_pnr}
+    Click Rail Search PNR
+
+Search One Way Rail Availabity X Months From Now
+    [Arguments]    ${from}    ${to}    ${departure_number_of_days}
+    Select Rail Workflow    Availability
+    Select Trip Type    One-way trip
+    Set Rail City Pairs    ${from}    ${to}
+    ${departure_date} =    Generate Date X Months From Now    0    ${departure_number_of_days}    %d-%m-%Y
+    Set Rail Departure Date    ${departure_date}
+    [Teardown]    Take Screenshot
+
+Search Round Trip Rail Availabity X Months From Now
+    [Arguments]    ${from}    ${to}    ${departure_number_of_days}    ${return_number_of_days}
+    Select Rail Workflow    Availability
+    Select Trip Type    Return trip
+    Set Rail City Pairs    ${from}    ${to}
+    ${departure_date} =    Generate Date X Months From Now    0    ${departure_number_of_days}    %d-%m-%Y
+    Set Rail Departure Date    ${departure_date}
+    ${return_date} =    Generate Date X Months From Now    0    ${return_number_of_days}    %d-%m-%Y
+    Set Rail Return Date    ${return_date}
+    [Teardown]    Take Screenshot
+
+Select Fares criteria for TVG/Eurostar
+    [Arguments]    ${expand_state}
+    [Documentation]    Value must be either: "Collapse" or "Expand"
+    Activate Sabre Red Workspace
+    ${expand_bar_state}    Get Rail Expand Bar State
+    ${fares_criteria_expandbar_state}    Collections.Get From Dictionary    ${expand_bar_state}    Fares criteria for TVG/Eurostar
+    Run Keyword If    "${fares_criteria_expandbar_state}" == "Collapsed" and "${expand_state}" == "Expand"    ImageHorizonLibrary.Click Image    ${sikuli_image_path}/fares_criteria_for_tgv_eurostar_collapsed.png
+    ...    ELSE IF    "${fares_criteria_expandbar_state}" == "Expand" and "${expand_state}" == "Collapse"    ImageHorizonLibrary.Click Image    ${sikuli_image_path}/fares_criteria_for_tgv_eurostar_expanded.png
+    Mouse Wheel    DOWN    50
+
+Select Rail Class Criteria
+    [Arguments]    ${class_criteria_status}    ${exclusive_only}=False    @{class_criteria}
+    Activate Sabre Red Workspace
+    @{class_criteria_list} =    Create List    First class    Second class
+    Run Keyword If    "${exclusive_only}" == "True"    Collections.Remove Values From List    ${class_criteria_list}    ${class_criteria}
+    Mouse Wheel    DOWN    20
+    : FOR    ${each_class_criteria}    IN    @{class_criteria_list}
+    \    Exit For Loop If    "${exclusive_only}" == "False"
+    \    Run Keyword If    "${class_criteria_status}" == "Enable" and "${exclusive_only}" == "True"    Select Checkbox State    ${each_class_criteria}    Disable
+    \    ...    ELSE IF    "${class_criteria_status}" == "Disable" and "${exclusive_only}" == "True"    Select Checkbox State    ${each_class_criteria}    Enable
+    : FOR    ${each_class_criteria}    IN    @{class_criteria}
+    \    Select Checkbox State    ${each_class_criteria}    ${class_criteria_status}
+    [Teardown]    Take Screenshot
+
+Select Rail Delivery Mode
+    [Arguments]    ${delivery_mode}
+    Set Value In Rail Edit Field    Delivery mode    ${delivery_mode}    4
+    [Teardown]    Take Screenshot
+
+Select Rail Fares Profile
+    [Arguments]    ${fares_profile_state}    ${exclusive_only}=False    @{fares_profile}
+    Activate Sabre Red Workspace
+    @{fares_profile_list}    Create List    Business    Leisure    Business subscription    Discount cards    Leisure pass
+    ...    Handicapped and guide    Pet    Rit    Social    Other
+    Run Keyword If    "${exclusive_only}" == "True"    Collections.Remove Values From List    ${fares_profile_list}    ${fares_profile}
+    Mouse Wheel    DOWN    50
+    : FOR    ${each_fares_profile}    IN    @{fares_profile_list}
+    \    Exit For Loop If    "${exclusive_only}" == "False"
+    \    Run Keyword If    "${fares_profile_state}" == "Enable" and "${exclusive_only}" == "True"    Select Checkbox State    ${each_fares_profile}    Disable
+    \    ...    ELSE IF    "${fares_profile_state}" == "Disable" and "${exclusive_only}" == "True"    Select Checkbox State    ${each_fares_profile}    Enable
+    : FOR    ${each_fares_profile}    IN    @{fares_profile}
+    \    Select Checkbox State    ${each_fares_profile}    ${fares_profile_state}
+    [Teardown]    Take Screenshot
+
+Select Rail Outbound Offers
+    [Arguments]    ${outbound_offer}
+    Select Rail Workflow    Outbound Offers
+    Sleep    2
+    Send    ${outbound_offer}
+    Click Rail Select Button
+    Sleep    2
+    Wait Until Window Does Not Exists    Progress Information    30    3    Searching in progress
+    [Teardown]    Take Screenshot
+
+Select Rail Return Offers
+    [Arguments]    ${return_offer}
+    Select Rail Workflow    Return Offers
+    Send    ${return_offer}
+    Click Rail Select Button
+    [Teardown]
+
+Select Rail Vendor
+    [Arguments]    ${rail_vendor}
+    Activate Sabre Red Workspace
+    Click Sabre Uia Object    ${rail_vendor}    Button
+
+Select Rail Workflow
+    [Arguments]    ${workflow}
+    Activate Sabre Red Workspace
+    Click Sabre Uia Object    ${workflow}    Text
+
+Select Sabre Tab
+    [Arguments]    ${sabre_tab}
+    Activate Sabre Red Workspace
+    Click Sabre Uia Object    ${sabre_tab}    TabItem
+    Sleep    2
+    ${session_changed_window}    Win Exists    Session changed    ${EMPTY}
+    Run Keyword If    ${session_changed_window} == 1    Control Click    Session changed    ${EMPTY}    ${btn_sync_to_sabre_yes}
+
+Select Trip Type
+    [Arguments]    ${trip_type}
+    [Documentation]    Trip type should be either:
+    ...
+    ...    One-way trip
+    ...
+    ...    Return trip
+    Select Rail Radio Button    ${trip_type}
+    Send    {TAB}
+
+Set Rail City Pairs
+    [Arguments]    ${from}    ${to}
+    Set Value In Rail Edit Field    Search for trains:    ${from}    1
+    Set Value In Rail Edit Field    Search for trains:    ${to}    2
+    [Teardown]
+
+Set Rail Date Of Birth
+    [Arguments]    ${date_of_birth}
+    Set Value In Rail Edit Field    \    ${date_of_birth}    3
+    [Teardown]    Take Screenshot
+
+Set Rail Departure Date
+    [Arguments]    ${departure_date}=${EMPTY}
+    [Documentation]    If date is not provided, will use generated date that is in 2 months and 1 day
+    ${departure_date} =    Run Keyword If    "${departure_date}" == "${EMPTY}"    Generate Date X Months From Now    2    1    %d-%m-%Y
+    ...    ELSE    Set Variable    ${departure_date}
+    Set Value In Rail Edit Field    Return trip    ${departure_date}
+
+Set Rail Email
+    [Arguments]    ${email}
+    Set Value In Rail Edit Field    \    ${email}    4
+    [Teardown]    Take Screenshot
+
+Set Rail Return Date
+    [Arguments]    ${departure_date}=${EMPTY}
+    [Documentation]    If date is not provided, will use generated date that is in 2 months and 1 day
+    ${departure_date} =    Run Keyword If    "${departure_date}" == "${EMPTY}"    Generate Date X Months From Now    2    1    %d-%m-%Y
+    ...    ELSE    Set Variable    ${departure_date}
+    Set Value In Rail Edit Field    Return trip    ${departure_date}    2
+
+Verify Rail PNR Is Successfully Cancelled
+    ${does_exists}    Does Rail Text Exists    NO ITINERARY
+    Should Be True    ${does_exists} == True
+    [Teardown]    Take Screenshot
+
+Execute Simultaneous Handling On Rail Cancel
+    ${get_rail_pnr_text}    Win Get Text    Error    ${EMPTY}
+    ${simultaneous_changes}    Run Keyword And Return Status    Should Contain    ${get_rail_pnr_text}    SIMULTANEOUS CHANGES
+    Take Screenshot
+    Win Activate    Error    ${EMPTY}
+    Sleep    1
+    Send    {ENTER}
+    Sleep    3
+    Click Rail Ignore PNR
+    Select Sabre Tab    Area A
+    Enter Specific Command On Native GDS    IR    *${current_pnr}
+    Select Sabre Tab    Sabre Rail
+    Select Rail Vendor    SNCF
+    Retrieve Rail PNR    ${sabre_rail_pnr}
+    Click Rail Cancel

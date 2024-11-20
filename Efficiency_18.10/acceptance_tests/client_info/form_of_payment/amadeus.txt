@@ -1,0 +1,388 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../client_info_verification.txt
+
+*** Test Cases ***
+[NB] Verify That PNR Will Not Be Updated With Selected FOP Upon Dropdown Change With Success/Failure Status Message
+    [Tags]    us4072    de    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus DE 17 - Auto ¦ US4072    AutoSeventeenTwo    EmeaTvlrOne
+    Click New Booking
+    Book Flight X Months From Now    LHRFRA    SS1Y1    FXB    8
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Read Booking
+    Click Panel    Client Info
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTF
+    Verify Specific Line Is Not Written In The PNR    FP
+    Click Clear All With Options    Clear All
+
+[AB] Verify That PNR Will Not Be Updated With Selected FOP Upon Dropdown Change With Success/Failure Status Message
+    [Tags]    us4072    de    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Update FOP button Is Not Displayed
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Not Written In The PNR    FP
+    Manually Set Value In Form Of Payment    AX    373002888516585    1221
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    CCAX373002888516585/1221
+    Select Form Of Payment    Cash
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    CASH
+    Select Form Of Payment    PORTRAIT/AX***********0002/D1216-US4072 PORTRAIT
+    Verify Failed Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    CASH
+    Select Form Of Payment    BTA/VI************1112/D1215
+    Verify Failed Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    CASH
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Not Written In The PNR    CASH
+    Untick Not Known At Time Of Booking For Form Of Payment
+    Select Form Of Payment    NonRef
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    NONREF
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Verify No Form Of Payment Update Message Was Displayed
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    NONREF
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For Amadeus FOP Update
+    Re-Execute Amend Booking Workflow For Amadeus FOP Update If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTF
+    Verify Specific Line Is Written In The PNR    CASH
+    Tick Not Known At Time Of Booking For Form Of Payment
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That CWT Care Of Card Is Displayed In Client Travel Policy Box
+    [Tags]    us6332    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    ${EMPTY}
+    Click New Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Invoice
+    Verify Form Of Payment Is Shown In FOP Droplist    CARE OF CARD/AX**********1999/D0522
+    Verify Form Of Payment Is Shown In Alternate FOP Tab    CARE OF CARD/AX**********1999/D0522
+    Book Flight X Months From Now    CDGMRS/AAF    SS1S1    FXP/RRPFM    6
+    Click Read Booking
+    Manually Set Value In Form Of Payment    AX    373002888516585    1221
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+
+[AB] Verify That CWT Care Of Card Is Displayed In Client Travel Policy Box
+    [Tags]    us6332    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    GDS/AX***********6585/D1221
+    Verify Form Of Payment Is Shown In FOP Droplist    CARE OF CARD/AX**********1999/D0522
+    Verify Form Of Payment Is Shown In Alternate FOP Tab    CARE OF CARD/AX**********1999/D0522
+    Verify Form Of Payment Is Shown In Alternate FOP Tab    GDS/AX***********6585/D1221
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That CVC Details Will Retain In The FOP On Finish PNR
+    [Tags]    us5057    uk    18.6
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - FOP- Indi Corp Card with Mask    Smith    Nelson
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT-A/VI************0002/D0325-INDIVIDUAL CORPORATE CARD
+    Click Panel    Cust Refs
+    Set CDR Value    TRVLCOST    UUUUU
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    \    RTF
+    Remove PNR Remark    CCVIXXXXXXXXXXXX0002/0325
+    Enter GDS Command    FPCCVI4000000000000002/0325/NCWT
+    Book Flight X Months From Now    LHRFRA/ALH    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Client Info
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTF
+    Verify Specific Line Is Written In The PNR    FP CCVIXXXXXXXXXXXX0002/0325/NCWT
+    Click Clear All
+    Retrieve PNR    ${current_PNR}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL
+    Enter GDS Command    RT
+    Enter GDS Command    XE2
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTF
+    Verify Specific Line Is Written In The PNR    FP CCVIXXXXXXXXXXXX0002/0325/NCWT
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That FP Invoice Will Be Written In The PNR
+    [Tags]    us6573    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Jump To Different PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne
+    Click New Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Invoice
+    Click Create Shell
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP EC
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Invoice
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTF
+    Verify Specific Line Is Written In The PNR    FP EC
+
+[AB] Verify That PNR Invoice Will Be Defaulted As FOP And FP Line Will Be Updated Using FOP Combobox On Change
+    [Tags]    us6573    fr
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Invoice
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP EC
+    Select Form Of Payment    Cash
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP CASH
+    Select Form Of Payment    Invoice
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP EC
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Invoice
+    Select Form Of Payment    Invoice
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Invoice FOP
+    Execute Simultaneous Change Handling    Amend Invoice FOP
+    Re-Execute Amend Booking Workflow For Amadeus FOP Update If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Amadeus    \    RTF
+    Verify Specific Line Is Written In The PNR    FP EC
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify that when there is an existing FOP for Exchange PNR, FOP is retain after Finish PNR
+    [Tags]    US6679    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    ${EMPTY}
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Enter Command In Native GDS    RTF    FP PAX O/CCVI+/CASH/EUR10.00/S2    RFCWTPTEST    ER
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP PAX O/CCVI+/CASH/EUR10.00/S2
+    Comment    Enter Command In Native GDS    IG
+    Comment    Click Clear All
+    Comment    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Cash
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP PAX O/CCVI+/CASH/EUR10.00/S2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP PAX O/CCVI+/CASH/EUR10.00/S2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify that when there is an existing FOP for Exchange PNR, FOP is updated in Finish PNR when new FOP is selected
+    [Tags]    US6679    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Emulate PCC    PARWL210G
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne
+    Click New Booking
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Invoice
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Enter Command In Native GDS    RTF    FP PAX O/INV/S2    RFCWTPTEST    ER    ER
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP PAX O/INV/S2
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Invoice
+    Select Form Of Payment    Cash
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP PAX CASH/S2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Changes to Verify An Existing FOP for Exchange PNR
+    Execute Simultaneous Change Handling    Simultaneous Changes to Verify An Existing FOP for Exchange PNR
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP CASH
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Cash
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Know at FOP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Changes to Verify default FOP
+    Execute Simultaneous Change Handling    Simultaneous Changes to Verify default FOP
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Enter Command In Native GDS    RTF    FP PAX O/CCVI+/CASH/S2    RFCWTPTEST    ER    ER
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP PAX O/CCVI+/CASH/S2
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Cash
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Changes to Verify Changed Form of Payment
+    Execute Simultaneous Change Handling    Simultaneous Changes to Verify Changed Form of Payment
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP PAX O/CCVI+/CASH/S2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow For Amadeus FOP Update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify Update FOP button Is Not Displayed
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Not Written In The PNR    FP
+    Manually Set Value In Form Of Payment    AX    373002888516585    1221
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    CCAX373002888516585/1221
+    Select Form Of Payment    Cash
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    CASH
+    Select Form Of Payment    PORTRAIT/AX***********0002/D1216-US4072 PORTRAIT
+    Verify Failed Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    CASH
+    Select Form Of Payment    BTA/VI************1112/D1215
+    Verify Failed Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    CASH
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Not Written In The PNR    CASH
+    Untick Not Known At Time Of Booking For Form Of Payment
+    Select Form Of Payment    NonRef
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    NONREF
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Verify No Form Of Payment Update Message Was Displayed
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    NONREF
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For Amadeus FOP Update
+
+Enter GDS Command In Amadeus Classic
+    [Arguments]    ${command}
+    Win Activate    SELLING PLATFORM    ${EMPTY}
+    Handle Amadeus Popup
+    Control Focus    SELLING PLATFORM    ${EMPTY}    [CLASS:RichEdit20A; INSTANCE:1]
+    SEND    ${command}{ENTER}
+
+Amend Invoice FOP
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Invoice
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP EC
+    Select Form Of Payment    Cash
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP CASH
+    Select Form Of Payment    INVOICE
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP EC
+    Select Form Of Payment    NONREF
+    Verify Successful Form Of Payment Update Message
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP NONREF
+    Click Read Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    NONREF
+    Select Form Of Payment    Invoice
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Invoice FOP
+
+Simultaneous Changes to Verify An Existing FOP for Exchange PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Enter Command In Native GDS    RTF    FP PAX O/INV/S2    RFCWTPTEST    ER    ER
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP PAX O/INV/S2
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Invoice
+    Select Form Of Payment    Cash
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP PAX CASH/S2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Changes to Verify An Existing FOP for Exchange PNR
+
+Tick Not Know at FOP
+    Click Control Button    [NAME:chkNotKnown]
+
+Simultaneous Changes to Verify default FOP
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Cash
+    Select Form Of Payment    ${EMPTY}
+    Tick Not Know at FOP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Changes to Verify default FOP
+
+Simultaneous Changes to Verify Changed Form of Payment
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Enter Command In Native GDS    RTF    FP PAX O/CCVI+/CASH/S2    RFCWTPTEST    ER    ER
+    Retrieve PNR Details From Amadeus    \    RTF    False
+    Verify Specific Line Is Written In The PNR    FP PAX O/CCVI+/CASH/S2
+    Click Amend Booking
+    Click Panel    Client Info
+    Verify Default Form Of Payment    Cash
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Simultaneous Changes to Verify Changed Form of Payment

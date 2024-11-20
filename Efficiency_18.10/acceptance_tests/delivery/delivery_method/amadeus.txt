@@ -1,0 +1,273 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../delivery_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Queue Command Is Performed When There's No Onhold Remark
+    [Tags]    us5118    de
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    de-DE    AutomationDE    DE AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With Round Trip Air Flight Using Default Values    Amadeus DE 15 - Auto ¦ US2447    AutoSeventeenFive    PerfEight    LHRCDG/AAF    SS1Y1    ${EMPTY}
+    ...    CDGLHR/AAF    SS1Y1    FXB    ${EMPTY}    Air Fare    Cust Refs
+    ...    Delivery    Client Info
+    Click Panel    Client Info
+    Untick Not Known At Time Of Booking For Form Of Payment
+    Select Form Of Payment    Cash
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Select Delivery Method    AUTOETIX-cmd
+    Verify On Hold Booking Reasons Are All Unchecked
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RTR    False
+    Verify Specific Line Is Written In The PNR    RM CWTTKT
+    Click Clear All With Options    Clear All
+    [Teardown]
+
+[AB] Verify That Queue Command Is NOT Performed When There's On Hold Awaiting Approval
+    [Tags]    us5118    de
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Client Info    Delivery
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Select Delivery Method    AUTOETIX-cmd
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Queue Command Is NOT Performed When There's On Hold Awaiting Approval
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RTR    False
+    Verify Specific Line Is NOT Written In The PNR    RM CWTTKT
+    Click Clear All With Options    Clear All
+    [Teardown]
+
+[QA] Verify That Queue Command Is Performed
+    [Tags]    us5118    de
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Click Quick Amend
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Select Delivery Method    AUTOETIX-cmd
+    Click Finish PNR    Handle Parallel Process
+    Execute Simultaneous Change Handling    Quick Amend For Verify That Queue Command Is Performed
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RTR    False
+    Verify Specific Line Is Written In The PNR    RM CWTTKT
+    Click Clear All With Options    Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB FR] Verify That Awaiting Approval Is Selected As Default On Hold Reason When Selecting Amadeus TKXL Or Pending Or Pending Without QC
+    [Tags]    US5371    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus FR 15 - Auto ¦ UAT CLASSIC    AutoFifteenClassic    EmeaUatClassicOne
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP    6
+    Click Read Booking
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Verify Awaiting Approval Checkbox Is Ticked And Enabled
+    Click Panel    Client Info
+    Click Panel    Delivery
+    Select Delivery Method    Pending queue
+    Verify Awaiting Approval Checkbox Is Ticked And Enabled
+    Untick On Hold Reasons    En attente de validation
+    Select Delivery Method    Pending without QC
+    Verify Awaiting Approval Checkbox Is Ticked And Enabled
+    Select Delivery Method    Amadeus edited TKOK
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Amadeus edited TKXL
+    Verify Awaiting Approval Checkbox Is Unticked And Enabled
+    Click Finish PNR
+
+[QA FR] Verify That Amadeus TKXL, Pending And Pending without QC Are Not Available From Delivery Method
+    [Tags]    US5371    fr
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Read Booking
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    Amadeus edited TKOK
+    Verify Delivery Method Is Not Present    Amadeus edited TKXL    Pending queue    Pending without QC
+    Click Finish PNR    Quick Amend For Verify That Amadeus TKXL, Pending And Pending without QC Are Not Available From Delivery Method
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Awaiting Approval Is Not Selected As Default On Hold Reason When Selecting Amadeus TKXL Or Pending Or Pending Without QC
+    [Tags]    US5371    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus UK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFour    MSPYYZ/AUA    ${EMPTY}    Air Fare
+    ...    APIS/SFPD    Delivery
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Comment    Click Panel    APIS/SFPD
+    Comment    Populate APIS/SFPD Panel With Default Values
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus TKXL
+    Verify Awaiting Approval Checkbox Is Unticked And Enabled
+    Select Delivery Method    Pending
+    Verify Awaiting Approval Checkbox Is Unticked And Enabled
+    Select Delivery Method    Pending without QC
+    Verify Awaiting Approval Checkbox Is Unticked And Enabled
+    Populate Delivery Panel With Specific Delivery Method    Pending
+    Verify Awaiting Approval Checkbox Is Unticked And Enabled
+    Click Finish PNR
+
+[QA UK] Verify That Existing Delivery Panel Functionility Is Working When SO Default Onhold When Booking Pending Is No
+    [Tags]    US5371    uk
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    TRVLCOST    TEST
+    Click Panel    Delivery
+    Verify Delivery Method Is Not Present    Amadeus TKXL    Pending    Pending without QC
+    Populate Delivery Panel With Specific Delivery Method    Amadeus TKOK
+    Click Finish PNR    Quick Amend For Verify That Amadeus TKXL, Pending And Pending without QC Are Not Available From Delivery Method
+    Execute Simultaneous Change Handling    Quick Amend For Verify That Amadeus TKXL, Pending And Pending without QC Are Not Available From Delivery Method
+    [Teardown]
+
+[AB UK] Verify That TK Line And Queue Minder Is Correct When Amadeus TKOK With QC Is Selected
+    [Tags]    us4078    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus TKOK with QC
+    Select On Hold Booking Reasons    Awaiting Approval
+    Click Finish PNR    Amend Booking For Verify That TK line and Queue Minder Is Correct When Amadeus TKOK With QC Is Selected
+    Execute Simultaneous Change Handling    Amend Booking For Verify That TK line and Queue Minder Is Correct When Amadeus TKOK With QC Is Selected
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    TK OK${current_date}/LONWL2220
+    Verify OP Remark Is Written    FRAWL2378    70    4    AQUA QUEUING
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB-CB UK] Verify That Choose Cancel Queue Is Displayed And OP And RMX Remarks Are Written In The PNR
+    [Tags]    us6656    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    Dodla    Kalyan    LHRCDG/AAF    ${EMPTY}
+    Click Panel    Policy Check
+    Populate Policy Check Panel With Default Values
+    Click Finish PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Delivery
+    Verify That Choose/Cancel Queue Is Displayed
+    Select Options On Choose Cancel Queue    Refund Air    Refund Other    Void
+    Click Panel    Recap
+    Set General Remark Qualifier Text    Cancel Queue Remark
+    Click Finish PNR    Cancel Booking For Choose Cancel Queue
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify RMX Remarks For Cancel Queues Are Written    REFUND AIR    REFUND OTHER    VOID
+    Verify General Qualifier Remark Is Written    CANCEL QUEUE REMARK
+    Verify OP Remarks For Cancel Queues Are Written    REFUND AIR    REFUND OTHER    VOID
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That Queue Command Is NOT Performed When There's On Hold Awaiting Approval
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Client Info    Delivery
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Select Delivery Method    AUTOETIX-cmd
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Click Finish PNR
+
+Quick Amend For Verify That Queue Command Is Performed
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Click Quick Amend
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Select Delivery Method    AUTOETIX-cmd
+    Click Finish PNR
+
+Verify Awaiting Approval Checkbox Is Ticked And Enabled
+    ${awaiting_approval_checkbox}    Set Variable If    '${locale}' == 'fr-FR'    En attente de validation    '${locale}' == 'de-DE'    Fehlende Genehmigung    Awaiting Approval
+    ${checkbox_state}    Get On Hold Reason Checkbox Status    ${awaiting_approval_checkbox}
+    Should Be True    ${checkbox_state} == True
+    Verify Control Object Is Enabled    [NAME:UchkHoldReason3]
+    [Teardown]    Take Screenshot
+
+Verify Awaiting Approval Checkbox Is Unticked And Enabled
+    ${awaiting_approval_checkbox}    Set Variable If    '${locale}' == 'fr-FR'    En attente de validation    '${locale}' == 'de-DE'    Fehlende Genehmigung    Awaiting Approval
+    ${checkbox_state}    Get On Hold Reason Checkbox Status    ${awaiting_approval_checkbox}
+    Should Be True    ${checkbox_state} == False
+    Verify Control Object Is Enabled    [NAME:UchkHoldReason3]
+
+Quick Amend For Verify That Amadeus TKXL, Pending And Pending without QC Are Not Available From Delivery Method
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Click Read Booking
+    Click Panel    Cust Refs
+    Set CDR Value    TRVLCOST    TEST
+    Click Panel    Delivery
+    Verify Delivery Method Is Not Present    Amadeus TKXL    Pending    Pending without QC
+    Populate Delivery Panel With Specific Delivery Method    Amadeus TKOK
+
+Amend Booking For Verify That TK line and Queue Minder Is Correct When Amadeus TKOK With QC Is Selected
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus TKOK with QC
+    Select On Hold Booking Reasons    Awaiting Approval
+    Click Finish PNR
+
+Verify That Choose/Cancel Queue Is Displayed
+    Verify Control Object Is Visible    [NAME:grpCancelQueue]
+    Verify Control Object Is Visible    [NAME:chkCancelQueueList]
+
+Verify RMX Remarks For Cancel Queues Are Written
+    [Arguments]    @{cancel_queue}
+    : FOR    ${cancel_queue_item}    IN    @{cancel_queue}
+    \    Verify Specific Line Is Written In The PNR    ${current_date} ${cancel_queue_item}
+
+Verify OP Remarks For Cancel Queues Are Written
+    [Arguments]    @{cancel_queue}
+    : FOR    ${cancel_queue_item}    IN    @{cancel_queue}
+    \    Verify OP Remark Is Written    LONWL2220    62    15    ${cancel_queue_item}
+
+Select Options On Choose Cancel Queue
+    [Arguments]    @{cancel_queue}
+    : FOR    ${cancel_item}    IN    @{cancel_queue}
+    \    Tick Checkbox    ${cancel_item}
+    [Teardown]    Take Screenshot
+
+Verify General Qualifier Remark Is Written
+    [Arguments]    ${qualifier_value}
+    Verify Specific Line Is Written In The PNR    ${qualifier_value}
+
+Cancel Booking For Choose Cancel Queue
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Delivery
+    Verify That Choose/Cancel Queue Is Displayed
+    Select Options On Choose Cancel Queue    Refund Air    Refund Other    Void
+    Click Panel    Recap
+    Set General Remark Qualifier Text    Cancel Queue Remark
+    Click Finish PNR

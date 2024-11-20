@@ -1,0 +1,79 @@
+*** Settings ***
+Force Tags        sabre    noram
+Resource          ../policy_check_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Hotel Policy Is Displayed For Incomplete Nights (Multiple Hotel Range)
+    [Tags]    us781
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US781    AutoSixteenTwo    NoramTrvlrSixteen
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    6
+    Enter GDS Command    1${departure_date}FLLORD¥AA
+    Enter GDS Command    01Y1
+    Enter GDS Command    0HHTMXGK1ORDIN${departure_date}-OUT${departure_date1}/MX MOTEL 6 MINNEAPOLISBROOKLYN C/CORP/79.00/SP-56822/G/SI-¤2741 FREEWAY BLVD‡BROOKLYN CENTER MN 55430‡FONE 1-763-560-9789‡FAX 1-763-560-9796¤/CF-ABC123
+    Enter GDS Command    1${departure_date2}ORDMSP¥AA
+    Enter GDS Command    01Y1
+    Enter GDS Command    0HHTMXGK1MSPIN${departure_date2}-OUT${departure_date3}/MX MOTEL 6 MINNEAPOLISBROOKLYN C/CORP/79.00/SP-56822/G/SI-¤2741 FREEWAY BLVD‡BROOKLYN CENTER MN 55430‡FONE 1-763-560-9789‡FAX 1-763-560-9796¤/CF-ABC123
+    Enter GDS Command    1${departure_date3}MSPDEN¥AA
+    Enter GDS Command    01Y1
+    Enter GDS Command    WPRQ
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Name Is Displayed    No Hotel Booked
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    U*21-${departure_date}ORDHCH05
+    Verify Specific Line Is Not Written In The PNR    U*22
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That 'No Hotel Booked' Policy Is Not Displayed If Check-In Date = OB Dep Date And Check-Out Date = IB Dep Date
+    [Tags]    us781
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US781    AutoSixteenTwo    NoramTrvlrSixteen
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    6
+    Enter GDS Command    1${departure_date}FLLORD¥UA
+    Enter GDS Command    01Y1
+    Enter GDS Command    0HHTMXGK1FLLIN${departure_date}-OUT${departure_date1}/MX MOTEL 6 MINNEAPOLISBROOKLYN C/CORP/79.00/SP-56822/G/SI-¤2741 FREEWAY BLVD‡BROOKLYN CENTER MN 55430‡FONE 1-763-560-9789‡FAX 1-763-560-9796¤/CF-ABC123
+    Enter GDS Command    1${departure_date1}ORDFLL¥UA
+    Enter GDS Command    01Y1    WPRQ
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Name Is Not Displayed    No Hotel Booked
+    Populate Policy Check Panel With Default Values
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    U*21
+    Verify Specific Line Is Not Written In The PNR    U*22
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That 'No Hotel Booked' Policy Is Not Displayed If The Time Between 2 Flights (Next Day) Is Less Than 4 Hours
+    [Tags]    us781    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US781    AutoSixteenTwo    NoramTrvlrSixteen
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    6
+    Enter GDS Command    1${departure_date}ATLLAX2300¥UA
+    Enter GDS Command    01Y2
+    Enter GDS Command    1R${next_day_departure_date}0100¥UA
+    Enter GDS Command    01Y1    WPRQ
+    Click Read Booking
+    Click Panel    Policy Check
+    Verify Policy Name Is Not Displayed    No Hotel Booked
+    Populate All Panels (Except Given Panels If Any)
+    Populate Policy Check Panel With Default Values
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    U*21
+    Verify Specific Line Is Not Written In The PNR    U*22
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

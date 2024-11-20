@@ -1,0 +1,53 @@
+*** Settings ***
+Force Tags        apollo
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Character Are Replaced When Writing A Remark
+    [Tags]    not_ready    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    apollo
+    Set Client And Traveler    Apollo 15 - Auto ¦ US2447    AUTOFIFTEENTWELVE    OPTIMIZETRVLRFOUR
+    Click New Booking
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD    01Y1    T:$B    6
+    Enter GDS Command    T-S96-CLIQUSER-GENERICUSER¤CITI.COM
+    Click Read Booking
+    Wait Until Progress Info is Completed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    \    *PT    1
+    Verify Specific Line Is Written In The PNR    U50-AUTOMATION--CARLSON.COM
+    Verify Specific Line Is Written In The PNR    S96-CLIQUSER-GENERICUSER¤CITI.COM
+    [Teardown]
+
+[AB] Verify That Character Are Replaced When Writing A Remark
+    [Tags]    valid_fail    de6713    not_ready    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Travelport    \    *PT    1
+    Verify Specific Line Is Written In The PNR    S96-CLIQUSER-GENERICUSER¤CITI.COM
+    Verify Specific Line Is Written In The PNR    U50-AUTOMATION--CARLSON.COM
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Finish PNR
+    Re-Execute Amend Character Are Replaced When Writing A Remark If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    \    *PT    1
+    Verify Specific Line Is Written In The PNR    S96-CLIQUSER-AUTOMATIONTESTING//CWT.COM
+    Verify Specific Line Is Written In The PNR    U50-AUTOMATION..CARLSON.COM
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Character Are Replaced When Writing A Remark
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Retrieve PNR Details From Travelport    \    *PT    1
+    Verify Specific Line Is Written In The PNR    S96-CLIQUSER-GENERICUSER¤CITI.COM
+    Verify Specific Line Is Written In The PNR    U50-AUTOMATION--CARLSON.COM
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

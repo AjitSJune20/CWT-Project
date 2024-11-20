@@ -1,0 +1,18 @@
+*** Settings ***
+Resource          ../complete_verification.txt
+
+*** Test Cases ***
+[1S EMEA][NB-CB] Verify That CTI Clear All Message Is Visible
+    [Tags]    US6663
+    #New Booking
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 15 - Auto ¦ US2559    AutoOneFifteenTwo    OptimizeTrvlrSeven    ORDLHR¥AA    ${EMPTY}
+    Click Finish PNR
+    Verify CTI Clear All Message Is Visible
+    #Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Verify CTI Clear All Message Is Visible

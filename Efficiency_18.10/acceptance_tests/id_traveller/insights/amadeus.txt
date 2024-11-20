@@ -1,0 +1,131 @@
+*** Settings ***
+Force Tags        emea    amadeus
+Resource          ../id_traveller_verification.txt
+Resource          ../../complete/complete_verification.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+[1A FR][EMEA][NB] Verify That The Insights Dashboard Displays The Traveler Profile After Creation Of Traveler
+    [Tags]    us6896    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    ES QA Team Amadeus
+    Wait Until Control Object Is Ready    [NAME:Insights]
+    Search For Non-Existent Profile    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    Martin    Kenneth Dre
+    Click Create Traveller Profile
+    Populate Add New Traveller For Fr    General    Kenneth Dre    Martin    kennethdre.martin@carlson.com    63    02
+    ...    4245000    no    for testing only
+    Verify Traveler Name Is Displayed In Insights Dashboard    Kenneth Dre Martin
+    Click Clear All With Contact Tracking For Fr
+    Search For Non-Existent Profile    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    Martin    Simon Joker
+    Click Create Traveller Profile
+    Populate Add New Traveller For Fr    General    Simon Joker    Martin    simonjoker.martin@carlson.com    63    02
+    ...    4245000    yes    ${EMPTY}
+    Verify Traveler Name Is Displayed In Insights Dashboard    Simon Joker Martin
+    Click Clear All With Contact Tracking For Fr
+
+[1A FR][EMEA][NB] Verify That The Insights Dashboard Displays The Searched And Selected Existing Traveler Profile
+    [Tags]    us6896    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    ES QA Team Amadeus
+    Wait Until Control Object Is Ready    [NAME:Insights]
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    Berg    Natalia
+    Verify Traveler Name Is Displayed In Insights Dashboard    Natalia Berg
+    Click Clear All With Contact Tracking For Fr
+
+[1A FR][EMEA][NB] Verify That The Insights Dashboard Displays Traveler Profile Created Under An Existing Arranger
+    [Tags]    us6896    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    ES QA Team Amadeus
+    Wait Until Control Object Is Ready    [NAME:Insights]
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    Yrastorza    Roselyn
+    Click Create Traveller Profile
+    Populate Add New Traveller For Fr    General    David Dominic    Martin    daviddominic.martin@carlson.com    63    02
+    ...    4245000    no    for testing only
+    Verify Traveler Name Is Displayed In Insights Dashboard    David Dominic Martin
+    Click Clear All With Contact Tracking For Fr
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    Yrastorza    Roselyn
+    Click Create Traveller Profile
+    Populate Add New Traveller For Fr    General    Siegfred Jose    Martin    siegfredjose.martin@carlson.com    63    02
+    ...    4245000    yes    ${EMPTY}
+    Verify Traveler Name Is Displayed In Insights Dashboard    Siegfred Jose Martin
+    Click Clear All With Contact Tracking For Fr
+
+[1A FR][EMEA][NB] Verify That The Insights Dashboard Displays Traveler Profile Created Under One Time Contact
+    [Tags]    us6896    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    ES QA Team Amadeus
+    Wait Until Control Object Is Ready    [NAME:Insights]
+    Search For Non-Existent Profile    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    Martin    Percy Jay
+    Add One Time Contact For FR    Ja Jeck    Lee    02    55700    jjlee@carlson.com
+    Click Create Traveller Profile
+    Populate Add New Traveller For Fr    General    Percy Jay    Martin    percyjay.martin@carlson.com    63    02
+    ...    4245000    no    for testing only
+    Verify Traveler Name Is Displayed In Insights Dashboard    Percy Jay Martin
+    Click Clear All With Contact Tracking For Fr
+    Search For Non-Existent Profile    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    Martin    Percy Jay
+    Add One Time Contact For FR    Marlon Mark    Smith    02    55700    mmsmith@carlson.com
+    Click Create Traveller Profile
+    Populate Add New Traveller For Fr    General    Pressy Essy    Martin    pressyessy.martin@carlson.com    63    02
+    ...    4245000    yes    ${EMPTY}
+    Verify Traveler Name Is Displayed In Insights Dashboard    Pressy Essy Martin
+    Click Clear All With Contact Tracking For Fr
+
+*** Keywords ***
+Click Clear All With Contact Tracking For Fr
+    Handle Contact Tracking Service For Fr
+    Click Clear All
+    Wait Until Control Object Is Ready    [NAME:Insights]
+    [Teardown]    Take Screenshot
+
+Populate Add New Traveller For Fr
+    [Arguments]    ${traveller_type}    ${firstname}    ${lastname}    ${email_address}    ${country_code}    ${area_code}
+    ...    ${phone_number}    ${create_portrait_profile}=no    ${reason_for_skipping}=${EMPTY}
+    [Documentation]    Use "random" as value in First Name if you want first name to be a RANDOM VALUE
+    ${add_new_traveller_window}    Set Variable If    "${locale}" == "fr-FR"    Ajouter une nouveau voyageur    Add New Traveller
+    Wait Until Window Exists    ${add_new_traveller_window}
+    Win Activate    ${add_new_traveller_window}
+    Select Value From Dropdown List    [NAME:ccboTravellerType]    ${traveller_type}    Add New Traveller
+    ${firstname}    Run Keyword If    "${firstname.lower()}" == "random"    Generate Random String    length=8    chars=[UPPER]
+    ...    ELSE    Set Variable    ${firstname}
+    Set Control Text Value    [NAME:ctxtFirstName]    ${firstname}    ${add_new_traveller_window}
+    Set Control Text Value    [NAME:ctxtLastName]    ${lastname}    ${add_new_traveller_window}
+    Set Control Text Value    [NAME:ctxtEmail]    ${email_address}    ${add_new_traveller_window}
+    Set Control Text Value    [NAME:ctxtCountryCode]    ${country_code}    ${add_new_traveller_window}
+    Set Control Text Value    [NAME:ctxtAreaCode]    ${area_code}    ${add_new_traveller_window}
+    Set Control Text Value    [NAME:ctxtPhoneNumber]    ${phone_number}    ${add_new_traveller_window}
+    Run Keyword If    "${create_portrait_profile.lower()}" == "no"    Click Control Button    [NAME:radCreateNo]    ${add_new_traveller_window}
+    ...    ELSE    Click Control Button    [NAME:radCreateYes]    ${add_new_traveller_window}
+    Run Keyword If    "${create_portrait_profile.lower()}" == "yes" and "${traveller_type}"=="General"    Set External ID For Profile    ${add_new_traveller_window}
+    Run Keyword If    "${create_portrait_profile.lower()}" == "no" and "${selected_team}" != "UK 24HSC UAT Team"    Set Control Text Value    [NAME:ctxtReason]    ${reason_for_skipping}    ${add_new_traveller_window}
+    Click Control Button    [NAME:btnFinish]    ${add_new_traveller_window}
+    Wait Until Mouse Cursor Wait Is Completed
+    [Teardown]    Take Screenshot
+
+Search For Non-Existent Profile
+    [Arguments]    ${client_name}    ${profile_last_name}    ${profile_first_name}
+    Set Client    ${client_name}
+    Set Last Name    ${profile_last_name}
+    Set First Name    ${profile_first_name}
+    Click Search Portrait Profile
+    Wait Until Progress Info Is Completed
+    [Teardown]    Take Screenshot
+
+Set External Id For Profile
+    [Arguments]    ${add_new_traveller_window}
+    Win Activate    ${add_new_traveller_window}
+    ${external_id}    Get Time    epoch
+    Set Control Text Value    [NAME:ctxtExtSysId]    ${external_id}    ${add_new_traveller_window}
+
+Verify Traveler Name Is Displayed In Insights Dashboard
+    [Arguments]    ${traveler_name}
+    Wait Until Control Object Is Ready    Insights
+    ${profile_value}    Get Tab Items    customerProfileAccordion
+    ${actual_name}    Get From List    ${profile_value}    0
+    Verify Text Contains Expected Value    ${actual_name}    ${traveler_name}
+    [Teardown]    Take Screenshot
+
+Add One Time Contact For FR
+    [Arguments]    ${caller_firstname}    ${caller_lastname}    ${caller_area_code}    ${caller_phone_number}    ${caller_e-mail}
+    Click Create One Time Contact
+    Click Tab In Contact Details    Appelant
+    Set First name In Contact    ${caller_firstname}
+    Set Last Name In Contact    ${caller_lastname}
+    Set Control Text Value    [NAME:ctxtAreaCode]    ${caller_area_code}
+    Set Control Text Value    [NAME:ctxtPhoneNumber]    ${caller_phone_number}
+    Set Email Address    ${caller_e-mail}

@@ -1,0 +1,210 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Pop Up Rule Field With ‡ Value Will Successfully Be Written To The PNR
+    [Tags]    de6054    Not Ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE6054    AutoSeventeenTwo    NoramTrvlrOne
+    Click New Booking
+    Verify Window Exists    Add Email Address Pop-up
+    Retrieve PNR Details From Sabre Red    \    *PE    0
+    Verify Email Line Is Written in the PNR    ‡AUTOMATION@CARLSONWAGONLIT.COM‡
+    Set Value In Pop Up    Add Email Address Pop-up    ‡DYANNEELCID.BARONE==1@CARLSONWAGONLIT.COM‡WORK
+    Set Value In Pop Up    Delete Qualified Remarks Pop-up    F‡FEES - NO POS FEES
+    Wait Until Progress Info is Completed
+    Click Panel    Cust Refs
+    Set CDR Value    T-Matrix DP Code    S789
+    Click Panel    Client Info
+    Populate Client Info Panel With Default Values
+    Click Update PNR
+    Retrieve PNR Details From Sabre Red    \    *PE    0
+    Verify Email Line Is Written in the PNR    ‡DYANNEELCID.BARONE==1@CARLSONWAGONLIT.COM‡WORK
+    Retrieve PNR Details From Sabre Red    \    *F‡
+    Verify Specific Line Is Not Written In The PNR    F‡FEES - NO POS FEES
+    Retrieve PNR Details From Sabre Red    \    *X/
+    Verify Specific Line Is Written In The PNR    X/-BB/U14057
+    Book Flight X Months From Now    DENORD    01Y1    WPRQ    8
+    Click Read Booking
+    Verify Window Exists    Add Qualified Remarks Pop-up
+    Set Value In Pop Up    Add Qualified Remarks Pop-up    M‡PAX*E AUTOMATIONQAAUT--TEST1¤CARLSONWAGONLIT.COM‡
+    Set Value In Pop Up    Add Itinerary Remarks Pop-up    ‡THIS IS A SAMPLE ITINERARY REMARK -- QA TESTING123 ‡
+    Wait Until Progress Info is Completed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *M‡
+    Verify Specific Line Is Written In The PNR    M‡PAX*E AUTOMATIONQAAUT--TEST1¤CARLSONWAGONLIT.COM‡
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *‡
+    Verify Specific Line Is Written In The PNR    ‡THIS IS A SAMPLE ITINERARY REMARK -- QA TESTING123 ‡
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That For Read Booking Trigger, Popup Will Displayed And Phone Details Enter Is Written In Phone Field Remarks In Finish PNR
+    [Tags]    US4929    Not Ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US4618    AutoLast    AutoFirst
+    Click New Booking
+    Wait Until Progress Info is Completed
+    Click Panel    Cust Refs
+    Set CDR Value    Department Code    123456
+    Set CDR Value    T-Matrix DP Code    ${EMPTY}
+    Click Panel    Client Info
+    Populate Client Info Panel With Default Values
+    Click Update PNR
+    Book Flight X Months From Now    DENORD    01Y1    WPRQ    8
+    Click Read Booking
+    Wait Until Progress Info is Completed
+    Verify Window Exists    Additional contact details
+    Set Value In Pop Up    Additional contact details    ORD P9TEST
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Panel    Recap
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    \    *P9    1
+    Verify Specific Line Is Written In The PNR    ORD P9TEST
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Popup Choice Will Open New Popup And Write PNR Remark And Populate CDR At Update PNR
+    [Tags]    de6054
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE6054    AutoSeventeenTwo    NoramTrvlrOne
+    Select Trip Type Value    Business
+    Click New Booking
+    Verify Window Exists    Client Trip Confirmation
+    Set Value In Pop Up    Client Trip Confirmation    Yes
+    Verify Window Exists    Provide Department Code
+    Set Value In Pop Up    Provide Department Code    ABC123
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Department Code    ABC123
+    Verify CDR Is Enabled And Text Value is Correct    T-Matrix DP Code    ${EMPTY}
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Retrieve PNR Details From Sabre Red
+    Verify Specific Line Is Written In The PNR    H-TEST MESSAGE
+    Verify Specific Line Is Written In The PNR    .U*29-ABC123
+    Click Clear All
+    [Teardown]
+
+[NB] Verify That Popup Choice Will Make CDR Mandatory
+    [Tags]    de6054
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE6054    AutoSeventeenTwo    NoramTrvlrOne
+    Select Trip Type Value    Business
+    Click New Booking
+    Verify Window Exists    Client Trip Confirmation
+    Set Value In Pop Up    Client Trip Confirmation    No
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Mandatory    Department Code
+    Verify CDR Is Not Mandatory    T-Matrix DP Code
+    Set CDR Value    Department Code    DEF456
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Retrieve PNR Details From Sabre Red
+    Verify Specific Line Is Written In The PNR    .U*29-DEF456
+    Click Clear All
+    [Teardown]
+
+[NB] Verify That Popup Choice Will Open New Popup And Add Matrix DP Code In Remark
+    [Tags]    de6054
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE6054    AutoSeventeenTwo    NoramTrvlrOne
+    Select Trip Type Value    Business
+    Click New Booking
+    Verify Window Exists    Client Trip Confirmation
+    Set Answer In Popup    Client Trip Confirmation    Not Sure
+    Comment    Set Value In Pop Up    Client Trip Confirmation    Not Sure
+    Verify Window Exists    Provide DP Code
+    Set Answer In Popup    Provide DP Code    W888 - Ally Financial - General Traveler
+    Comment    Set Value In Pop Up    Provide DP Code    W888 - Ally Financial - General Traveler
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Department Code    ${EMPTY}
+    Verify CDR Is Enabled And Text Value is Correct    T-Matrix DP Code    ${EMPTY}
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Retrieve PNR Details From Sabre Red
+    Verify Specific Line Is Written In The PNR    X/-DP/W888
+    Click Clear All
+    [Teardown]
+
+[NB] Verify That Popup Choice Will Open New Popup And Write PNR Remark And Populate CDR At Finish PNR
+    [Tags]    de6054
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE6054    AutoSeventeenTwo    NoramTrvlrOne
+    Select Trip Type Value    Meetings
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    T-Matrix DP Code    S789
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    DENORD    01Y1    WPRQ    8
+    Click Read Booking
+    Verify Window Exists    Enter T-Matrix DP Code
+    Set Answer In Popup    Enter T-Matrix DP Code    S123
+    Comment    Set Value In Pop Up    Enter T-Matrix DP Code
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Department Code    ${EMPTY}
+    Verify CDR Is Enabled And Text Value is Correct    T-Matrix DP Code    S123
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red
+    Verify Specific Line Is Written In The PNR    H-AUTOMATED FINISH
+    Verify Specific Line Is Written In The PNR    X/-DP/S123
+    [Teardown]
+
+[AB] Verify That Popup Choice Will Open New Popup And Write PNR Remark And Populate CDR At Finish PNR
+    [Tags]    de6054
+    Comment    Set Test Variable    ${GDS_switch}    sabre
+    Comment    Set Test Variable    ${locale}    en-US
+    Comment    Set Test Variable    ${syex_env}    Test
+    Comment    Set Test Variable    ${gds}    sabre
+    Comment    Set Test Variable    ${current_pnr}    UAXSQB
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Window Exists    Enter T-Matrix DP Code
+    Set Answer In Popup    Enter T-Matrix DP Code    S456
+    Comment    Set Value In Pop Up    Enter T-Matrix DP Code    S456
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Department Code    ${EMPTY}
+    Verify CDR Is Enabled And Text Value is Correct    T-Matrix DP Code    S456
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking Workflow For Popup Verification
+    Execute Simultaneous Change Handling    Amend Booking Workflow For Popup Verification
+    Retrieve PNR Details From Sabre Red
+    Verify Specific Line Is Written In The PNR    H-AUTOMATED FINISH
+    Verify Specific Line Is Written In The PNR    X/-DP/S456
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Email Line Is Written in the PNR
+    [Arguments]    ${PE_email}
+    ${pnr_details}    Replace String    ${pnr_details}    ${space}    ${empty}
+    ${pnr_details}    Replace String    ${pnr_details}    ${\n}    ${empty}
+    Verify Text Contains Expected Value    ${pnr_details}    ${PE_email}
+
+Amend Booking Workflow For Popup Verification
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Window Exists    Enter T-Matrix DP Code
+    Set Value In Pop Up    Enter T-Matrix DP Code    S456
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Verify CDR Is Enabled And Text Value is Correct    Department Code    ${EMPTY}
+    Verify CDR Is Enabled And Text Value is Correct    T-Matrix DP Code    S456
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

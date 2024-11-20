@@ -1,0 +1,67 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../amend_verification.txt
+Resource          ../../delivery/delivery_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Quick Amend Workflow Is Available For PNRs With CC Declined Remark
+    [Tags]    us4073    emea    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre FR 15 - Auto ¦ US2447    AutoFifteenTwelve    OptimizeTrvlrOne    HKGMNL‡PR    ${EMPTY}    AIR FARE
+    ...    CUST REFS    DELIVERY    CLIENT INFO
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    1221
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Verify On Hold Booking Reasons Are All Unchecked
+    Click Finish PNR
+    Activate Sabre Red Workspace
+    Enter Specific Command On Native GDS    *${current_pnr}    5T'TKT-TICKETING UNABLE - CC DECLINED OR NEED MANUAL APPROVAL    6cwtptest    ER
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T‡    2
+    Verify Specific Line Is Written In The PNR    TKT-TICKETING UNABLE - CC DECLINED OR
+
+[QA] Verify That Quick Amend Workflow Is Available For PNRs With CC Declined Remark
+    [Tags]    us4073    emea    de6678    not_ready
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    La réservation a échoué suite à un refus de la carte de crédit. Utilisez le bouton « modification rapide » pour ajouter les données manquantes et finaliser la réservation !
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    CUST REFS    DELIVERY    RECAP
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    12/26
+    Click Panel    Cust Refs
+    Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Re-Execute Quick Amend If Simultaneous Change Error Is Displayed
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddNewFOP
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddNewFOP    ${exp_OverallTransactionStartTime}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Verify Quick Amend Is Visible
+    Verify Quick Amend Spiel Is Visible    La réservation a échoué suite à un refus de la carte de crédit. Utilisez le bouton « modification rapide » pour ajouter les données manquantes et finaliser la réservation !
+    Delete Current Specific Log File    SyExPerfLog
+    Click Quick Amend With Timestamp
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    CUST REFS    DELIVERY    RECAP
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4111111111111111    12/26
+    Click Panel    Cust Refs
+    Verify Cust Refs Not Known Checkbox Is Unticked And Disabled
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Populate Delivery Panel Without On Hold Reason
+    Click Finish PNR
+    Re-Execute Quick Amend If Simultaneous Change Error Is Displayed
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddNewFOP
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddNewFOP    ${exp_OverallTransactionStartTime}
+    Verify Entry Is Present In Perf Log File    BusinessFunctionMetric.AmendBookingAddNewFOP
+    Verify Entry Is Present In Application Usage DB    AmendBookingAddNewFOP    ${exp_OverallTransactionStartTime}

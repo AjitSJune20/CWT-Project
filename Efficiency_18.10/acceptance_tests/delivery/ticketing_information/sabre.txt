@@ -1,0 +1,395 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../delivery_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Ticketing Date Is Defaulted To LDT-1 Or Booking Date When Delay Ticketing SO Is Setup As Such
+    [Tags]    us423    noram    de7597
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US423 SO is LDT-1 or Booking Date    AutoLegacy    NoramTrvlrFive
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Update PNR for EN or GB    Client Info
+    Book One Way Flight X Months From Now    MSPORD¥UA    8
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is Current Date
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book One Way Flight X Months From Now    MELSYD¥VA    8
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    Ticketing date cannot be after last ticketing date provided by the airline
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Set Ticketing Date To LDT-1
+    Click Finish PNR
+
+[AB] Verify That Ticketing Date Is Defaulted To LDT-1 Or Booking Date When Delay Ticketing SO Is Setup As Such
+    [Tags]    us423    de6132    de6150    noram
+    Remove Ticketing Date Not Set Confirm By Remark In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI
+    Enter GDS Command    PQD-ALL
+    Book One Way Flight X Months From Now    SYDMEL¥VA    8
+    Click Read Booking
+    Click Panel    Delivery
+    Get LDT-1 From GDS
+    Verify Ticketing Date Field Value Is LDT-1
+    Enter GDS Command    XI
+    Enter GDS Command    PQD-ALL
+    Book One Way Flight X Months From Now    MELSYD¥VA    8
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    Ticketing date cannot be after last ticketing date provided by the airline
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Click Clear All
+    [Teardown]
+
+[SI] Verify That Ticketing Date Is Defaulted To Ticketing Date In PNR
+    [Tags]    de6308    noram
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Retrieve PNR Details From Sabre Red    \    *R
+    Get Ticketing Line From Sabre PNR
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is Ticketing Date From PNR
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    \    *R
+    Verify Ticketing Date Field In PNR Is Not Changed
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Ticketing Date Is Defaulted To LDT-1 Or Travel Date-1 When Delay Ticketing SO Is Setup As Such
+    [Tags]    us423    noram    de7597
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US423 SO is LDT-1 or Travel Date-1    AutoLegacy    NoramTrvlrSeven
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Update PNR for EN or GB
+    Book One Way Flight X Months From Now    MSPORD¥UA    8
+    Get Travel Date-1
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is Travel Date-1
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book One Way Flight X Months From Now    MELSYD¥VA    8
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    Ticketing date cannot be after last ticketing date provided by the airline
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[AB] Verify That Ticketing Date Is Defaulted To LDT-1 Or Travel Date-1 When Delay Ticketing SO Is Setup As Such
+    [Tags]    us423    de6132    noram
+    Remove Ticketing Date Not Set Confirm By Remark In PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI
+    Enter GDS Command    PQD-ALL
+    Book One Way Flight X Months From Now    SYDMEL¥VA    8
+    Get Travel Date-1
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is LDT-1
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book One Way Flight X Months From Now    MELSYD¥VA    6
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    Ticketing date cannot be after last ticketing date provided by the airline
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Ticketing Date Is Defaulted To Travel Date-1 When Delay Ticketing SO Is Setup As Yes For LCC Segments
+    [Tags]    us3204    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US3204    AutoSixteenTwo    NoramTrvlrNine
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0 WN 821 L ${departure_date} LAXDEN YK1 /07050810 *5H5M3V
+    Enter GDS Command    5H-F‡LCC-WN*BASE FARE USD 123.90
+    Enter GDS Command    5H-F‡LCC-WN*TAX1 C23.00
+    Enter GDS Command    5H-F‡LCC-WN*TAX2 H10.00
+    Enter GDS Command    5H-F‡LCC-WN*TAX3 D10.00
+    Enter GDS Command    5H-F‡LCC-WN*GRAND TOTAL USD 699.89
+    Enter GDS Command    5H-F‡LCC-WN*TK-2014032733
+    Enter GDS Command    5H-F‡LCC-WN*CF-ABCDEF
+    Enter GDS Command    5H-F‡LCC-WN*VN-000SA2
+    Enter GDS Command    5H-F‡LCC-WN*COMM-70.50 USD
+    Get Travel Date-1
+    Click Read Booking
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Verify Ticketing Date Field Value Is Travel Date-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Set Ticketing Date Using Current Date
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Set Ticketing Date To Travel Date-1
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T    1
+    Verify Travel Date-1 Is Written In The Ticketing Line
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Ticketing Date Is Defaulted To Travel Date-1 When Delay Ticketing SO Is Setup As LDT-1 Or Travel Date-1 For LCC Segments
+    [Tags]    us3204    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US423 SO is LDT-1 or Travel Date-1    AutoLegacy    NoramTrvlrSeven
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0 WN 821 L ${departure_date} LAXDEN YK1 /07050810 *5H5M3V
+    Enter GDS Command    5H-F‡LCC-WN*BASE FARE USD 123.90
+    Enter GDS Command    5H-F‡LCC-WN*TAX1 C23.00
+    Enter GDS Command    5H-F‡LCC-WN*TAX2 H10.00
+    Enter GDS Command    5H-F‡LCC-WN*TAX3 D10.00
+    Enter GDS Command    5H-F‡LCC-WN*GRAND TOTAL USD 699.89
+    Enter GDS Command    5H-F‡LCC-WN*TK-2014032733
+    Enter GDS Command    5H-F‡LCC-WN*CF-ABCDEF
+    Enter GDS Command    5H-F‡LCC-WN*VN-000SA2
+    Enter GDS Command    5H-F‡LCC-WN*COMM-70.50 USD
+    Get Travel Date-1
+    Click Read Booking
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Verify Ticketing Date Field Value Is Travel Date-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Set Ticketing Date Using Current Date
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Set Ticketing Date To Travel Date-1
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T    1
+    Verify Travel Date-1 Is Written In The Ticketing Line
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Ticketing Date Is Defaulted To Booking Date When Delay Ticketing SO Is Setup As LDT-1 Or Booking Date For LCC Segments
+    [Tags]    us3204    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US423 SO is LDT-1 or Booking Date    AutoLegacy    NoramTrvlrFive
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0 WN 821 L ${departure_date} LAXDEN YK1 /07050810 *5H5M3V
+    Enter GDS Command    5H-F‡LCC-WN*BASE FARE USD 123.90
+    Enter GDS Command    5H-F‡LCC-WN*TAX1 C23.00
+    Enter GDS Command    5H-F‡LCC-WN*TAX2 H10.00
+    Enter GDS Command    5H-F‡LCC-WN*TAX3 D10.00
+    Enter GDS Command    5H-F‡LCC-WN*GRAND TOTAL USD 699.89
+    Enter GDS Command    5H-F‡LCC-WN*TK-2014032733
+    Enter GDS Command    5H-F‡LCC-WN*CF-ABCDEF
+    Enter GDS Command    5H-F‡LCC-WN*VN-000SA2
+    Enter GDS Command    5H-F‡LCC-WN*COMM-70.50 USD
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[AB] Verify That Ticketing Date Is Defaulted To Booking Date When Delay Ticketing SO Is Setup As LDT-1 Or Booking Date For LCC Segments
+    [Tags]    us3204    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Get Future Dates For LCC Remarks    5
+    Get Travel Date-1
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is Current Date
+    Set Ticketing Date To Travel Date-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Set Ticketing Date To Travel Date-1
+    Click Finish PNR
+    Re-Execute Amend For LCC And Delayed Ticketing SO Is LDT-1 Or Booking Date If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T    1
+    Verify Travel Date-1 Is Written In The Ticketing Line
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Ticketing Date Is Defaulted To Travel Date-1 When Delay Ticketing SO Is Setup As No For LCC Segments
+    [Tags]    us3204    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US3204-2    AutoOneSixteenTwo    NoramTrvlrTen
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0 3K 821 L ${departure_date} LAXDEN GK1 /07050810 *5H5M3V
+    Enter GDS Command    5H-F‡LCC-3K*BASE FARE USD 485.95
+    Enter GDS Command    5H-F‡LCC-3K*TAX1 C25.00
+    Enter GDS Command    5H-F‡LCC-3K*TAX2 H10.00
+    Enter GDS Command    5H-F‡LCC-3K*TAX3 D15.00
+    Enter GDS Command    5H-F‡LCC-3K*GRAND TOTAL USD 540.95
+    Enter GDS Command    5H-F‡LCC-3K*TK-2014032733
+    Enter GDS Command    5H-F‡LCC-3K*CF-ABCDEF
+    Enter GDS Command    5H-F‡LCC-3K*VN-000SA2
+    Enter GDS Command    5H-F‡LCC-3K*COMM-70.50 USD
+    Get Travel Date-1
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is Current Date
+    Set Email Address in Delivery Panel
+    Set Ticketing Date To Travel Date-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Set Ticketing Date To Travel Date-1
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T    1
+    Verify Travel Date-1 Is Written In The Ticketing Line
+
+[AB] Verify That Ticketing Date Is Defaulted To Travel Date-1 When Delay Ticketing SO Is Setup As No For LCC Segments
+    [Tags]    us3204    noram
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI
+    Enter GDS Command    PQD_ALL
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0 WN 821 L ${departure_date} LAXDEN YK1 /07050810 *5H5M3V
+    Enter GDS Command    5H-F‡LCC-WN*BASE FARE USD 123.90
+    Enter GDS Command    5H-F‡LCC-WN*TAX1 C23.00
+    Enter GDS Command    5H-F‡LCC-WN*TAX2 H10.00
+    Enter GDS Command    5H-F‡LCC-WN*TAX3 D10.00
+    Enter GDS Command    5H-F‡LCC-WN*GRAND TOTAL USD 699.89
+    Enter GDS Command    5H-F‡LCC-WN*TK-2014032733
+    Enter GDS Command    5H-F‡LCC-WN*CF-ABCDEF
+    Enter GDS Command    5H-F‡LCC-WN*VN-000SA2
+    Enter GDS Command    5H-F‡LCC-WN*COMM-70.50 USD
+    Get Travel Date-1
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is Current Date
+    Set Ticketing Date To Travel Date-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Set Ticketing Date To Travel Date-1
+    Click Finish PNR
+    Re-Execute Amend For LCC And Delayed Ticketing SO Is No If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T    1
+    Verify Travel Date-1 Is Written In The Ticketing Line
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB US] Verify That Ticketing Date Is Defaulted To LDT-1 For Muliple Fares
+    [Tags]    us423    noram    de7597
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre Legacy - Auto ¦ US423 SO is LDT-1 or Booking Date    AutoLegacy    NoramTrvlrFive
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MELSYD¥VA    01Y1    WPRQ¥S1    6
+    Book Flight X Months From Now    SYDMEL¥VA    01Y1    WPRQ¥S2    6    5
+    Get LDT-1 From GDS For Multiple Fares
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    Ticketing date cannot be after last ticketing date provided by the airline
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Click Clear All
+
+[NB FR] Verify That Ticketing Date Is Defaulted To LDT-1 For Muliple Fares
+    [Tags]    us423    emea    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    D33H
+    Set Client And Traveler    Sabre FR Legacy - Auto ¦ US423 LDT for Multiple fares    AutoLegacy    NoramTrvlrEleven
+    Click New Booking
+    Book Flight X Months From Now    MELSYD¥VA    01Y1    WPRQ¥S1    6
+    Book Flight X Months From Now    SYDMEL¥VA    01Y1    WPRQ¥S2    6    5
+    Get LDT-1 From GDS For Multiple Fares
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    La date d'émission ne peut pas être plus tard que la date limite d'émission de la compagnie
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Click Clear All
+
+*** Keywords ***
+Amend For LCC And Delayed Ticketing SO Is No
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XI
+    Enter GDS Command    PQD_ALL
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0 WN 821 L ${departure_date} LAXDEN YK1 /07050810 *5H5M3V
+    Enter GDS Command    5H-F‡LCC-WN*BASE FARE USD 123.90
+    Enter GDS Command    5H-F‡LCC-WN*TAX1 C23.00
+    Enter GDS Command    5H-F‡LCC-WN*TAX2 H10.00
+    Enter GDS Command    5H-F‡LCC-WN*TAX3 D10.00
+    Enter GDS Command    5H-F‡LCC-WN*GRAND TOTAL USD 699.89
+    Enter GDS Command    5H-F‡LCC-WN*TK-2014032733
+    Enter GDS Command    5H-F‡LCC-WN*CF-ABCDEF
+    Enter GDS Command    5H-F‡LCC-WN*VN-000SA2
+    Enter GDS Command    5H-F‡LCC-WN*COMM-70.50 USD
+    Get Travel Date-1
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is Current Date
+    Set Ticketing Date To Travel Date-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Set Ticketing Date To Travel Date-1
+    Click Finish PNR
+
+Amend For LCC And Delayed Ticketing SO Is LDT-1 Or Booking Date
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Get Future Dates For LCC Remarks    5
+    Get Travel Date-1
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is Current Date
+    Set Ticketing Date To Travel Date-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Set Ticketing Date To Travel Date-1
+    Click Finish PNR

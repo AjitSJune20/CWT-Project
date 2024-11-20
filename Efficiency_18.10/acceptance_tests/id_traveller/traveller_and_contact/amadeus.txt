@@ -1,0 +1,326 @@
+*** Settings ***
+Force Tags        emea    amadeus
+Resource          ../id_traveller_verification.txt
+Resource          ../../complete/complete_verification.txt
+Resource          ../../gds/gds_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Mismatch Popup Does Not Appear When PNR Has Multiple Travellers
+    [Tags]    us6570    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrTwo
+    Tick Traveller Checkbox
+    Set Client And Traveler    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrThree
+    Click New Booking
+    Update PNR for EN or GB
+    Enter GDS Command    NM1AutoOne/Test
+    Enter GDS Command    NM1AutoTwo/Test
+    Book Flight X Months From Now    CDGLHR/AAF    SS4Y1    FXP
+    Verify That Traveler Does Not Match Popup Is Not Displayed After Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[AB] Verify That Mismatch Popup Does Not Appear When PNR Has Multiple Travellers
+    [Tags]    us6570    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Verify That Traveler Does Not Match Popup Is Not Displayed After Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Comment    Click Finish PNR
+
+[SI] Verify That Mismatch Popup Does Not Appear When PNR Has Multiple Travellers
+    [Tags]    us6570    uk
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Verify That Traveler Does Not Match Popup Is Not Displayed After Read Booking
+    Comment    Click Finish PNR
+
+[CB] Verify That Mismatch Popup Does Not Appear When PNR Has Multiple Travellers
+    [Tags]    us6570    uk
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Verify That Traveler Does Not Match Popup Is Not Displayed After Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA] Verify That Check Input Error Is Not Visible For Arranger And Guest Traveler
+    [Tags]    us4449    de7459
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ UK - Amadeus Sub1    Yrastorza    Roselyn
+    Click Create Traveller Profile
+    Populate Add New Traveller    General    Juan    Dela Cruz    automation@carlsonwagonlit.com    63    12
+    ...    345678    no    test
+    Click New Booking Fail On Error Message
+    [Teardown]    Click Clear All
+
+[NB CA] Verify That Correct Backoffice Remarks Are Written During New Booking Up To Finish PNR For Canada (Amadeus Classic)
+    [Tags]    us6722    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Personal
+    Click New Booking
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR Only Once    RM *CF/-SOE0000000N
+    Verify Specific Line Is Written In The PNR Only Once    RM *CN/-5500
+    Update PNR for EN or GB
+    Book Flight X Months From Now    CDGLHR    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Verify Specific Line Is Written In The PNR Only Once    RM *CF/-SOE0000000N
+    Verify Specific Line Is Written In The PNR Only Once    RM *CN/-5500
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB CA] Verify That Correct Backoffice Remarks Are Written During New Booking For Canada (Amadeus Classic)
+    [Tags]    us6722    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Business
+    Click New Booking
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR Only Once    RM *CF/-ZZZ0000000C
+    Verify Specific Line Is Written In The PNR Only Once    RM *CN/-5500
+    Click Clear All
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Personal
+    Click New Booking
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR Only Once    RM *CF/-ZZZ0000000N
+    Verify Specific Line Is Written In The PNR Only Once    RM *CN/-5500
+    Click Clear All
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Select Trip Type Value    Meetings
+    Click New Booking
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR Only Once    RM *CF/-SOE0000000C
+    Verify Specific Line Is Written In The PNR Only Once    RM *CN/-5500
+    [Teardown]    Click Clear All
+
+[NB] Verify That Adding Non Portrait Traveler In Express Does Not Result In Duplicate Traveler In GDS
+    [Tags]    19.1    us6813    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Search For Non Portrait Profile    UK Amadeus 1 - SyEx ¦ vidya Ama DS Non POrtrait    AUTO
+    Add New Non Portrait Traveller    AutoOneNineteen    NonPrtTestOne    automation@carlsonwagonlit.com    1-44-9987654
+    Click New Booking
+    Retrieve PNR Details From Amadeus    \    RT    False
+    Verify Specific Line Is Written In The PNR Only Once    1.AUTOONENINETEEN/NONPRTTESTONE
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    \    RT    False
+    Verify Specific Line Is Written In The PNR Only Once    1.AUTOONENINETEEN/NONPRTTESTONE
+    [Teardown]    Click Clear All
+
+[NB] Verify That Adding Non Portrait Traveler And Arranger In Express Does Not Result In Duplicate Traveler In GDS
+    [Tags]    19.1    us6813    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Search For Non Portrait Profile    UK Amadeus 1 - SyEx ¦ vidya Ama DS Non POrtrait    AUTO
+    Add New Non Portrait Traveller    AutoOneNineteen    NonPrtTestOne    automation@carlsonwagonlit.com    1-44-9987654
+    Untick Contact Checkbox
+    Add One Time Contact For Non Portrait Client    AutoOneNineteen    NonPrtTestCtc    44    9987655    automation2@carlsonwagonlit.com
+    Click New Booking
+    Retrieve PNR Details From Amadeus    \    RT    False
+    Verify Specific Line Is Written In The PNR Only Once    1.AUTOONENINETEEN/NONPRTTESTONE
+    Verify Specific Line Is Written In The PNR    APB CTC*AUTOONENINETEEN NONPRTTESTCTC-44-44+9987655
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION2@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RMV ARRANGER GUID - 0
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    \    RT    False
+    Verify Specific Line Is Written In The PNR Only Once    1.AUTOONENINETEEN/NONPRTTESTONE
+    Verify Specific Line Is Written In The PNR    APB CTC*AUTOONENINETEEN NONPRTTESTCTC-44-44+9987655
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION2@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RMV ARRANGER GUID - 0
+    [Teardown]    Click Clear All
+
+[NB] Verify That Selecting Client Profile And Adding Non Portrait Traveler In Express Does Not Result In Duplicate Traveler In GDS
+    [Tags]    19.1    us6813    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Search For Non Portrait Profile    UK Amadeus 1 - SyEx ¦ vidya Ama DS Non POrtrait    AUTO    LONWL2220 / SYEXUK
+    Add New Non Portrait Traveller    AutoOneNineteen    NonPrtTestOne    automation@carlsonwagonlit.com    1-44-9987654
+    Click New Booking
+    Retrieve PNR Details From Amadeus    \    RT    False
+    Verify Specific Line Is Written In The PNR Only Once    1.AUTOONENINETEEN/NONPRTTESTONE
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    \    RT    False
+    Verify Specific Line Is Written In The PNR Only Once    1.AUTOONENINETEEN/NONPRTTESTONE
+    [Teardown]    Click Clear All
+
+[NB] Verify That Selecting Client Profile And Adding Non Portrait Traveler And Arranger In Express Does Not Result In Duplicate Traveler In GDS
+    [Tags]    19.1    us6813    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Search For Non Portrait Profile    UK Amadeus 1 - SyEx ¦ vidya Ama DS Non POrtrait    AUTO    LONWL2220 / SYEXUK
+    Add New Non Portrait Traveller    AutoOneNineteen    NonPrtTestOne    automation@carlsonwagonlit.com    1-44-9987654
+    Untick Contact Checkbox
+    Add One Time Contact For Non Portrait Client    AutoOneNineteen    NonPrtTestCtc    44    9987655    automation2@carlsonwagonlit.com
+    Click New Booking
+    Retrieve PNR Details From Amadeus    \    RT    False
+    Verify Specific Line Is Written In The PNR Only Once    1.AUTOONENINETEEN/NONPRTTESTONE
+    Verify Specific Line Is Written In The PNR    APB CTC*AUTOONENINETEEN NONPRTTESTCTC-44-44+9987655
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION2@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RMV ARRANGER GUID - 0
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Retrieve PNR Details From Amadeus    \    RT    False
+    Verify Specific Line Is Written In The PNR Only Once    1.AUTOONENINETEEN/NONPRTTESTONE
+    Verify Specific Line Is Written In The PNR    APB CTC*AUTOONENINETEEN NONPRTTESTCTC-44-44+9987655
+    Verify Specific Line Is Written In The PNR    APE CTC*AUTOMATION2@CARLSONWAGONLIT.COM
+    Verify Specific Line Is Written In The PNR    RMV ARRANGER GUID - 0
+
+*** Keywords ***
+Click New Booking Fail On Error Message
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active Fail On Error Message
+    Wait Until Control Object Is Enabled    ${btn_newBooking}    ${title_power_express}
+    Click Control Button    ${btn_newBooking}    ${title_power_express}
+    Wait Until Progress Info Is Completed Fail On Error Message    \    CHECK INPUT
+
+Wait Until Progress Info Is Completed Fail On Error Message
+    [Arguments]    ${keyword}=${EMPTY}    ${error_message}=${EMPTY}
+    Comment    Set Log Level    NONE
+    Sleep    5
+    Set Test Variable    ${retry_popup_status}    False
+    Wait Until Keyword Succeeds    180    5    Verify Progress Info Window is Not Active Fail On Error Message    ${error_message}
+    Comment    Wait Until Progress Bar Is Completed
+    Activate Power Express Window
+    Comment    Set Log Level    INFO
+    [Teardown]    Take Screenshot
+
+Verify Progress Info Window is Not Active Fail On Error Message
+    [Arguments]    ${error_message}=${EMPTY}
+    Handle Generic Window Popup Fail On Specific Error    ${error_message}
+    ${is_progress_info_message_present} =    Control Command    [REGEXPTITLE:Progress Information|Information sur l'avancement]    ${EMPTY}    ${EMPTY}    IsVisible    ${EMPTY}
+    Should Be True    ${is_progress_info_message_present} == 0    msg=Progress Information Window should be completed within 3 minutes
+    Comment    ${active_win_title} =    Win Get Title    [ACTIVE]    ${EMPTY}
+    Comment    ${is_progress_info_message_not_active} =    Run Keyword And Return Status    Should Not Match Regexp    ${active_win_title}    Information|Fortschrittsinformation|RIDE
+    Comment    Run Keyword If    ${is_progress_info_message_not_active} == False and ${is_progress_info_message_present} == 0    Activate Power Express Window
+    Activate Power Express Window
+
+Handle Generic Window Popup Fail On Specific Error
+    [Arguments]    ${error_message}
+    ${active_window} =    Win Get Title    [ACTIVE]    ${EMPTY}
+    Run Keyword Unless    "${active_window}" != "New Contact..."    Handle New Contact Popup
+    ${is_popup_text_message_present} =    Control Command    ${active_window}    ${EMPTY}    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    Comment    Set Log Level    INFO
+    ${popup_error_msg}    Run Keyword If    '${is_popup_text_message_present}' == '1' and '${error_message}' != '${EMPTY}'    Control Get Text    ${active_window}    ${EMPTY}    [NAME:txtMessageTextBox]
+    ${is_displayed}    Run Keyword If    '${is_popup_text_message_present}' == '1' and '${error_message}' != '${EMPTY}'    Run Keyword And Return Status    Should Contain    ${popup_error_msg}    ${error_message}
+    Run Keyword If    ${is_displayed} == True    Set Test Variable    ${retry_popup_status}    True
+    Comment    Set Log Level    NONE
+    ${is_popup_clear_message_present} =    Control Command    ${active_window}    ${EMPTY}    [NAME:ClearAllMessage]    IsVisible    ${EMPTY}
+    ${is_no_endpoint_listening} =    Control Command    ${active_window}    There was no endpoint listening    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    Run Keyword Unless    ${is_no_endpoint_listening} == 0    Fail    There was no endpoint listening at https://itest2distribution.cwtwebservices.com/TravelerGDSLookUp.serviceagent/TravelerGDSLookUpEndpoint that could accept the message. This is often caused by an incorrect address or SOAP action. See InnerException, if present, for more details.
+    ${is_portrait_down} =    Control Command    ${active_window}    The request channel timed out    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    Run Keyword Unless    ${is_portrait_down} == 0    Fail    Der Portrait Lookup Service arbeitet derzeit nicht. Bitte identifizieren Sie bis auf weiteres den Reisenden über das GDS. The request channel timed out while waiting for a reply after 00:00:59.8389839. Increase the timeout value passed to the call to Request or increase the SendTimeout value on the Binding. The time allotted to this operation may have been a portion of a longer timeout.
+    ${is_portrait_search_unavailable} =    Control Command    Power Express    The Portrait Web Service is unavailable. Please identify the traveler via the GDS search box provided until it is working again. \ Portrait Search Disabled    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    Run Keyword Unless    ${is_portrait_search_unavailable} == 0    Fail    The Portrait Web Service is unavailable. Please identify the traveler via the GDS search box provided until it is working again.
+    Comment    ${is_check_input} =    Control Command    Power Express    CHECK INPUT    [NAME:txtMessageTextBox]    IsVisible
+    ...    ${EMPTY}
+    Comment    Run Keyword Unless    ${is_check_input} == 0    Fail    CHECK INPUT ERROR
+    ${is_cant_complete_pnr} =    Control Command    Power Express    Express ne peut pas terminer le PNR.    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    ${is_power_express_popup_text_message_present} =    Control Command    [REGEXPTITLE:Power Express|messages|Benachrichtigungen]    ${EMPTY}    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    ${is_message_from_webpage_present}    Control Command    Message from webpage    ${EMPTY}    ${EMPTY}    IsVisible    ${EMPTY}
+    ${is_update_phone_present}    Control Command    [REGEXPTITLE:Update Traveller's Phone Number|Mettre le numéro de téléphone du voyageur à jour]    ${EMPTY}    [NAME:lblMessage]    IsVisible    ${EMPTY}
+    ${is_check_input} =    Control Command    Move profile messages    CHECK INPUT    [CLASS:WindowsForms10.EDIT.app.0.10cf21e_r20_ad1; INSTANCE:1]    IsVisible    ${EMPTY}
+    Run Keyword If    ${is_check_input} == 1    FAIL    CHECK INPUT
+    Run Keyword If    ${is_check_input} == 1    Take Screenshot
+    ${simultaneous_text}    Set Variable If    "${locale}" == "fr-FR"    Express ne peut terminer le PNR à cause d’une mise à jour parallèle    "${locale}" == "de-DE"    Express kann den PNR aufgrund eines Simultaneous changes nicht beenden    Express is unable to end the PNR due to simultaneous changes.
+    ${is_simultaneous}    Control Command    Power Express    ${simultaneous_text}    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    ${simultaneous_changes}    Set Variable If    ${is_simultaneous} == 1    True    False
+    Set Test Variable    ${simultaneous_changes}
+    ${is_contact_creation_error_present}    Win Exists    Contact Creation Error    ${EMPTY}
+    Run Keyword If    ${is_message_from_webpage_present}    Run Keywords    Win Activate    Message from webpage    ${EMPTY}
+    ...    AND    Send    {ENTER}
+    Run Keyword If    ${is_cant_complete_pnr} == 1    Run Keywords    Win Activate    Power Express    ${EMPTY}
+    ...    AND    Confirm Popup Window    Power Express
+    Run Keyword If    ${is_contact_creation_error_present} == 1    Confirm Popup Window    Contact Creation Error
+    Run Keyword If    ${is_simultaneous} == 1    Click Control Button    [NAME:CancelBtn]    Power Express
+    Run Keyword If    ${is_power_express_popup_text_message_present} == 1 and ${is_simultaneous} == 0    Confirm Popup Window    [REGEXPTITLE:Power Express|messages|Benachrichtigungen]
+    Run Keyword If    ${is_update_phone_present} == 1 and ${is_simultaneous} == 0    Click Control Button    [NAME:btnCancel]    [REGEXPTITLE:Update Traveller's Phone Number|Mettre le numéro de téléphone du voyageur à jour]
+    ${active_window} =    Win Get Title    [ACTIVE]    ${EMPTY}
+    Run Keyword If    ${is_popup_text_message_present} == 1 or ${is_popup_clear_message_present} == 1 and ${is_simultaneous} == 0    Confirm Popup Window    ${active_window}
+    Comment    Set Log Level    INFO
+
+Set User Settings Toggle Disable Portrait Search
+    [Arguments]    ${control}    ${control_state}    ${locale}    ${disable_portrait}=NO
+    Win Wait    ${title_settings}    ${EMPTY}    60
+    Win Activate    ${title_settings}    ${EMPTY}
+    Control Click    ${user_selection_window}    ${EMPTY}    ${EMPTY}
+    Set Control Text Value    ${cbo_locale}    ${locale}    ${title_settings}
+    Control Click    ${title_settings}    ${EMPTY}    [NAME:chkDisableContactTracking]
+    Check Or Uncheck Checkbox    ${control}    ${control_state}
+    Control Click    ${title_settings}    ${EMPTY}    ${btn_OKSettings}
+    Set Suite Variable    ${locale}
+    Verify User Configuration
+
+Check Or Uncheck Checkbox
+    [Arguments]    ${control}    ${checkbox_state}
+    Run Keyword If    '${checkbox_state}' == 'check'    Tick Checkbox    ${control}
+    Run Keyword If    '${checkbox_state}' == 'uncheck'    Tick Checkbox    ${control}
+
+Open Power Express And Retrieve Profile With Check Uncheck Disable Portrait Lookup
+    [Arguments]    ${control}    ${control_state}    ${version}    ${syex_env}    ${username}    ${locale}
+    ...    ${user_profile}    ${team}=${EMPTY}    ${gds}=${EMPTY}
+    Comment    Close Power Express
+    Run Keyword If    "${use_local_dev_build}" == "True"    Use Local Dev Build    ${username}
+    ...    ELSE    Launch Power Express    ${version}    ${syex_env}    ${username}    ${use_mock_env}
+    Set Suite Variable    ${locale}
+    Run Keyword Unless    '${syex_env.lower()}' == 'master' or '${syex_env.lower()}' == 'emea' or '${syex_env.lower()}' == 'noram'    Set User Settings Toggle Disable Portrait Search    ${control}    ${control_state}    ${locale}
+    Run Keyword Unless    '${syex_env.lower()}' == 'master' or '${syex_env.lower()}' == 'emea' or '${syex_env.lower()}' == 'noram'    Select Profile    ${user_profile}
+    Set Suite Variable    ${user_profile}
+    Comment    Select Profile    ${user_profile}
+    Comment    Sleep    25
+    Run Keyword If    "${team}" != "${EMPTY}"    Run Keywords    Clear Team Selection
+    ...    AND    Select Team    ${team}
+    Set Suite Variable    ${current_pnr}    ${EMPTY}
+    Set Suite Variable    ${pcc}    ${EMPTY}
+    Set Suite Variable    ${uid}    ${username}
+    Comment    Run Keyword If    "${amadeus_env}" == "sellco"    Switch Office Id    ${locale}
+    Run Keyword If    "${gds}" != "${EMPTY}"    Select GDS    ${gds}
+    [Teardown]    Take Screenshot
+
+Search For Non Portrait Profile
+    [Arguments]    ${client_name}    ${traveller_profile}    ${client_profile}=LONWL2220
+    Set Client    ${client_name}
+    Set Company Profile    ${client_profile}
+    Sleep    5
+    Set Control Text Value    [NAME:txtcTravellerProfile]    ${traveller_profile}
+    Click Control Button    [NAME:btnPortraitSearchTravellerProfile]
+
+Add New Non Portrait Traveller
+    [Arguments]    ${traveller_last_name}    ${traveller_first_name}    ${traveller_email}    ${traveller_telephone}
+    Click Control Button    [NAME:btnNewGDS]
+    Set Control Text Value    [NAME:CtxtFirstName]    ${traveller_first_name}
+    Set Control Text Value    [NAME:CtxtLastName]    ${traveller_last_name}
+    Set Control Text Value    [NAME:CtxtEmail]    ${traveller_email}
+    Set Control Text Value    [NAME:CtxtTelephone]    ${traveller_telephone}
+
+Add One Time Contact For Non Portrait Client
+    [Arguments]    ${caller_firstname}    ${caller_lastname}    ${caller_area_code}    ${caller_phone_number}    ${caller_e-mail}
+    Click Control Button    [NAME:btnAddContactGDS]
+    Sleep    2
+    Wait Until Control Object Is Visible    [NAME:grpCaller]
+    Click Tab In Contact Details    Caller
+    Set First name In Contact    ${caller_firstname}
+    Set Last Name In Contact    ${caller_lastname}
+    Set Control Text Value    [NAME:ctxtAreaCode]    ${caller_area_code}
+    Set Control Text Value    [NAME:ctxtPhoneNumber]    ${caller_phone_number}
+    Set Email Address    ${caller_e-mail}

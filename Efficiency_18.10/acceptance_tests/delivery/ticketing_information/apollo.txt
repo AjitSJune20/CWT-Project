@@ -1,0 +1,190 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../delivery_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Ticketing Date Is Defaulted To LDT-1 Or Booking Date When Delay Ticketing SO Is Setup As Such
+    [Tags]    us423    de7460    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    apollo
+    Set Client And Traveler    Apollo Legacy - Auto ¦ US423 LDT for Multiple fares    AutoLegacy    NoramTrvlrTen
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Comment    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book One Way Flight X Months From Now    BNESYD+QF    6
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is LDT-1
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book One Way Flight X Months From Now    MSPORD+UA    6
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    Ticketing date cannot be after last ticketing date provided by the airline
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Finish PNR
+
+[AB] Verify That Ticketing Date Is Defaulted To LDT-1 Or Booking Date When Delay Ticketing SO Is Setup As Such
+    [Tags]    us423    de6132    de7460    valid_fail
+    Remove Ticketing Date Not Set Confirm By Remark In Apollo PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book One Way Flight X Months From Now    BNESYD+QF    6
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is LDT-1
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book One Way Flight X Months From Now    MSPORD+UA    6
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    Ticketing date cannot be after last ticketing date provided by the airline
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Click Clear All
+    [Teardown]
+
+[SI] Verify That Ticketing Date Is Defaulted To Ticketing Date In PNR
+    [Tags]    de6308
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Retrieve PNR Details From Travelport
+    Get Ticketing Line From Apollo PNR
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is Ticketing Date From PNR
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport
+    Verify Ticketing Date Field In PNR Is Not Changed
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Ticketing Date Is Defaulted To LDT-1 Or Travel Date-1 When Delay Ticketing SO Is Setup As Such
+    [Tags]    us423    de7460    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    apollo
+    Set Client And Traveler    Apollo Legacy - Auto ¦ US423 SO is LDT-1 or Travel Date-1    AutoLegacy    NoramTrvlrEight
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Comment    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book One Way Flight X Months From Now    BNESYD+QF    6
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is LDT-1
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book One Way Flight X Months From Now    MSPORD+UA    6
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    Ticketing date cannot be after last ticketing date provided by the airline
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[AB] Verify That Ticketing Date Is Defaulted To LDT-1 Or Travel Date-1 When Delay Ticketing SO Is Setup As Such
+    [Tags]    us423    de6132    de7460    valid_fail
+    Remove Ticketing Date Not Set Confirm By Remark In Apollo PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book One Way Flight X Months From Now    BNESYD+QF    6
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is LDT-1
+    Enter GDS Command    XT
+    Enter GDS Command    XI
+    Book One Way Flight X Months From Now    MSPORD+UA    6
+    Get LDT-1 From GDS
+    Click Read Booking
+    Click Panel    Delivery
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    Ticketing date cannot be after last ticketing date provided by the airline
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Ticketing Date Is Defaulted To Travel Date-1 When Delay Ticketing SO Is Setup As Yes For LCC Segments
+    [Tags]    us3204    de7460    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US3204    AutoSixteenTwo    NoramTrvlrTwelve
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Comment    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0 3K 1025Y ${departure_date} LAXDEN BK1
+    Enter GDS Command    ¤:5H¤F/LCC-U2*SERVICEFEE TOTAL GBP 19.00
+    Enter GDS Command    ¤:5H¤F/LCC-U2*CREDITCARD CHARGE GBP 5.00
+    Enter GDS Command    ¤:5H¤F/LCC-U2*NUMBER OF PAX 1
+    Enter GDS Command    ¤:5H¤F/LCC-U2*PAID BY ************3404/EXP 0918
+    Enter GDS Command    ¤:5H¤F/LCC-U2*FARE TOTAL GBP 75.48
+    Enter GDS Command    ¤:5H¤F/LCC-U2*TAXES TOTAL GBP 29.01
+    Enter GDS Command    ¤:5H¤F/LCC-U2*GRAND TOTAL GBP 104.49
+    Get Travel Date-1
+    Click Read Booking
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Verify Ticketing Date Field Value Is Travel Date-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Set Ticketing Date Using Current Date
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Set Ticketing Date To Travel Date-1
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *T
+    Verify Travel Date-1 Is Written In The Ticketing Line
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Ticketing Date Is Defaulted To LDT-1 For Muliple Fares
+    [Tags]    us423    de7460    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo Legacy - Auto ¦ US423 LDT for Multiple fares    AutoLegacy    NoramTrvlrTen
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Comment    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD+UA    01Y1    T:$B/S1    6
+    Book Flight X Months From Now    ORDMSP+UA    01Y1    T:$B/S2    6    5
+    Get LDT-1 From GDS For Multiple Fares
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    Fare 1    Fare 2
+    Click Panel    Delivery
+    Set Email Address in Delivery Panel
+    Verify Ticketing Date Field Value Is LDT-1
+    Set Ticketing Date To LDT+1
+    Verify Invalid Ticketing Date Error Message Is Displayed    Ticketing date cannot be after last ticketing date provided by the airline
+    Set Ticketing Date To LDT-1
+    Verify Invalid Ticketing Date Error Message Is Not Displayed
+    Click Clear All

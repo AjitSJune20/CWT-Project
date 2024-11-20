@@ -1,0 +1,147 @@
+*** Settings ***
+Force Tags        amadeus    apac
+Resource          ../../../../resources/common/global_resources.txt
+Resource          ../../../../acceptance_tests/gds/gds_verification.txt
+Resource          ../../client_info/client_info_verification.txt
+Resource          ../../../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          ../delivery_verification.txt
+Resource          ../../../../resources/panels/rail.txt
+
+*** Test Cases ***
+[NB HK] Verify That Warning Is Displayed If Follow Up Date is Local Holiday
+    [Tags]    us587    hk    howan    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US587    BEAR    HKFIVEEIGHTSEVEN
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINNRT/AUA    SS1Y1    FXP/S2    5    5
+    Click Read Booking
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Tick Awaiting Approval    Tick
+    Set Ticketing Date Using Actual Value    04/08/2019
+    Verify Invalid Ticketing Date Warning Message Is Not Displayed
+    Set Follow Up Date Using Actual Value    02/16/2019
+    Verify Follow up Date Warning Tooltip Message Is Correct    This is a Holiday: Lunar New Year's Day
+    Set Follow Up Date Using Actual Value    03/02/2019
+    Verify Follow up Date Warning Message is Not Displayed
+    Set Follow Up Date Using Actual Value    04/08/2019
+    Verify Follow up Date Warning Tooltip Message Is Correct    This is a Holiday: HK Holiday April 08 2019
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Verify PNR Is Successfully Created
+
+[AB HK] Verify That Warning Is Displayed If Follow Up Date is Local Holiday
+    [Tags]    us587    hk    howan    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Set Ticketing Date Using Actual Value    04/08/2019
+    Verify Invalid Ticketing Date Warning Message Is Not Displayed
+    Set Follow Up Date Using Actual Value    03/02/2019
+    Verify Follow up Date Warning Message is Not Displayed
+    Set Follow Up Date Using Actual Value    04/08/2019
+    Verify Follow up Date Warning Tooltip Message Is Correct    This is a Holiday: HK Holiday April 08 2019
+    Click Finish PNR
+    Verify PNR Is Successfully Updated
+
+[NB IN] Verify That Warning Is Displayed If Ticketing Date And Follow Up Date is Local Holiday
+    [Tags]    us587    in    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US587    BEAR    INFIVEEIGHTSEVEN
+    Click New Booking
+    Click Panel    Cust Refs
+    Update PNR for EN or GB
+    Book Flight X Months From Now    MNLSIN/APR    SS1Y1    FXP    10    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 1
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Tick Awaiting Approval    Tick
+    Set Ticketing Date Using Actual Value    03/15/2019
+    Verify Ticketing Date Warning Tooltip Message Is Correct    This is a Holiday: IN Weekday Holiday
+    Set Ticketing Date Using Actual Value    03/30/2019
+    Verify Ticketing Date Error Tooltip Message Is Correct    Warning - You have chosen a weekend day
+    Set Follow Up Date Using Actual Value    01/26/2019
+    Verify Follow up Date Warning Tooltip Message Is Correct    This is a Holiday: Republic Day
+    Click Panel    Delivery
+    Set Ticketing Date Using Actual Value    04/15/2019
+    Verify Ticketing Date Warning Tooltip Message Is Correct    This is a Holiday: THIS IS TO TEST LENGTH PUBLIC HOLODAY DESCRIPTIONs
+    Click Finish PNR
+    Verify PNR Is Successfully Created
+
+[AB IN] Verify That Warning Is Displayed If Ticketing Date And Follow Up Date is Local Holiday
+    [Tags]    us587    in    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Set Ticketing Date Using Actual Value    12/23/2018
+    Verify Ticketing Date Error Tooltip Message Is Correct    Warning - You have chosen a weekend day
+    Set Ticketing Date Using Actual Value    12/30/2020
+    Verify Ticketing Date Error Tooltip Message Is Correct    Ticketing date cannot be after last ticketing date provided by the airline
+    Click Panel    Recap
+    Verify Panel is Red    Delivery
+    Click Panel    Delivery
+    Set Ticketing Date Using Actual Value    03/15/2019
+    Verify Ticketing Date Warning Tooltip Message Is Correct    This is a Holiday: IN Weekday Holiday
+    Click Finish PNR
+    Verify PNR Is Successfully Updated
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Warning Is Displayed If Ticketing Date is Local Holiday
+    [Tags]    us587    sg    howan    obsolete
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US587    BEAR    SGFIVEEIGHTSEVEN
+    Click New Booking
+    Click Panel    Cust Refs
+    Click Update PNR
+    Book Flight X Months From Now    MNLSIN/APR    SS1Y1    FXP    11    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 1
+    Click Panel    Delivery
+    Select Delivery Method    Amadeus edited TKXL
+    Tick Awaiting Approval    Tick
+    Set Ticketing Date Using Actual Value    07/20/2018
+    Verify Ticketing Date Error Tooltip Message Is Correct    Ticketing date cannot be in the past
+    Click Panel    Recap
+    Verify Panel is Red    Delivery
+    Click Panel    Delivery
+    Set Ticketing Date Using Actual Value    04/12/2019
+    Verify Ticketing Date Warning Tooltip Message Is Correct    This is a Holiday: This is a weekday holiday for SG
+    Set Follow Up Date Using Actual Value    04/12/2019
+    Verify Follow up Date Warning Message is Not Displayed
+    Click Finish PNR
+    Verify PNR Is Successfully Created
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+
+[AB SG] Verify That Warning Is Displayed If Ticketing Date is Local Holiday
+    [Tags]    us587    sg    howan    obsolete
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values    Fare Quote 1
+    Click Panel    Delivery
+    Set Ticketing Date Using Actual Value    04/01/2019
+    Verify Invalid Ticketing Date Warning Message Is Not Displayed
+    Populate Delivery Panel With Default Values
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

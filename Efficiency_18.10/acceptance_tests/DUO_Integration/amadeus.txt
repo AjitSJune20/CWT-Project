@@ -1,0 +1,318 @@
+*** Settings ***
+Force Tags        amadeus    emea
+Resource          ../../resources/common/global_resources.txt
+Resource          duo_verification.txt
+Resource          ../../resources/common/utilities.txt
+
+*** Test Cases ***
+[1A AB] Verify That When Team Is 24HSC, Correct Delivery Method Is Defaulted and Ticketing Line Is Retain In The PNR
+        [Documentation]    *Note:*
+    ...
+    ...
+    ...    # If Keyword : *"Verify Ticketing Date Time Limit is Written"* is getting Failed then CHeck it manually because someting GDS change the date so fequently.
+    ...
+    ...    #If Keyword: \ *"Verify OP Remark Is Written"* is getting Failed then CHeck Manually, Sometimes Aquaa process happens so early: Chech \ whether its available in the History using command: RHQ
+    [Tags]    US6435    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 16 - Auto ¦ US2445    AutoOneSixTwo    OptimizeTrvlrNine    CDGLHR/AAF
+    Click Finish PNR
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    UK 24HSC UAT Team
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Amadeus 24HSC Team Level
+    Select On Hold Booking Reasons    Awaiting Approval
+    Get Ticketing Date
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Ticketing Date Time Limit Is Written    LONWL2220
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Queue Remark Is Written    PARWL210G    92    14
+    Verify OP Remark Is Written    PARWL24CA    70    4    AQUA QUEUING
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A AB] Verify That When Team Is 24HSC And The Selected Delivery Method Is 24HSC, Upon Finish PNR The Ticketing Line Is Retain and Follow Up Queues Are Correct
+    [Documentation]    *Note:*
+    ...
+    ...
+    ...    # If Keyword : *"Verify Ticketing Date Time Limit is Written"* is getting Failed then CHeck it manually because someting GDS change the date so fequently.
+    ...
+    ...    #If Keyword: \ *"Verify OP Remark Is Written"* is getting Failed then CHeck Manually, Sometimes Aquaa process happens so early: Chech \ whether its available in the History using command: RHQ
+    [Tags]    US6435    fr
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus FR 16 - Auto ¦ US2445    AutoOneSixTwo    OptimizeTrvlrNine    CDGLHR/AAF
+    Click Finish PNR
+    Click Clear All
+    Change Locale, Profile, Team    en-GB    AutomationUK    UK 24HSC UAT Team
+    Retrieve PNR    ${current_pnr}    skip_clear_all=True
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Air Fare
+    Tick Fare Not Finalised
+    Click Panel    Delivery
+    Get Ticketing Date For Duo
+    Select Delivery Method    Amadeus 24HSC Team Level
+    Verify On Hold Reasons Is Disabled    Awaiting Customer References
+    Verify On Hold Reasons Is Checked    Awaiting Customer References
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Ticketing Date Time Limit Is Written For Duo    ${test_ticketing_date}
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify Queue Remark Is Written    PARWL210G    92    14
+    Verify OP Remark Is Written    PARWL24CA    70    4    AQUA QUEUING
+    #Delete Multiple lines
+    Enter Command In Native GDS    RFCWTPTEST    ER
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Amadeus 24HSC Team Level
+    Select On Hold Booking Reasons    Awaiting Approval
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Ticketing Date Time Limit Is Written For Duo    ${test_ticketing_date}
+    Verify Specific Line Is Written In The PNR    RIR ON HOLD:EN ATTENTE DE VALIDATION
+    Verify OP Remark Is Written    PARWL210G    90    14    PNR ON HOLD
+    Verify Queue Remark Is Written    PARWL210G    91    14
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Create Portrait Profile Defaults To No And Client Account Is Disabled When Subunit SO Is Set To Yes
+    [Tags]    US6449    us6425    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK 24HSC UAT Team
+    Select GDS    Amadeus
+    Search For Client    24HSC UK ¦ US6449 3GDS
+    Set Last Name    PPP
+    Click Search Portrait Profile
+    Click Create Traveller Profile
+    Verify Radio Button Is Selected
+    Populate Add New Traveller    General    Doc    Strange    automation@carlsonwagonlit.com    63    919
+    ...    1234566    No    test
+    Verify Control Object Is Disabled    [NAME:ccboAccountNumber]
+    Click New Booking
+    Click Clear All
+    Create New Booking By Searching For Client    Amadeus    Amadeus FR 16 - Auto ¦ US2445    AutoOneSixTwo    OptimizeTrvlrNine    CDGLHR/AAF    ${EMPTY}
+    ...    FR AUTO AMADEUS
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify Fare Details And Remarks Are Correct For PNR That Has No GUID
+    [Tags]    us6434    uk    us6440
+    Create New Booking And Delete SYEXGVS
+    Change Locale, Profile, Team    en-GB    AutomationUK    UK 24HSC UAT Team
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Verify Default And Mandatory Fields Of Fare Tabs    Fare 1    C1 - Client Special Fare Accepted    A6 - Alternative Carrier Declined
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Amadeus 24HSC Team Level
+    Select On Hold Booking Reasons    Awaiting Approval
+    Click Finish PNR    Amend Booking For Verify Fare Details And Remarks For PNR That Has No GUID
+    Execute Simultaneous Change Handling    Amend Booking For Verify Fare Details And Remarks For PNR That Has No GUID
+    Click Panel    Air Fare
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Retrieve PNR Details    ${current_pnr}
+    Verify Backoffice Remarks Are Written    S2    Fare 1
+    Verify Itinerary Remarks Are Written For UK    Fare 1
+    Verify Fare Remarks Are Written    S2    Fare 1
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify Fare Details And Remarks Are Correct For PNR That Has No GUID And Fare Is Deleted
+    [Tags]    us6434    uk
+    Create New Booking With Multiple Fares And Delete SYEXGVS
+    Change Team    UK 24HSC UAT Team
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Default And Mandatory Fields Of Fare Tabs    Fare 1    C1 - Client Special Fare Accepted    A6 - Alternative Carrier Declined
+    Remove Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Amadeus 24HSC Team Level
+    Select On Hold Booking Reasons    Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Finish PNR    Amend Booking For Verify Fare Details And Remarks For PNR That Has No GUID And Fare Is Deleted
+    Execute Simultaneous Change Handling    Amend Booking For Verify Fare Details And Remarks For PNR That Has No GUID And Fare Is Deleted
+    Click Panel    Air Fare
+    Get Fare Details    Fare 1
+    Get Savings Code    Fare 1
+    Retrieve PNR Details    ${current_pnr}
+    Verify Fare Remarks Are Written    S2    Fare 1
+    Verify Itinerary Remarks Are Written For UK    Fare 1
+    Verify Backoffice Remarks Are Written    S2    Fare 1
+    Verify Fare Remarks Are Not Written    S3    Fare 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify On Hold Reasons for 24HSC Is Disabled and Checked
+    Verify On Hold Booking Reason Is Disabled    Awaiting Customer references
+    Verify On Hold Booking Reason Is Checked    Awaiting Customer references
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+
+Verify Fare Not Finalised Is Ticked
+    Tick Checkbox
+    Verify Checkbox Is Ticked    [NAME:cchkNotFinalised]
+
+Verify Not Known At Time of Booking Chekbox Is Ticked in Cust Ref Panel
+    Verify Checkbox Is Ticked    [NAME:cChkSkipValidation]
+
+Verify Not Known At Time of Booking Checkbox Is Ticked For FOP in Client Info Panel
+    Verify Checkbox Is Ticked    [NAME:chkNotKnown]
+
+Verify On Hold Reason For Non 24HSC Client Is Disabled And Checked
+    Verify On Hold Booking Reason Is Disabled    Awaiting Approval
+    Verify On Hold Booking Reason Is Checked    Awaiting Approval
+    Verify On Hold Booking Reason Is Disabled    Awaiting Form of Payment
+    Verify On Hold Booking Reason Is Checked    Awaiting Form of Payment
+
+Verify On Hold Reasons Is Disabled
+    [Arguments]    @{on_hold_reasons}
+    : FOR    ${on_hold_reason}    IN    @{on_hold_reasons}
+    \    Run Keyword If    "${on_hold_reason}" == "Awaiting Customer Referenes"    Verify Awaiting Approval Is Disabled
+    \    ...    ELSE IF    "${on_hold_reason}" == "Awaiting Fare Details"    Verify Awaiting Customer Reference Is Disabled
+    \    ...    ELSE IF    "${on_hold_reason}" == "Awaiting Approval"    Verify Awaiting Approval Is Disabled
+    \    ...    ELSE IF    "${on_hold_reason}" == "Awaiting Form of Payment"    Verify Awaiting Form of Payment Is Disabled
+    [Teardown]    Take Screenshot
+
+Verify Awaiting Approval Is Disabled
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason3]
+
+Verify Awaiting Fare Details Is Disabled
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason2]
+
+Verify Awaiting Form of Payment Is Disabled
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason5]
+
+Verify On Hold Reasons Is Checked
+    [Arguments]    @{on_hold_reasons_state}
+    : FOR    ${onhold_state}    IN    @{on_hold_reasons_state}
+    \    Run Keyword If    "${onhold_state}" == "Awaiting Customer Referenes"    Verify Awaiting Customer Reference Is Checked
+    \    ...    ELSE IF    "${onhold_state}" == "Awaiting Fare Details"    Verify Awaiting Fare Details Is Checked
+    \    ...    ELSE IF    "${onhold_state}" == "Awaiting Approval"    Verify Awaiting Approval Is Checked
+    \    ...    ELSE IF    "${onhold_state}" == "Awaiting Form of Payment"    Verify Awaiting Form Of Payment Is Checked
+
+Verify Awaiting Customer Reference Is Checked
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}    ${arg5}    ${arg6}
+    ...    ${arg7}    ${arg8}    ${arg9}
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason1]
+
+Verify Awaiting Customer Reference Is Disabled
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}    ${arg5}    ${arg6}
+    Verify Control Object Is Disabled    [NAME:UchkHoldReason1]
+
+Verify Awaiting Fare Details Is Checked
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}    ${arg5}    ${arg6}
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason2]
+
+Verify Awaiting Approval Is Checked
+    [Arguments]    ${arg1}    ${arg2}    ${arg3}
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason3]
+
+Verify Awaiting Form Of Payment Is Checked
+    Verify Checkbox Is Ticked    [NAME:UchkHoldReason5]
+
+Verify On Hold Reasons Remarks Are Written In the PNR
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING FARE DETAILS
+    Verify Specific Line Is Written In The PNR    ON HOLD-AWAITING FORM OF PAYMENT
+
+Create New Booking And Delete SYEXGVS
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    da-DK    AutomationDK    DK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values    Amadeus DK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFive    CDGLHR/AAF    ${EMPTY}    Air Fare
+    ...    Recap
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Air Fare Restrictions    Fully Flexible    Tidsaendring tilladt uden omkostning    Fuld refundering    AF    Tilladt    Ingen minimum ophold
+    ...    Et aar
+    Click Finish PNR
+    Remove PNR Remark And End Transaction    CONF\\*LANG
+    Remove PNR Remark And End Transaction    SYEXGVS
+    Click Clear All
+
+Create New Booking With Multiple Fares And Delete SYEXGVS
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Create New Booking With Round Trip Air Flight Using Default Values    Amadeus 16 - Auto ¦ DE4368    AutoOneSixTwo    EmeaTrvlrTwo    CDGLHR/AAF    SS1Y1    FXP/S2
+    ...    LHRCDG/AAF    SS1Y1    FXP/S3    ${EMPTY}    Air Fare
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Get Fare Details    Fare 2
+    Get Savings Code    Fare 2
+    Click Finish PNR
+    Remove PNR Remark And End Transaction    SYEXGVS
+    Remove PNR Remark And End Transaction    AN0701717
+    Remove PNR Remark And End Transaction    0106
+    Click Clear All
+
+Verify Backoffice Remarks Are Written
+    [Arguments]    ${segment_number}    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    RM *7302*${high_fare_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *7305*${realised_code_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *7303*${low_fare_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *7306*${missed_code_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *7110*${class_code_value_${fare_tab_index}}/${segment_number}
+    Verify Specific Line Is Written In The PNR    RM *7105*${point_of_${fare_tab_index}}/${segment_number}
+
+Verify Fare Remarks Are Not Written
+    [Arguments]    ${segment_number}    ${fare_tab}=Fare 1    ${invoice}=0    ${include_fare_restriction}=True
+    Get Base Fare From Amadeus    ${segment_number}    ${fare_tab}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Not Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:H-${high_fare_${fare_tab_index}} C-${charged_fare_${fare_tab_index}} L-${low_fare_${fare_tab_index}} N-${charged_fare_${fare_tab_index}}
+    Verify Specific Line Is Not Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:HC-${realised_code_value_${fare_tab_index}} LC-${missed_code_value_${fare_tab_index}} CL-${class_code_value_${fare_tab_index}} DEST-${point_of_${fare_tab_index}} TK-ET INV-${invoice}
+    Run Keyword If    "${locale}" == "fr-FR"    Verify Specific Line Is Not Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:PCC-.* AG-.*    True
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Not Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:CHGS-${changes_value_${fare_tab_index}}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Not Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:CANX-${cancellation_value_${fare_tab_index}}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Verify Specific Line Is Not Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:MIN-${min_stay_${fare_tab_index}.upper()}:MAX-${max_stay_${fare_tab_index}.upper()}
+    Run Keyword If    "${include_fare_restriction}" == "True"    Run Keyword If    "${valid_on_${fare_tab_index}}" != "${EMPTY}" and "${locale}" == "fr-FR"    Verify Specific Line Is Not Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:APP-${valid_on_${fare_tab_index}.upper()}:RERTE-AUTORISE
+    Run Keyword If    "${include_fare_restriction}" == "True"    Run Keyword If    "${valid_on_${fare_tab_index}}" != "${EMPTY}" and "${locale}" == "en-GB"    Verify Specific Line Is Not Written In The PNR    RMF BF-${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}:APP-${valid_on_${fare_tab_index}.upper()}:RERTE-PERMITTED
+
+Amend Booking For Verify Fare Details And Remarks For PNR That Has No GUID
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+    Click Panel    Air Fare
+    Verify Default And Mandatory Fields Of Fare Tabs    Fare 1    C1 - Client Special Fare Accepted    A6 - Alternative Carrier Declined
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Amadeus 24HSC Team Level
+    Select On Hold Booking Reasons    Awaiting Approval
+    Click Finish PNR    Amend Booking For Verify Fare Details And Remarks For PNR That Has No GUID
+
+Amend Booking For Verify Fare Details And Remarks For PNR That Has No GUID And Fare Is Deleted
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Default And Mandatory Fields Of Fare Tabs    Fare 1    C1 - Client Special Fare Accepted    A6 - Alternative Carrier Declined
+    Remove Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Verify Delivery Method Default Value Is Correct    Amadeus 24HSC Team Level
+    Select On Hold Booking Reasons    Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Delivery
+
+Verify Ticketing Date Time Limit Is Written For Duo
+    [Arguments]    ${ticketing_date}
+    ${ticketing_date}    Convert Date To Gds Format    ${ticketing_date}    %m/%d/%Y
+    Verify Specific Line Is Written In The PNR    TK TL${ticketing_date}/
+
+Get Ticketing Date For Duo
+    ${test_ticketing_date}    Get Control Text Value    ${date_ticketing}
+    Set Test Variable    ${test_ticketing_date}
+    [Teardown]    Take Screenshot

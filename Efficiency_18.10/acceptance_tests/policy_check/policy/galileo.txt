@@ -1,0 +1,62 @@
+*** Settings ***
+Resource          ../policy_check_verification.txt
+
+*** Test Cases ***
+[1G EMEA] [NB] Verify That City Policy Panel Is Displayed When The Air Segment Has An Origin/destination That Is Out Of Policy
+    [Tags]    US1143
+    Open Power Express And Retrieve Profile    ${version}    Test    U001RTM    en-GB    rmartinezuk    UK QA Team Galileo
+    Select GDS    galileo
+    Set Client And Traveler    UK Galileo - Mark ¦ NonRef    Manson    Victoria
+    Click New Booking
+    Tick Not Known At Time Of Booking
+    Click Update PNR
+    Book Flight X Months From Now    MANCDG*AF    01Y1    FQ    5    1
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Values    City    Manchester Banned    AA - Awaiting Approval    HA - Has authority to travel    NV - Not going to affected area    TA - Traveller/Booker Advised
+    Select Policy Status    Manchester Banned    HA - Has authority to travel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HJ*PCHK:PTP1918-HA-CITY
+
+[1G EMEA] [AB] Verify That City Policy Panel Is Displayed For Every Air Segment That Has An Origin/destination That Is Out Of Policy With Different cities
+    Comment    Set Test Variable    ${gds_switch}    galileo
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Set Test Variable    ${current_pnr}    C97L5S
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    CDGLUX*LG    01Y1    FQS4    6    1
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Values    City    Luxembourg Risk    AA - Awaiting Approval    HA - Has authority to travel    NV - Not going to affected area    TA - Traveller/Booker Advised
+    Select Policy Status    Manchester Banned    NV - Not going to affected area
+    Select Policy Status    Luxembourg Risk    TA - Traveller/Booker Advised
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend City Policy
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    HJ*PCHK:PTP1918-NV-CITY
+    Verify Specific Line Is Written In The PNR    HJ*PCHK:PTP1919-TA-CITY
+
+*** Keywords ***
+Verify Policy Status Values
+    [Arguments]    ${policy_name}    ${policy_reason}    @{expected_policy_status}
+    ${policy_status_row_number}    Get Policy Status Row Number    ${policy_name}    ${policy_reason}
+    ${actual_policy_status}    Get Dropdown Values    [NAME:ccboPolicyStatus${policy_status_row_number}]
+    Collections.List Should Contain Sub List    ${actual_policy_status}    ${expected_policy_status}
+
+Amend City Policy
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    CDGLUX*LG    01Y1    FQS4    5    1
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Policy Check
+    Click Panel    Policy Check
+    Verify Policy Status Values    City    Luxembourg Risk    AA - Awaiting Approval    HA - Has authority to travel    NV - Not going to affected area    TA - Traveller/Booker Advised
+    Select Policy Status    Manchester Banned    NV - Not going to affected area
+    Select Policy Status    Luxembourg Risk    TA – Traveler/Booker Advised
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

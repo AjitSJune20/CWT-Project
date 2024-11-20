@@ -1,0 +1,183 @@
+*** Settings ***
+Resource          ../complete_verification.txt
+Resource          ../../id_traveller/id_traveller_verification.txt
+
+*** Test Cases ***
+[NB] Verify That Traveller Is Automatically Identified When New Booking, Same Traveller Is Selected With One Time Contact
+    [Tags]    US4966    US5675
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    apollo
+    Verify That Alt+X Will Work As Clear All ShortCut Key
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4928    AutoFourNineSixSix    TravellerApo
+    Click Tab In Contact Details    Traveller/Contact
+    Untick Contact Checkbox
+    Select PCC/CompanyProfile/TravellerProfile    1V/24LY/AUTOAPOLLOSTAR2/AUTOFOURNINES23146269
+    Select Client Account Value    U1AOS ¦ Apollo 1 - SyEx ¦ US4928
+    Add One Time Contact    OneTimeCaller    AutoCaller    63    11-11    automation@carlsonwagonlit.com
+    Verify That Alt+X Will Work As Clear All ShortCut Key
+    Click New Booking Via Shortcut Key
+    Verify That Alt+X Will Work As Clear All ShortCut Key
+    Click Panel    Client Info
+    Tick Not Known At Time Of Booking For Form Of Payment
+    Click Update PNR Via Shortcut Key
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    CUST REFS    COMPLETE
+    Book Flight X Months From Now    MSPORD    01Y1    T:$B    6
+    Control Focus    ${title_power_express}    ${EMPTY}    [NAME:ctxtLocator]
+    Click Read Booking Via Shortcut Key
+    Verify That Alt+X Will Work As Clear All ShortCut Key
+    Populate All Panels (Except Given Panels If Any)
+    Get Caller Tab Details    Caller
+    Get Traveller Tab Details    Traveller
+    Click Panel    Recap
+    Verify That Alt+X Will Work As Clear All ShortCut Key
+    Click Finish PNR Via Shortcut Key
+    Set Suite Variable    ${previous_pnr}    ${current_pnr}
+    Delete Current Specific Log File    SyExPerfLog
+    Verify That Alt+X Will Work As Clear All ShortCut Key    [NAME:btnCancelButton]    Clear All
+    Click Clear All With Options    New Booking, Same Traveller
+    Verify Existing Bookings Tab Is Displayed
+    Verify Caller Tab Details
+    Verify That Traveller Tab Details Are Retained    Traveller    ${EMPTY}
+    Verify Control Object Field Is Mandatory    [NAME:CcboProfile]
+    Verify Perflog And AppUsage For New Booking Same Traveller    2    1
+    Select PCC/CompanyProfile/TravellerProfile    1V/24LY/AUTOAPOLLOSTAR2/AUTOFOURNINES23146269
+    Select Client Account Value    U1AOS ¦ Apollo 1 - SyEx ¦ US4928
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1221
+    Click Update PNR
+    Book Flight X Months From Now    MSPORD+UA    01Y1    T:$B    7
+    Click Read Booking
+    Click Panel    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Click Panel    Delivery
+    Populate Delivery Panel Without On Hold Reason
+    Populate All Panels (Except Given Panels If Any)    DELIVERY
+    Verify That Alt+X Will Work As Clear All ShortCut Key
+    Get Caller Tab Details    Caller
+    Get Traveller Tab Details    Traveller
+    Click Finish PNR Via Shortcut Key
+    Delete Current Specific Log File    SyExPerfLog
+    Enter Specific Command On Native GDS    *${current_pnr}    ¤:5T/TKT-TICKETING UNABLE - CC DECLINED OR NEED MANUAL APPROVAL    R:CWTPTEST    ER
+    Retrieve PNR Details From Travelport    ${current_pnr}    *PRT    3
+    Verify Specific Line Is Written In The PNR    TKT-TICKETING UNABLE - CC DECLINED OR NEED MANUAL APPROVAL
+    Click Clear All With Options    New Booking, Same Traveller
+    Verify Existing Bookings Tab Is Displayed
+    Verify Caller Tab Details
+    Verify That Traveller Tab Details Are Retained    Traveller    ${EMPTY}
+    Verify Control Object Field Is Mandatory    [NAME:CcboProfile]
+    Verify Perflog And AppUsage For New Booking Same Traveller    2    1
+    Select PCC/CompanyProfile/TravellerProfile    1V/24LY/AUTOAPOLLOSTAR2/AUTOFOURNINES23146269
+    Select Client Account Value    U1AOS ¦ Apollo 1 - SyEx ¦ US4928
+    Click New Booking
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    CUST REFS
+    Verify That Alt+X Will Work As Clear All ShortCut Key    [NAME:YesBtn]
+
+[QA] Verify That Traveller Is Automatically Identified When New Booking, Same Traveller Is Selected With One Time Contact
+    [Tags]    US4966    US5675
+    [Template]
+    Click Clear All
+    Enable One Time Contact
+    Add One Time Contact    OneTimeCaller    AutoCaller    63    11-11    automation@carlsonwagonlit.com
+    Retrieve PNR via Existing Bookings Tab With One Time Caller    Apollo 16 - Auto ¦ US4928    AutoFourNineSixSix    TravellerApo    ${current_pnr}
+    Click Quick Amend Via Shortcut Key
+    Get Caller Tab Details    Caller
+    Get Traveller Tab Details    Traveller
+    Verify That Alt+X Will Work As Clear All ShortCut Key
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    CUST REFS    DELIVERY    RECAP
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Set Ticketing Date    6
+    Verify That Alt+X Will Work As Clear All ShortCut Key
+    Click Finish PNR Via Shortcut Key    Quick Amend New Booking, Same Traveller With One Time Caller
+    Execute Simultaneous Change Handling    Quick Amend New Booking, Same Traveller With One Time Caller
+    Delete Current Specific Log File    SyExPerfLog
+    Verify That Alt+X Will Work As Clear All ShortCut Key    [NAME:btnCancelButton]    Clear All
+    Click Clear All With Options    New Booking, Same Traveller
+    Verify Existing Bookings Tab Is Displayed
+    Verify That Traveller Tab Details Are Retained    Traveller    ${EMPTY}
+    Verify Control Object Field Is Mandatory    [NAME:CcboProfile]
+    Verify Caller Tab Details
+    Click Tab In Contact Details    Traveller
+    Verify Perflog And AppUsage For New Booking Same Traveller    2    1
+    Select PCC/CompanyProfile/TravellerProfile    1V/24LY/AUTOAPOLLOSTAR2/AUTOFOURNINES23146269
+    Select Client Account Value    U1AOS ¦ Apollo 1 - SyEx ¦ US4928
+    Click New Booking Via Shortcut Key
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    CUST REFS
+    Verify That Alt+X Will Work As Clear All ShortCut Key    [NAME:YesBtn]
+    [Teardown]    run keywords    Cancel PNR Thru GDS Native    ${previous_pnr}
+    ...    AND    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify Caller Tab Details
+    Verify First Name From Caller Tab Is Correct    Caller
+    Verify Last Name From Caller Tab Is Correct    Caller
+    Verify Telephone From Caller Tab Is Correct    Caller
+
+Verify That Alt+X Will Work As Clear All ShortCut Key
+    [Arguments]    ${option}=[NAME:NoBtn]    ${window_title}=${title_power_express}
+    [Timeout]
+    Activate Power Express Window
+    Send    !x
+    Sleep    2
+    Activate Power Express Window
+    ${active_window} =    Win Get Title    [ACTIVE]    ${EMPTY}
+    ${is_clear_all_popup_present} =    Control Command    ${active_window}    ${EMPTY}    [NAME:txtMessageTextBox]    IsVisible    ${EMPTY}
+    ${popup_error_msg} =    Run Keyword If    ${is_clear_all_popup_present} == 1    Control Get Text    ${active_window}    ${EMPTY}    [NAME:txtMessageTextBox]
+    ${popup_error_msg_1} =    Run Keyword If    ${is_clear_all_popup_present} != 1    Control Get Text    Clear All    ${EMPTY}    [NAME:ClearAllMessage]
+    Run Keyword If    ${is_clear_all_popup_present} == 1    Should Be Equal    You are about to reset the application and ignore any active PNR in the GDS.    ${popup_error_msg}    \    You are about to reset the application and ignore any active PNR in the GDS.
+    ...    ${popup_error_msg_1}
+    Run Keyword If    ${is_clear_all_popup_present} != 1    Should Be Equal    You are about to reset the application and ignore any active PNR in the GDS.    ${popup_error_msg_1}
+    Click Control Button    ${option}    ${window_title}
+
+Verify That Alt+U Will Work As Update PNR Button ShortCut Key
+    Activate Power Express Window
+    Send    !u
+    Wait Until Progress Info is Completed
+    Wait Until Progress Info is Completed
+
+Get Caller Tab Details
+    [Arguments]    ${tab_name}
+    ${firstname} =    Get First Name From Caller Tab    ${tab_name}
+    ${lastname} =    Get Last Name From Caller Tab    ${tab_name}
+    ${actual_telephone} =    Get Telephone From Caller Tab    ${tab_name}
+    Set Test Variable    ${${tab_name}_firstname}    ${firstname}
+    Set Test Variable    ${${tab_name}_lastname}    ${lastname}
+    Set Test Variable    ${${tab_name}_telephone}    ${actual_telephone}
+
+Retrieve PNR via Existing Bookings Tab With One Time Caller
+    [Arguments]    ${client}    ${last_name}    ${first_name}    ${pnr}    ${apply_delay}=1
+    Should Be True    "${pnr}" != "${EMPTY}"    PNR should exist.
+    Sleep    5
+    Set Client And Traveler    ${client}    ${last_name}    ${first_name}
+    ${existing_booking_tab}    Set Variable If    '${locale}' == 'fr-FR'    servations existantes    '${locale}' == 'de-DE'    Bestehende Buchungen    '${locale}' != 'fr-FR' and '${locale}' != 'de-DE'
+    ...    Existing Bookings
+    Mouse Click    LEFT    30    65
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:TopLeftTabControl]
+    Select Tab Control    ${existing_booking_tab}
+    Set Control Text Value    [NAME:ctxtLocator]    ${pnr}
+    Control Click    ${title_power_express}    ${EMPTY}    [NAME:btnSearchPNR]
+    Wait Until Control Object Is Visible    [NAME:UGridBookings]    ${title_power_express}
+    Sleep    ${apply_delay}
+    [Teardown]    Take Screenshot
+
+Quick Amend New Booking, Same Traveller With One Time Caller
+    Click Clear All
+    Enable One Time Contact
+    Add One Time Contact    OneTimeCaller    AutoCaller    63    11-11    automation@carlsonwagonlit.com
+    Retrieve PNR via Existing Bookings Tab With One Time Caller    Apollo 16 - Auto ¦ US4928    AutoFourNineSixSix    TravellerApo    ${current_pnr}
+    Click Quick Amend Via Shortcut Key
+    Get Caller Tab Details    Caller
+    Get Traveller Tab Details    Traveller
+    Verify That Alt+X Will Work As Clear All ShortCut Key
+    Verify Actual Panel Equals To Expected Panel    CLIENT INFO    CUST REFS    DELIVERY    RECAP
+    Click Panel    Delivery
+    Verify Reasons For Placing Booking On Hold Section In Delivery Panel Is Disabled
+    Set Ticketing Date    6
+    Verify That Alt+X Will Work As Clear All ShortCut Key
+    Click Finish PNR Via Shortcut Key    Quick Amend New Booking, Same Traveller With One Time Caller
+
+Enable One Time Contact
+    Set Last Name    _
+    Click Search Portrait Profile
+    Click Create One Time Contact

@@ -1,0 +1,794 @@
+*** Settings ***
+Force Tags        sabre    apac
+Resource          ../air_fare_verification.txt
+Resource          ../../../resources/panels/air_fare.txt
+Resource          ../../../resources/common/gds_native.txt
+
+*** Test Cases ***
+[NB NZ] Verify That Ticketing Remarks Are Correctly Written For Itinerary With TTAS And DOM Segments (With And Without NETT Fare)
+    [Documentation]    Low Fare Trans Calculation SO is set to WPNIN
+    ...    Air Panel - Hide Realised Savings SO is set to Yes
+    ...    Client Fee Geographical Regions SO is set to INT, DOM & TTAS
+    [Tags]    us2560    de6153    de6221    valid_fail    de6285
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationNZ    NZ AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre NZ 16 - Auto ¦ US2560 nz    Auto    KlayT
+    Click New Booking
+    Click Panel    Client Info
+    Click Update PNR
+    Book Flight X Months From Now    AKLSYD‡QF    01Y1    ${EMPTY}    5    0
+    Book Flight X Months From Now    SYDAKL‡QF    01Y1    WPAQF‡K10‡FCASH‡RQ‡S1-2    5    3
+    Book Flight X Months From Now    AKLNPL‡JQ    01Y1    ${EMPTY}    5    6
+    Book Flight X Months From Now    NPLAKL‡JQ    01Y1    WPAJQ‡K10‡FCASH‡RQ‡S3-4    5    9
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set High Fare Field (If blank) with Charged Fare
+    Select Missed Saving Code Value    L - Lowest Fare Accepted
+    Verify Realised Saving Code Field Is Hidden
+    Verify Class Code Default Value Is Correct    NA - Published Fare
+    Verify Route Code Default Value    TTAS
+    Populate Air Fare Restrictions Using Default Values
+    Compute High Fare And Low Fare For Ticketing Remarks
+    Click Pricing Extras Tab
+    Set Nett Fare Field    2000
+    Set Commission Rebate Amount    0
+    Click Fare Tab    Fare 2
+    Set High Fare Field (If blank) with Charged Fare
+    Select Missed Saving Code Value    M - Miscellaneous
+    Verify Realised Saving Code Field Is Hidden
+    Verify Class Code Default Value Is Correct    NA - Published Fare
+    Verify Route Code Default Value    DOM
+    Populate Air Fare Restrictions Using Default Values
+    Compute High Fare And Low Fare For Ticketing Remarks
+    Click Pricing Extras Tab
+    Set Commission Rebate Amount    0
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T‡    1
+    Verify Specific Line Is Written In The PNR    T‡T1F1 RTE-TTAS//TY-NETT//FQ-1//SEG-ALL//
+    Verify Specific Line Is Written In The PNR    T‡T1F1 BF\\-(USD|NZD)2000\\.00//TOTAL\\-(USD|NZD).*//    true
+    Verify Specific Line Is Written In The PNR    T‡T1F1 NETT\\-(USD|NZD)2000\\.00//MARKUP\\-0\\.00//    true
+    Verify Specific Line Is Written In The PNR    T‡T1F1 LF-${low_fare_1}//LC-L//RF-${high_fare_1}//
+    Verify Specific Line Is Written In The PNR    T‡T1F1 CLASS-NA//DISC-0.00//
+    Verify Specific Line Is Written In The PNR    T‡T2F2 RTE-DOM//TY-ETK//FQ-2//SEG-ALL//
+    Verify Specific Line Is Written In The PNR    T‡T2F2 BF\\-(USD|NZD).*//TOTAL\\-(USD|NZD).*//    true
+    Verify Specific Line Is Not Written In The PNR    T‡T2F2 NETT-
+    Verify Specific Line Is Not Written In The PNR    T‡T2F2 MARKUP-
+    Verify Specific Line Is Written In The PNR    T‡T2F2 LF-${low_fare_2}//LC-M//RF-${high_fare_2}//
+    Verify Specific Line Is Written In The PNR    T‡T2F2 CLASS-NA//DISC-0.00//
+    Verify Specific Line Is Written In The PNR    T‡TOTAL TICKETS-2//TICKETS TO ISSUE-1/2//BO-MATRIX//
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AU] Verify That Ticketing Remarks Are Correctly Written For Itinerary With DOM Segments (With NETT Fare And Commission Rebate)
+    [Documentation]    Low Fare Trans Calculation SO is set to WPNC
+    ...    Air Panel - Hide Realised Savings SO is set to Yes
+    ...    Client Fee Geographical Regions SO is set to INT, DOM & TTAS
+    [Tags]    us2560    de6153    valid_fail    de6285
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationAU    AU AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre AU 16 - Auto ¦ US2560    AutoSixteenSeven    OptimizeTrvlrFive
+    Click New Booking
+    Click Panel    Client Info
+    Click Update PNR
+    Book Flight X Months From Now    SYDMEL‡VA    01Y1    ${EMPTY}    5    0
+    Book Flight X Months From Now    MELSYD‡VA    01Y1    WPAVA‡K10‡FCASH‡RQ    5    3
+    Enter GDS Command    W-TestAddress
+    Enter GDS Command    5/
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set High Fare Field    3333.22
+    Set Low Fare Field    22.52
+    Select Missed Saving Code Value    B - Passenger Requested Specific Supplier
+    Verify Realised Saving Code Field Is Hidden
+    Verify Class Code Default Value Is Correct    NA - Published Fare
+    Verify Route Code Default Value    DOM
+    Populate Air Fare Restrictions Using Default Values
+    Click Pricing Extras Tab
+    Set Nett Fare Field    400
+    Set Commission Rebate Amount    8
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T‡    1
+    Verify Specific Line Is Written In The PNR    T‡T1F1 RTE-DOM//TY-NETT//FQ-1//SEG-ALL//
+    Verify Specific Line Is Written In The PNR    T‡T1F1 BF\\-(USD|AUD|NZD)400\\.00//TOTAL\\-(USD|AUD|NZD).*//    true
+    Verify Specific Line Is Written In The PNR    T‡T1F1 NETT\\-(USD|AUD|NZD)400\\.00//MARKUP\\-0\\.00//    true
+    Verify Specific Line Is Written In The PNR    T‡T1F1 LF-23//LC-B//RF-3333//
+    Verify Specific Line Is Written In The PNR    T‡T1F1 CLASS-NA//DISC-8.00//
+    Verify Specific Line Is Not Written In The PNR    T‡T2F2
+    Verify Specific Line Is Written In The PNR    T‡TOTAL TICKETS-1//TICKETS TO ISSUE-1//BO-MATRIX//
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AU] Verify That Ticketing Remarks Are Correctly Written For Itinerary With DOM Segments (With Commission Rebate)
+    [Documentation]    Low Fare Trans Calculation SO is set to WPNC
+    ...    Air Panel - Hide Realised Savings SO is set to Yes
+    ...    Client Fee Geographical Regions SO is set to INT, DOM & TTAS
+    [Tags]    us2560    de6153    valid_fail    de6285
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationAU    AU AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre AU 16 - Auto ¦ US2560    AutoSixteenSeven    OptimizeTrvlrFive
+    Click New Booking
+    Click Panel    Client Info
+    Click Update PNR
+    Book Flight X Months From Now    SYDMEL‡VA    01Y1    ${EMPTY}    5    0
+    Book Flight X Months From Now    MELSYD‡VA    01Y1    WPAVA‡K10‡FCASH‡RQ    5    3
+    Enter GDS Command    W-TestAddress
+    Enter GDS Command    5/
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set High Fare Field    3333.62
+    Set Low Fare Field    22.22
+    Select Missed Saving Code Value    B - Passenger Requested Specific Supplier
+    Verify Realised Saving Code Field Is Hidden
+    Verify Class Code Default Value Is Correct    NA - Published Fare
+    Verify Route Code Default Value    DOM
+    Populate Air Fare Restrictions Using Default Values
+    Click Pricing Extras Tab
+    Set Commission Rebate Amount    6
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T‡    1
+    Verify Specific Line Is Written In The PNR    T‡T1F1 RTE-DOM//TY-ETK//FQ-1//SEG-ALL//
+    Verify Specific Line Is Written In The PNR    T‡T1F1 BF\\-(NZD|AUD).*//TOTAL\\-(NZD|AUD).*//    true
+    Verify Specific Line Is Not Written In The PNR    T‡T1F1 NETT-
+    Verify Specific Line Is Not Written In The PNR    T‡T1F1 MARKUP-
+    Verify Specific Line Is Written In The PNR    T‡T1F1 LF-22//LC-B//RF-3334//
+    Verify Specific Line Is Written In The PNR    T‡T1F1 CLASS-NA//DISC-6.00//
+    Verify Specific Line Is Not Written In The PNR    T‡T2F2
+    Verify Specific Line Is Written In The PNR    T‡TOTAL TICKETS-1//TICKETS TO ISSUE-1//BO-MATRIX//
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB AU] Verify That Ticketing Remarks Are Correctly Written For Itinerary With INT Segments (Without NETT FARE And Commission Rebate)
+    [Documentation]    Low Fare Trans Calculation SO is set to WPNC
+    ...    Air Panel - Hide Realised Savings SO is set to Yes
+    ...    Client Fee Geographical Regions SO is set to INT, DOM & TTAS
+    [Tags]    us2560    de6153    valid_fail    de6285
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationAU    AU AUTO SABRE
+    Select GDS    Sabre
+    Set Client And Traveler    Sabre AU 16 - Auto ¦ US2560    AutoSixteenSeven    OptimizeTrvlrFive
+    Click New Booking
+    Click Panel    Client Info
+    Click Update PNR
+    Book Flight X Months From Now    MELLAX‡QF    01Y1    ${EMPTY}    5    0
+    Book Flight X Months From Now    LAXMEL‡QF    01Y1    WPAQF‡K10‡FCASH‡RQ    5    3
+    Enter GDS Command    W-TestAddress
+    Enter GDS Command    5/
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Set High Fare Field    7000.99
+    Set Low Fare Field    76.25
+    Select Missed Saving Code Value    B - Passenger Requested Specific Supplier
+    Verify Realised Saving Code Field Is Hidden
+    Verify Class Code Default Value Is Correct    NA - Published Fare
+    Verify Route Code Default Value    INT
+    Populate Air Fare Restrictions Using Default Values
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *T‡    1
+    Verify Specific Line Is Written In The PNR    T‡T1F1 RTE-INT//TY-ETK//FQ-1//SEG-ALL//
+    Verify Specific Line Is Written In The PNR    T‡T1F1 BF\\-AUD.*//TOTAL\\-AUD.*//    true
+    Verify Specific Line Is Not Written In The PNR    T‡T1F1 NETT-
+    Verify Specific Line Is Not Written In The PNR    T‡T1F1 MARKUP-
+    Verify Specific Line Is Written In The PNR    T‡T1F1 LF-76//LC-B//RF-7001//
+    Verify Specific Line Is Written In The PNR    T‡T1F1 CLASS-NA//DISC-0.00//
+    Verify Specific Line Is Not Written In The PNR    T‡T2F2
+    Verify Specific Line Is Written In The PNR    T‡TOTAL TICKETS-1//TICKETS TO ISSUE-1//BO-MATRIX//
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Transaction Fee Is Pre-populated With 30SGD Or 60 SGD And Are Written To The Remarks For The Following Flights: SIN-KUL or KUL-SIN
+    [Tags]    us22    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Book Flight X Months From Now    SINKUL‡MH    01Y1    WPRQ¥S1    6    5
+    Book Flight X Months From Now    KULSIN‡MH    01Y1    WPRQ¥S2    6    10
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    ${EMPTY}    6    15
+    Book Flight X Months From Now    MNLKUL‡PR    01Y1    WPRQ¥S3-4    6    20
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    30.00-Any-User Defined 3
+    Get Transaction Fee Amount Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    30.00-Any-User Defined 3
+    Get Transaction Fee Amount Value    Fare 2
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    60.00-Any-Standard
+    Get Transaction Fee Amount Value    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify Transaction Fee Remarks Are Written In The PNR    Fare 1    Offline    MH
+    Verify Transaction Fee Remarks Are Written In The PNR    Fare 2    Offline    MH
+    Verify Transaction Fee Remarks Are Written In The PNR    Fare 3    Offline    PR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Transaction Fee Is Pre-populated With 60SGD And Is Written In The Remarks When The Flights Are Not SIN-KUL, KUL-SIN, SIN-KUL-SIN Or KUL-SIN-KUL
+    [Tags]    us22    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    1220
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    ${EMPTY}    6    5
+    Book Flight X Months From Now    MNLKUL‡PR    01Y1    WPRQ¥S1-2    6    10
+    Book Flight X Months From Now    KULMNL0100‡MH    01Y1    ${EMPTY}    6    15
+    Book Flight X Months From Now    MNLSIN1000‡MH    01Y1*    WPRQ¥S3-5    6    15
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    60.00-Any-Standard
+    Get Transaction Fee Amount Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    60.00-Any-Standard
+    Get Transaction Fee Amount Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify Transaction Fee Remarks Are Written In The PNR    Fare 1    Offline    PR
+    Verify Transaction Fee Remarks Are Written In The PNR    Fare 2    Offline    MH
+
+[AB SG] Verify That Transaction Fee Is Pre-populated With 60SGD And Is Written In The Remarks When The Flights Are Not SIN-KUL, KUL-SIN, SIN-KUL-SIN Or KUL-SIN-KUL
+    [Tags]    us22    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    60.00-Any-Standard
+    Get Transaction Fee Amount Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    60.00-Any-Standard
+    Get Transaction Fee Amount Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That Transaction Fee Is Pre-populated With 60SGD And Is Written In The Remarks When The Flights Are Not SIN-KUL, KUL-SIN, SIN-KUL-SIN Or KUL-SIN-KUL If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify Transaction Fee Remarks Are Written In The PNR    Fare 1    Offline    PR
+    Verify Transaction Fee Remarks Are Written In The PNR    Fare 2    Offline    MH
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Merchant Fee Is Pre-populated With The Correct Value And Is Written To The Remarks When PNR's FOP Is CC And Filed Fare's FOP Is Invoice
+    [Tags]    us20    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U003JDC    en-GB    jcabela    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    375532696401818    1220
+    Book Flight X Months From Now    SINSYD‡QF    01Y1    WPRQ¥S1    6    5
+    Book Flight X Months From Now    SYDSIN‡QF    01Y1    WPRQ¥S2    6    10
+    Book Flight X Months From Now    SINPER‡QF    01Y1    WPRQ¥S3    6    15
+    Enter GDS Command    WPAQF‡RQ‡FAGTINV‡S1    WPAQF‡RQ‡S2‡FINVAGT
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Get Merchant Fee Amount Value    Fare 1
+    Verify Merchant Fee Fields Are Displayed    Fare 1
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 1    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 1    SG
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Get Merchant Fee Amount Value    Fare 2
+    Verify Merchant Fee Fields Are Displayed    Fare 2
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 2    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 2    SG
+    Click Fare Tab    Fare 3
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Get Merchant Fee Amount Value    Fare 3
+    Verify Merchant Fee Fields Are Not Displayed    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    use_copy_content_from_sabre=False
+    Verify FOP Remark Is Written In The Accounting Lines    Fare 1    1    SG
+    Verify FOP Remark Is Written In The Accounting Lines    Fare 2    1    SG
+    Verify FOP Remark Is Written In The Accounting Lines    Fare 3    1    SG
+    [Teardown]
+
+[AB] Verify That Merchant Fee Is Pre-populated With The Correct Value And Is Written To The Remarks When PNR's FOP Is CC And Filed Fare's FOP Is Invoice
+    [Tags]    us20    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Fare Quote and Flight Segment    PQD-ALL    XI
+    Book Flight X Months From Now    SINAKL‡NZ    01Y1    WPRQ¥S1    6    5    #Book this segmemt in GetThere
+    Book Flight X Months From Now    AKLSIN‡NZ    01Y1    WPRQ¥S2    6    10    #add segment in PEx
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ¥S3    6    15    #add segment in PEx
+    Enter GDS Command    WPANZ‡RQ‡FAGTINV‡S1    WPAPR‡RQ‡S3‡FINVAGT
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    NZ
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Merchant Fee Fields Are Displayed    Fare 1
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 1    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 1    SG
+    Get Merchant Fee Amount Value    Fare 1
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    NZ
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Merchant Fee Fields Are Not Displayed    Fare 2
+    Get Merchant Fee Amount Value    Fare 2
+    Click Fare Tab    Fare 3
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Charged Fare Value    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Verify Merchant Fee Fields Are Displayed    Fare 3
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 3    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 3    SG
+    Get Merchant Fee Amount Value    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That Merchant Fee Is Pre-populated With The Correct Value And Is Written To The Remarks When PNR's FOP Is CC And Filed Fare's FOP Is Invoice If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    use_copy_content_from_sabre=False
+    Verify FOP Remark Is Written In The Accounting Lines    Fare 1    1    SG
+    Verify FOP Remark Is Written In The Accounting Lines    Fare 2    1    SG
+    Verify FOP Remark Is Written In The Accounting Lines    Fare 3    1    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Airline Commission Fields Are Defaulted To 0.00 When There Is No Airline Commission From PQ
+    [Tags]    us21    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    375532696401818    1220
+    Book Flight X Months From Now    SINDXB‡QF    01Y1*    WPRQ¥S1    6    5
+    Book Flight X Months From Now    DXBMNL‡EK    01Y1*    WPRQ¥S2    6    10
+    Book Flight X Months From Now    MNLSIN‡PR    01Y1*    WPRQ¥S3    6    15
+    Verify And Store Comm Pct Data In PQ    Fare 1    False
+    Verify And Store Comm Pct Data In PQ    Fare 2    False
+    Verify And Store Comm Pct Data In PQ    Fare 3    False
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 1    0.00
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    0.00
+    Click Fare Tab    Fare 3
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    0.00
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    use_copy_content_from_sabre=False
+
+[AB SG] Verify That Airline Commission Fields Are Defaulted To 0.00 When There Is No Airline Commission From PQ
+    [Tags]    us21    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 1    0.00
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    0.00
+    Click Fare Tab    Fare 3
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 3    0.00
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow Verify That Airline Commission Fields Are Defaulted To 0.00 When There Is No Airline Commission From PQ If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    use_copy_content_from_sabre=False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Airline Commission Percentage Is Retrieved From PQ And Pre-populated In Pricing Extras Panel
+    [Tags]    us21    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    375532696401818    1220
+    Book Flight X Months From Now    SINDXB‡QF    01Y1    WPNCB‡RQ‡KP10¥S1    6    5
+    Book Flight X Months From Now    DXBMNL‡EK    01Y1    WPNCB‡RQ‡KP12.00¥S2    6    10
+    Book Flight X Months From Now    MNLSIN‡PR    01Y1    WPAPR‡RQ‡KP2¥S3    6    15
+    Verify And Store KP Data In PQ    Fare 1    True
+    Verify And Store KP Data In PQ    Fare 2    True
+    Verify And Store KP Data In PQ    Fare 3    True
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 1    ${fare_1_kp}
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    ${fare_2_kp}
+    Click Fare Tab    Fare 3
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 3    ${fare_3_kp}
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    use_copy_content_from_sabre=False
+
+[AB SG] Verify That Airline Commission Percentage Is Retrieved From PQ And Pre-populated In Pricing Extras Panel
+    [Tags]    us21    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 1    ${fare_1_kp}
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    ${fare_2_kp}
+    Click Fare Tab    Fare 3
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 3    ${fare_3_kp}
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow Verify That Airline Commission Percentage Is Retrieved From PQ And Pre-populated In Pricing Extras Panel If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    use_copy_content_from_sabre=False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Airline Commission Percentage Is Retrieved From Comm Pct And Pre-populated In Pricing Extras Panel
+    [Tags]    us21    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Dos
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    375532696401818    1220
+    Book Flight X Months From Now    SINDXB‡EK    01Y1    WPNCB‡RQ‡S1    6    5
+    Book Flight X Months From Now    SINLAX1NRT‡NH    01Y1*    WPNCB‡RQ‡S2-3    6    10
+    Verify And Store Comm Pct Data In PQ    Fare 1    True
+    Verify And Store Comm Pct Data In PQ    Fare 2    True
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 1    ${fare_1_comm_pct}
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    ${fare_2_comm_pct}
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    use_copy_content_from_sabre=False
+
+[AB SG] Verify That Airline Commission Percentage Is Retrieved From Comm Pct And Pre-populated In Pricing Extras Panel
+    [Tags]    us21    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 1    ${fare_1_comm_pct}
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    ${fare_2_comm_pct}
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow For Verify That Airline Commission Percentage Is Retrieved From Comm Pct And Pre-populated In Pricing Extras Panel If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    use_copy_content_from_sabre=False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Workflow For Verify That Airline Commission Percentage Is Retrieved From Comm Pct And Pre-populated In Pricing Extras Panel
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 1    ${fare_1_comm_pct}
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    ${fare_2_comm_pct}
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That Transaction Fee Is Pre-populated With 60SGD And Is Written In The Remarks When The Flights Are Not SIN-KUL, KUL-SIN, SIN-KUL-SIN Or KUL-SIN-KUL
+    [Tags]    us22
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    60.00-Any-Standard
+    Get Transaction Fee Amount Value    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Click Pricing Extras Tab
+    Verify Transaction Fee Is Selected By Default    60.00-Any-Standard
+    Get Transaction Fee Amount Value    Fare 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking Workflow Verify That Merchant Fee Is Pre-populated With The Correct Value And Is Written To The Remarks When PNR's FOP Is CC And Filed Fare's FOP Is Invoice
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete Fare Quote and Flight Segment    PQD-ALL    XI
+    Book Flight X Months From Now    SINAKL‡NZ    01Y1    WPRQ¥S1    6    5    #Book this segmemt in GetThere
+    Book Flight X Months From Now    AKLSIN‡NZ    01Y1    WPRQ¥S2    6    10    #add segment in PEx
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ¥S3    6    15    #add segment in PEx
+    Enter GDS Command    WPANZ‡RQ‡FAGTINV‡S1    WPAPR‡RQ‡S3‡FINVAGT
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    NZ
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Merchant Fee Fields Are Displayed    Fare 1
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 1    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 1    SG
+    Get Merchant Fee Amount Value    Fare 1
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    NZ
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Merchant Fee Fields Are Not Displayed    Fare 2
+    Get Merchant Fee Amount Value    Fare 2
+    Click Fare Tab    Fare 3
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    PR
+    Get Charged Fare Value    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Verify Merchant Fee Fields Are Displayed    Fare 3
+    Verify Merchant Fee Percentage Is Retrieved In Pricing Extras    Fare 3    2.00
+    Verify Merchant Fee Amount Is Retrieved In Pricing Extras    Fare 3    SG
+    Get Merchant Fee Amount Value    Fare 3
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking Workflow Verify That Airline Commission Fields Are Defaulted To 0.00 When There Is No Airline Commission From PQ
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 1    0.00
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    0.00
+    Click Fare Tab    Fare 3
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 3    0.00
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking Workflow For Verify That Airline Commission Percentage Is Retrieved From PQ And Pre-populated In Pricing Extras Panel
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 1    ${fare_1_comm_pct}
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    ${fare_2_comm_pct}
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    use_copy_content_from_sabre=False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+Amend Booking Workflow Verify That Airline Commission Percentage Is Retrieved From PQ And Pre-populated In Pricing Extras Panel
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 1
+    Get Route Code Value    Fare 1
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 1    ${fare_1_kp}
+    Click Fare Tab    Fare 2
+    Populate Fare Tab With Default Values    Fare 2
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 2
+    Get Route Code Value    Fare 2
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 2    ${fare_2_kp}
+    Click Fare Tab    Fare 3
+    Populate Fare Tab With Default Values    Fare 3
+    Select Fare Type    Corporate fare
+    Set LFCC Field    QF
+    Get Charged Fare Value    Fare 3
+    Get Route Code Value    Fare 3
+    Click Pricing Extras Tab
+    Verify Airline Commission Percentage Is Retrieved In Pricing Extras    Fare 3    ${fare_3_kp}
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    use_copy_content_from_sabre=False
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+Verify Airline Commission Percentage Is Retrieved In Pricing Extras
+    [Arguments]    ${fare_tab}    ${expected_airline_commission_percentage}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Airline Commission Percentage Value    ${fare_tab}
+    Run Keyword And Continue On Failure    Should Be Equal    ${airline_commission_percentage}    ${expected_airline_commission_percentage}
+    [Teardown]    Take Screenshot

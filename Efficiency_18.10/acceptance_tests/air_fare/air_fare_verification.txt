@@ -1,0 +1,1156 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Resource          ../delivery/delivery_verification.txt
+Resource          ../gds/gds_verification.txt
+
+*** Keywords ***
+Get BF Lines
+    [Arguments]    ${fare_tab}    ${start}=0    ${end}=6
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${bf_lines}    Get Lines Containing String    ${pnr_details}    F‡BF-
+    Should Not Be Empty    ${bf_lines}    BF Lines Is Empty
+    ${bf_lines}    Split To Lines    ${bf_lines}
+    ${bf_lines_collection}    Create List
+    : FOR    ${index}    IN RANGE    ${start}    ${end}
+    \    ${bf_line}    Get From List    ${bf_lines}    ${index}
+    \    ${bf_line}    Fetch From Right    ${bf_line}    F‡
+    \    Append To List    ${bf_lines_collection}    ${bf_line.strip()}
+    Set Test Variable    ${bf_lines_collection_fare_${fare_tab_index}}    ${bf_lines_collection}
+
+Get Base Fare Of Charged Fare
+    [Arguments]    ${fare_tab}
+    Get Base Fare And Tax From Sabre For Fare X Tab    ${fare_tab}    SGD    *PQ    False
+
+Get Charged Fare Value In The Remarks
+    [Arguments]    ${fare_tab}    ${currency}    ${command}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    ${command}    use_copy_content_from_sabre=False
+    ${charged_fare_remark}    Get String Matching Regexp    ${currency}[0-9]+\.[0-9][0-9]ADT    ${pnr_details}
+    ${charged_fare_remark}    Remove All Non-Integer (retain period)    ${charged_fare_remark}
+    Set Test Variable    ${charged_fare_remark_${fare_tab_index}}    ${charged_fare_remark}
+
+Get Fare Details In BF Remarks
+    [Arguments]    ${fare_tab}    ${start}=0    ${end}=6
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get BF Lines    ${fare_tab}    ${start}    ${end}
+    ${high_fare_remark}    Get String Matching Regexp    H\-[0-9]+\.[0-9][0-9]    ${bf_lines_collection_fare_${fare_tab_index}[1]}
+    ${high_fare_remark}    Fetch From Right    ${high_fare_remark}    H-
+    ${low_fare_remark}    Get String Matching Regexp    L\-[0-9]+\.[0-9][0-9]    ${bf_lines_collection_fare_${fare_tab_index}[1]}
+    ${low_fare_remark}    Fetch From Right    ${low_fare_remark}    L-
+    ${charged_fare_remark}    Get String Matching Regexp    C\-[0-9]+\.[0-9][0-9]    ${bf_lines_collection_fare_${fare_tab_index}[1]}
+    ${charged_fare_remark}    Fetch From Right    ${charged_fare_remark}    C-
+    ${realise_saving_code_remark}    Get String Matching Regexp    HC\-[a-zA-Z]{2}    ${bf_lines_collection_fare_${fare_tab_index}[2]}
+    ${realise_saving_code_remark}    Fetch From Right    ${realise_saving_code_remark}    HC-
+    ${missed_saving_code_remark}    Get String Matching Regexp    LC\-[a-zA-Z]{1}    ${bf_lines_collection_fare_${fare_tab_index}[2]}
+    ${missed_saving_code_remark}    Fetch From Right    ${missed_saving_code_remark}    LC-
+    ${class_code_remark}    Get String Matching Regexp    CL\-[a-zA-Z]{2}    ${bf_lines_collection_fare_${fare_tab_index}[2]}
+    ${class_code_remark}    Fetch From Right    ${class_code_remark}    CL-
+    ${cancellation_remark}    Get String Matching Regexp    CANX\-[0-9a-zA-Z]+\ [a-zA-Z]+    ${bf_lines_collection_fare_${fare_tab_index}[3]}
+    ${cancellation_remark}    Fetch From Right    ${cancellation_remark}    CANX-
+    ${changes_remark}    Get String Matching Regexp    CHGS\-[0-9a-zA-Z]+\ [a-zA-Z]+    ${bf_lines_collection_fare_${fare_tab_index}[4]}
+    ${changes_remark}    Fetch From Right    ${changes_remark}    CHGS-
+    ${min_stay_remark}    Get String Matching Regexp    MIN\-[0-9a-zA-Z]+\ [a-zA-Z]+    ${bf_lines_collection_fare_${fare_tab_index}[5]}
+    ${min_stay_remark}    Fetch From Right    ${min_stay_remark}    MIN-
+    ${max_stay_remark}    Get String Matching Regexp    MAX\-[0-9a-zA-Z]+\ [a-zA-Z]+    ${bf_lines_collection_fare_${fare_tab_index}[5]}
+    ${max_stay_remark}    Fetch From Right    ${max_stay_remark}    MAX-
+    Set Suite Variable    ${criteria_line_${fare_tab_index}}    ${bf_lines_collection_fare_${fare_tab_index}[0]}
+    Set Suite Variable    ${missed_saving_code_remark_${fare_tab_index}}    ${missed_saving_code_remark}
+    Set Suite Variable    ${realised_saving_code_remark_${fare_tab_index}}    ${realise_saving_code_remark}
+    Set Suite Variable    ${class_code_remark_${fare_tab_index}}    ${class_code_remark}
+    Set Suite Variable    ${cancellation_remark_${fare_tab_index}}    ${cancellation_remark}
+    Set Suite Variable    ${changes_remark_${fare_tab_index}}    ${changes_remark}
+    Set Suite Variable    ${min_stay_remark_${fare_tab_index}}    ${min_stay_remark}
+    Set Suite Variable    ${max_stay_remark_${fare_tab_index}}    ${max_stay_remark}
+    Set Suite Variable    ${high_fare_remark_${fare_tab_index}}    ${high_fare_remark}
+    Set Suite Variable    ${low_fare_remark_${fare_tab_index}}    ${low_fare_remark}
+    Set Suite Variable    ${charged_fare_remark_${fare_tab_index}}    ${charged_fare_remark}
+
+Get High Fare, Charged Fare And Low Fare In BF Lines
+    [Arguments]    ${fare_tab}    ${currency}=SGD
+    [Documentation]    This keyword works with Sabre RED
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *F‡    use_copy_content_from_sabre=False
+    ${line}    Get Lines Containing String    ${pnr_details}    F‡BF-${currency}${fare_${fare_tab_index}_base_fare} H-
+    ${low_fare_remark}    Get String Matching Regexp    L\-[0-9]+\.[0-9][0-9]    ${line}
+    ${high_fare_remark}    Get String Matching Regexp    H\-[0-9]+\.[0-9][0-9]    ${line}
+    ${charged_fare_remark}    Get String Matching Regexp    C\-[0-9]+\.[0-9][0-9]    ${line}
+    ${low_fare_remark}    Remove All Non-Integer (retain period)    ${low_fare_remark}
+    ${high_fare_remark}    Remove All Non-Integer (retain period)    ${high_fare_remark}
+    ${charged_fare_remark}    Remove All Non-Integer (retain period)    ${charged_fare_remark}
+    Set Suite Variable    ${low_fare_remark_${fare_tab_index}}    ${low_fare_remark}
+    Set Suite Variable    ${high_fare_remark_${fare_tab_index}}    ${high_fare_remark}
+    Set Suite Variable    ${charged_fare_remark_${fare_tab_index}}    ${charged_fare_remark}
+
+Verify Air Fare Main Panel Is Disabled
+    Verify Control Object Is Disabled    ${air_fare_tab}
+    [Teardown]    Take Screenshot
+
+Verify Air Fare Main Panel Is Enabled
+    Verify Control Object Is Enabled    ${air_fare_tab}
+    [Teardown]    Take Screenshot
+
+Verify Air Fare Restriction Fields Are Disabled
+    Verify Fully Flexible Fare Restriction Field Is Disabled
+    Verify Semi Flexible Fare Restriction Field Is Disabled
+    Verify Non Flexible Fare Restriction Field Is Disabled
+    Verify Default Fare Restriction Field Is Disabled
+
+Verify Air Fare Restriction Fields Are Enabled
+    [Arguments]    ${default_fare_restriction_field}=true
+    Verify Fully Flexible Fare Restriction Field Is Enabled
+    Verify Semi Flexible Fare Restriction Field Is Enabled
+    Verify Non Flexible Fare Restriction Field Is Enabled
+    Run Keyword If    '${default_fare_restriction_field}' = 'true'    Verify Default Fare Restriction Field Is Enabled
+
+Verify Air Fare Restriction Objects Are Hidden
+    [Arguments]    ${fare_tab}
+    ${is_fare_tab_alternate}    Run Keyword And Return Status    Should Contain    ${fare_tab.lower()}    alternate
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${index}    Set Variable If    ${is_fare_tab_alternate} == True    _alt_${fare_tab_index}    _${fare_tab_index}
+    Verify Control Object Is Not Visible    [NAME:cradFullyFlex${index}]    ${title_power_express}
+    Verify Control Object Is Not Visible    [NAME:cradSemiFlex${index}]    ${title_power_express}
+    Verify Control Object Is Not Visible    [NAME:cradNonFlex${index}]    ${title_power_express}
+    Verify Control Object Is Not Visible    [NAME:ccboChanges0${index}]    ${title_power_express}
+    Verify Control Object Is Not Visible    [NAME:ccboCancellations0${index}]    ${title_power_express}
+    Verify Control Object Is Not Visible    [NAME:btnAddChanges0${index}]    ${title_power_express}
+    Verify Control Object Is Not Visible    [NAME:btnAddCancellations0${index}]    ${title_power_express}
+    Verify Control Object Is Not Visible    [NAME:ccboValidOn${index}]    ${title_power_express}
+    Verify Control Object Is Not Visible    [NAME:ccboReRoute${index}]    ${title_power_express}
+    Verify Control Object Is Not Visible    [NAME:ccboMinStay${index}]    ${title_power_express}
+    Verify Control Object Is Not Visible    [NAME:ccboMaxStay${index}]    ${title_power_express}
+
+Verify Air Fare Restriction Objects Are Visible
+    [Arguments]    ${fare_tab}
+    ${is_fare_tab_alternate}    Run Keyword And Return Status    Should Contain    ${fare_tab.lower()}    alternate
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${index}    Set Variable If    ${is_fare_tab_alternate} == True    _alt_${fare_tab_index}    _${fare_tab_index}
+    Verify Control Object Is Visible    [NAME:cradFullyFlex${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:cradSemiFlex${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:cradNonFlex${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboChanges${index}_${fare_tab_index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboCancellations${index}_${fare_tab_index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:btnAddChanges${index}_${fare_tab_index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:btnAddCancellations${index}_${fare_tab_index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboValidOn${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboReRoute${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboMinStay${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboMaxStay${index}]    ${title_power_express}
+
+Verify Air Fare Restriction Objects for OBT Are Visible
+    [Arguments]    ${fare_tab}
+    ${is_fare_tab_alternate}    Run Keyword And Return Status    Should Contain    ${fare_tab.lower()}    alternate
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${index}    Set Variable If    ${is_fare_tab_alternate} == True    _alt_${fare_tab_index}    _${fare_tab_index}
+    Verify Control Object Is Visible    [NAME:cradFullFlexOBT${index}]    ${title_power_express}    #in non-OBT the name is cradFullyFlex (has Y)
+    Verify Control Object Is Visible    [NAME:cradSemiFlexOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:cradNonFlexOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboChangesOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboCancellationsOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboValidOnOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboReRouteOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboValidOnOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboReRouteOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboMinStayOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboMaxStayOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ccboCompliantOBT${index}]    ${title_power_express}
+    Verify Control Object Is Visible    [NAME:ctxtCommentsOBT${index}]    ${title_power_express}
+
+Verify Air Fare Restriction Option Is Selected By Default
+    [Arguments]    ${str_fare_restriction}
+    ${air_fare_restriction_field}    Run Keyword If    "${str_fare_restriction.upper()}" == "FULLY FLEXIBLE"    Determine Multiple Object Name Based On Active Tab    cradFullyFlex, cradFullyFlex_alt, cradFullFlexOBT, cradFullFlexOBT_alt
+    ...    ELSE IF    "${str_fare_restriction.upper()}" == "SEMI FLEXIBLE"    Determine Multiple Object Name Based On Active Tab    cradSemiFlexOBT, cradSemiFlex, cradSemiFlex_alt, cradSemiFlexOBT_alt
+    ...    ELSE IF    "${str_fare_restriction.upper()}" == "NON FLEXIBLE"    Determine Multiple Object Name Based On Active Tab    cradNonFlex, cradNonFlexOBT, cradNonFlex_alt, cradNonFlexOBT_alt
+    ...    ELSE IF    "${str_fare_restriction.upper()}" == "DEFAULT"    Determine Multiple Object Name Based On Active Tab    cradDefault, cradDefaultOBT, cradDefault_alt, cradDefaultOBT_alt
+    ...    ELSE    Run Keyword And Continue On Failure    Fail    Invalid Fare Restriction: ${str_fare_restriction}
+    ${is_radiobutton_selected}    Get Radio Button Status    ${air_fare_restriction_field}
+    Run Keyword And Continue On Failure    Should Be True    ${is_radiobutton_selected} == True    "${str_fare_restriction}" restriction should be selected by default.
+    [Teardown]    Take Screenshot
+
+Verify Alternate Fare Details Field
+    [Arguments]    ${fare_tab_value}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    ${actual_alt_fare_details}    Get Control Text Value    [NAME:ctxtDetailsOffer_alt_${fare_tab_index}]
+    ${flight_number_length} =    Get Length    ${flight_number}
+    ${flight_number} =    Set Variable If    '${flight_number_length}' == '2' and '${GDS_switch}' != 'sabre'    ${SPACE}${SPACE}${flight_number}    '${flight_number_length}' == '3' and '${GDS_switch}' != 'sabre'    ${SPACE}${flight_number}    ${flight_number}
+    ${flight_number} =    Set Variable If    '${flight_number_length}' == '2' and '${GDS_switch}' == 'sabre'    00${flight_number}    '${flight_number_length}' == '3' and '${GDS_switch}' == 'sabre'    0${flight_number}    ${flight_number}
+    ${converted_actual_alt_fare_details}    Remove All Spaces    ${actual_alt_fare_details}
+    ${converted_expected_alt_fare_details}    Remove All Spaces    ${airline_code}${flight_number}${SPACE}${fare_class}${SPACE}${flight_date}${SPACE}${flight_origin}${SPACE}${flight_destination}
+    Run Keyword If    '${GDS_switch}' != 'galileo'    Verify Text Contains Expected Value    ${actual_alt_fare_details}    ${airline_code}${flight_number}${SPACE}${fare_class}${SPACE}${flight_date}${SPACE}${flight_origin}${SPACE}${flight_destination}
+    ...    ELSE    Verify Text Contains Expected Value    ${converted_actual_alt_fare_details}    ${converted_expected_alt_fare_details}
+    [Teardown]    Take Screenshot
+
+Verify Alternate Fare Details Are Disabled
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${index}    Set Variable    _alt_${fare_tab_index}
+    Verify Control Object Is Disabled    [NAME:cradFullyFlex${index}]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:cradSemiFlex${index}]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:cradNonFlex${index}]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:ccboChanges0${index}]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:ccboCancellations0${index}]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:btnAddChanges0${index}]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:btnAddCancellations0${index}]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:ccboValidOn${index}]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:ccboReRoute${index}]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:ccboMinStay${index}]    ${title_power_express}
+    Verify Control Object Is Disabled    [NAME:ccboMaxStay${index}]    ${title_power_express}
+
+Verify Alternate Fare Details Are Written In Remarks
+    [Arguments]    ${fare_details_offer}
+    Set Test Variable    ${str_data}    ${fare_details_offer}
+    @{fare_details_offer}    Split To Lines    ${str_data}
+    : FOR    ${element}    IN    @{fare_details_offer}
+    \    Verify Text Contains Expected Value    ${pnr_details}    *OFFER**MORE INFO: ${element}
+
+Verify Alternate Fare Remarks Are Written In The PNR
+    [Arguments]    ${fare_number}    ${airline}    ${routing}    ${region}=APAC
+    Verify Specific Remark Is Written In The PNR    *OFFER**ALTERNATE FARE: ${fare_number}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**AIRLINE: ${airline.upper()}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**ROUTING: ${routing.upper()}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**FARE BASIS: ${fare_basis_value_alt_${fare_number}.upper()}*
+    Verify Alternate Fare Details Are Written In Remarks    ${details_offer_alt_${fare_number}.upper()}
+    Verify Specific Remark Is Written In The PNR    *OFFER**CHANGES: ${changes_value_alt_${fare_number}.upper()}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**CANCELLATION: ${cancellation_value_alt_${fare_number}.upper()}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**VALID ON: ${valid_on_value_alt_${fare_number}.upper()}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**REROUTE: ${reroute_value_alt_${fare_number}.upper()}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**MINIMUM STAY: ${min_stay_value_alt_${fare_number}.upper()}*
+    Verify Specific Remark Is Written In The PNR    *OFFER**MAXIMUM STAY: ${max_stay_value_alt_${fare_number}.upper()}*
+    Run Keyword If    "${region.upper()}" == "APAC"    Run Keywords    Verify Specific Remark Is Written In The PNR    *OFFER**QUOTE PROVIDED EXCLUDES ALL APPLICABLE FEES AND CHARGES*
+    ...    AND    Verify Specific Remark Is Written In The PNR    *OFFER**ALL PRICES SUBJECT TO CHANGE WITHOUT NOTICE*
+    ...    AND    Verify Specific Remark Is Written In The PNR    *OFFER**.............................................*
+
+Verify Alternate Fare Routing Field Value
+    [Arguments]    ${expected_alternate_fare_routing_value}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    cmtxtRouting_alt
+    ${actual_routing_value}    Get Control Text Value    ${object_name}
+    ${actual_routing_value}    Replace String    ${actual_routing_value}    -___    ${EMPTY}
+    Verify Text Contains Expected Value    ${actual_routing_value}    ${expected_alternate_fare_routing_value}
+    [Teardown]    Take Screenshot
+
+Verify Alternate Fare Routing and Airline Text Box
+    [Arguments]    ${route_details}    ${airline}
+    ${actual_route} =    Get Control Text Value    [NAME:cmtxtRouting_alt_1]
+    ${actual_airline} =    Get Control Text Value    [NAME:ctxtAirlineOffer_alt_1]
+    ${actual_route} =    Replace String    ${actual_route}    -___-___    ${EMPTY}
+    Run Keyword And Continue On Failure    Should Be Equal As Strings    ${actual_route}    ${route_details}    Route Details should match ${actual_route}
+    Run Keyword And Continue On Failure    Should Be Equal As Strings    ${actual_airline}    ${airline}    Route Details should match ${actual_airline}
+    [Teardown]    Take Screenshot
+
+Verify Alternate Flight Details Is Correct
+    [Arguments]    ${alternate_fare_tab}    ${route_details}
+    ${pnr_details}    Get Clipboard Data Amadeus    RTA
+    ${route_line} =    Get Lines Containing String    ${pnr_details}    ${airline_code}${flight_number}
+    Click Fare Tab    ${alternate_fare_tab}
+    ${actual_text} =    Get Control Text Value    [NAME:ctxtDetailsOffer_alt_${fare_tab_index}]
+    ${actual_value} =    Remove String    ${actual_text}    ${SPACE}
+    Verify Text Contains Expected Value    ${actual_value}    ${route_details}
+    Verify Text Contains Expected Value    ${route_line}    ${route_details}
+    [Teardown]    Take Screenshot
+
+Verify Amount In Fare Tab
+    [Arguments]    ${fare_tab}    ${air_tst_segment}
+    Click Fare Tab    ${fare_tab}
+    Get Charged Fare Value    ${fare_tab}
+    Get Grand Total Fare From Amadeus    ${air_tst_segment}    ${fare_tab}
+    Verify Actual Value Matches Expected Value    ${grand_total_fare_${fare_tab_index}}    ${converted_charged_fare}    TQT fare ${grand_total_fare_${fare_tab_index}} should be equal to Charged fare ${converted_charged_fare} displayed in Power Express
+    Activate Power Express Window
+
+Verify And Store Comm Pct Data In PQ
+    [Arguments]    ${fare_tab}    ${is_comm_pct_expected}    ${display_fare_command}=*PQ    ${use_copy_content_from_sabre}=True
+    ${fare_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    ${display_fare_command}${fare_index}    use_copy_content_from_sabre=False
+    ${comm_pct}    Get String Matching Regexp    COMM PCT(${SPACE})+([a-zA-Z])?(${SPACE})+([0-9])+(\.[0-9][0-9])?    ${pnr_details}
+    ${is_comm_pct_exists}    Set Variable If    "${comm_pct}" != "0"    True    False
+    Run Keyword And Continue On Failure    Should Be Equal    ${is_comm_pct_expected}    ${is_comm_pct_exists}
+    ${comm_pct}    Run Keyword If    "${is_comm_pct_exists}" == "True"    Remove All Non-Integer (retain period)    ${comm_pct}
+    ...    ELSE    Set Variable    0.00
+    ${comm_pct}    Convert To Float    ${comm_pct}
+    Set Suite Variable    ${fare_${fare_index}_comm_pct}    ${comm_pct}
+
+Verify And Store KP Data In PQ
+    [Arguments]    ${fare_tab}    ${is_kp_exists_expected}    ${display_fare_command}=*PQ    ${use_copy_content_from_sabre}=True
+    ${fare_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    ${display_fare_command}${fare_index}    use_copy_content_from_sabre=False
+    ${kp}    Get String Matching Regexp    KP([0-9])+(\.[0-9][0-9])?    ${pnr_details}
+    ${is_kp_exists}    Set Variable If    "${kp}" != "0"    True    False
+    Run Keyword And Continue On Failure    Should Be Equal    ${is_kp_exists_expected}    ${is_kp_exists}
+    ${kp}    Run Keyword If    ${is_kp_exists}    Remove All Non-Integer (retain period)    ${kp}
+    ...    ELSE    Set Variable    0
+    ${kp}    Convert To Float    ${kp}
+    Set Suite Variable    ${fare_${fare_index}_kp}    ${kp}
+
+Verify Auto Invoice Is Ticked
+    Verify Checkbox Is Ticked    [NAME:cchkAutoInvoice]
+
+Verify BF Remarks Are Written In The PNR
+    [Arguments]    ${fare_tab}    ${start}=0    ${end}=6
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Fare Details In BF Remarks    ${fare_tab}    ${start}    ${end}
+    Verify Text Contains Expected Value    ${bf_lines_collection_fare_${fare_tab_index}[1]}    H-${high_fare_value_${fare_tab_index}} C-${charged_value_${fare_tab_index}} L-${low_fare_value_${fare_tab_index}}
+    Verify Text Contains Expected Value    ${bf_lines_collection_fare_${fare_tab_index}[2]}    HC-${realised_code_value_${fare_tab_index}} LC-${missed_code_value_${fare_tab_index}} CL-${class_code_value_${fare_tab_index}}
+    Verify Text Contains Expected Value    ${bf_lines_collection_fare_${fare_tab_index}[3]}    CANX-${cancellation_value_${fare_tab_index}.upper()}
+    Verify Text Contains Expected Value    ${bf_lines_collection_fare_${fare_tab_index}[4]}    CHGS-${changes_value_${fare_tab_index}.upper()}
+    Verify Text Contains Expected Value    ${bf_lines_collection_fare_${fare_tab_index}[5]}    MIN-${min_stay_${fare_tab_index}.upper()} MAX-${max_stay_${fare_tab_index}.upper()}
+
+Verify Cancellation Dropdown Values
+    [Arguments]    @{cancellation_values}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboCancellations,ccboCancellationsOBT,ccboCancellations_alt,ccboCancellationsOBT_alt
+    ${actual_cancellation_value} =    Get Value From Dropdown List    ${object_name}
+    : FOR    ${cancellation_value}    IN    @{cancellation_values}
+    \    ${is_found}    Run Keyword And Return Status    List Should Contain Value    ${actual_cancellation_value}    ${cancellation_value}
+    \    Run Keyword if    '${is_found}' == 'True'    Log    ${cancellation_value} is found in the List Values
+    \    ...    ELSE    Fail    ${cancellation_value} is Not found in the List Values
+
+Verify Cancellations Field Actual Value
+    [Arguments]    ${expected_changes_value}    ${fare_tab}=Fare 1    ${field_instance}=${EMPTY}    ${default_control_counter}=True
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboCancellationsOBT,ccboCancellations0,ccboCancellationsOBT_alt,ccboCancellations_alt,ccboCancellations_${fare_tab_index},ccboCancellations_alt_${fare_tab_index}    ${default_control_counter}    ${field_instance}
+    Verify Control Object Text Value Is Correct    ${object_name}    ${expected_changes_value}
+    [Teardown]    Take Screenshot
+
+Verify Changes Dropdown Values
+    [Arguments]    @{changes_values}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboChanges,ccboChangesOBT,ccboChanges_alt,ccboChangesOBT_alt
+    ${actual_changes_value} =    Get Value From Dropdown List    ${object_name}
+    : FOR    ${changes_value}    IN    @{changes_values}
+    \    ${is_found}    Run Keyword And Return Status    List Should Contain Value    ${actual_changes_value}    ${changes_value}
+    \    Run Keyword if    '${is_found}' == 'True'    Log    ${changes_value} is found in the List Values
+    \    ...    ELSE    Fail    ${changes_value} is Not found in the List Values
+
+Verify Changes Field Actual Value
+    [Arguments]    ${expected_changes_value}    ${fare_tab}=Fare 1    ${field_instance}=${EMPTY}    ${default_control_counter}=True
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboChangesOBT,ccboChanges0,ccboChangesOBT_alt,ccboChanges_alt,ccboChanges_${fare_tab_index},ccboChanges_alt_${fare_tab_index}    ${default_control_counter}    ${field_instance}
+    Verify Control Object Text Value Is Correct    ${object_name}    ${expected_changes_value}
+    [Teardown]    Take Screenshot
+
+Verify Charged Fare And Low Fare Are Equal
+    [Arguments]    ${fare_tab_value}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    Verify Actual Value Matches Expected Value    ${charged_fare_${fare_tab_index}}    ${low_fare_${fare_tab_index}}
+    [Teardown]    Take Screenshot
+
+Verify Charged Fare Field Is Disabled
+    ${charged_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtChargedFare
+    Verify Control Object Is Disabled    ${charged_fare_field}
+
+Verify Charged Fare Field Is Enabled
+    ${charged_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtChargedFare
+    Verify Control Object Is Enabled    ${charged_fare_field}
+
+Verify Charged Fare Field Value
+    [Arguments]    ${expected_charged_fare_value}    ${fare_tab}=Fare 1    ${with_decimal}=true
+    Get Charged Fare Value    ${fare_tab}
+    ${actual_charged_fare}    Set Variable If    "${with_decimal.lower()}" == "true"    ${converted_charged_fare}    ${without_decimal_charged_fare}
+    Verify Actual Value Matches Expected Value    ${actual_charged_fare}    ${expected_charged_fare_value}
+    [Teardown]    Take Screenshot
+
+Verify Charged, High And Low Fare Amount Are Equal
+    [Arguments]    ${fare_tab_value}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    Run Keyword And Continue On Failure    Should Match    ${charged_value_${fare_tab_index}}    ${high_fare_value_${fare_tab_index}}
+    Run Keyword And Continue On Failure    Should Match    ${high_fare_value_${fare_tab_index}}    ${low_fare_value_${fare_tab_index}}
+    [Teardown]    Take Screenshot
+
+Verify Class Code Default Value Is Correct
+    [Arguments]    ${expected_value}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboClass
+    Verify Control Object Text Value Is Correct    ${object_name}    ${expected_value}
+
+Verify Class Code Is Mandatory And Has No Value
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboClass
+    Verify Field Is Empty    ${object_name}
+    Verify Control Object Background Color    ${object_name}    FFD700
+    [Teardown]    Take Screenshot
+
+Verify Comment Value
+    [Arguments]    ${expected_comment}
+    ${comment_field}    Determine Multiple Object Name Based On Active Tab    ctxtCommentsOBT, ctxtComments, ctxtCommentsOBT_alt, ctxtComments_alt
+    Verify Control Object Text Value Is Correct    ${comment_field}    ${expected_comment}
+
+Verify Compliant Value
+    [Arguments]    ${expected_compliant}
+    ${complaint_dropdown}    Determine Multiple Object Name Based On Active Tab    ccboCompliantOBT, ccboCompliantOBT_alt, ccboCompliant, ccboCompliant_alt
+    Verify Control Object Text Value Is Correct    ${complaint_dropdown}    ${expected_compliant}
+
+Verify Correct Fare Type Is Written In The PNR
+    [Arguments]    ${fare_type_remark}
+    Verify Text Contains Expected Value    ${pnr_details}    ${fare_type_remark}
+
+Verify Default Fare Class
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    NAME:ccboFareClassOffer_alt
+    ${actual_default_fare_class}    Get Control Text Value    ${object_name}
+    Verify Control Object Text Value Is Correct    ${object_name}    ${EMPTY}
+    [Teardown]    Take Screenshot
+
+Verify Default Fare Restriction Field Is Disabled
+    ${default_field}    Determine Multiple Object Name Based On Active Tab    cradDefault
+    Verify Control Object Is Disabled    ${default_field}
+    [Teardown]    Take Screenshot
+
+Verify Default Fare Restriction Field Is Enabled
+    ${default_field}    Determine Multiple Object Name Based On Active Tab    cradDefault
+    Verify Control Object Is Enabled    ${default_field}
+
+Verify Default Fare Restriction Field Is Not Visible
+    ${default_field}    Determine Multiple Object Name Based On Active Tab    cradDefault
+    Verify Control Object Is Not Visible    ${default_field}
+    [Teardown]    Take Screenshot
+
+Verify Destination Field Is Enabled
+    ${point_of_obj}    Determine Multiple Object Name Based On Active Tab    ccboPOT
+    Verify Control Object Is Enabled    ${point_of_obj}
+
+Verify Exchange Pop-up Window Is Displayed
+    [Arguments]    ${message}=Fare 1 is an exchange ticket transaction. Please enter the additional collection amount into the charged fare box or 0 when there is no additional collection.    ${verification_mode}=${EMPTY}    ${multi_line_search_flag}=false
+    Wait Until Window Exists    Power Express
+    Wait Until Control Object Is Visible    [NAME:txtMessageTextBox]
+    Verify Control Object Text Value Is Correct    [NAME:txtMessageTextBox]    ${message}    verification_mode=${verification_mode}    multi_line_search_flag=${multi_line_search_flag}
+    Click Control Button    [NAME:OKBtn]    Power Express
+    Wait Until Progress Info is Completed
+
+Verify FOP Remark Is Written In The Accounting Lines
+    [Arguments]    ${fare_tab}    ${x_times}    ${country}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${card_code}    Identify Form Of Payment Code    ${str_card_type}    ${country}
+    ${fop_amount}    Evaluate    ${charged_value_${fare_tab_index}} +${merchant_fee_value_${fare_tab_index}}
+    ${fop_amount}    Convert To Float    ${fop_amount}
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *PQ${fare_tab_index}    use_copy_content_from_sabre=False
+    ${fop_in_pq}    Get String Matching Regexp    AGTINV|INVAGT    ${pnr_details}
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Run Keyword If    "${fop_in_pq}"=="AGTINV" or "${fop_in_pq}"=="INVAGT"    Verify Specific Remark Is Written X Times In The PNR    X/-FOP/*${fare_tab_index}/${card_code}/${str_card_type}${str_card_number}EXP${str_exp_date}/${fop_amount}    ${x_times}
+    ...    ELSE    Verify Specific Remark Is Written X Times In The PNR    X/-FOP/*${fare_tab_index}/CC/${str_card_type}${str_card_number}EXP${str_exp_date}/${fop_amount}    ${x_times}
+
+Verify Fare Amount For ${country} Is Written In The PNR For ${fare_tab}
+    ${currency}    Get Currency    ${country}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Set Test Variable    ${fare_tab_index}
+    Set Test Variable    ${fare_amount_value}    ${fare_amount_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    FARE: ${currency} ${fare_amount_value}
+
+Verify Fare Class Is Mandatory And Has No Value
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboFareClassOffer_alt
+    Verify Control Object Background Color    ${object_name}    FFD700
+    [Teardown]    Take Screenshot
+
+Verify Fare Condition Fields Are Disabled
+    ${valid_on_obj}    Determine Multiple Object Name Based On Active Tab    ccboValidOnOBT, ccboValidOnOBT_alt, ccboValidOn_alt, ccboValidOn
+    ${changes_field}    Determine Multiple Object Name Based On Active Tab    ccboChanges0,ccboChanges0_alt,ccboChangesOBT_alt,ccboChangesOBT
+    ${min_stay_dropdown}    Determine Multiple Object Name Based On Active Tab    ccboMinStay,ccboMinStay_alt,ccboMinStayOBT_alt,ccboMinStayOBT
+    ${max_stay_dropdown}    Determine Multiple Object Name Based On Active Tab    ccboMaxStay,ccboMaxStay_alt,ccboMaxStayOBT_alt,ccboMaxStayOBT
+    ${re_route_dropdown}    Determine Multiple Object Name Based On Active Tab    ccboReRoute,ccboReRoute_alt, ccboReRouteOBT_alt, ccboReRouteOBT
+    ${comments_field}    Determine Multiple Object Name Based On Active Tab    ctxtCommentsOBT, ctxtCommentsOBT_alt, ctxtComments_alt, ctxtComments
+    Verify Control Object Is Disabled    ${valid_on_obj}
+    Verify Control Object Is Disabled    ${changes_field}
+    Verify Control Object Is Disabled    ${min_stay_dropdown}
+    Verify Control Object Is Disabled    ${max_stay_dropdown}
+    Verify Control Object Is Disabled    ${re_route_dropdown}
+    Verify Control Object Is Disabled    ${comments_field}
+
+Verify Fare Condition Fields Are Enabled
+    ${valid_on_obj}    Determine Multiple Object Name Based On Active Tab    ccboValidOnOBT, ccboValidOnOBT_alt, ccboValidOn_alt, ccboValidOn
+    ${changes_field}    Determine Multiple Object Name Based On Active Tab    ccboChanges0,ccboChanges0_alt,ccboChangesOBT_alt,ccboChangesOBT
+    ${min_stay_dropdown}    Determine Multiple Object Name Based On Active Tab    ccboMinStay,ccboMinStay_alt,ccboMinStayOBT_alt,ccboMinStayOBT
+    ${max_stay_dropdown}    Determine Multiple Object Name Based On Active Tab    ccboMaxStay,ccboMaxStay_alt,ccboMaxStayOBT_alt,ccboMaxStayOBT
+    ${re_route_dropdown}    Determine Multiple Object Name Based On Active Tab    ccboReRoute,ccboReRoute_alt, ccboReRouteOBT_alt, ccboReRouteOBT
+    ${comments_field}    Determine Multiple Object Name Based On Active Tab    ctxtCommentsOBT, ctxtCommentsOBT_alt, ctxtComments_alt, ctxtComments
+    Verify Control Object Is Enabled    ${valid_on_obj}
+    Verify Control Object Is Enabled    ${changes_field}
+    Verify Control Object Is Enabled    ${min_stay_dropdown}
+    Verify Control Object Is Enabled    ${max_stay_dropdown}
+    Verify Control Object Is Enabled    ${re_route_dropdown}
+    Verify Control Object Is Enabled    ${comments_field}
+
+Verify Fare Fields Are Disabled
+    Verify High Fare Field Is Disabled
+    Verify Charged Fare Field Is Disabled
+    Verify Low Fare Field Is Disabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Route Code Field Is Disabled
+
+Verify Fare Fields Are Enabled
+    [Arguments]    ${route_code_required}=True    ${destination_required}==False
+    Verify High Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Enabled
+    Verify Missed Savings Code Field Is Enabled
+    Run Keyword If    "${route_code_required}" == "True"    Verify Route Code Field Is Enabled
+    Run Keyword If    "${destination_required}" == "True"    Verify Destination Field Is Enabled
+
+Verify Fare Not Finalised Is Disabled
+    Verify Control Object Is Disabled    ${chk_not_finalised}
+
+Verify Fare Not Finalised Is Enabled
+    Verify Control Object Is Enabled    ${chk_not_finalised}
+
+Verify Fare Not Finalised Is Unticked
+    Verify Checkbox Is Unticked    [NAME:cchkNotFinalised]
+    [Teardown]    Take Screenshot
+
+Verify Fare Quote Remarks Are Written In The PNR
+    [Arguments]    ${quote_number}    ${airline}    ${routing}    ${country}
+    ${itinerary_quote_header}    Set Variable If    "${country.upper()}" == "NZ" or "${country.upper()}" == "AU"    ************* ITINERARY QUOTE ***************    ************* ITINERARY QUOTE PER PASSENGER ***********
+    Verify Specific Remark Is Written In The PNR    ${itinerary_quote_header}
+    Verify Specific Remark Is Written In The PNR    QUOTE NUMBER: ${quote_number}
+    Verify Specific Remark Is Written In The PNR    AIRLINE: ${airline}
+    Verify Specific Remark Is Written In The PNR    ROUTING: ${routing}
+    Run Keyword If    "${country.upper()}" == "NZ" or "${country.upper()}" == "AU"    Verify Specific Remark Is Written In The PNR    FARE: *.    True
+    Run Keyword If    "${country.upper()}" == "NZ" or "${country.upper()}" == "AU"    Verify Specific Remark Is Written In The PNR    TAX: *.    True
+    Run Keyword If    "${country.upper()}" == "SG" or "${country.upper()}" == "HK"    Verify Specific Remark Is Written In The PNR    FARE INCLUDING AIRLINE TAXES: *.    True
+    Verify Specific Remark Is Written In The PNR    TOTAL AMOUNT: *.    True
+    Verify Specific Remark Is Written In The PNR    NO LOWER FARE OPTION AVAILABLE
+    Run Keyword If    "${country.upper()}" != "SG"    Verify Specific Remark Is Written In The PNR    FARE CONDITIONS
+
+Verify Fare Restriction Default Text Value
+    [Arguments]    ${expected_text}
+    Comment    Verify Control Object Text Value Is Correct    [NAME:lblDefault]    ${expected_text}
+    ${actual_text}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:lblDefault]
+    Log    ${expected_text}
+    Log    ${actual_text}
+    Should Be Equal As Strings    ${expected_text}    ${actual_text.strip()}
+
+Verify Fare Restrictions Fields Are Disabled
+    Verify Fully Flexible Fare Restriction Field Is Disabled
+    Verify Semi Flexible Fare Restriction Field Is Disabled
+    Verify Non Flexible Fare Restriction Field Is Disabled
+    Verify Fare Condition Fields Are Disabled
+
+Verify Fare Restrictions Fields Are Enabled
+    Verify Fully Flexible Fare Restriction Field Is Enabled
+    Verify Semi Flexible Fare Restriction Field Is Enabled
+    Verify Non Flexible Fare Restriction Field Is Enabled
+    Verify Fare Condition Fields Are Enabled
+
+Verify Fare Tab Details
+    [Arguments]    ${routing}    ${high_fare}    ${charged_fare}    ${low_fare}    ${realised_saving_code}    ${missed_saving_code}
+    ...    ${route_code}
+    Verify Routing Field Value    ${routing}
+    Verify High Fare Field Value    ${high_fare}
+    Verify Charged Fare Field Value    ${charged_fare}
+    Verify Low Fare Field Value    ${low_fare}
+    Verify Realised Savings Code Default Value    ${realised_saving_code}
+    Verify Missed Savings Code Default Value    ${missed_saving_code}
+    Verify Route Code Field Value    ${route_code}
+
+Verify Fare Tab Is Not Visible
+    [Arguments]    @{fare_tab_name}
+    ${visible_tab}    Get Visible Tab
+    : FOR    ${element}    IN    @{fare_tab_name}
+    \    List Should Not Contain Value    ${visible_tab}    ${element}
+    [Teardown]    Take Screenshot
+
+Verify Fare Tab Is Visible
+    [Arguments]    @{fare_tab_name}
+    Wait Until Control Object Is Visible    [NAME:TabControl1]
+    ${visible_tab}    Get Visible Tab
+    : FOR    ${fare_tab}    IN    @{fare_tab_name}
+    \    List Should Contain Value    ${visible_tab}    ${fare_tab}    ${fare_tab} should be visible
+    [Teardown]    Take Screenshot
+
+Verify Fare Type Default Value
+    [Arguments]    ${expected_default_value}    ${fare_tab_value}=${EMPTY}
+    ${index}    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    ${index}    Set Variable If    '${index}' != '${EMPTY}'    ${index}    ${fare_tab_index}
+    Verify Control Object Text Value Is Correct    [NAME:ccboFaretype_${index}]    ${expected_default_value}
+
+Verify Fees Value Is Correct
+    [Arguments]    ${fare_tab}    ${expected_fees}
+    Select Tab Control    ${fare_tab}
+    ${actual_fees_value}    Get Fees Value    ${fare_tab}
+    Verify Actual Value Matches Expected Value    ${actual_fees_value}    ${expected_fees}
+    [Teardown]    Take Screenshot
+
+Verify FOP Credit Card Is Masked On Fare Quote Tab
+    ${fop_field}    Determine Multiple Object Name Based On Active Tab    cbFormOfPayment
+    ${fop_value_masked}    Get Control Text Value    ${fop_field}
+    ${status}    Run Keyword And Return Status    Should Contain    ${fop_value_masked}    *
+    Run Keyword If    "${status}" == "True"    Log    Actual FOP: ${fop_value_masked} is masked.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Actual FOP: ${fop_value_masked} is unmasked.
+    [Teardown]    Take Screenshot
+
+Verify FOP Credit Card Is UnMasked On Fare Quote Tab
+    ${fop_field}    Determine Multiple Object Name Based On Active Tab    cbFormOfPayment
+    ${fop_value_unmasked}    Get Control Text Value    ${fop_field}
+    ${status}    Run Keyword And Return Status    Should Contain    ${fop_value_unmasked}    *
+    ${status2}    Run Keyword And Return Status    Should Contain    ${fop_value_unmasked}    XXX
+    Run Keyword If    "${status}" == "False" or "${status2}" == "False"    Log    Actual FOP: ${fop_value_unmasked} is unmasked.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Actual FOP: ${fop_value_unmasked} is still masked.
+    [Teardown]    Take Screenshot
+
+Verify FOP Merchant Field Is Mandatory And Blank On Fare Quote Tab
+    ${fop_merchant_field}    Determine Multiple Object Name Based On Active Tab    cbMerchant
+    Verify Control Object Is Visible    ${fop_merchant_field}
+    Verify Control Object Text Value Is Correct    ${fop_merchant_field}    ${EMPTY}
+    Verify Control Object Background Color    ${fop_merchant_field}    FFD700
+    [Teardown]    Take Screenshot
+
+Verify FOP Merchant Field Is Not Visible On Fare Quote Tab
+    ${fop_merchant_field}    Determine Multiple Object Name Based On Active Tab    cbMerchant
+    Verify Control Object Is Not Visible    ${fop_merchant_field}
+    [Teardown]    Take Screenshot
+
+Verify FOP Merchant Selected Is Displayed On Fare Quote Tab
+    [Arguments]    ${expected_fop_merchant}
+    Get FOP Merchant Field Value On Fare Quote Tab
+    Run Keyword If    "${fop_merchant_value}" == "${expected_fop_merchant}"    Log    FOP Merchant: ${fop_merchant_value} selected during new booking is displayed.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Expected FOP: ${expected_fop_merchant} is not the same FOP: ${fop_merchant_value} displayed.
+    [Teardown]    Take Screenshot
+
+Verify Form Of Payment Selected Is Displayed On Fare Quote Tab
+    [Arguments]    ${expected_fop}
+    Get Form Of Payment Field Value On Fare Quote Tab
+    Run Keyword If    "${fop_value}" == "${expected_fop}"    Log    FOP: ${fop_value} selected during new booking is displayed.
+    ...    ELSE    Run Keyword And Continue On Failure    FAIL    Expected FOP: ${expected_fop} is not the same FOP: ${fop_value} displayed.
+    [Teardown]    Take Screenshot
+
+Verify Form Of Payment Field Is Mandatory And Blank On Fare Quote Tab
+    ${fop_field}    Determine Multiple Object Name Based On Active Tab    cbFormOfPayment
+    Verify Control Object Is Visible    ${fop_field}
+    Verify Control Object Text Value Is Correct    ${fop_field}    ${EMPTY}
+    Verify Control Object Field Is Mandatory    ${fop_field}
+    [Teardown]    Take Screenshot
+
+Verify Fully Flexible Fare Restriction Field Is Disabled
+    ${fully_flexible_field}    Determine Multiple Object Name Based On Active Tab    cradFullyFlex,cradFullFlex,cradFullyFlexOBT,cradFullFlexOBT,cradFullFlexOBT_alt,cradFullyFlexOBT_alt, cradFullFlex_alt,cradFullyFlex_alt
+    Verify Control Object Is Disabled    ${fully_flexible_field}
+    [Teardown]    Take Screenshot
+
+Verify Fully Flexible Fare Restriction Field Is Enabled
+    ${fully_flexible_field}    Determine Multiple Object Name Based On Active Tab    cradFullyFlex,cradFullFlex,cradFullyFlexOBT,cradFullFlexOBT,cradFullFlexOBT_alt,cradFullyFlexOBT_alt, cradFullFlex_alt,cradFullyFlex_alt
+    Verify Control Object Is Enabled    ${fully_flexible_field}
+
+Verify High Fare Accepts Input
+    ${high_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    ${actual_high_fare_field_color}    Determine Control Object Background Color    ${high_fare_field}
+    Run Keyword And Continue On Failure    Should Be True    "${actual_high_fare_field_color}" != "FFD700"
+
+Verify High Fare Field Is Disabled
+    ${high_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    Verify Control Object Is Disabled    ${high_fare_field}
+
+Verify High Fare Field Is Enabled
+    ${high_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    Verify Control Object Is Enabled    ${high_fare_field}
+
+Verify High Fare Field Is Mandatory
+    ${high_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    Verify Control Object Background Color    ${high_fare_field}    FFD700
+    [Teardown]    Take Screenshot
+
+Verify High Fare Field Value
+    [Arguments]    ${expected_high_fare_value}    ${fare_tab}=Fare 1
+    Get High Fare Value    ${fare_tab}
+    Verify Actual Value Matches Expected Value    ${converted_high_fare}    ${expected_high_fare_value}
+    [Teardown]    Take Screenshot
+
+Verify High Fare Is Blank
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    Verify Control Object Text Value Is Correct    ${object_name}    ${EMPTY}    High fare should be blank
+
+Verify High Fare Field Is Not Visible
+    ${high_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    Verify Control Object Is Not Visible    ${high_fare_field}
+    [Teardown]    Take Screenshot
+
+Verify High Fare Field Is Visible
+    ${high_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtHighFare
+    Verify Control Object Is Visible    ${high_fare_field}
+
+Verify High Fare Limits To Two Decimals Only
+    Get High Fare Value
+    Set High Fare Field    ${converted_high_fare}999
+    Get High Fare Value
+    ${decimals}    Fetch From Right    ${converted_high_fare}    .
+    ${decimal_length}    Get Length    ${decimals}
+    Run Keyword And Continue On Failure    Should Be True    "${decimal_length}"=="2"
+
+Verify High/Charged/Low Fare Fields Has Correct Values
+    [Arguments]    ${fare_tab_value}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    Get High, Charged And Low Fare In Fare Tab    ${fare_tab_value}
+    Verify Actual Value Matches Expected Value    ${high_fare_${fare_tab_index}}    ${high_fare_value_${fare_tab_index}}
+    Verify Actual Value Matches Expected Value    ${charged_fare_${fare_tab_index}}    ${charged_fare_value_${fare_tab_index}}
+    Verify Actual Value Matches Expected Value    ${low_fare_${fare_tab_index}}    ${low_fare_value_${fare_tab_index}}
+    [Teardown]    Take Screenshot
+
+Verify High/Charged/Low Fare, Realised Saving Code, Route Code Fields Are Enabled For Exchange
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Enabled
+    Verify Route Code Field Is Enabled
+
+Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify High Fare Field Is Disabled
+    Verify Low Fare Field Is Disabled
+    Verify Charged Fare Field Is Disabled
+    Verify Realised Saving Code Field Is Disabled
+    Verify Missed Savings Code Field Is Disabled
+    Verify Route Code Field Is Disabled
+
+Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Enabled
+    Verify High Fare Field Is Enabled
+    Verify Low Fare Field Is Enabled
+    Verify Charged Fare Field Is Enabled
+    Verify Realised Saving Code Field Is Enabled
+    Verify Missed Savings Code Field Is Enabled
+    Verify Route Code Field Is Enabled
+
+Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Filed Values Are Correct
+    [Arguments]    ${expected_high_fare}    ${expected_charged_fare}    ${expected_low_fare}    ${expected_realised_savings_code}    ${expected_missed_savings_code}    ${expected_route_code}
+    Verify High Fare Field Value    ${expected_high_fare}
+    Verify Low Fare Field Value    ${expected_low_fare}
+    Verify Charged Fare Field Value    ${expected_charged_fare}
+    Verify Realised Savings Code Default Value    ${expected_realised_savings_code}
+    Verify Missed Savings Code Default Value    ${expected_missed_savings_code}
+    Verify Route Code Field Value    ${expected_route_code}
+
+Verify If High Fare Is Less Than Charged Fare Then High Fare Field Is Blank, Otherwise Contains High Fare Value
+    Log    ${high_fare_value_${fare_tab_index}}
+    Log    ${charged_fare_value_${fare_tab_index}}
+    Run Keyword And Continue On Failure    Run Keyword If    ${high_fare_value_${fare_tab_index}} < ${charged_fare_value_${fare_tab_index}}    Verify High Fare Is Blank
+    ...    ELSE    Verify High Fare Field Value    ${high_fare_value_${fare_tab_index}}
+    [Teardown]    Take Screenshot
+
+Verify If Low Fare Is Greater Than Charged Fare Then Low Fare Field Is Blank, Otherwise Contains Low Fare Value
+    Run Keyword And Continue On Failure    Run Keyword If    ${low_fare_value_${fare_tab_index}} > ${charged_fare_value_${fare_tab_index}}    Verify Low Fare Is Blank
+    ...    ELSE    Verify Low Fare Field Value    ${low_fare_value_${fare_tab_index}}
+    [Teardown]    Take Screenshot
+
+Verify Invalid Icon And Invalid Amount Message Is Displayed
+    ${invalid_icon_exists}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\invalid_input_icon.png    0.80    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    ${invalid_icon_exists}    Invalid icon is NOT displayed
+    Run Keyword If    ${invalid_icon_exists} == True    Hover Object    ${sikuli_image_path}\\invalid_input_icon.png    0.80    ${timeout}
+    ${invalid_amount_tool_tip_exists}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\invalid_amount_tool_tip.png    0.80    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    ${invalid_amount_tool_tip_exists}    Invalid amount message tooltip is NOT displayed
+    [Teardown]    Take Screenshot
+
+Verify Invalid Icon And Validate High Fare Message Is Displayed
+    ${invalid_icon_exists}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\invalid_input_icon.png    0.80    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    ${invalid_icon_exists}
+    Run Keyword If    ${invalid_icon_exists} == True    Hover Object    ${sikuli_image_path}\\invalid_input_icon.png    0.80    ${timeout}
+    ${validate_high_fare_tool_tip_exists}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\validate_high_fare_tool_tip.png    0.80    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    ${validate_high_fare_tool_tip_exists}
+    [Teardown]    Take Screenshot
+
+Verify Invalid Icon And Validate Low Fare Message Is Displayed
+    ${invalid_icon_exists}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\invalid_input_icon.png    0.80    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    ${invalid_icon_exists}
+    Run Keyword If    ${invalid_icon_exists} == True    Hover Object    ${sikuli_image_path}\\invalid_input_icon.png    0.80    ${timeout}
+    ${validate_low_fare_tool_tip_exists}    Run Keyword And Return Status    Object Exists    ${sikuli_image_path}\\validate_low_fare_tool_tip.png    0.80    ${timeout}
+    Run Keyword And Continue On Failure    Should Be True    ${validate_low_fare_tool_tip_exists}
+    [Teardown]    Take Screenshot
+
+Verify LCC Fare Tab Details
+    [Arguments]    ${routing}    ${high_fare}    ${charged_fare}    ${low_fare}    ${realised_saving_code}    ${missed_saving_code}
+    Verify Routing Field Value    ${routing}
+    Verify High Fare Field Value    ${high_fare}
+    Verify Charged Fare Field Value    ${charged_fare}
+    Verify Low Fare Field Value    ${low_fare}
+    Verify Realised Savings Code Default Value    ${realised_saving_code}
+    Verify Missed Savings Code Default Value    ${missed_saving_code}
+    Run Keyword If    '${locale}' == 'fr-FR'    Run Keywords    Verify Class Code Is Mandatory And Has No Value
+
+Verify LCC Remarks Are Written In The PNR In Correct Order
+    [Arguments]    @{expected_collection_of_lcc_remarks}
+    ${actual_collection_of_lcc_remarks}    Get LCC Remarks
+    Run Keyword And Continue On Failure    Lists Should Be Equal    ${actual_collection_of_lcc_remarks}    ${expected_collection_of_lcc_remarks}
+
+Verify LFCC Field Is Mandatory
+    Verify Control Object Background Color    text_LFCC1    FCFCFC
+    [Teardown]    Take Screenshot
+
+Verify Low Fare Accepts Input
+    ${low_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtLowFare
+    ${actual_low_fare_field_color}    Determine Control Object Background Color    ${low_fare_field}
+    Run Keyword And Continue On Failure    Should Be True    "${actual_low_fare_field_color}" != "FFD700"
+    [Teardown]    Take Screenshot
+
+Verify Low Fare Field Is Disabled
+    ${low_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtLowFare
+    Verify Control Object Is Disabled    ${low_fare_field}
+
+Verify Low Fare Field Is Enabled
+    ${low_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtLowFare
+    Verify Control Object Is Enabled    ${low_fare_field}
+
+Verify Low Fare Field Is Mandatory
+    ${low_fare_field}    Determine Multiple Object Name Based On Active Tab    ctxtLowFare
+    Verify Control Object Background Color    ${low_fare_field}    FFD700
+
+Verify Low Fare Field Value
+    [Arguments]    ${expected_low_fare_value}    ${fare_tab}=Fare 1
+    Get Low Fare Value    ${fare_tab}
+    Verify Actual Value Matches Expected Value    ${converted_low_fare}    ${expected_low_fare_value}
+    [Teardown]    Take Screenshot
+
+Verify Low Fare Is Blank
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ctxtLowFare
+    Verify Control Object Text Value Is Correct    ${object_name}    ${EMPTY}
+
+Verify Low Fare Limits To Two Decimals Only
+    Get Low Fare Value
+    Set Low Fare Field    ${converted_low_fare}888
+    Get Low Fare Value
+    ${decimals}    Fetch From Right    ${converted_low_fare}    .
+    ${decimal_length}    Get Length    ${decimals}
+    Run Keyword And Continue On Failure    Should Be True    "${decimal_length}"=="2"
+
+Verify Lowest Carrier Code Is Written In The PNR
+    [Arguments]    ${lfcc_remark}
+    Verify Text Contains Expected Value    ${pnr_details}    ${lfcc_remark}
+
+Verify Merchant Fee Fields Are Displayed
+    [Arguments]    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Control Object Is Visible    [NAME:txtMerchantFeeAmount_${fare_tab_index}]
+    Verify Control Object Is Visible    [NAME:txtMerchantFeePercentage_${fare_tab_index}]
+
+Verify Merchant Fee Fields Are Not Displayed
+    [Arguments]    ${fare_tab}=Fare 1
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Control Object Is Not Visible    [NAME:txtMerchantFeeAmount_${fare_tab_index}]
+    Verify Control Object Is Not Visible    [NAME:txtMerchantFeePercentage_${fare_tab_index}]
+
+Verify Missed Savings Code Default Value
+    [Arguments]    ${expected_missed_saving_code_value}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboMissed
+    Verify Control Object Text Value Is Correct    ${object_name}    ${expected_missed_saving_code_value}
+    [Teardown]    Take Screenshot
+
+Verify Missed Savings Code Field Is Disabled
+    ${missed_saving_code_field}    Determine Multiple Object Name Based On Active Tab    pnlMissed
+    Verify Control Object Is Disabled    ${missed_saving_code_field}
+
+Verify Missed Savings Code Field Is Enabled
+    ${missed_saving_code_field}    Determine Multiple Object Name Based On Active Tab    pnlMissed
+    Verify Control Object Is Enabled    ${missed_saving_code_field}
+
+Verify No Fares Found Message Is Not Present
+    ${is_warning_message_present} =    Control Command    ${title_power_express}    ${EMPTY}    [NAME:lblWarning]    IsVisible    ${EMPTY}
+    ${warning_message_text} =    Run Keyword If    ${is_warning_message_present} == 1    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:lblWarning]
+    ${no_fares_error}    Set Variable If    "${locale}" == "fr-FR"    Attention : aucun tarif trouvé dans le PNR. Merci de tarifer et relire le PNR ou continuer avec l'option " tarif non finalisé"    Warning - No fares found in PNR. Please fare quote and read the PNR again or continue with the ‘Fare Not Finalised’ option to complete this PNR
+    Should Not Contain    ${warning_message_text}    ${no_fares_error}
+    [Teardown]    Take Screenshot
+
+Verify Non Flexible Fare Restriction Field Is Disabled
+    ${non_flexible_field}    Determine Multiple Object Name Based On Active Tab    cradNonFlex_alt, cradNonFlexOBT_alt, cradNonFlex, cradNonFlex_alt, cradNonFlexOBT
+    Verify Control Object Is Disabled    ${non_flexible_field}
+    [Teardown]    Take Screenshot
+
+Verify Non Flexible Fare Restriction Field Is Enabled
+    ${non_flexible_field}    Determine Multiple Object Name Based On Active Tab    cradNonFlex_alt, cradNonFlexOBT_alt, cradNonFlex, cradNonFlex_alt, cradNonFlexOBT
+    Verify Control Object Is Enabled    ${non_flexible_field}
+
+Verify Offer Amount
+    [Arguments]    ${fare_tab}=Alternate Fare 1
+    ${total_offer_amount}    Get Amadeus Offer Amount    ${fare_tab}
+    ${amadeus_offer_amount}    Get Total Fare Offer    ${fare_tab}
+    Verify Actual Value Matches Expected Value    ${amadeus_offer_amount}    ${total_offer_amount}
+    [Teardown]    Take Screenshot
+
+Verify Only Expected Fee Is Displayed In Transaction Fee Dropdown
+    [Arguments]    @{transaction_fee_value}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    cmbTransactionFee
+    ${actual_content_list}    Get Value From Dropdown List    ${object_name}
+    Run Keyword And Continue On Failure    List Should Contain Sub List    ${transaction_fee_value}    ${actual_content_list}
+    [Teardown]    Take Screenshot
+
+Verify RF, SF And LF Are Written In The PNR For Fare Tab
+    [Arguments]    ${fare_tab_value}
+    Get RF, SF and LF Value For Fare X Tab    ${fare_tab_value}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-RF/*${fare_tab_index}/${ref_fare_value}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-SF/*${fare_tab_index}/${selling_fare_value}
+    Verify Specific Line Is Written In The PNR    FREE TEXT-LF/*${fare_tab_index}/${lowest_fare_value}
+
+Verify RMO CP0 Line Include Amadeus Rail Display Amount
+    [Arguments]    ${rail_tst_number}
+    Get High, Charged and Low Fare in Fare Tab
+    Get Amadeus Rail TST Amount    ${rail_tst_number}
+    ${rmo_amount}    Evaluate    ${charge_fare}+${rail_tst_amount}
+    Verify Text Contains Expected Value    ${pnr_details}    RMO CP0 COMMENT/${rmo_amount}
+
+Verify Realised Saving Code Field Is Disabled
+    ${realised_saving_code_field}    Determine Multiple Object Name Based On Active Tab    pnlRealised
+    Verify Control Object Is Disabled    ${realised_saving_code_field}
+
+Verify Realised Saving Code Field Is Enabled
+    ${realised_saving_code_field}    Determine Multiple Object Name Based On Active Tab    pnlRealised
+    Verify Control Object Is Enabled    ${realised_saving_code_field}
+
+Verify Realised Saving Code Field Is Hidden
+    ${index}    Set Variable If    '${fare_tab_index}' != '${EMPTY}'    ${fare_tab_index}    1
+    Verify Control Object Is Not Visible    [NAME:pnlRealised _${index}]
+
+Verify Realised Savings Code Default Value
+    [Arguments]    ${expected_realized_saving_code_value}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboRealised
+    Verify Control Object Text Value Is Correct    ${object_name}    ${expected_realized_saving_code_value}
+    [Teardown]    Take Screenshot
+
+Verify Remarks Line Contains Masked Card
+    [Arguments]    ${remarks_line}
+    ${full_line_remarks}    Get Lines Using Regexp    ${pnr_details}    ${remarks_line}
+    ${status_masked}    Run Keyword And Return Status    Should Contain Any    ${full_line_remarks}    XXXXXXXX    ******
+    Set Suite Variable    ${status_masked}
+
+Verify Route Code Default Value
+    [Arguments]    ${expected_default_value}    ${fare_tab_value}=${EMPTY}
+    ${index}    Fetch From Right    ${fare_tab_value}    ${SPACE}
+    ${index}    Set Variable If    '${index}' != '${EMPTY}'    ${index}    ${fare_tab_index}
+    Verify Control Object Text Value Is Correct    [NAME:cbRouteGeographyCode_${index}]    ${expected_default_value}
+    [Teardown]    Take Screenshot
+
+Verify Route Code Field Is Disabled
+    ${route_code_field}    Determine Multiple Object Name Based On Active Tab    cbRouteGeographyCode
+    Verify Control Object Is Disabled    ${route_code_field}
+
+Verify Route Code Field Is Enabled
+    ${route_code_field}    Determine Multiple Object Name Based On Active Tab    cbRouteGeographyCode
+    Verify Control Object Is Enabled    ${route_code_field}
+
+Verify Route Code Field Value
+    [Arguments]    ${expected_route_code_value}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    cbRouteGeographyCode
+    Run Keyword And Continue On Failure    Verify Control Object Text Value Is Correct    ${object_name}    ${expected_route_code_value}
+
+Verify Routing Field Is Disabled
+    ${routing_field}    Determine Multiple Object Name Based On Active Tab    cmtxtRouting
+    Verify Control Object Is Disabled    ${routing_field}
+
+Verify Routing Field Is Enabled
+    ${routing_field}    Determine Multiple Object Name Based On Active Tab    cmtxtRouting
+    Verify Control Object Is Enabled    ${routing_field}
+
+Verify Routing Field Value
+    [Arguments]    ${expected_routing_value}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    cmtxtRouting
+    ${actual_routing_value}    Get Control Text Value    ${object_name}
+    ${actual_routing_value}    Replace String    ${actual_routing_value}    -___    ${EMPTY}
+    Verify Text Contains Expected Value    ${actual_routing_value}    ${expected_routing_value}
+    [Teardown]    Take Screenshot
+
+Verify Sabre Is Logged In CERT
+    Activate Sabre Red Workspace
+    Sleep    1
+    Send    *M{ENTER}
+    Sleep    1
+    Send    SI{ENTER}
+    Sleep    1
+    Send    {ALTDOWN}EA{ALTUP}
+    Sleep    1
+    Send    {ALTDOWN}EC{ALTUP}
+    ${content}    Get Data from Clipboard
+    ${isCERT}    Run Keyword and Return Status    Should Contain    ${content}    CERT
+    ${notSignedOut}    Run Keyword and Return Status    Should Contain    ${content}    NOT SIGNED OUT
+    Run Keyword If    "${isCERT}" == "True" and "${notSignedOut}" == "True"    Log    Passed: Sabre is signed in and logged in CERT
+    ...    ELSE    FAIL    Failed: Ensure Sabre is signed in and logged in CERT
+    Sleep    2
+
+Verify Semi Flexible Fare Restriction Field Is Disabled
+    ${semi_flexible_field}    Determine Multiple Object Name Based On Active Tab    cradSemiFlex_alt, cradSemiFlexOBT_alt, cradSemiFlex, cradSemiFlex_alt, cradSemiFlexOBT
+    Verify Control Object Is Disabled    ${semi_flexible_field}
+    [Teardown]    Take Screenshot
+
+Verify Semi Flexible Fare Restriction Field Is Enabled
+    ${semi_flexible_field}    Determine Multiple Object Name Based On Active Tab    cradSemiFlex_alt, cradSemiFlexOBT_alt, cradSemiFlex, cradSemiFlex_alt, cradSemiFlexOBT
+    Verify Control Object Is Enabled    ${semi_flexible_field}
+
+Verify Specific Warning In Air Fare Is Shown
+    [Arguments]    ${expected_message}
+    Verify Control Object Is Visible    ${lbl_warning_msg}
+    ${actual_text} =    Control Get Text    ${title_power_express}    ${EMPTY}    ${lbl_warning_msg}
+    Should Be Equal    ${actual_text}    ${expected_message}
+    [Teardown]    Take Screenshot
+
+Verify That Accounting Remarks Are Written In The PNR
+    [Arguments]    ${fare_tab}    ${x_times}    ${country}=SG
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Remark Is Written X Times In The PNR    X/-SF/*${fare_tab_index}/${fare_${fare_tab_index}_base_fare}    ${x_times}
+    Verify Specific Remark Is Written X Times In The PNR    X/-RF/*${fare_tab_index}/${high_fare_value_${fare_tab_index}}    ${x_times}
+    Verify Specific Remark Is Written X Times In The PNR    X/-LF/*${fare_tab_index}/${low_fare_value_${fare_tab_index}}    ${x_times}
+    Verify Specific Remark Is Written X Times In The PNR    X/-EC/*${fare_tab_index}/${missed_code_value_${fare_tab_index}}    ${x_times}
+    Verify Specific Remark Is Written X Times In The PNR    X/-RC/*${fare_tab_index}/R    ${x_times}
+    Verify Specific Remark Is Written X Times In The PNR    X/-FF8/*${fare_tab_index}/${class_code_value_${fare_tab_index}}    ${x_times}
+    Verify Specific Remark Is Written X Times In The PNR    X/-FF30/*${fare_tab_index}/${realised_code_value_${fare_tab_index}}    ${x_times}
+    Verify Specific Remark Is Written X Times In The PNR    X/-FF38/*${fare_tab_index}/E    ${x_times}
+    Verify Specific Remark Is Written X Times In The PNR    X/-FF47/*${fare_tab_index}/***    ${x_times}    #static
+
+Verify That Error Icon For Expired Card Is Displayed On Fare Quote Tab
+    [Arguments]    ${portrait}=False
+    Comment    Run Keyword If    "${portrait}" == "False"    Verify Tooltip Text Is Correct Using Coords    582    591    Credit Card is expired
+    ...    ELSE    Verify Tooltip Text Is Correct Using Coords    720    461    Credit Card is expired
+    ${actual_tooltip}    Get Tooltip From Error Icon    TableLayoutPanel3
+    Should Be Equal As Strings    ${actual_tooltip}    Credit Card is expired
+
+Verify Transaction Fee Is Selected By Default
+    [Arguments]    ${transaction_fee}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    cmbTransactionFee
+    Verify Control Object Text Value Is Correct    ${object_name}    ${transaction_fee}
+    [Teardown]    Take Screenshot
+
+Verify Transaction Fee Remarks Are Written In The PNR
+    [Arguments]    ${fare_tab}    ${transaction_type}    ${validating_carrier}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${card_code}    Identify Form Of Payment Code    ${str_card_type}    SG
+    ${ff34}    Set Variable If    "${transaction_type.upper()}" == "ONLINE"    AA    AB
+    ${ff35}    Set Variable If    "${transaction_type.upper()}" == "ONLINE"    AMI    SAB
+    ${ff36}    Set Variable If    "${transaction_type.upper()}" == "ONLINE"    S    G
+    Verify Specific Remark Is Written In The PNR    X/-MS/*${fare_tab_index}/PC35/V021007/AC${validating_carrier}/TK/PX1
+    Verify Specific Remark Is Written In The PNR    X/-MSX/*${fare_tab_index}/C${transaction_fee_value_${fare_tab_index}}/A${transaction_fee_value_${fare_tab_index}}/SF${transaction_fee_value_${fare_tab_index}}/TK
+    Verify Specific Remark Is Written In The PNR    X/-MSX/*${fare_tab_index}/FF34-${ff34}/FF35-${ff35}/FF36-${ff36}/FF47-***
+    Verify Specific Remark Is Written In The PNR    X/-MSX/*${fare_tab_index}/F${card_code}/CCN${str_card_type}${str_card_number}EXP${str_exp_date}/D${transaction_fee_value_${fare_tab_index}}
+    Verify Specific Remark Is Written In The PNR    X/-MSX/*${fare_tab_index}/FF TRANSACTION FEE
+
+Verify Total Alternate Fare
+    [Arguments]    ${expected_fare_value}
+    Verify Control Object Text Value Is Correct    [NAME:ctxtTotalFareOffer_alt_1]    ${expected_fare_value}
+    [Teardown]
+
+Verify Turnaround Value Is Correct
+    [Arguments]    ${fare_tab}    ${expected_turnaround}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    Get Point Of Turnaround    ${fare_tab}
+    Verify Actual Value Matches Expected Value    ${point_of_${fare_tab_index}}    ${expected_turnaround}
+    [Teardown]    Take Screenshot
+
+Verify Fare Not Finalised Is Ticked
+    Verify Checkbox Is Ticked    [NAME:cchkNotFinalised]
+    [Teardown]    Take Screenshot
+
+Verify Turnaround Field Is Disabled
+    ${pot_field}    Determine Multiple Object Name Based On Active Tab    ccboPOT
+    Verify Control Object Is Disabled    ${pot_field}
+
+Verify Class Code Field Is Disabled
+    ${class_code_field}    Determine Multiple Object Name Based On Active Tab    ccboClass
+    Verify Control Object Is Disabled    ${class_code_field}
+
+Verify LFCC Field Is Disabled
+    ${class_code_field}    Determine Multiple Object Name Based On Active Tab    ctxtLowestFareCC
+    Verify Control Object Is Disabled    ${class_code_field}
+
+Verify Form Of Payment Field Is Disabled
+    ${fop_field}    Determine Multiple Object Name Based On Active Tab    cbFormOfPayment
+    Verify Control Object Is Disabled    ${fop_field}
+
+Verify Mask Icon Is Disabled
+    ${mask_icon}    Determine Multiple Object Name Based On Active Tab    cmdMaskCard
+    Verify Control Object Is Disabled    ${mask_icon}
+
+Verify Pencil Icon Is Disabled
+    ${pencil_icon}    Determine Multiple Object Name Based On Active Tab    cmdEditFormOfPayment
+    Verify Control Object Is Disabled    ${pencil_icon}
+
+Verify Nett Fare Field Is Disabled
+    ${nett_field}    Determine Multiple Object Name Based On Active Tab    txtNetFare
+    Verify Control Object Is Disabled    ${nett_field}
+
+Verify MarkUp Amount Field Is Disabled
+    ${markup_amount_field}    Determine Multiple Object Name Based On Active Tab    ctxtMarkUpAmount
+    Verify Control Object Is Disabled    ${markup_amount_field}
+
+Verify MarkUp Percentage Field Is Disabled
+    ${markup_percentage_field}    Determine Multiple Object Name Based On Active Tab    ctxtMarkupPercentage
+    Verify Control Object Is Disabled    ${markup_percentage_field}
+
+Verify Transaction Fee Field Is Disabled
+    ${transaction_fee_field}    Determine Multiple Object Name Based On Active Tab    cbTransactionFee
+    Verify Control Object Is Disabled    ${transaction_fee_field}
+
+Verify Fare Including Airline Taxes Field Is Disabled X
+    ${fares_with_taxes_field}    Determine Multiple Object Name Based On Active Tab    ctxtFareIncludingTaxes
+    Verify Control Object Is Disabled    ${fares_with_taxes_field}
+
+Verify Total Field Is Disabled
+    ${total_field}    Determine Multiple Object Name Based On Active Tab    ctxtTotalAmount
+    Verify Control Object Is Disabled    ${total_field}
+
+Verify Default Restrictions Field Is Disabled
+    ${default_field}    Determine Multiple Object Name Based On Active Tab    cradDefault
+    Verify Control Object Is Disabled    ${default_field}
+
+Verify Turnaround Field Is Enabled
+    ${pot_field}    Determine Multiple Object Name Based On Active Tab    ccboPOT
+    Verify Control Object Is Enabled    ${pot_field}
+
+Verify Class Code Field Is Enabled
+    ${class_code_field}    Determine Multiple Object Name Based On Active Tab    ccboClass
+    Verify Control Object Is Enabled    ${class_code_field}
+
+Verify LFCC Field Is Enabled
+    ${class_code_field}    Determine Multiple Object Name Based On Active Tab    ctxtLowestFareCC
+    Verify Control Object Is Enabled    ${class_code_field}
+
+Verify Form Of Payment Field Is Enabled
+    ${fop_field}    Determine Multiple Object Name Based On Active Tab    cbFormOfPayment
+    Verify Control Object Is Enabled    ${fop_field}
+
+Verify Nett Fare Field Is Enabled
+    ${nett_field}    Determine Multiple Object Name Based On Active Tab    txtNetFare
+    Verify Control Object Is Enabled    ${nett_field}
+
+Verify Transaction Fee Field Is Enabled
+    ${transaction_fee_field}    Determine Multiple Object Name Based On Active Tab    cbTransactionFee
+    Verify Control Object Is Enabled    ${transaction_fee_field}
+
+Verify Invalid Missed Saving Code Error Message Is Displayed
+    [Arguments]    ${expected_tooltip_text}
+    Verify Tooltip Text Is Correct Using Coords    502    609    ${expected_tooltip_text}
+    [Teardown]    Take Screenshot
+
+Verify Invalid Missed Saving Code Error Message Is Not Displayed
+    ${tooltip_presence}    Is Tooltip Present    502    609
+    Should Be True    ${tooltip_presence} == False    msg=Invalid Missed Saving Code Error Message should not be displayed
+    [Teardown]    Take Screenshot
+
+Select BSP Routing Code Value
+    [Arguments]    ${bsp_routing_code}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboBSP
+    Select Value From Dropdown List    ${object_name}    ${bsp_routing_code}
+    [Teardown]    Take Screenshot
+
+Get Fare Details For Noram
+    [Arguments]    ${fare_tab}
+    Get High, Charged And Low Fare In Fare Tab    ${fare_tab}
+    Get Air Fare Restrictions    ${fare_tab}
+    Get Point Of Turnaround    ${fare_tab}
+    Get Realised And Missed Saving Code Value    ${fare_tab}
+    [Teardown]    Take Screenshot
+
+Get Realised And Missed Saving Code Value
+    [Arguments]    ${fare_tab}
+    ${fare_tab_index}    Fetch From Right    ${fare_tab}    ${SPACE}
+    ${missed_field}    Determine Multiple Object Name Based On Active Tab    ccboMissed
+    ${realised_field}    Determine Multiple Object Name Based On Active Tab    ccboRealised
+    ${missed_value}    Get Control Text Value    ${missed_field}
+    ${realised_value}    Get Control Text Value    ${realised_field}
+    ${missed_code_value}    Fetch From Left    ${missed_value}    ${SPACE}-
+    ${realised_code_value}    Fetch From Left    ${realised_value}    ${SPACE}-
+    Set Suite Variable    ${missed_code_value_${fare_tab_index}}    ${missed_code_value}
+    Set Suite Variable    ${realised_code_value_${fare_tab_index}}    ${realised_code_value}
+
+Verify BSP Routing Code Value
+    [Arguments]    ${expected_bsp_routing_code}
+    ${object_name}    Determine Multiple Object Name Based On Active Tab    ccboBSP
+    Verify Control Object Text Value Is Correct    ${object_name}    ${expected_bsp_routing_code}
+
+Verify Ticketing Remark Is Written For CA
+    [Arguments]    ${bsp_routing_code}    ${segment_number}    ${fare_tab}=Fare 1    ${realised}=False    ${missed}=False    ${combined_fares}=False
+    Get Base Fare From Amadeus    ${segment_number}    ${fare_tab}
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Run Keyword If    "${realised}" == "True"    Verify Specific Line Is Written In The PNR    RMT TKT${fare_tab_index}-FQ${charged_fare_${fare_tab_index}}/LP-${low_fare_${fare_tab_index}}/FS-${realised_code_value_${fare_tab_index}}/FF-${high_fare_${fare_tab_index}}/FS${bsp_routing_code}/DE-${point_of_${fare_tab_index}}
+    Run Keyword If    "${missed}" == "True"    Verify Specific Line Is Written In The PNR    RMT TKT${fare_tab_index}-FQ${charged_fare_${fare_tab_index}}/LP-${low_fare_${fare_tab_index}}/FS-${missed_code_value_${fare_tab_index}}/FF-${high_fare_${fare_tab_index}}/FS${bsp_routing_code}/DE-${point_of_${fare_tab_index}}
+    Run Keyword If    "${combined_fares}" == "True"    Replace Segment Separator    ${segment_number}
+    Verify Specific Line Is Written In The PNR    RMT TKT${fare_tab_index}-BF${currency_${fare_tab_index}}${base_fare_${fare_tab_index}}/${segment_number}
+
+Verify Matrix Lines Are Written For CA
+    [Arguments]    ${fare_tab}=Fare 1
+    Retrieve PNR Details From Amadeus    ${current_pnr}    rty
+    ${fare_tab_index} =    Fetch From Right    ${fare_tab}    ${SPACE}
+    Verify Specific Line Is Written In The PNR    RM *FF/-${high_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    RM *LP/-${low_fare_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    RM *FS/-${realised_code_value_${fare_tab_index}}
+    Verify Specific Line Is Written In The PNR    RM *DE/-${point_of_${fare_tab_index}}

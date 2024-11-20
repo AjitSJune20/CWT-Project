@@ -1,0 +1,130 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+Resource          ../../resources/panels/pop_up.txt
+Resource          ../../resources/panels/cust_refs.txt
+Resource          ../policy_check/policy_check_verification.txt
+
+*** Keywords ***
+Verify CDR Is Disabled And Text Value Is Correct
+    [Arguments]    ${cdr_name}    ${expected_cdr_text}
+    ${cdr_dict}    Determine CDR Description And Index
+    ${cdr_index} =    Get From Dictionary    ${cdr_dict}    ${cdr_name}
+    Verify Control Object Is Visible    [NAME:ctxtCDRValue${cdr_index}]
+    Verify Control Object Is Disabled    [NAME:ctxtCDRValue${cdr_index}]
+    Verify Control Object Text Value Is Correct    [NAME:ctxtCDRValue${cdr_index}]    ${expected_cdr_text}
+
+Verify CDR Is Not Visible
+    [Arguments]    ${cdr_name}
+    ${cdr_dict}    Determine CDR Description And Index
+    Should Not Contain    ${cdr_dict}    ${cdr_name}
+
+Verify CDR Is Visible
+    [Arguments]    ${cdr_name}
+    ${cdr_dict}    Determine CDR Description And Index
+    ${cdr_index} =    Get From Dictionary    ${cdr_dict}    ${cdr_name}
+    Verify Control Object Is Visible    [NAME:ctxtCDRValue${cdr_index}]
+
+Verify CDR Is Enabled And Text Value Is Correct
+    [Arguments]    ${cdr_name}    ${expected_cdr_text}
+    ${cdr_dict}    Determine CDR Description And Index
+    ${cdr_index} =    Get From Dictionary    ${cdr_dict}    ${cdr_name}
+    Verify Control Object Is Visible    [NAME:ctxtCDRValue${cdr_index}]
+    Verify Control Object Is Enabled    [NAME:ctxtCDRValue${cdr_index}]
+    Verify Control Object Text Value Is Correct    [NAME:ctxtCDRValue${cdr_index}]    ${expected_cdr_text}
+
+Verify CDR Is Not Mandatory
+    [Arguments]    ${cdr_name}
+    ${cdr_dict}    Determine CDR Description And Index
+    ${cdr_index} =    Get From Dictionary    ${cdr_dict}    ${cdr_name}
+    Verify Control Object Field Is Not Mandatory    [NAME:ctxtCDRValue${cdr_index}]
+
+Verify CDR Is Mandatory
+    [Arguments]    ${cdr_name}
+    ${cdr_dict}    Determine CDR Description And Index
+    ${cdr_index} =    Get From Dictionary    ${cdr_dict}    ${cdr_name}
+    Verify Control Object Field Is Mandatory    [NAME:ctxtCDRValue${cdr_index}]
+
+Verify That Policy Check Panel Is Displayed
+    Verify Control Object Is Visible    [NAME:grpPolicyCheck]
+    Verify Control Object Is Visible    [NAME:tlpPolicyCheck]
+
+Verify Policy Is Enabled And Status Is Correct
+    [Arguments]    ${policy_name}    ${policy_reason}    ${policy_status}
+    ${policy_dict}    Determine Policy Name And Index
+    ${policy_name_index}    Get From Dictionary    ${policy_dict}    ${policy_name}
+    ${policy_reason_index}    Get From Dictionary    ${policy_dict}    ${policy_reason}
+    ${policy_status_via_name_index}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:ccboPolicyStatus${policy_name_index}]
+    ${policy_status_via_reason_index}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:ccboPolicyStatus${policy_reason_index}]
+    Should Be Equal As Strings    ${policy_status_via_name_index}    ${policy_status}
+    Should Be Equal As Strings    ${policy_status_via_reason_index}    ${policy_status}
+    Comment    ${policy_status_index}    Get From Dictionary    ${policy_dict}    ${policy_status}
+    Comment    Should Be Equal    ${policy_name_index}    ${policy_reason_index}    ${policy_status_index}    ${policy_status} should be
+    Comment    Verify Control Object Is Visible    [NAME:ccboPolicyStatus${policy_index}]
+    Comment    Verify Control Object Is Enabled    [NAME:ccboPolicyStatus${policy_index}]
+    Comment    Verify Control Object Text Value Is Correct    [NAME:ccboPolicyStatus${policy_index}]    ${expected_status_text}
+
+Verify Policy Status Is Correct
+    [Arguments]    ${policy_name}    ${policy_reason}    ${expected_policy_status}    ${apply_search_pattern}=False
+    ${policy_status_row_number}    Get Policy Status Row Number    ${policy_name}    ${policy_reason}    ${apply_search_pattern}
+    ${actual_policy_status}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:ccboPolicyStatus${policy_status_row_number}]
+    Should Be Equal As Strings    ${expected_policy_status}    ${actual_policy_status}
+    [Teardown]    Take Screenshot
+
+Verify Multi Popup Window Exists
+    [Arguments]    ${window_title}
+    Wait Until Window Exists    ${window_title}
+
+Verify Message Is Displayed
+    [Arguments]    ${message_id}    ${message_value}    ${window_title}
+    Wait Until Control Object Is Visible    [NAME:Message${message_id}]    ${window_title}
+    Verify Control Object Text Value Is Correct    [NAME:Message${message_id}]    ${message_value}    ${EMPTY}    ${EMPTY}    ${window_title}
+
+Set FOP Value In Pop Up
+    [Arguments]    ${pop_up_title}    ${pop_up_value}
+    Wait Until Window Exists    ${pop_up_title}
+    Win Activate    ${pop_up_title}
+    Set Control Text Value    [NAME:ctxtCDRValue19]    ${pop_up_value}    ${pop_up_title}
+    Click Control Button    [NAME:btnMatchCDRValue]    ${pop_up_title}
+    Wait Until Control Object Is Visible    [NAME:cboAccount]    ${pop_up_title}
+    Send    {ENTER}
+    Wait Until Progress Info is Completed
+
+Click New Booking With FOP Pop Up
+    Activate Power Express Window
+    Wait Until Keyword Succeeds    60    2    Verify Progress Info Window is Not Active
+    Wait Until Control Object Is Enabled    ${btn_newBooking}    ${title_power_express}
+    Click Control Button    ${btn_newBooking}    ${title_power_express}
+    Verify Error In Status Strip Text    Error while reading values from PNR
+    Set Test Variable    ${bln_CoordsKnown}    False
+    Set Test Variable    ${is_new_booking_worflow}    ${True}
+    Sleep    20
+    [Teardown]    Take Screenshot
+
+Set Value In Popup Notice
+    [Arguments]    ${popup_title}    ${popup_answer}
+    Verify Window Exists    ${popup_title}
+    Run Keyword If    ${does_window_exists} ==1    Set Control Text Value    [NAME:TextBox1]    ${popup_answer}    ${popup_title}
+    Run Keyword If    ${does_window_exists} ==1    Click Control Button    [NAME:BtnOk]    ${popup_title}
+
+Click Cancel In Popup
+    [Arguments]    ${popup_title}
+    Verify Window Exists    ${popup_title}
+    Run Keyword If    ${does_window_exists} ==1    Click Control Button    [NAME:_btnCancel]    ${popup_title}
+
+Set Answer In Popup
+    [Arguments]    ${popup_title}    ${popup_answer}
+    Take Screenshot
+    Verify Window Exists    ${popup_title}
+    Run Keyword If    ${does_window_exists} == 1    Set Control Text Value    [NAME:_txtCdrValueSearch]    ${popup_answer}    ${popup_title}
+    Run Keyword If    ${does_window_exists} == 1    Click Control Button    [NAME:_btnOK]    ${popup_title}
+    Take Screenshot
+    Comment    Set Control Text Value    [NAME:_txtCdrValueSearch]    ${popup_answer}    ${popup_title}
+    Comment    Click Control Button    [NAME:_btnOK]    ${popup_title}
+    Sleep    5
+
+Verify That Popup Message Exist
+    [Arguments]    ${popup_title}
+    Take Screenshot
+    Verify Window Exists    ${popup_title}
+    Run Keyword If    ${does_window_exists} ==1    Take screenshot
+    Run Keyword If    ${does_window_exists} ==1    Click Control Button    [NAME:_btnOK]    ${popup_title}

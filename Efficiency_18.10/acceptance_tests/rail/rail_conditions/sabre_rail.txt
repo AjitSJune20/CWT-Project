@@ -1,0 +1,220 @@
+*** Settings ***
+Force Tags        sabre_rail    3rd_party_dependent    emea
+Resource          ../rail_verification.txt
+
+*** Test Cases ***
+[NB] Verify That R‡CP0 Remark Is Correct When Rail Not Compliant Checkbox Is Unticked
+    [Tags]    us2640    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Create Shell PNR For Sabre Rail    Sabre 211 - Auto ¦ US1419    AutoTwoOneOne    NoramTrvlrOne    ${EMPTY}    Delivery
+    Force Ignore To GDS
+    Emulate PCC    L9H7
+    Enter Specific Command On Native GDS    *${current_pnr}
+    Switch To Sabre Rail Tab
+    Populate Sabre Rail Booking    [FRPLY] PARIS GARE DE LYON    [FRLPD] LYON PART DIEU    3    3    AF    FA00
+    Get Sabre Rail Total Price
+    Click Ignore PNR Button
+    Switch To Sabre Previous Tab
+    Force Ignore To GDS
+    Emulate PCC    3W7F
+    Enter Specific Command On Native GDS    *${current_pnr}
+    Book Flight X Months From Now    CDGLHR¥AF    01Y1    WPRQ    3    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    AUTOTICKETER RAIL
+    Verify Rail Not Compliant Checkbox Is Present And Unticked
+    Click Finish PNR
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *R‡    1
+    Verify Specific Line Is Written In The PNR    R‡CP0 COMMENT/${rail_total_price}/2/2/Y
+    Verify Specific Line Is Not Written In The PNR    /2/2/N
+
+[AB] Verify That R‡CP0 Remark Is Correct When Rail Not Compliant Checkbox Is Ticked
+    [Tags]    us2640    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    AUTOTICKETER RAIL
+    Verify Rail Not Compliant Checkbox Is Present And Unticked
+    Tick Rail Not Compliant Checkbox
+    Click Finish PNR
+    Re-Execute Amend Booking Worfklow With Rail Not Compliant Checkbox Ticked If Simultaneous Change Error Is Displayed
+    Sleep    20
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *R‡    1
+    Verify Specific Line Is Written In The PNR    R‡CP0 COMMENT/${rail_total_price}/2/2/N
+    Verify Specific Line Is Not Written In The PNR    /2/2/Y
+
+[AB] Verify That R‡CP0 Remark Is Correct When Rail Not Compliant Checkbox Is Unticked
+    [Tags]    us2640    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    AUTOTICKETER RAIL
+    Verify Rail Not Compliant Checkbox Is Present And Ticked
+    Untick Rail Not Compliant Checkbox
+    Click Finish PNR
+    Re-Execute Amend Booking Worfklow With Rail Not Compliant Checkbox Unticked If Simultaneous Change Error Is Displayed
+    Sleep    20
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *R‡    1
+    Verify Specific Line Is Written In The PNR    R‡CP0 COMMENT/${rail_total_price}/2/2/Y
+    Verify Specific Line Is Not Written In The PNR    /2/2/N
+
+[SI] Verify That R‡CP0 Remark Is Correct When Rail Not Compliant Checkbox Is Unticked From Previous Workflow
+    [Tags]    us2640
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    #Select Delivery Method    AUTOTICKETER RAIL
+    Remove The Unselected Email Address In Delivery Panel
+    Verify Rail Not Compliant Checkbox Is Not Present
+    Click Finish PNR
+    Re-Execute Send Itinerary Workflow If Simultaneous Change Error Is Displayed
+    Sleep    20
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *R‡    1
+    Verify Specific Line Is Written In The PNR    R‡CP0 COMMENT/${rail_total_price}/2/2/Y
+    Verify Specific Line Is Not Written In The PNR    /2/2/N
+
+[AB] Verify That R‡CP0 Remark Is Correct When Rail Not Compiant Checkbox Is Ticked
+    [Tags]    us2640
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    AUTOTICKETER RAIL
+    Verify Rail Not Compliant Checkbox Is Present And Unticked
+    Tick Rail Not Compliant Checkbox
+    Click Finish PNR
+    Re-Execute Amend Booking Worfklow With Rail Not Compliant Checkbox Ticked If Simultaneous Change Error Is Displayed
+    Sleep    20
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *R‡    1
+    Verify Specific Line Is Written In The PNR    R‡CP0 COMMENT/${rail_total_price}/2/2/N
+    Verify Specific Line Is Not Written In The PNR    /2/2/Y
+
+[SI] Verify That R‡CP0 Remark Is Correct When Rail Not Compliant Checkbox Is Ticked From Previous Workflow
+    [Tags]    us2640
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Panel    Delivery
+    Populate Delivery Panel With Default Values
+    #Select Delivery Method    AUTOTICKETER RAIL
+    Remove The Unselected Email Address In Delivery Panel
+    Verify Rail Not Compliant Checkbox Is Not Present
+    Click Finish PNR
+    Re-Execute Send Itinerary Workflow If Simultaneous Change Error Is Displayed
+    Sleep    20
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *R‡    1
+    Verify Specific Line Is Written In The PNR    R‡CP0 COMMENT/${rail_total_price}/2/2/N
+    Verify Specific Line Is Not Written In The PNR    /2/2/Y
+
+[CB] Verify That R‡CP0 Remark Is Correct When Rail Not Compliant Checkbox Is Ticked From Previous Workflow
+    [Tags]    us2640    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Panel    Delivery
+    Verify Rail Not Compliant Checkbox Is Not Present
+    Click Finish PNR
+    Re-Execute Cancel Itinerary Workflow If Simultaneous Change Error Is Displayed
+    Sleep    20
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *R‡    1
+    Verify Specific Line Is Written In The PNR    R‡CP0 COMMENT/${rail_total_price}/2/2/N
+    Verify Specific Line Is Not Written In The PNR    /2/2/Y
+    [Teardown]    Cancel Rail And Air Segments
+
+*** Keywords ***
+Amend Booking Worfklow With Rail Not Compliant Checkbox Ticked
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Tick Rail Not Compliant Checkbox
+    Click Finish PNR
+
+Amend Booking Worfklow With Rail Not Compliant Checkbox Unticked
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Untick Rail Not Compliant Checkbox
+    Click Finish PNR
+
+Cancel Itinerary Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Click Finish PNR
+
+Cancel Rail And Air Segments
+    Cancel Sabre Rail
+    Cancel PNR Thru GDS Native    ${current_pnr}
+
+Cancel Sabre Rail
+    Force Ignore To GDS
+    Emulate PCC    L9H7
+    Enter Specific Command On Native GDS    *${current_pnr}
+    Switch To Sabre Rail Tab
+    Enter PNR In Retrieve PNR field In Sabre Rail    ${rail_pnr}
+    Click Display PNR
+    Click Cancel Button
+    Verify Rail Itinerary If successfully Canceled
+    Click Ignore PNR Button after cancel
+    Set Retrieve PNR field to Empty
+    Verify Sabre working area A is the selected page
+    Force Ignore To GDS
+
+Create Shell PNR For Sabre Rail
+    [Arguments]    ${client}    ${surname}    ${firstname}    ${client_account}=${EMPTY}    @{exclude_panels}
+    Set Client And Traveler    ${client}    ${surname}    ${firstname}
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Create Shell
+
+Populate Sabre Rail Booking
+    [Arguments]    ${location_from}    ${location_to}    ${num_months}    ${num_days}    ${class_service}    ${fare_code}
+    Click SNCF Button
+    Click Check SNCF PCC Button
+    Click New PNR With Profile Button
+    Activate Sabre Red Workspace
+    Populate Date Of Birth (Sabre Rail)    01    01    1983
+    Populate Email Address (Sabre Rail)    automation@carlsonwagonlit.com
+    Click Next Button (Sabre Rail)
+    Populate Itinerary (Sabre Rail)    ${location_from}    ${location_to}
+    Populate Departure Date (Sabre Rail)    ${num_months}    ${num_days}
+    Populate Class of Service (Sabre Rail)    ${class_service}
+    Populate Fare Code (Sabre Rail)    ${fare_code}
+    Click Search Button (Sabre Rail)
+    Populate Outbound Offers    1
+    Click Select Button (Sabre Rail)
+    Click Next Button (Sabre Rail)
+    Click Next Button (Sabre Rail)
+    Click Next Button (Sabre Rail)
+    Click Book Button
+    Get Sabre Rail PNR
+
+Remove The Unselected Email Address In Delivery Panel
+    [Arguments]    ${recipient1}=automation@carlsonwagonlit.com
+    ${recipient1_value}    Get Variable Value    ${recipient1}
+    : FOR    ${Index}    IN RANGE    0    20
+    \    ${email_editbox}    Control Click    ${title_power_express}    ${EMPTY}    [NAME:ctxtEmail${Index}]
+    \    Run Keyword If    "${email_editbox}" == "0"    Exit For Loop
+    \    ${email_address_value}    Control Get Text    ${title_power_express}    ${EMPTY}    [NAME:ctxtEmail${Index}]
+    \    ${email_address_value}    Run Keyword And Return Status    Should Match Regexp    ${email_address_value}    ${recipient1}
+    \    Run Keyword If    "${email_address_value}" == "False"    Control Set Text    ${title_power_express}    ${EMPTY}    [NAME:ctxtEmail${Index}]
+    \    ...    ${EMPTY}
+    [Teardown]    Take Screenshot
+
+Send Itinerary Workflow
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

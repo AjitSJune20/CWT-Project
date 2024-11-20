@@ -1,0 +1,2562 @@
+*** Settings ***
+Force Tags        amadeus    apac
+Resource          ../../../../acceptance_tests/air_fare/air_fare_verification.txt
+Resource          ../air_fare_verification.txt
+Resource          ../../delivery/delivery_verification.txt
+
+*** Test Cases ***
+[NB SG] Verify That High, Low And Charged Fare Are Written In The PNR
+    [Tags]    us273    sg    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US273    BEAR    TWOSEVENTHREE
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINHKG/ASQ    SS1Y1    FXP/S2    6    3
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    FXP/S3    6    5
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 1    S2    SGD
+    Set High Fare Field    25000.52    SET
+    Set Low Fare Field    500.65
+    Get Mark-Up Amount Value    Fare Quote 1
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Click Fare Tab    Fare Quote 2
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 2    S3    SGD
+    Set High Fare Field    85000.99    SET
+    Set Low Fare Field    800.89
+    Get Mark-Up Amount Value    Fare Quote 2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    S3
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Get Nett Fare Value    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S3
+
+[AB SG] Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained
+    [Tags]    us273    sg    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Get Nett Fare Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Mark-Up Amount Value    Fare Quote 2
+    Get Nett Fare Value    Fare Quote 2
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained For SG
+    Execute Simultaneous Change Handling    Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained For SG
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S3
+
+[AB SG] Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Cancelled And Rebooked
+    [Tags]    us273    sg    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2-3    RT
+    Book Flight X Months From Now    SINHKG/A6X    SS1Y2    FXP/S2    6    5
+    Book Flight X Months From Now    HKGSIN/A6X    SS1Y2    FXP/S3    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 1    S2    SGD
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    S2
+    Set Commission Rebate Percentage    1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Get Nett Fare Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 2    S3    SGD
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    S3
+    Set Commission Rebate Percentage    1
+    Get Mark-Up Amount Value    Fare Quote 2
+    Get Nett Fare Value    Fare Quote 2
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Cancelled And Rebooked For SG
+    Execute Simultaneous Change Handling    Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Cancelled And Rebooked For SG
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That High, Low And Charged Fare Are Written In The PNR
+    [Tags]    us273    hk    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US273    BEAR    HKTWOSEVENTHREE
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSIN/ATR    SS1Y1    FXP/S2    3    5
+    Book Flight X Months From Now    SINHKG/ATR    SS1Y1    FXP/S3    3    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 1    S2    HKD
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    S2
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Set Commission Rebate Percentage    1
+    Get Nett Fare Value    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 2    S3    HKD
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Mark-Up Amount Value    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    S3
+    Get Nett Fare Value    Fare Quote 2
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set Commission Rebate Percentage    1
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S3
+    [Teardown]
+
+[AB HK] Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained
+    [Tags]    us273    hk    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Set Commission Rebate Percentage    1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Mark-Up Amount Value    Fare Quote 2
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set Commission Rebate Percentage    1
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained For HK
+    Execute Simultaneous Change Handling    Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained For HK
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That High, Low And Charged Fare Are Written In The PNR
+    [Tags]    us273    in    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US273    BEAR    INTWOSEVENTHREE
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELBOM/AAI    SS1Y1    FXP/S2    6    6
+    Book Flight X Months From Now    BOMDEL/AAI    SS1Y1    FXP/S3    6    11
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 1    S2    INR
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    S2
+    Get MarkUp Amount Value    Fare Quote 1
+    Get Commission Rebate Amount Value    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values
+    Get Nett Fare Value    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 2    S3    INR
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    S3
+    Get MarkUp Amount Value    Fare Quote 2
+    Get Commission Rebate Amount Value    Fare Quote 2
+    Populate Fare Details And Fees Tab With Default Values
+    Get Nett Fare Value    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S3
+    [Teardown]
+
+[AB IN] Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained
+    [Tags]    us273    in    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get MarkUp Amount Value    Fare Quote 1
+    Get Commission Rebate Amount Value    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values
+    Click Fare Tab    Fare Quote 2
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get MarkUp Amount Value    Fare Quote 2
+    Get Commission Rebate Amount Value    Fare Quote 2
+    Populate Fare Details And Fees Tab With Default Values
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained For IN
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Single Fare
+    [Tags]    us285    us404    us308    sg    us294    howan
+    ...    us892    for_update
+    Open Power Express And Retrieve Profile    ${version}    Test    u001mkr    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US285    BEAR    SGTWOEIGHTFIVE
+    Click New Booking
+    Update PNR for EN or GB
+    Get Agent Sign Remark From GDS Screen
+    Verify Agent Sign Remark Is Written    1234MR
+    Book Flight X Months From Now    SINHKG/ASQ    SS1Y1    FXP/S2    6    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Set LFCC Field    QF
+    Get LFCC Field Value    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Tab With Default Values    Fare Quote 1    true    true
+    Populate Air Fare Savings Code    XX - No Saving    M - MISCELLANEOUS    YF - Economy Class Full Fare
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify LFCC Accounting Remark Is Written    Fare Quote 1    S2
+    Verify PC Accounting Remark For Route Code Domestic Is Not Written
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S2
+    Verify PC Accounting Remark For Route Code International Is Written    S2    SG
+    Verify Agent Sign Remark Is Written    1234MR
+
+[AB SG] Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare
+    [Tags]    us285    us404    us308    sg    us294    us892
+    ...    for_update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    FXP/S2    5    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 2
+    Verify Route Code Field Value    INTL
+    Verify LFCC Value Is Same From New Booking    Fare Quote 1
+    Get LFCC Field Value    Fare Quote 2
+    Populate Fare Tab With Default Values    Fare Quote 2    true    true
+    Populate Air Fare Savings Code    XX - No Saving    M - MISCELLANEOUS    YF - Economy Class Full Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 1
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 1    S2
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare For SG
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify LFCC Accounting Remark Is Written    Fare Quote 1    S2
+    Verify LFCC Accounting Remark Is Written    Fare Quote 2    S3
+    Verify PC Accounting Remark For Route Code Domestic Is Not Written
+    Verify PC Accounting Remark For Route Code International Is Written    S2    SG
+    Verify PC Accounting Remark For Route Code International Is Written    S3    SG
+    Verify Agent Sign Remark Is Written    1234MR
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S2
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S3
+    Retrieve PNR Details from Amadeus    command=RTB
+    Verify Default Restriction Remarks Are Written    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare
+    [Tags]    us285    us404    us308    hk    howan    us892
+    ...    for_update
+    Open Power Express And Retrieve Profile    ${version}    Test    u001mkr    en-GB    mruizapac    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US285    BEAR    HKTWOEIGHTFIVE
+    Click New Booking
+    Update PNR for EN or GB
+    Get Agent Sign Remark From GDS Screen
+    Verify Agent Sign Remark Is Written    1234MR
+    Book Flight X Months From Now    MNLCDG/AKA,AF/XHKG    SS1Y1    FXP/S2-3    6    15
+    Book Flight X Months From Now    HKGSIN/ATR    SS1Y1    FXP/S4    6    20
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S5    6    25
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 1    S2-3
+    Verify Route Code Field Value    INTL
+    Set LFCC Field    QF
+    Get LFCC Field Value    Fare Quote 1
+    Populate Fare Tab With Default Values    Fare Quote 1    true    true
+    Click Fare Tab    Fare Quote 2
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 2    S4
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 2
+    Populate Fare Tab With Default Values    Fare Quote 2    true    true
+    Click Fare Tab    Fare Quote 3
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 3    S5
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 3
+    Populate Fare Tab With Default Values    Fare Quote 3    true    true
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify LFCC Accounting Remark Is Written    Fare Quote 1    S2-3
+    Verify LFCC Accounting Remark Is Written    Fare Quote 2    S4
+    Verify LFCC Accounting Remark Is Written    Fare Quote 3    S5
+    Verify PC Accounting Remark For Route Code Domestic Is Not Written
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S2-3
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S4
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S5
+    Verify PC Accounting Remark For Route Code International Is Written    S2-3    HK
+    Verify PC Accounting Remark For Route Code International Is Written    S4    HK
+    Verify PC Accounting Remark For Route Code International Is Written    S5    HK
+    Verify Agent Sign Remark Is Written    1234MR
+
+[AB HK] Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare
+    [Tags]    us285    us404    us308    hk    howan    us892
+    ...    for_update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify LFCC Value Is Same From New Booking    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify LFCC Value Is Same From New Booking    Fare Quote 2
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 3
+    Verify LFCC Value Is Same From New Booking    Fare Quote 3
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 3
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare For HK
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare For HK
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify LFCC Accounting Remark Is Written    Fare Quote 1    S2-3
+    Verify LFCC Accounting Remark Is Written    Fare Quote 2    S4
+    Verify LFCC Accounting Remark Is Written    Fare Quote 3    S5
+    Verify PC Accounting Remark For Route Code Domestic Is Not Written
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S2-3
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S4
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S5
+    Verify PC Accounting Remark For Route Code International Is Written    S2-3    HK
+    Verify PC Accounting Remark For Route Code International Is Written    S4    HK
+    Verify PC Accounting Remark For Route Code International Is Written    S5    HK
+    Verify Agent Sign Remark Is Written    1234MR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare
+    [Tags]    us285    us404    us308    in    howan    us892
+    ...    for_update
+    Open Power Express And Retrieve Profile    ${version}    Test    u001mkr    en-GB    mruizapac    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US285    BEAR    INTWOEIGHTFIVE
+    Click New Booking
+    Select Form Of Payment    Cash
+    Update PNR for EN or GB
+    Get Agent Sign Remark From GDS Screen
+    Verify Agent Sign Remark Is Written    1234MR
+    Book Flight X Months From Now    DELSIN/A9W    SS1Y1    FXP/S2    6    5
+    Book Flight X Months From Now    SINHKG/ACX    SS1Y1    FXP/S3    6    10
+    Book Flight X Months From Now    DELBOM/A9W    SS1Y1    FXP/S4    6    15
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 1    S2
+    Select Route Code Value    DOM
+    Get LFCC Field Value    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Route Code Field Value    INTL
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 2    S3
+    Get LFCC Field Value    Fare Quote 2
+    Click Fare Tab    Fare Quote 3
+    Verify Route Code Field Value    DOM
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 3    S4
+    Get LFCC Field Value    Fare Quote 3
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify LFCC Accounting Remark Is Written    Fare Quote 1    S2
+    Verify LFCC Accounting Remark Is Written    Fare Quote 2    S3
+    Verify LFCC Accounting Remark Is Written    Fare Quote 3    S4
+    Verify PC Accounting Remark For Route Code Domestic Is Written    S2
+    Verify PC Accounting Remark For Route Code International Is Written    S3    IN
+    Verify PC Accounting Remark For Route Code Domestic Is Written    S4
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S2
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S3
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S4
+    Verify Agent Sign Remark Is Written    1234MR
+
+[AB IN] Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare
+    [Tags]    us285    us404    us308    in    howan    us892
+    ...    for_update
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2-4    RT    RT
+    Book Flight X Months From Now    MNLCEB/APR    SS1Y1    FXP/S2    6    0
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S3    6    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 2    S3
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare For IN
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify LFCC Accounting Remark Is Written    Fare Quote 1    S2
+    Verify LFCC Accounting Remark Is Written    Fare Quote 2    S3
+    Verify PC Accounting Remark For Route Code Domestic Is Not Written
+    Verify PC Accounting Remark For Route Code International Is Written    S2    IN
+    Verify PC Accounting Remark For Route Code International Is Written    S3    IN
+    Verify Agent Sign Remark Is Written    1234MR
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S2
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Correct Routing Itinerary Remarks And Turnaround Accounting Remarks Are Written For Single Fare
+    [Tags]    us274    sg    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US274    BEAR    TWOSEVENFOUR
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    \    6    3
+    Book Flight X Months From Now    MNLSIN/APR    SS1Y1    FXP    6    5
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    SIN-MNL-SIN
+    Verify Turnaround Value Is Correct    Fare Quote 1    MNL
+    Select Turnaround    SIN
+    Get Routing Name    Fare Quote 1
+    Get Point Of Turnaround    Fare Quote 1
+    Select Missed Saving Code Value    C - LOW COST CARRIER FARE DECLINED
+    Select Class Code Value    FD - First Class Discounted Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Accounting Remarks Are Written    Fare Quote 1    S2-3
+    [Teardown]
+
+[AB SG] Verify That Correct Routing Itinerary Remarks And Turnaround Accounting Remarks Are Written When Flights/Fares were retained For Single Fare
+    [Tags]    us274    sg    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    SIN-MNL-SIN
+    Verify Turnaround Value Is Correct    Fare Quote 1    SIN
+    Get Routing Name    Fare Quote 1
+    Get Point Of Turnaround    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Correct Routing Itinerary Remarks and Turnaround Accounting Remarks Are Written When Flights/Fares were retained for Single Fare For SG
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Accounting Remarks Are Written    Fare Quote 1    S2-3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That Correct Routing Itinerary Remarks And Turnaround Accounting Remarks Are Written For Multiple Fares
+    [Tags]    us274    in    howan    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US274    BEAR    INTWOSEVENFOUR
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELBMI/XAMSATL    SS1Y2    FXP    6    2
+    Enter GDS Command    FXT01/P1
+    Book Flight X Months From Now    LAXORD/AUA    SS1Y1    FXP/S5    6    5
+    Enter GDS Command    FXT01/P1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    DEL-AMS-ATL-BMI
+    Verify Turnaround Value Is Correct    Fare Quote 1    ${EMPTY}
+    Select Turnaround    AMS
+    Get Routing Name    Fare Quote 1
+    Get Point Of Turnaround    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Routing Field Value    LAX-ORD
+    Verify Turnaround Value Is Correct    Fare Quote 2    CHI
+    Get Routing Name    Fare Quote 2
+    Get Point Of Turnaround    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 2
+    Verify Routing Accounting Remarks Are Written    Fare Quote 1    S2-4
+    Verify Routing Accounting Remarks Are Written    Fare Quote 2    S5
+
+[AB IN] Verify That Correct Routing Itinerary Remarks And Turnaround Accounting Remarks Are Written When Flights/Fares were retained For Multiple Fares
+    [Tags]    us274    in    howan    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    DEL-AMS-ATL-BMI
+    Verify Turnaround Value Is Correct    Fare Quote 1    AMS
+    Click Fare Tab    Fare Quote 2
+    Verify Routing Field Value    LAX-ORD
+    Verify Turnaround Value Is Correct    Fare Quote 2    CHI
+    Enter GDS Command    TTE/ALL    XE2-5    RT
+    Book Flight X Months From Now    LHREWR/AUA    SS1Y1    \    6    5
+    Book Flight X Months From Now    JFKLHR/AUA    SS1Y1    FXP/S2-4    6    10
+    Enter GDS Command    FXT01/P1
+    Book Flight X Months From Now    MNLLHR/ACX    SS1Y1    \    6    15
+    Book Flight X Months From Now    LHRMNL/ACX    SS1Y1    FXP/S5-8    8    5
+    Enter GDS Command    FXT01/P1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    LHR-EWR-JFK-DUB-LHR
+    Verify Turnaround Value Is Correct    Fare Quote 1    NYC
+    Get Routing Name    Fare Quote 1
+    Get Point Of Turnaround    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Routing Field Value    MNL-HKG-LHR-HKG-MNL
+    Verify Turnaround Value Is Correct    Fare Quote 2    LON
+    Get Routing Name    Fare Quote 2
+    Get Point Of Turnaround    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Correct Routing Itinerary Remarks and Turnaround Accounting Remarks Are Written When Flights/Fares were retained for Multiple Fares For IN
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Accounting Remarks Are Written    Fare Quote 1    S2-4
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 2
+    Verify Routing Accounting Remarks Are Written    Fare Quote 2    S5-8
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Correct Routing Itinerary Remarks And Turnaround Accounting Remarks Are Written For Multiple Fares
+    [Tags]    us274    hk    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US274    BEAR    HKTWOSVENFOUR
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP    6    3
+    Book Flight X Months From Now    MNLCDG/ACX/XHKG    SS1Y2    FXP/S3-4    6    5
+    Book Flight X Months From Now    CDGJKT/ALH/XSIN    SS1Y2    \    6    8
+    Book Flight X Months From Now    FRACDG/ALH    SS1Y1    FXP/S5-8    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    HKG-MNL
+    Verify Turnaround Value Is Correct    Fare Quote 1    MNL
+    Get Routing Name    Fare Quote 1
+    Get Point Of Turnaround    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Routing Field Value    MNL-HKG-CDG
+    Verify Turnaround Value Is Correct    Fare Quote 2    PAR
+    Select Turnaround    PAR
+    Get Routing Name    Fare Quote 2
+    Get Point Of Turnaround    Fare Quote 2
+    Set Commission Rebate Percentage    3
+    Click Fare Tab    Fare Quote 3
+    Verify Routing Field Value    CDG-MUC-SIN-CGK-FRA-CDG
+    Verify Turnaround Value Is Correct    Fare Quote 3    MUC
+    Get Routing Name    Fare Quote 3
+    Get Point Of Turnaround    Fare Quote 3
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 2
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 3
+    Verify Routing Accounting Remarks Are Written    Fare Quote 1    S2
+    Verify Routing Accounting Remarks Are Written    Fare Quote 2    S3-4
+    Verify Routing Accounting Remarks Are Written    Fare Quote 3    S5-8
+
+[AB HK] Verify That Correct Routing Itinerary Remarks And Turnaround Accounting Remarks Are Written When Flights Were Cancelled/Rebooked For Multiple Fares
+    [Tags]    us274    hk    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    HKG-MNL
+    Verify Turnaround Value Is Correct    Fare Quote 1    MNL
+    Click Fare Tab    Fare Quote 2
+    Verify Routing Field Value    MNL-HKG-CDG
+    Verify Turnaround Value Is Correct    Fare Quote 2    PAR
+    Click Fare Tab    Fare Quote 3
+    Verify Routing Field Value    CDG-MUC-SIN-CGK-FRA-CDG
+    Verify Turnaround Value Is Correct    Fare Quote 3    MUC
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LHREWR/AAA    SS1Y1    \    2    3
+    Book Flight X Months From Now    LAXORD/AUA    SS1Y1    FXP/S3    2    5
+    Book Flight X Months From Now    JFKLGW/AAA    SS1Y1    FXP/S2,4    2    8
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Turnaround Value Is Correct    Fare Quote 1    ${EMPTY}
+    Verify Routing Field Value    LHR-EWR-JFK-LGW
+    Select Turnaround    NYC
+    Get Routing Name    Fare Quote 1
+    Get Point Of Turnaround    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Turnaround Value Is Correct    Fare Quote 2    CHI
+    Verify Routing Field Value    LAX-ORD
+    Select Turnaround    LAX
+    Get Routing Name    Fare Quote 2
+    Get Point Of Turnaround    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Correct Routing Itinerary Remarks and Turnaround Accounting Remarks Are Written When Flights Were Cancelled/Rebooked For Multiple Fares For HK
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Correct Routing Itinerary Remarks and Turnaround Accounting Remarks Are Written When Flights Were Cancelled/Rebooked For Multiple Fares For HK
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 2
+    Verify Routing Accounting Remarks Are Written    Fare Quote 1    S2,4
+    Verify Routing Accounting Remarks Are Written    Fare Quote 2    S3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark when HF = CF > LF For Single Fare
+    [Tags]    us272    hk    howan    us1032    for_update
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US272    BEAR    HKTWOSVENTWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP    6    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 1
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 1
+    Select Missed Saving Code Value    L - NO MISSED SAVING
+    Verify Invalid Missed Saving Code Error Message Is Not Displayed
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values (If Blank)
+    Get Savings Code    Fare Quote 1
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 1    S2
+
+[AB HK] Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares
+    [Tags]    us272    hk    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    MNLLAX/XHKG/ACX    SS1J1    \    6    3
+    Book Flight X Months From Now    SINMNL/ASQ    SS1J1    \    6    5
+    Book Flight X Months From Now    LAXMNL/XHKG/ACX    SS1J1    \    6    8
+    Enter GDS Command    FXP/S3-4,6-7    FXT1/P1    FXA/S3-4,6-7    FXU2    FXP/S5
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Air Fare Savings Code    SC - SUBSCRIPTION    B - PASSENGER REQUESTED SPECIFIC AIRLINE    YC - Economy Class Corporate Fare
+    Verify Realised Savings Code Default Value    SC - SUBSCRIPTION
+    Verify Missed Savings Code Default Value    B - PASSENGER REQUESTED SPECIFIC AIRLINE
+    Verify Class Code Default Value Is Correct    YC - Economy Class Corporate Fare
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 1
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 1
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Set Low Fare Field (If blank) with Charged Fare
+    Set Commission Rebate Percentage    5
+    Get Savings Code    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Realised Savings Code Functionality    Fare Quote 2
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 2
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 2
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 2
+    Populate Air Fare Savings Code    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED    L - NO MISSED SAVING    FD - First Class Discounted Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set High Fare Field (If blank) with Charged Fare
+    Set Commission Rebate Percentage    5
+    Get Savings Code    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 3
+    Verify Realised Savings Code Functionality    Fare Quote 3
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 3
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 3
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 3
+    Populate Air Fare Savings Code    XX - NO SAVING    X - POLICY WAIVED - EMERGENCY CONDITIONS    YW - Economy Class CWT Negotiated Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 3    Cash
+    Set High Fare Field (If blank) with Charged Fare
+    Set Commission Rebate Percentage    5
+    Get Savings Code    Fare Quote 3
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For HK
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For HK
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 1    S2
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 2    S3-4,6-7
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 3    S5
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Correct MIS Codes Are Listed, Pre-selected and Written to Back Office Remark
+    [Tags]    us272    sg    howan    us1032    for_update
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US272    BEAR    SGTWOSVENTWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELHKG/A9W    SS1J1    \    5    3
+    Book Flight X Months From Now    HKGSIN/ACX    SS1J1    \    5    8
+    Enter GDS Command    FXA/S2    FXU2    FXP/S3
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Realised Savings Code Functionality    Fare Quote 1
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 1    SG
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 1    SG
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 1
+    Populate Air Fare Savings Code    LC - LOW COST CARRIER FARE ACCEPTED    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    CW - Business Class CWT Negotiated Fare
+    Select Missed Saving Code Value    L - NO MISSED SAVING
+    Verify Invalid Missed Saving Code Error Message Is Not Displayed
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Set Commission Rebate Percentage    5
+    Select Transaction Fee    1    True
+    Get Savings Code    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Realised Savings Code Functionality    Fare Quote 2
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 2    SG
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 2    SG
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 2
+    Populate Air Fare Savings Code    UC - VALUE ADDED OFFER    F - PASSENGER REQUESTED SPECIFIC CLASS    FC - First Class Corporate Fare
+    Select Missed Saving Code Value    L - NO MISSED SAVING
+    Verify Invalid Missed Saving Code Error Message Is Not Displayed
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Set Commission Rebate Percentage    5
+    Select Transaction Fee    1    True
+    Get Savings Code    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 1    S2
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 2    S3
+
+[AB SG] Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares
+    [Tags]    us272    sg    howan    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3
+    Book Flight X Months From Now    MNLSIN/ASQ    SS1Y1    \    6    12
+    Book Flight X Months From Now    MNLLAX    SS1J1    \    6    15
+    Enter GDS Command    FXP/S3    FXA/S4    FXU1    TQT
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Air Fare Savings Code    LC - LOW COST CARRIER FARE ACCEPTED    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    CW - Business Class CWT Negotiated Fare
+    Verify Realised Savings Code Default Value    LC - LOW COST CARRIER FARE ACCEPTED
+    Verify Missed Savings Code Default Value    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY
+    Verify Class Code Default Value Is Correct    CW - Business Class CWT Negotiated Fare
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 1    SG
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 1    SG
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 1
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Get Savings Code    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Realised Savings Code Functionality    Fare Quote 2
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 2    SG
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 2    SG
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 2
+    Populate Air Fare Savings Code    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED    L - NO MISSED SAVING    FD - First Class Discounted Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Get Savings Code    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 3
+    Verify Realised Savings Code Is Mandatory And Has No Value
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 3    SG
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 3    SG
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 3
+    Populate Air Fare Savings Code    XX - NO SAVING    Z - CWT ALTERNATIVE DECLINED    YW - Economy Class CWT Negotiated Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 3    Cash
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Get Savings Code    Fare Quote 3
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For SG
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For SG
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 1    S2
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 2    S3
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 3    S4
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That Correct MIS Codes Are Listed, Pre-selected and Written to Back Office Remark for Multiple Fare
+    [Tags]    us272    in    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US272    BEAR    INTWOSVENTWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELHKG/A9W    SS1J1    \    6    3
+    Book Flight X Months From Now    HKGSIN/ACX    SS1Y1    \    6    8
+    Enter GDS Command    FXA/S2    FXU2    FXP/S3
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Realised Savings Code Functionality    Fare Quote 1
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 1    IN
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 1    IN
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 1
+    Populate Air Fare Savings Code    XX - NO SAVING    Z - CWT ALTERNATIVE DECLINED    YW - Economy Class CWT Negotiated Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Set Transaction Fee Value Default Value If Empty    Fare Quote 1    0
+    Get Savings Code    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Realised Savings Code Functionality    Fare Quote 2
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 2    IN
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 2    IN
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 2
+    Populate Air Fare Savings Code    XI - ROUTE DEAL ACCEPTED    X - POLICY WAIVED - EMERGENCY CONDITIONS    YC - Economy Class Corporate Fare
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Set Transaction Fee Value Default Value If Empty    Fare Quote 2    0
+    Get Savings Code    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 1    S2
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 2    S3
+
+[AB IN] Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares
+    [Tags]    us272    in    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Realised Savings Code Default Value    XX - NO SAVING
+    Verify Missed Savings Code Default Value    Z - CWT ALTERNATIVE DECLINED
+    Verify Class Code Default Value Is Correct    YW - Economy Class CWT Negotiated Fare
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 1    IN
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 1    IN
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Realised Savings Code Default Value    XI - ROUTE DEAL ACCEPTED
+    Verify Missed Savings Code Default Value    X - POLICY WAIVED - EMERGENCY CONDITIONS
+    Verify Class Code Default Value Is Correct    YC - Economy Class Corporate Fare
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 2    IN
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 2    IN
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 2
+    Enter GDS Command    TTE/ALL    XE2    FXP
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Realised Savings Code Default Value    XX - NO SAVING
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Populate Air Fare Savings Code    XX - NO SAVING    A - PARTIAL MISSED SAVING    CC - Business Class Corporate Fare
+    Set Transaction Fee Value Default Value If Empty    Fare Quote 1    0
+    Get Savings Code    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For IN
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For IN
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify FF30, FF8 and EC Account Remarks Are Written    Fare Quote 1    S2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Air Fare Panel Fields Behave Correctly
+    [Tags]    us774    hk    team_c    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ US774 HK    BEAR    HKSEVENSEVENFOUR
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP/S2    6    5
+    Book Flight X Months From Now    MNLHKG/APR    SS1Y1    FXP/S3    6    15
+    Click Read Booking
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Verify Routing Field Value    HKG-MNL
+    Get Routing Name    Fare Quote 1
+    Verify Charge Fare Field Is Pre-Populated
+    Get Default Values On Air Fare Panel    Fare Quote 1
+    Verify All Mandatory Fields On Air Fare Panel
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 1    HKG-MNL    3295    PR    INTL    10
+    Get Default Values On Air Fare Panel    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Verify Routing Field Value    MNL-HKG
+    Get Routing Name    Fare Quote 2
+    Verify Charge Fare Field Is Pre-Populated
+    Get Default Values On Air Fare Panel    Fare Quote 2
+    Verify All Mandatory Fields On Air Fare Panel
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 2    MNL-HKG    4121    PR    INTL    10
+    Verify Panel Is Green    Air Fare
+    Verify Transaction Fee Field On Air Fare Panel behaves Correctly
+    Verify Routing Field On Air Fare Panel behaves Correctly    MNL-HKG-123    MNL-HKG    MNL-HKG-LAX-JFK
+    Verify Fare Fields On Air Fare Panel behaves Correctly
+    Verify LFCC Field On Air Fare Panel behaves Correctly
+    Get Default Values On Air Fare Panel    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That Air Fare Panel Fields Behave Correctly
+    [Tags]    us774    in    team_c    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ US774 IN    BEAR    INSEVENSEVENFOUR
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELBOM/AAI    SS1Y1    FXP/S2    6    5
+    Book Flight X Months From Now    BOMDEL/AAI    SS1Y1    FXP/S3    6    15
+    Click Read Booking
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Verify Routing Field Value    DEL-BOM
+    Get Routing Name    Fare Quote 1
+    Verify Charge Fare Field Is Pre-Populated
+    Get Default Values On Air Fare Panel    Fare Quote 1
+    Verify All Mandatory Fields On Air Fare Panel
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 1    DEL-BOM    27015    AI    DOM    10
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Verify Routing Field Value    BOM-DEL
+    Get Routing Name    Fare Quote 2
+    Verify Charge Fare Field Is Pre-Populated
+    Get Default Values On Air Fare Panel    Fare Quote 2
+    Verify All Mandatory Fields On Air Fare Panel
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 2    BOM-DEL    27355    AI    DOM    10
+    Verify Panel Is Green    Air Fare
+    Verify Transaction Fee Field On Air Fare Panel behaves Correctly
+    Verify Routing Field On Air Fare Panel behaves Correctly    BOM-DEL-123    BOM-DEL    BOM-DEL-LAX-JFK
+    Verify Fare Fields On Air Fare Panel behaves Correctly
+    Verify LFCC Field On Air Fare Panel behaves Correctly
+    Get Default Values On Air Fare Panel    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 2
+    [Teardown]
+
+[AB IN] Verify That Air Fare Panel Fields Behave Correctly
+    [Tags]    us774    in    team_c    not_ready
+    Set Test Variable    ${locale}    en-GB
+    Set Test Variable    ${gds_switch}    Amadeus
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Read Booking
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Verify Populated Fields on Amend Booking on Air Fare Panel    Fare Quote 1
+    Get Default Values On Air Fare Panel    Fare Quote 1
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 1    DEL-BOM    27015    AI    DOM    10
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Verify Populated Fields on Amend Booking on Air Fare Panel    Fare Quote 2
+    Get Default Values On Air Fare Panel    Fare Quote 2
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 2    BOM-DEL    27355    AI    DOM    10
+    Verify Panel Is Green    Air Fare
+    Verify Transaction Fee Field On Air Fare Panel behaves Correctly
+    Verify Routing Field On Air Fare Panel behaves Correctly    BOM-DEL-123    BOM-DEL    BOM-DEL-LAX-JFK
+    Verify Fare Fields On Air Fare Panel behaves Correctly
+    Verify LFCC Field On Air Fare Panel behaves Correctly
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Air Fare Panel Fields Behave Correctly For IN
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 2
+    [Teardown]
+
+[NB SG] Verify That Air Fare Panel Fields Behave Correctly
+    [Tags]    us774    sg    team_c    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ US774 SG    BEAR    SGSEVENSEVENFOUR
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S2    6    3
+    Book Flight X Months From Now    MNLSIN/APR    SS1Y1    FXP/S3    6    10
+    Click Read Booking
+    Verify Panel Is Red    Air Fare
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Verify Routing Field Value    SIN-MNL
+    Get Routing Name    Fare Quote 1
+    Verify Charge Fare Field Is Pre-Populated
+    Get Default Values On Air Fare Panel    Fare Quote 1
+    Verify All Mandatory Fields On Air Fare Panel
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 1    MNL-SIN    817.30    PR    INTL    10.00
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Verify Routing Field Value    MNL-SIN
+    Get Routing Name    Fare Quote 2
+    Verify Charge Fare Field Is Pre-Populated
+    Get Default Values On Air Fare Panel    Fare Quote 2
+    Verify All Mandatory Fields On Air Fare Panel
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 2    MNL-SIN    817.20    PR    INTL    10.00
+    Set Low Fare Field    500
+    Verify Panel Is Green    Air Fare
+    Verify Transaction Fee Field On Air Fare Panel behaves Correctly
+    Verify Routing Field On Air Fare Panel behaves Correctly    MNL-SIN-123    MNL-SIN    MNL-SIN-LAX-JFK
+    Verify Fare Fields On Air Fare Panel behaves Correctly
+    Verify LFCC Field On Air Fare Panel behaves Correctly
+    Get Default Values On Air Fare Panel    Fare Quote 2
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 2
+
+[AB SG] Verify That Air Fare Panel Fields Behave Correctly
+    [Tags]    us774    sg    team_c    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Verify Populated Fields on Amend Booking on Air Fare Panel    Fare Quote 1
+    Get Default Values On Air Fare Panel    Fare Quote 1
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 1    MNL-SIN    817.30    PR    INTL    10.00
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Verify Populated Fields on Amend Booking on Air Fare Panel    Fare Quote 2
+    Get Default Values On Air Fare Panel    Fare Quote 2
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 2    MNL-SIN    500    PR    INTL    10.00
+    Verify Panel Is Green    Air Fare
+    Verify Transaction Fee Field On Air Fare Panel behaves Correctly
+    Verify Routing Field On Air Fare Panel behaves Correctly    MNL-SIN-123    MNL-SIN    MNL-SIN-LAX-JFK
+    Verify Fare Fields On Air Fare Panel behaves Correctly
+    Verify LFCC Field On Air Fare Panel behaves Correctly
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Air Fare Panel Fields Behave Correctly For SG
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 1
+    Verify Routing Itinerary Remarks Are Written    Fare Quote 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Nett Fare Are Written In The PNR
+    [Tags]    us273    sg    team_c    valid_fail
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN SG 3    BEAR    MONT
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINHKG/ASQ    SS1Y1    FXP/S2    4    3
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    FXP/S3    4    15
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 1    S2    SGD
+    Set High Fare Field    25000.52    SET
+    Set Low Fare Field    500.65
+    Set Nett Fare Field    Fare Quote 1    10001.00
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Get Commission Rebate Amount Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 2    S3    SGD
+    Set High Fare Field    85000.99    SET
+    Set Low Fare Field    800.89
+    Set Nett Fare Field    Fare Quote 2    30003.00
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    S3
+    Get Nett Fare Value    Fare Quote 2
+    Get Mark-Up Amount Value    Fare Quote 2
+    Get Commission Rebate Amount Value    Fare Quote 2
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S3
+    [Teardown]    Enter GDS Command    IG
+
+[AB SG] Verify That Nett Fare Are Written In The PNR
+    [Tags]    us273    sg    team_c    valid_fail
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Set Nett Fare Field    Fare Quote 1    40003.00
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Get Commission Rebate Amount Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set Nett Fare Field    Fare Quote 2    20003.00
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    S3
+    Get Nett Fare Value    Fare Quote 2
+    Get Mark-Up Amount Value    Fare Quote 2
+    Get Commission Rebate Amount Value    Fare Quote 2
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Nett Fare Are Written In The PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Nett Fare Are Written In The PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That High, Low, And Charged Fare Are Written In The PNR When FXA And FXL Responses Have Different Formats
+    [Tags]    DE81    DE80    in    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US273    BEAR    INTWOSEVENTHREE
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now Without Pricing    DELSFO/AEK    SS1U1    4    12
+    Book Flight X Months From Now    SFODEL/AEK    SS1U1    FXP/S2-5    4    18
+    Book Flight X Months From Now Without Pricing    DELFRA/ALH    SS1V1    4    21
+    Book Flight X Months From Now    FRADEL/ALH    SS1V1    FXP/S6-7    4    26
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 1    S2,3,4,5
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2,3,4,5
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 1    S2,3,4,5    INR
+    Get High Fare Value    Fare Quote 1
+    Get Low Fare Value    Fare Quote 1
+    Get Nett Fare Value    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    S2,3,4,5
+    Get Mark-Up Amount Value    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 2    S6-7
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S6-7
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 2    S6-7    INR
+    Get High Fare Value    Fare Quote 2
+    Get Low Fare Value    Fare Quote 2
+    Get Nett Fare Value    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    S6-7
+    Get Mark-Up Amount Value    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2-5
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S6-7
+
+[AB IN] Verify That High, Low, And Charged Fare Are Written In The PNR When FXA And FXL Responses Have Different Formats
+    [Tags]    DE81    DE80    in    howan
+    [Setup]
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2,3,4,5
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Get Nett Fare Value    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values
+    Click Fare Tab    Fare Quote 2
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S6-7
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Mark-Up Amount Value    Fare Quote 2
+    Get Nett Fare Value    Fare Quote 2
+    Populate Fare Details And Fees Tab With Default Values
+    Click Finish PNR    Amend Booking For Verify That High, Low, And Charged Fare Are Written In The PNR When FXA And FXL Responses Have Different Formats For IN
+    Execute Simultaneous Change Handling    Amend Booking For Verify That High, Low, And Charged Fare Are Written In The PNR When FXA And FXL Responses Have Different Formats For IN
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 1
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 1    S2-5
+    Verify Adult Fare And Taxes Itinerary Remarks Are Written    Fare Quote 2
+    Verify RF, LF And SF Accounting Remarks Per TST Are Written    Fare Quote 2    S6-7
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB SG] Verify That Fare Not Finalized Is Auto Ticked and Fare Remarks Are Not Written When No TST
+    [Tags]    us773    sg    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION SG - US710    BEAR    SGSEVENONEZERO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINLAX/ABR    SS1Y1    \    6    3
+    Book Flight X Months From Now    LAXSIN/ALH    SS1Y1    \    6    5
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Disabled
+    Verify Fare Not Finalised Is Ticked
+    Verify Fare Tab Is Not Visible    Fare Quote 2
+    Verify Fare Tab Is Visible    Fare Quote 1
+    Verify Specific Warning In Air Fare Is Shown    Warning - No fares found in PNR. Please fare quote and read the PNR again or continue with the ‘Fare Not Finalised’ option to complete this PNR.
+    Verify Air Fare Fields Are Disabled
+    Click Restriction Tab
+    Verify Default Restrictions Field Is Disabled
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Panel With Default Values
+    Click Panel    Pspt and Visa
+    Populate Pspt and Visa Panel With Default Values
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Set Email Address In Delivery Panel
+    Set Ticketing Date One Day Ahead
+    Set Follow Up Date Using Current Date
+    Select Delivery Method    Auto Ticket
+    Get Follow Update Value
+    Set On Hold Reasons    Test    Awaiting Fare Details
+    Populate All Panels (Except Given Panels If Any)    Delivery    APIS/SFPD
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify On Hold Queue Place Is Written In The PNR    SINWL2101    62    C2
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify On Hold Queue Minder Is Written In The PNR    SINWL2101    62    C2
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Ticketing RIR Remarks    TLXL
+    Verify Ticketing RMM Remarks
+    Verify Fare Accounting Remarks Are Not Written
+    Verify Fare Itinerary Remarks Are Not Written
+    Verify BF Remarks Are Not Written
+
+[AB SG] Verify That Fare Not Finalized Is Not Ticked and Fare Remarks Are Written When TST Is Partially Complete
+    [Tags]    us773    sg    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    FXP/S2-3
+    Click Read Booking
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Enabled
+    Verify Fare Not Finalised Is Unticked
+    Verify Specific Warning In Air Fare Is Shown    Warning - No fare found for segment 4-5. \ If necessary, please fare quote and read the PNR again.
+    Verify Fare Tab Is Not Visible    Fare Quote 2
+    Verify Fare Tab Is Visible    Fare Quote 1
+    Click Fare tab    Fare Quote 1
+    Verify Air Fare Fields Are Enabled
+    Verify Routing Field Value    SIN-TPE-LAX
+    Verify Turnaround Value Is Correct    Fare Quote 1    LAX
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 1    S2-3
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2-3
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 1    S2-3    SGD
+    Verify Realised Savings Code Is Mandatory And Has No Value
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Populate Air Fare Savings Code    LC - LOW COST CARRIER FARE ACCEPTED    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    CW - Business Class CWT Negotiated Fare
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Set Mark-up Percentage Field    4.50
+    Set Nett Fare Field    Fare Quote 1    31563.12
+    Set Commission Rebate Percentage    6.387
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Panel    APIS/SFPD
+    Populate APIS/SFPD Panel With Default Values
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Set Email Address In Delivery Panel
+    Set Ticketing Date One Day Ahead
+    Set Follow Up Date Using Current Date
+    Get Follow Update Value
+    Select Delivery Method    Auto Ticket
+    Set On Hold Reasons    Test    Awaiting Approval
+    Populate All Panels (Except Given Panels If Any)    Delivery    APIS/SFPD
+    Click Finish PNR    Amend Booking For Verify That Fare Not Finalized Is Not Ticked and Fare Remarks Are Written When TST Is Partially Complete For SG
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Fare Not Finalized Is Not Ticked and Fare Remarks Are Written When TST Is Partially Complete For SG
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify On Hold Queue Place Is Written In The PNR    SINWL2101    62    C1
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify On Hold Queue Minder Is Written In The PNR    SINWL2101    62    C1
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Ticketing RIR Remarks    TLXL
+    Verify Ticketing RMM Remarks
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That Fare Not Finalized Is Not Ticked and Fare Remarks Are Written When TST Is Partially Complete
+    [Tags]    us773    hk    howan
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US710    BEAR    HKSEVENONEZERO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGLHR/AAF    SS1Y1    \    6    3
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S4    6    5
+    Book Flight X Months From Now    LHRHKG/AAF    SS1Y1    \    6    8
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP/S7    6    15
+    Click Read Booking
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Enabled
+    Verify Fare Not Finalised Is Unticked
+    Verify Specific Warning In Air Fare Is Shown    Warning - No fare found for segment 2-3,5-6. \ If necessary, please fare quote and read the PNR again.
+    Verify Fare Tab Is Not Visible    Fare Quote 3
+    Verify Fare Tab Is Visible    Fare Quote 1
+    Verify Fare Tab Is Visible    Fare Quote 2
+    Click Fare Tab    Fare Quote 1
+    Populate Air Fare Savings Code    LC - LOW COST CARRIER FARE ACCEPTED    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    CW - Business Class CWT Negotiated Fare
+    Set High Fare Field    5020
+    Set Low Fare Field    2676
+    Set LFCC Field    UA
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Set Mark-up Percentage Field    4.50
+    Set Nett Fare Field    Fare Quote 1    31563.12
+    Set Commission Rebate Percentage    6.387
+    Set Fuel Surcharge Field    1
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Air Fare Fields Are Enabled
+    Populate Air Fare Savings Code    XX - NO SAVING    Q - CLIENT NEGOTIATED RATE ACCEPTED    FF - First Class Full Fare
+    Set LFCC Field    AA
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set Mark-up Percentage Field    4.50
+    Set Nett Fare Field    Fare Quote 2    31563.12
+    Set Commission Rebate Percentage    6.387
+    Set Fuel Surcharge Field    2
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)    Delivery    APIS/SFPD    Cust Refs    Policy Check
+    Click Panel    Policy Check
+    Select Policy Status Using Index Number    0    HA - Has authority to travel
+    Select Policy Status Using Index Number    1    HA - Has authority to travel
+    Click Panel    Cust Refs
+    Set CDR Value    DEPARTMENT    AD
+    Set CDR Value    DIVISON E.G. GLOBAL FINANCE    04
+    Set CDR Value    DP Code    00
+    Set CDR Value    PERSONNEL ID OR STAFF ID    123-36
+    Set CDR Value    TRAVEL REASON E.G. INTERNA MEETING    MEETING
+    Click Panel    APIS/SFPD
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Set Email Address In Delivery Panel
+    Set Ticketing Date One Day Ahead
+    Set Follow Up Date Using Current Date
+    Click Panel    Delivery
+    Select Delivery Method    Auto Ticket
+    Get Follow Update Value
+    Set On Hold Reasons    Test    Awaiting Approval
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify On Hold Queue Place Is Written In The PNR    HKGWL2102    62    C1
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify On Hold Queue Minder Is Written In The PNR    HKGWL2102    62    C1
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Ticketing RIR Remarks    TLXL
+    Verify Ticketing RMM Remarks
+
+[AB HK] Verify That Fare Not Finalized Is Auto Ticked and Fare Remarks Are Not Written When No TST
+    [Tags]    us773    hk    howan
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE2-3
+    Enter GDS Command    XE5-7
+    Enter GDS Command    TTE/ALL
+    Click Read Booking
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Disabled
+    Verify Fare Not Finalised Is Ticked
+    Verify Fare Tab Is Not Visible    Fare Quote 2
+    Verify Fare Tab Is Visible    Fare Quote 1
+    Verify Specific Warning In Air Fare Is Shown    Warning - No fares found in PNR. Please fare quote and read the PNR again or continue with the ‘Fare Not Finalised’ option to complete this PNR.
+    Verify Air Fare Fields Are Disabled
+    Click Restriction Tab
+    Verify Default Restrictions Field Is Disabled
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Set Email Address In Delivery Panel
+    Set Ticketing Date One Day Ahead
+    Set Follow Up Date X Day Ahead
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel
+    Get Follow Update Value
+    Set On Hold Reasons    TEST    Awaiting Approval    Awaiting Fare Details    Awaiting Cust Refs
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR    Amend Booking For Verify That Fare Not Finalized Is Auto Ticked and Fare Remarks Are Not Written When No TST For HK
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Fare Not Finalized Is Auto Ticked and Fare Remarks Are Not Written When No TST For HK
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify On Hold Queue Place Is Not Written In The PNR    HKGWL2102    62    C2    1
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify On Hold Queue Minder Is Written In The PNR    HKGWL2102    62    C2
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Ticketing RIR Remarks    TLXL
+    Verify Ticketing RMM Remarks
+    Verify Fare Accounting Remarks Are Not Written
+    Verify Fare Itinerary Remarks Are Not Written
+    Verify BF Remarks Are Not Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB IN] Verify That Fare Not Finalized Is Not Ticked and Fare Remarks Are Written When TST Is Complete
+    [Tags]    us773    in    howan    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US710    BEAR    INSEVENONEZERO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    DELSFO/AEK    SS1Y1    \    6    3
+    Book Flight X Months From Now    SFODEL/AEK    SS1Y1    FXP    6    20
+    Book Flight X Months From Now    SFOJFK/AAA    SS1Y1    \    6    7
+    Book Flight X Months From Now    JFKSFO/AAA    SS1Y1    FXP/S4-5    6    12
+    Book Flight X Months From Now    MNLSIN/ASQ    SS1Y1    FXP/S8    6    26
+    Book Flight X Months From Now    SINMNL/ASQ    SS1Y1    FXP/S9    6    30
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Enabled
+    Verify Fare Not Finalised Is Unticked
+    Verify Specific Warning In Air Fare Is Shown    ${EMPTY}
+    Verify Fare Tab Is Not Visible    Fare Quote 5
+    Verify Fare Tab Is Visible    Fare Quote 1
+    Verify Fare Tab Is Visible    Fare Quote 2
+    Verify Fare Tab Is Visible    Fare Quote 3
+    Verify Fare Tab Is Visible    Fare Quote 4
+    Click Fare Tab    Fare Quote 1
+    Verify Air Fare Fields Are Enabled
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field    78000
+    Populate Air Fare Savings Code    LC - LOW COST CARRIER FARE ACCEPTED    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    CW - Business Class CWT Negotiated Fare
+    Set LFCC Field    UA
+    Comment    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Comment    Get Base Fare From TST    Fare Quote 1    S2-3,6-7
+    Comment    Get Savings Code    Fare Quote 1
+    Comment    Get LFCC Field Value    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Set Mark-up Percentage Field    4.50
+    Set Nett Fare Field    Fare Quote 1    268000
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Air Fare Fields Are Enabled
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Populate Air Fare Savings Code    CR - INTELLIGENT TICKETING    E - EXCHANGE    YF - Economy Class Full Fare
+    Set LFCC Field    PR
+    Comment    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Comment    Get Base Fare From TST    Fare Quote 2    S4-5
+    Comment    Get Savings Code    Fare Quote 2
+    Comment    Get LFCC Field Value    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    TEST CARD/AX***********0009/D0822/CVV****
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Set Mark-up Percentage Field    1.5
+    Set Nett Fare Field    Fare Quote 2    240000
+    Comment    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S4-5
+    Comment    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Comment    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 3
+    Verify Air Fare Fields Are Enabled
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Populate Air Fare Savings Code    SC - SUBSCRIPTION    N - CLIENT SPECIFIC    FF - First Class Full Fare
+    Set LFCC Field    QF
+    Comment    Get High, Charged And Low Fare In Fare Tab    Fare Quote 3
+    Comment    Get Base Fare From TST    Fare Quote 3    S8
+    Comment    Get Savings Code    Fare Quote 3
+    Comment    Get LFCC Field Value    Fare Quote 3
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 3    Cash
+    Set Mark-up Percentage Field    3.5
+    Set Nett Fare Field    Fare Quote 3    31563.12
+    Comment    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 3    S8
+    Comment    Get Routing, Turnaround and Route Code    Fare Quote 3
+    Comment    Get Main Fees On Fare Quote Tab    Fare Quote 3
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 4
+    Verify Air Fare Fields Are Enabled
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Populate Air Fare Savings Code    LC - LOW COST CARRIER FARE ACCEPTED    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    CW - Business Class CWT Negotiated Fare
+    Comment    Get High, Charged And Low Fare In Fare Tab    Fare Quote 4
+    Comment    Get Base Fare From TST    Fare Quote 4    S9
+    Comment    Get Savings Code    Fare Quote 4
+    Comment    Get LFCC Field Value    Fare Quote 4
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 4    Invoice
+    Set Mark-up Percentage Field    2.5
+    Set Nett Fare Field    Fare Quote 4    43000
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Panel    Policy Check
+    Populate Policy Check Panel With Default Values
+    Click Panel    APIS/SFPD
+    Tick Address Not Unknown
+    Populate All Panels (Except Given Panels If Any)    Delivery    Delivery
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Checked    Awaiting Customer References
+    Select On Hold Booking Reasons    Awaiting Approval
+    Set Email Address In Delivery Panel
+    Set Ticketing Date One Day Ahead
+    Set Follow Up Date Using Current Date
+    Select Panel    Delivery
+    Select Delivery Method    No Queue Placement
+    Get Follow Update Value
+    Set On Hold Reasons    Test    Awaiting Customer References    Awaiting Approval
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify On Hold Queue Place Is Written In The PNR    BLRWL22MS    64    C11
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify On Hold Queue Minder Is Written In The PNR    BLRWL22MS    64    C11
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify RIR On Hold Reason Remarks Are Not Written
+    Verify Ticketing RMM Remarks
+
+[AB IN] Verify That Fare Not Finalized Is Not Ticked and Fare Remarks Are Written When TST Is Partially Complete
+    [Tags]    us773    in    howan    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/T1
+    Enter GDS Command    TTE/T3
+    Click Read Booking
+    Verify Panel Is Green    Air Fare
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Enabled
+    Verify Fare Not Finalised Is Unticked
+    Verify Specific Warning In Air Fare Is Shown    Warning - No fare found for segment 2-3,6-8. \ If necessary, please fare quote and read the PNR again.
+    Verify Fare Tab Is Not Visible    Fare Quote 3
+    Verify Fare Tab Is Visible    Fare Quote 1
+    Verify Fare Tab Is Visible    Fare Quote 2
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    SFO-JFK-SFO
+    Verify Turnaround Value Is Correct    Fare Quote 1    NYC
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S4-5
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Realised Savings Code Default Value    CR - INTELLIGENT TICKETING
+    Verify Missed Savings Code Default Value    E - EXCHANGE
+    Verify Class Code Default Value Is Correct    YF - Economy Class Full Fare
+    Populate Air Fare Savings Code    EX - EXCHANGE    E - EXCHANGE    YF - Economy Class Full Fare
+    Get LFCC Field Value    Fare Quote 1
+    Verify LFCC Value Is Same From New Booking    Fare Quote 1
+    Set LFCC Field    PR
+    Verify Route Code Field Value    INTL
+    Comment    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Comment    Get Base Fare From TST    Fare Quote 1    S4-5
+    Comment    Get Savings Code    Fare Quote 1
+    Comment    Get LFCC Field Value    Fare Quote 1
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    TEST CARD/AX***********0009/D0822/CVV****
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    CWT
+    Set Mark-up Percentage Field    1.5
+    Set Nett Fare Field    Fare Quote 1    240000
+    Comment    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S4-5
+    Comment    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Comment    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Routing Field Value    SIN-MNL
+    Verify Turnaround Value Is Correct    Fare Quote 2    MNL
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S9
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Realised Savings Code Default Value    LC - LOW COST CARRIER FARE ACCEPTED
+    Verify Missed Savings Code Default Value    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY
+    Verify Class Code Default Value Is Correct    CW - Business Class CWT Negotiated Fare
+    Populate Air Fare Savings Code    LC - LOW COST CARRIER FARE ACCEPTED    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    YF - Economy Class Full Fare
+    Get LFCC Field Value    Fare Quote 2
+    Verify LFCC Value Is Same From New Booking    Fare Quote 2
+    Set LFCC Field    TR
+    Verify Route Code Field Value    INTL
+    Comment    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Comment    Get Base Fare From TST    Fare Quote 2    S9
+    Comment    Get Savings Code    Fare Quote 2
+    Comment    Get LFCC Field Value    Fare Quote 2
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    Invoice
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set Mark-up Percentage Field    2.5
+    Set Nett Fare Field    Fare Quote 2    43000
+    Comment    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S9
+    Comment    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Comment    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Centre    AD
+    Set CDR Value    Designation    EE
+    Set CDR Value    Employee ID    123-23
+    Click Panel    Policy Check
+    Populate Policy Check Panel With Default Values
+    Click Panel    APIS/SFPD
+    Tick Address Not Unknown
+    Click Panel    Policy Check
+    Populate Policy Check Panel With Default Values    HA - Has authority to travel
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Set Email Address In Delivery Panel
+    Set Ticketing Date One Day Ahead
+    Set Follow Up Date Using Current Date
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel
+    Set On Hold Reasons    Test
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That Fare Not Finalized Is Not Ticked and Fare Remarks Are Written When TST Is Partially Complete For SG
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHQ
+    Verify On Hold Queue Place Is Not Written In The PNR    BLRWL22MS    64    C11    1
+    Retrieve PNR Details from Amadeus    ${current_pnr}    RHO
+    Verify On Hold Queue Minder Is Not Written In The PNR    BLRWL22MS    64    C11    2
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify Ticketing RIR Remarks    TLIS
+    Verify Ticketing RMM Remarks
+
+[NB IN][Create Shell] Verify Agent Sign And PC Route Code Remarks Are Written
+    [Tags]    us892    in    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u001mkr    en-GB    mruizapac    APAC QA
+    ...    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION IN - US304    BEAR    INTHREEZEROFOUR
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Create Shell
+    Get Agent Sign Remark From GDS Screen
+    Verify Agent Sign Remark Is Written    1234MR
+    Book Flight X Months From Now    MNLSIN/APR    SS1Y1    FXP/S3    9    5
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S4    9    10
+    Book Flight X Months From Now    MNLCEB/APR    SS1Y2    \    9    15
+    Book Flight X Months From Now    CEBMNL/APR    SS1Y1    FXP/S5-6    9    20
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 1    S3
+    Get LFCC Field Value    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Route Code Field Value    DOM
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 2    S4
+    Get LFCC Field Value    Fare Quote 2
+    Click Fare Tab    Fare Quote 3
+    Verify Route Code Field Value    INTL
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 3    S5-6
+    Get LFCC Field Value    Fare Quote 3
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    No Queue Placement
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify LFCC Accounting Remark Is Written    Fare Quote 1    S2
+    Verify LFCC Accounting Remark Is Written    Fare Quote 2    S3
+    Verify LFCC Accounting Remark Is Written    Fare Quote 3    S4-5
+    Verify PC Accounting Remark For Route Code International Is Written    S2    IN
+    Verify PC Accounting Remark For Route Code Domestic Is Written    S3
+    Verify PC Accounting Remark For Route Code International Is Written    S4-5    IN
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S2
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S3
+    Verify FF34, FF35, FF36 And FF38 Accounting Remarks Are Written    S4-5
+    Verify Agent Sign Remark Is Written    1234MR
+    [Teardown]
+
+[NB IN] Verify That Invalid Missed Saving Code Error Message Is Not Displayed When CF = LF
+    [Tags]    us1032    in    howan    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US272    BEAR    HKTWOSVENTWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGMNL/APR    SS1Y1    FXP/S2    6    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Air Fare
+    Select Missed Saving Code Value    L – NO MISSED SAVING
+    Verify Invalid Missed Saving Code Error Message Is Not Displayed
+    Click Finish PNR
+
+[NB IN] Verify That Invalid Missed Saving Code Error Message Is Displayed When CF > LF
+    [Tags]    us1032    in    howan    not_ready
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ AUTOMATION HK - US272    BEAR    HKTWOSVENTWO
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    LAXJFK/AAA    SS1Y1    FXP/S2    4    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Air Fare
+    Select Missed Saving Code Value    L – NO MISSED SAVING
+    Verify Invalid Missed Saving Code Error Message Is Displayed    Invalid Missed Saving Code
+    Select Missed Saving Code Value    XX – NO SAVING
+    Verify Invalid Missed Saving Code Error Message Is Not Displayed
+    Click Finish PNR
+
+[AB IN] Verify That Invalid Missed Saving Code Error Message Is Displayed When CF > LF
+    [Tags]    us1032    in    howan    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Book Flight X Months From Now    DELBOM/AUK    SS1Y1    FXP/S3    5    3
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Missed Saving Code Value    L – NO MISSED SAVING
+    Verify Invalid Missed Saving Code Error Message Is Displayed    Invalid Missed Saving Code
+    Select Missed Saving Code Value    XX – NO SAVING
+    Verify Invalid Missed Saving Code Error Message Is Not Displayed
+    Click Fare Tab    Fare Quote 2
+    Select Missed Saving Code Value    L – NO MISSED SAVING
+    Verify Invalid Missed Saving Code Error Message Is Displayed    Invalid Missed Saving Code
+    Select Missed Saving Code Value    XX – NO SAVING
+    Verify Invalid Missed Saving Code Error Message Is Not Displayed
+    Click Finish PNR
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Realised Savings Code Default Value    XX - NO SAVING
+    Verify Missed Savings Code Default Value    Z - CWT ALTERNATIVE DECLINED
+    Verify Class Code Default Value Is Correct    YW - Economy Class CWT Negotiated Fare
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 1    IN
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 1    IN
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Realised Savings Code Default Value    XI - ROUTE DEAL ACCEPTED
+    Verify Missed Savings Code Default Value    X - POLICY WAIVED - EMERGENCY CONDITIONS
+    Verify Class Code Default Value Is Correct    YC - Economy Class Corporate Fare
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 2    IN
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 2    IN
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 2
+    Enter GDS Command    TTE/ALL    XE2    FXP
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Realised Savings Code Default Value    XX - NO SAVING
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Populate Air Fare Savings Code    XX - NO SAVING    A - PARTIAL MISSED SAVING    CC - Business Class Corporate Fare
+    Set Transaction Fee Value Default Value If Empty    Fare Quote 1    0
+    Get Savings Code    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For IN
+
+Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE3
+    Book Flight X Months From Now    MNLSIN/ASQ    SS1Y1    \    6    12
+    Book Flight X Months From Now    MNLLAX    SS1J1    \    6    15
+    Enter GDS Command    FXP/S3    FXA/S4    FXU1    TQT
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Air Fare Savings Code    LC - LOW COST CARRIER FARE ACCEPTED    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    CW - Business Class CWT Negotiated Fare
+    Verify Realised Savings Code Default Value    LC - LOW COST CARRIER FARE ACCEPTED
+    Verify Missed Savings Code Default Value    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY
+    Verify Class Code Default Value Is Correct    CW - Business Class CWT Negotiated Fare
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 1    SG
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 1    SG
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 1
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Get Savings Code    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Realised Savings Code Functionality    Fare Quote 2
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 2    SG
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 2    SG
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 2
+    Populate Air Fare Savings Code    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED    L - NO MISSED SAVING    FD - First Class Discounted Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Get Savings Code    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 3
+    Verify Realised Savings Code Is Mandatory And Has No Value
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 3    SG
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 3    SG
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 3
+    Populate Air Fare Savings Code    XX - NO SAVING    Z - CWT ALTERNATIVE DECLINED    YW - Economy Class CWT Negotiated Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 3    Cash
+    Set High Fare Field (If blank) with Charged Fare
+    Set Low Fare Field (If blank) with Charged Fare
+    Get Savings Code    Fare Quote 3
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For SG
+
+Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    MNLLAX/XHKG/ACX    SS1J1    \    6    3
+    Book Flight X Months From Now    SINMNL/ASQ    SS1J1    \    6    5
+    Book Flight X Months From Now    LAXMNL/XHKG/ACX    SS1J1    \    6    8
+    Enter GDS Command    FXP/S3-4,6-7    FXT1/P1    FXA/S3-4,6-7    FXU2    FXP/S5
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Populate Air Fare Savings Code    SC - SUBSCRIPTION    B - PASSENGER REQUESTED SPECIFIC AIRLINE    YC - Economy Class Corporate Fare
+    Verify Realised Savings Code Default Value    SC - SUBSCRIPTION
+    Verify Missed Savings Code Default Value    B - PASSENGER REQUESTED SPECIFIC AIRLINE
+    Verify Class Code Default Value Is Correct    YC - Economy Class Corporate Fare
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 1
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 1
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Set Low Fare Field (If blank) with Charged Fare
+    Set Commission Rebate Percentage    5
+    Get Savings Code    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Realised Savings Code Functionality    Fare Quote 2
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 2
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 2
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 2
+    Populate Air Fare Savings Code    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED    L - NO MISSED SAVING    FD - First Class Discounted Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set High Fare Field (If blank) with Charged Fare
+    Set Commission Rebate Percentage    5
+    Get Savings Code    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 3
+    Verify Realised Savings Code Functionality    Fare Quote 3
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Verify Realised Saving Code Dropdown Values Are Correct    Fare Quote 3
+    Verify Missed Saving Code Dropdown Values Are Correct    Fare Quote 3
+    Verify Class Code Dropdown Values Are Correct    Fare Quote 3
+    Populate Air Fare Savings Code    XX - NO SAVING    X - POLICY WAIVED - EMERGENCY CONDITIONS    YW - Economy Class CWT Negotiated Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 3    Cash
+    Set High Fare Field (If blank) with Charged Fare
+    Set Commission Rebate Percentage    5
+    Get Savings Code    Fare Quote 3
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Correct MIS Codes Are Listed, Pre-selected and Written To Back Office Remark For Multiple Fares For HK
+
+Amend Booking For Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify LFCC Value Is Same From New Booking    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify LFCC Value Is Same From New Booking    Fare Quote 2
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 3
+    Verify LFCC Value Is Same From New Booking    Fare Quote 3
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 3
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare For HK
+
+Amend Booking For Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2-4    RT    RT
+    Book Flight X Months From Now    MNLCEB/APR    SS1Y1    FXP/S2    6    0
+    Book Flight X Months From Now    SINMNL/APR    SS1Y1    FXP/S3    6    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 2    S3
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 2
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking For Verify That Air Miscellaneous Information Are Pre-populated And Remarks Are Written For Multiple Fare For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    FXP/S2    5    3
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 2
+    Verify Route Code Field Value    INTL
+    Verify LFCC Value Is Same From New Booking    Fare Quote 1
+    Get LFCC Field Value    Fare Quote 2
+    Populate Fare Tab With Default Values    Fare Quote 2    true    true
+    Populate Air Fare Savings Code    XX - No Saving    M - MISCELLANEOUS    YF - Economy Class Full Fare
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Get LFCC Field Value    Fare Quote 1
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 1    S2
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Get Nett Fare Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Mark-Up Amount Value    Fare Quote 2
+    Get Nett Fare Value    Fare Quote 2
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained For SG
+
+Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Set Commission Rebate Percentage    1
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Mark-Up Amount Value    Fare Quote 2
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set Commission Rebate Percentage    1
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained For HK
+
+Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Retained For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get MarkUp Amount Value    Fare Quote 1
+    Get Commission Rebate Amount Value    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values
+    Click Fare Tab    Fare Quote 2
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get MarkUp Amount Value    Fare Quote 2
+    Get Commission Rebate Amount Value    Fare Quote 2
+    Populate Fare Details And Fees Tab With Default Values
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Cancelled And Rebooked For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/ALL    XE2-3    RT
+    Book Flight X Months From Now    SINHKG/A6X    SS1Y2    FXP/S2    6    5
+    Book Flight X Months From Now    HKGSIN/A6X    SS1Y2    FXP/S3    6    10
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 1    S2    SGD
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    S2
+    Set Commission Rebate Percentage    1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Get Nett Fare Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 2    S3    SGD
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    S3
+    Set Commission Rebate Percentage    1
+    Get Mark-Up Amount Value    Fare Quote 2
+    Get Nett Fare Value    Fare Quote 2
+    Populate Air Fare Savings Code Using Default Values
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That High, Low And Charged Fare Are Written In The PNR When Flights Are Cancelled And Rebooked For SG
+
+Amend Booking For Verify That Correct Routing Itinerary Remarks and Turnaround Accounting Remarks Are Written When Flights/Fares were retained for Single Fare For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    SIN-MNL-SIN
+    Verify Turnaround Value Is Correct    Fare Quote 1    SIN
+    Get Routing Name    Fare Quote 1
+    Get Point Of Turnaround    Fare Quote 1
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking For Verify That Correct Routing Itinerary Remarks and Turnaround Accounting Remarks Are Written When Flights/Fares were retained for Multiple Fares For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    DEL-AMS-ATL-BMI
+    Verify Turnaround Value Is Correct    Fare Quote 1    AMS
+    Click Fare Tab    Fare Quote 2
+    Verify Routing Field Value    LAX-ORD
+    Verify Turnaround Value Is Correct    Fare Quote 2    CHI
+    Enter GDS Command    TTE/ALL    XE2-5    RT
+    Book Flight X Months From Now    LHREWR/AUA    SS1Y1    \    6    5
+    Book Flight X Months From Now    JFKLHR/AUA    SS1Y1    FXP/S2-4    6    10
+    Enter GDS Command    FXT01/P1
+    Book Flight X Months From Now    MNLLHR/ACX    SS1Y1    \    6    15
+    Book Flight X Months From Now    LHRMNL/ACX    SS1Y1    FXP/S5-8    8    5
+    Enter GDS Command    FXT01/P1
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    LHR-EWR-JFK-DUB-LHR
+    Verify Turnaround Value Is Correct    Fare Quote 1    NYC
+    Get Routing Name    Fare Quote 1
+    Get Point Of Turnaround    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Routing Field Value    MNL-HKG-LHR-HKG-MNL
+    Verify Turnaround Value Is Correct    Fare Quote 2    LON
+    Get Routing Name    Fare Quote 2
+    Get Point Of Turnaround    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking For Verify That Correct Routing Itinerary Remarks and Turnaround Accounting Remarks Are Written When Flights Were Cancelled/Rebooked For Multiple Fares For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    HKG-MNL
+    Verify Turnaround Value Is Correct    Fare Quote 1    MNL
+    Click Fare Tab    Fare Quote 2
+    Verify Routing Field Value    MNL-HKG-CDG
+    Verify Turnaround Value Is Correct    Fare Quote 2    PAR
+    Click Fare Tab    Fare Quote 3
+    Verify Routing Field Value    CDG-FRA-SIN-CGK-FRA-CDG
+    Verify Turnaround Value Is Correct    Fare Quote 3    SIN
+    Enter GDS Command    TTE/ALL    XI
+    Book Flight X Months From Now    LHREWR/AAA    SS1Y1    \    2    3
+    Book Flight X Months From Now    LAXORD/AUA    SS1Y1    FXP/S3    2    5
+    Book Flight X Months From Now    JFKLGW/AAA    SS1Y1    FXP/S2,4    2    8
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Turnaround Value Is Correct    Fare Quote 1    ${EMPTY}
+    Verify Routing Field Value    LHR-EWR-JFK-LGW
+    Select Turnaround    NYC
+    Get Routing Name    Fare Quote 1
+    Get Point Of Turnaround    Fare Quote 1
+    Click Fare Tab    Fare Quote 2
+    Verify Turnaround Value Is Correct    Fare Quote 2    CHI
+    Verify Routing Field Value    LAX-ORD
+    Select Turnaround    LAX
+    Get Routing Name    Fare Quote 2
+    Get Point Of Turnaround    Fare Quote 2
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Amend Booking For Verify That Air Fare Panel Fields Behave Correctly For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Read Booking
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Verify Populated Fields on Amend Booking on Air Fare Panel    Fare Quote 1
+    Get Default Values On Air Fare Panel    Fare Quote 1
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 1    DEL-BOM    27015    AI    DOM    10
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Verify Populated Fields on Amend Booking on Air Fare Panel    Fare Quote 2
+    Get Default Values On Air Fare Panel    Fare Quote 2
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 2    BOM-DEL    27355    AI    DOM    10
+    Verify Panel Is Green    Air Fare
+    Verify Transaction Fee Field On Air Fare Panel behaves Correctly
+    Verify Routing Field On Air Fare Panel behaves Correctly    BOM-DEL-123    BOM-DEL    BOM-DEL-LAX-JFK
+    Verify Fare Fields On Air Fare Panel behaves Correctly
+    Verify LFCC Field On Air Fare Panel behaves Correctly
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+
+Amend Booking For Verify That Air Fare Panel Fields Behave Correctly For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Invoice
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Verify Populated Fields on Amend Booking on Air Fare Panel    Fare Quote 1
+    Get Default Values On Air Fare Panel    Fare Quote 1
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 1    MNL-SIN    817.30    PR    INTL    10.00
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Verify Populated Fields on Amend Booking on Air Fare Panel    Fare Quote 2
+    Get Default Values On Air Fare Panel    Fare Quote 2
+    Populate All Mandatory Fields On Air Fare Panel    Fare Quote 2    MNL-SIN    500    PR    INTL    10.00
+    Verify Panel Is Green    Air Fare
+    Verify Transaction Fee Field On Air Fare Panel behaves Correctly
+    Verify Routing Field On Air Fare Panel behaves Correctly    MNL-SIN-123    MNL-SIN    MNL-SIN-LAX-JFK
+    Verify Fare Fields On Air Fare Panel behaves Correctly
+    Verify LFCC Field On Air Fare Panel behaves Correctly
+    Click Finish PNR
+
+Amend Booking For Verify That Nett Fare Are Written In The PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    Cash
+    Set Nett Fare Field    Fare Quote 1    40003.00
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Base Fare From TST    Fare Quote 1    S2
+    Get Nett Fare Value    Fare Quote 1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Get Commission Rebate Amount Value    Fare Quote 1
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set Nett Fare Field    Fare Quote 2    20003.00
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S3
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Base Fare From TST    Fare Quote 2    S3
+    Get Nett Fare Value    Fare Quote 2
+    Get Mark-Up Amount Value    Fare Quote 2
+    Get Commission Rebate Amount Value    Fare Quote 2
+    Populate Air Fare Savings Code Using Default Values
+    Populate Fare Restrictions To Default Value
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend Booking For Verify That Nett Fare Are Written In The PNR
+
+Amend Booking For Verify That High, Low, And Charged Fare Are Written In The PNR When FXA And FXL Responses Have Different Formats For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    Fare Quote 1
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2,3,4,5
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Get Mark-Up Amount Value    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values
+    Click Fare Tab    Fare Quote 2
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S6-7
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Get Mark-Up Amount Value    Fare Quote 1
+    Populate Fare Details And Fees Tab With Default Values
+    Click Finish PNR
+
+Amend Booking For Verify That Fare Not Finalized Is Not Ticked and Fare Remarks Are Written When TST Is Partially Complete For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    FXP/S2-3
+    Click Read Booking
+    Verify Panel Is Red    Air Fare
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Enabled
+    Verify Fare Not Finalised Is Unticked
+    Verify Specific Warning In Air Fare Is Shown    Warning - No fare found for segment 4-5. \ If necessary, please fare quote and read the PNR again.
+    Verify Fare Tab Is Not Visible    Fare Quote 2
+    Verify Fare Tab Is Visible    Fare Quote 1
+    Click Fare tab    Fare Quote 1
+    Verify Air Fare Fields Are Enabled
+    Verify Routing Field Value    SIN-TPE-LAX
+    Verify Turnaround Value Is Correct    Fare Quote 1    LAX
+    Verify High Fare Value Is Retrieved From TST    Fare Quote 1    S2-3
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S2-3
+    Verify Low Fare Value Is Retrieved From TST    Fare Quote 1    S2-3    SGD
+    Verify Realised Savings Code Is Mandatory And Has No Value
+    Verify Missed Savings Code Is Mandatory And Has No Value
+    Verify Class Code Is Mandatory And Has No Value
+    Populate Air Fare Savings Code    LC - LOW COST CARRIER FARE ACCEPTED    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    CW - Business Class CWT Negotiated Fare
+    Verify LFCC Value Is Retrieved From FV Line In TST    Fare Quote 1
+    Verify Route Code Field Value    INTL
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 1    TEST CARD/VI************0087/D0823/CVV***
+    Select FOP Merchant On Fare Quote Tab    Fare Quote 1    Airline
+    Set Mark-up Percentage Field    4.50
+    Set Nett Fare Field    Fare Quote 1    31563.12
+    Set Commission Rebate Percentage    6.387
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Panel    APIS/SFPD
+    Tick Address Not Unknown
+    Populate All Panels (Except Given Panels If Any)    Delivery    APIS/SFPD
+    Click Panel    Delivery
+    Select On Hold Booking Reasons    Awaiting Approval
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Set Email Address In Delivery Panel
+    Set Ticketing Date One Day Ahead
+    Set Follow Up Date Using Current Date
+    Click Panel    Delivery
+    Get Follow Update Value
+    Select Delivery Method    Auto Ticket
+    Set On Hold Reasons    Test    Awaiting Approval
+    Click Finish PNR
+
+Amend Booking For Verify That Fare Not Finalized Is Auto Ticked and Fare Remarks Are Not Written When No TST For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XE2-3
+    Enter GDS Command    XE5-7
+    Enter GDS Command    TTE/ALL
+    Click Read Booking
+    Verify Panel Is Green    Air Fare
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Disabled
+    Verify Fare Not Finalised Is Ticked
+    Verify Fare Tab Is Not Visible    Fare Quote 2
+    Verify Fare Tab Is Visible    Fare Quote 1
+    Verify Specific Warning In Air Fare Is Shown    Warning - No fares found in PNR. Please fare quote and read the PNR again or continue with the ‘Fare Not Finalised’ option to complete this PNR.
+    Verify Air Fare Fields Are Disabled
+    Click Restriction Tab
+    Verify Default Restrictions Field Is Disabled
+    Click Panel    Cust Refs
+    Tick Not Known At Time Of Booking
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Checked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Set Email Address In Delivery Panel
+    Set Ticketing Date One Day Ahead
+    Set Follow Up Date X Day Ahead
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel
+    Get Follow Update Value
+    Set On Hold Reasons    TEST    Awaiting Approval    Awaiting Fare Details    Awaiting Cust Refs
+    Click Finish PNR
+
+Amend Booking For Verify That Fare Not Finalized Is Not Ticked and Fare Remarks Are Written When TST Is Partially Complete For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    TTE/T1
+    Enter GDS Command    TTE/T3
+    Click Read Booking
+    Verify Panel Is Green    Air Fare
+    Click Panel    Air Fare
+    Verify Fare Not Finalised Is Enabled
+    Verify Fare Not Finalised Is Unticked
+    Verify Specific Warning In Air Fare Is Shown    Warning - No fare found for segment 2-3,6-8. \ If necessary, please fare quote and read the PNR again.
+    Verify Fare Tab Is Not Visible    Fare Quote 3
+    Verify Fare Tab Is Visible    Fare Quote 1
+    Verify Fare Tab Is Visible    Fare Quote 2
+    Click Fare Tab    Fare Quote 1
+    Verify Routing Field Value    SFO-JFK-SFO
+    Verify Turnaround Value Is Correct    Fare Quote 1    NYC
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Verify High Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 1    S4-5
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 1
+    Verify Realised Savings Code Default Value    CR - INTELLIGENT TICKETING
+    Verify Missed Savings Code Default Value    E - EXCHANGE
+    Verify Class Code Default Value Is Correct    YF - Economy Class Full Fare
+    Populate Air Fare Savings Code    EX - EXCHANGE    E - EXCHANGE    YF - Economy Class Full Fare
+    Get LFCC Field Value    Fare Quote 1
+    Verify LFCC Value Is Same From New Booking    Fare Quote 1
+    Set LFCC Field    PR
+    Verify Route Code Field Value    INTL
+    Comment    Get High, Charged And Low Fare In Fare Tab    Fare Quote 1
+    Comment    Get Base Fare From TST    Fare Quote 1    S4-5
+    Comment    Get Savings Code    Fare Quote 1
+    Comment    Get LFCC Field Value    Fare Quote 1
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    TEST CARD/AX***********0009/D0822/CVV****
+    Verify FOP Merchant Selected Is Displayed On Fare Quote Tab    CWT
+    Set Mark-up Percentage Field    1.5
+    Set Nett Fare Field    Fare Quote 1    240000
+    Comment    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 1    S4-5
+    Comment    Get Routing, Turnaround and Route Code    Fare Quote 1
+    Comment    Get Main Fees On Fare Quote Tab    Fare Quote 1
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Fare Tab    Fare Quote 2
+    Verify Routing Field Value    SIN-MNL
+    Verify Turnaround Value Is Correct    Fare Quote 2    MNL
+    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Verify High Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Charged Fare Value Is Retrieved From TST    Fare Quote 2    S9
+    Verify Low Fare Value Is Same From New Booking    Fare Quote 2
+    Verify Realised Savings Code Default Value    LC - LOW COST CARRIER FARE ACCEPTED
+    Verify Missed Savings Code Default Value    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY
+    Verify Class Code Default Value Is Correct    CW - Business Class CWT Negotiated Fare
+    Populate Air Fare Savings Code    LC - LOW COST CARRIER FARE ACCEPTED    J - PASSENGER AUTHORISED TO TRAVEL OUTSIDE POLICY    YF - Economy Class Full Fare
+    Get LFCC Field Value    Fare Quote 2
+    Verify LFCC Value Is Same From New Booking    Fare Quote 2
+    Set LFCC Field    TR
+    Verify Route Code Field Value    INTL
+    Comment    Get High, Charged And Low Fare In Fare Tab    Fare Quote 2
+    Comment    Get Base Fare From TST    Fare Quote 2    S9
+    Comment    Get Savings Code    Fare Quote 2
+    Comment    Get LFCC Field Value    Fare Quote 2
+    Verify Form Of Payment Selected Is Displayed On Fare Quote Tab    Invoice
+    Select Form Of Payment On Fare Quote Tab    Fare Quote 2    Cash
+    Set Mark-up Percentage Field    2.5
+    Set Nett Fare Field    Fare Quote 2    43000
+    Comment    Get Base Fare, Total Taxes, YQ Tax And LFCC From TST    Fare Quote 2    S9
+    Comment    Get Routing, Turnaround and Route Code    Fare Quote 2
+    Comment    Get Main Fees On Fare Quote Tab    Fare Quote 2
+    Click Restriction Tab
+    Populate Fare Restrictions To Default Value
+    Click Panel    Cust Refs
+    Set CDR Value    Cost Centre    AD
+    Set CDR Value    Designation    EE
+    Set CDR Value    Employee ID    123-23
+    Click Panel    Policy Check
+    Populate Policy Check Panel With Default Values
+    Click Panel    APIS/SFPD
+    Tick Address Not Unknown
+    Click Panel    Policy Check
+    Populate Policy Check Panel With Default Values    HA - Has authority to travel
+    Click Panel    Delivery
+    Verify On Hold Booking Reason Is Unchecked    Awaiting Fare Details
+    Verify On Hold Booking Reason Is Disabled    Awaiting Fare Details
+    Set Email Address In Delivery Panel
+    Set Ticketing Date One Day Ahead
+    Set Follow Up Date Using Current Date
+    Click Panel    Delivery
+    Select Delivery Method    Auto Cancel
+    Set On Hold Reasons    Test
+    Click Finish PNR
+
+Verify Realised Savings Code Functionality
+    [Arguments]    ${fare_tab}
+    Get Charged Fare Value    ${fare_tab}
+    Get High Fare Value    ${fare_tab}
+    Run Keyword If    "${charged_value_${fare_tab_index}}" == "${high_fare_value_${fare_tab_index}}"    Verify Realised Savings Code Default Value    XX - NO SAVING
+    ...    ELSE    Verify Realised Savings Code Is Mandatory And Has No Value
+
+Get Agent Sign Remark From GDS Screen
+    Activate Power Express Window
+    Retrieve PNR Details From Amadeus    \    RT    False

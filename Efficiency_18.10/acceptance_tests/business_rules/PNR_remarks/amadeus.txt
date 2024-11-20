@@ -1,0 +1,77 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../business_rules_verification.txt
+
+*** Test Cases ***
+[NB] Verify That General, Qualified, Wings, And Itinerary Remarks Are Written In The PNR
+    [Documentation]    Covers the following business rules setup:
+    ...    1A US6133 Rule 1,
+    ...    1A US6133 Rule 2,
+    ...    1A US6133 Automation Rule,
+    ...    1A US6133 Automation Rule 2
+    [Tags]    us6133    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ US6133    Rules    EmeaTest
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    APPROVER    ABC123
+    Set CDR Value    TRVLCOST    98678
+    Click Update PNR
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    GENERAL REMARK FROM BUSINESS RULE
+    Verify Specific Line Is Written In The PNR    ITINERARY REMARK FROM BUSINESS RULE
+    Verify Specific Line Is Written In The PNR    *1000*WINGS REMARK FROM BUSINESS RULE
+    Verify Specific Line Is Written In The PNR    QUALIFIED REMARK FROM BUSINESS RULE
+    Verify Specific Line Is Written In The PNR    THIS IS A GENERAL REMARK
+    Verify Specific Line Is Written In The PNR    THIS IS A SAMPLE ITINERARY REMARK
+    Verify Specific Line Is Written In The PNR    *1001*THIS IS A SAMPLE WINGS REMARK
+
+[AB] Verify That General, Qualified, Wings, And Itinerary Remarks Are Deleted In The PNR
+    [Tags]    us6133    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Not Written In The PNR    GENERAL REMARK FROM BUSINESS RULE
+    Verify Specific Line Is Not Written In The PNR    ITINERARY REMARK FROM BUSINESS RULE
+    Verify Specific Line Is Not Written In The PNR    *1000*WINGS REMARK FROM BUSINESS RULE
+    Verify Specific Line Is Not Written In The PNR    QUALIFIED REMARK FROM BUSINESS RULE
+    Verify Specific Line Is Not Written In The PNR    THIS IS A GENERAL REMARK
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True
+
+[NB] Verify That Qualified Remarks Are Written In The PNR
+    [Tags]    us6133    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    Amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ US6133    Rules    EmeaTest
+    Click New Booking
+    Click Panel    Cust Refs
+    Set CDR Value    APPROVER    TEST
+    Set CDR Value    TRVLCOST    12345
+    Click Update PNR
+    Book Flight X Months From Now    CDGLHR/AAF    SS1Y1    FXP
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    TEST QUALIFIED REMARK
+    Verify Specific Line Is Written In The PNR    TEST QUALIFIED REMARK 2
+
+[AB] Verify That Qualified Remarks Are Written In The PNR
+    [Tags]    us6133    uk
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Cust Refs
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    TEST QUALIFIED REMARK
+    Verify Specific Line Is Not Written In The PNR    TEST QUALIFIED REMARK 2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}    True

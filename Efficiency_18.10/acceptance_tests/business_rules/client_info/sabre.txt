@@ -1,0 +1,62 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../business_rules_verification.txt
+Resource          ../../id_traveller/id_traveller_verification.txt
+
+*** Test Cases ***
+[1S NORAM][NB] Verify That AX And MC Cards With Expiration Date Will Trigger The Rules
+    [Tags]    us5080
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 16 - Auto ¦ DE5234 Disable Fare Calc    AutoSixteenSeven    NoramTrvlrTwo
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1225
+    Click Update PNR
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *R
+    Verify Specific Line Is Written In The PNR    U24*KOBE
+    Book Flight X Months From Now    DENORD‡AA    01Y1    ${EMPTY}
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    BTA AUTO ONE/VI************1111/D1226
+    Verify Trip Type Is Correct    Meetings
+    Select Form Of Payment    CWT BTA/VI*********2222/D1225/CVV****
+    Verify Trip Type Is Correct    Personal
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S NORAM][AB] Verify That Portrait And Manual Create Cards Will Trigger The Rules
+    [Tags]    us5080    not ready
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    50/-*VI4900000000000086‡12/26    6CWTPTEST    ER
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT/TP************0004/D0126-UATP
+    Verify Trip Type Is Correct    Business
+    Select Form Of Payment    GDS/VI************0086/D1226
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking Portrait And Manual Create Cards
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *R
+    Verify Specific Line Is Not Written In The PNR    U24*KOBE
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Booking Portrait And Manual Create Cards
+    Retrieve PNR    ${current_pnr}
+    Enter GDS Command    50/-*VI4900000000000086‡12/26    6CWTPTEST    ER
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT/TP************1111/D0126-UATP
+    Verify Trip Type Is Correct    Business
+    Select Form Of Payment    GDS/VI************0086/DXXXX
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

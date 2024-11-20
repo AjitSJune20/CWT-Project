@@ -1,0 +1,275 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          unused_documents_verification.txt
+
+*** Test Cases ***
+[1A CA] [NB]Verify that selected unused documents are wriiten using PNR button and double click upon New Booking , Update PNR, Not written Prior to New Booking
+    [Tags]    noram    us6767    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    2
+    Sleep    10s
+    Verify Unused Document Has Been Sent To PNR    2
+    Click Tab In Top Left    GDS Screen
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RMRT
+    Verify Specific Line Is Not Written In The PNR    EXCH-CP 0186513292929 22NOV18 110 AUTOONEEIGHTEEN/CANADA TRVLRTHREE    \    True
+    Click New Booking
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    2
+    Select Unused Document Using Row Number    \    3
+    Click PNR Button
+    Sleep    10s
+    Verify Unused Document Has Been Sent To PNR    2    3
+    Click Tab In Top Left    GDS Screen
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RMRT
+    Verify Specific Line Is Written In The PNR    EXCH-CP 0186513292929 22NOV18 110 AUTOONEEIGHTEEN/CANADA TRVLRTHREE    \    true
+    Verify Specific Line Is Written In The PNR    EXCH-UA 0166513292929 23NOV18 110 AUTOONEEIGHTEEN/CANADA TRVLRTHREE    \    true
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    1
+    Sleep    10s
+    Verify Unused Document Has Been Sent To PNR    1
+    Click Tab In Top Left    GDS Screen
+    Book Flight X Months From Now    ORDMSP/AAA    SS1Y1    FXP    5    10
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RMRT
+    Verify Specific Line Is Written In The PNR    EXCH-XX AAF1233456775 22NOV18 111 AUTOONEEIGHTEEN/CANADA TRVLRTHREE    \    true
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[1A CA][AB]Verify that selected unused document using PNR button and double click are written after amend booking
+    [Tags]    noram    us6767    ca
+    Retrieve PNR    ${current_pnr}
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    2
+    Sleep    10s
+    Verify Unused Document Has Been Sent To PNR    2
+    Click Amend Booking
+    Click Tab In Top Left    Unused Documents
+    Sleep    10s
+    Verify Unused Document Has Been Sent To PNR    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RMRT
+    Verify Specific Line Is Written In The PNR    EXCH-UA 0166513292929 23NOV18 110 AUTOONEEIGHTEEN/CANADA TRVLRTHREE    \    true
+    Verify Specific Line Is Written In The PNR    EXCH-XX AAF1233456775 22NOV18 111 AUTOONEEIGHTEEN/CANADA TRVLRTHREE    \    true
+    Verify Specific Line Is Written In The PNR X Times    EXCH-CP 0186513292929 22NOV18 110 AUTOONEEIGHTEEN/CANADA TRVLRTHREE    3    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A EMEA] [NB]Verify that selected unused documenta are wriiten using PNR button and double click upon New Booking , Update PNR, Not written Prior to New Booking
+    [Tags]    emea    us6767
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    Amadeus UK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFour
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    2
+    Sleep    10s
+    Verify Unused Document Has Been Sent To PNR    2
+    Click Tab In Top Left    GDS Screen
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RMRT
+    Verify Specific Line Is Not Written In The PNR    EXCH-WA 0176513292929 22NOV18 1111 AUTOONESIXSEVEN/EMEAT RVLRFOUR    \    True
+    Click New Booking
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    2
+    Select Unused Document Using Row Number    \    3
+    Click PNR Button
+    Sleep    10s
+    Verify Unused Document Has Been Sent To PNR    2    3
+    Click Tab In Top Left    GDS Screen
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RMRT
+    Verify Specific Line Is Written In The PNR    EXCH-WA 0176513292929 22NOV18 1111 AUTOONESIXSEVEN/EMEAT RVLRFOUR    \    true
+    Verify Specific Line Is Written In The PNR    EXCH-XX 0196513292929 22NOV18 4444 AUTOONESIXSEVEN/EMEAT RVLRFOUR    \    true
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    1
+    Sleep    10s
+    Verify Unused Document Has Been Sent To PNR    1
+    Click Tab In Top Left    GDS Screen
+    Book Flight X Months From Now    ORDMSP/AAA    SS1Y1    FXP    5    10
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RMRT
+    Verify Specific Line Is Written In The PNR    EXCH-XX 0206513292929 22NOV18 4444 AUTOONESIXSEVEN/EMEAT RVLRFOUR    \    true
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+[1A EMEA][AB]Verify that selected unused document using PNR button and double click are written after amend booking
+    [Tags]    emea    us6767
+    Retrieve PNR    ${current_pnr}
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    2
+    Sleep    10s
+    Verify Unused Document Has Been Sent To PNR    2
+    Click Amend Booking
+    Click Tab In Top Left    Unused Documents
+    Sleep    10s
+    Verify Unused Document Has Been Sent To PNR    2
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    ${EMPTY}    RMRT
+    Verify Specific Line Is Written In The PNR    EXCH-XX 0196513292929 22NOV18 4444 AUTOONESIXSEVEN/EMEAT RVLRFOUR    \    true
+    Verify Specific Line Is Written In The PNR    EXCH-XX 0206513292929 22NOV18 4444 AUTOONESIXSEVEN/EMEAT RVLRFOUR    \    true
+    Verify Specific Line Is Written In The PNR X Times    EXCH-WA 0176513292929 22NOV18 1111 AUTOONESIXSEVEN/EMEAT RVLRFOUR    3    true
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1A NORAM][CA] [NB]Verify that default Currency is CAD for Canada Sub Unit Client while adding new Document from Unused Document Tab
+    [Tags]    us6874    ca
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationCA    CA QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree
+    Select Client Account Value    U1SOE ¦ SOE CFA ¦ CA - Amadeus Sub2
+    Click Tab In Top Left    Unused Documents
+    Click Add Document Button
+    Activate Add Travel Document Window    Add Travel Document
+    Verify Currency Code Default Values is Correct    CAD
+    Select Ticket Type In Unused Document    1-Paper
+    Select Currency Code In Unused Document    TTD
+    [Teardown]    Click Clear All
+
+[1A EMEA][UK] [NB]Verify that default Currency is GBP for UK Sub Unit Client while adding new Document from Unused Document Tab
+    [Tags]    us6874    uk
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO AMADEUS
+    Select GDS    amadeus
+    Set Client And Traveler    Amadeus UK 16 - Auto ¦ US1641    AutoOneSixSeven    EmeaTrvlrFour
+    Click Tab In Top Left    Unused Documents
+    Click Add Document Button
+    Activate Add Travel Document Window    Add Travel Document
+    Verify Currency Code Default Values is Correct    GBP
+    Select Ticket Type In Unused Document    1-Paper
+    Select Currency Code In Unused Document    TTD
+    [Teardown]    Click Clear All
+
+[1A EMEA][NL] [NB]Verify that default Currency is EUR for Netherlands Sub Unit Client while adding new Document from Unused Document Tab
+    [Tags]    us6874    nl
+    Open Power Express And Retrieve Profile    ${version}    Test    U007AKS    en-US    asingh    NL QA Team Amadeus
+    Select GDS    amadeus
+    Set Client And Traveler    NL Amadeus 1 - Syex ¦ NL - Amadeus Sub2    Ajju    Kumar
+    Click Tab In Top Left    Unused Documents
+    Click Add Document Button
+    Activate Add Travel Document Window    Add Travel Document
+    Verify Currency Code Default Values is Correct    EUR
+    Select Ticket Type In Unused Document    1-Paper
+    Select Currency Code In Unused Document    TTD
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Click Add Document Button
+    Click Control Button    [NAME:CreateDocButton]
+
+Click PNR Button
+    Click Control Button    [NAME:AddToPNRButton]
+
+Select Currency Code In Unused Document
+    [Arguments]    ${currency_code}
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:CurrencyComboBox]    window_title=Add Travel Document
+    ${dropdown_list}    Get Value From Dropdown List    [NAME:CurrencyComboBox]    window_title=Add Travel Document
+    ${ticket_selection}    Get Index From List    ${dropdown_list}    ${currency_code}
+    Select Value From Dropdown List    [NAME:CurrencyComboBox]    ${ticket_selection}    window_title=Add Travel Document    by_index=True
+    [Teardown]    Take Screenshot
+
+Verify Currency Code Field is Disabled
+    Verify Control Object Is Disabled    [NAME:CurrencyComboBox]
+
+Add Unused Ticket
+    [Arguments]    ${ticket_type}    ${ticket_number}    ${airline_code}    ${pnr_locator}    ${currency_value}=10    ${currency_code}=USD
+    ...    ${booking_iata}=08612312    ${issuing_pcc}=SIN010101
+    Click Add Document Button
+    Select Ticket Type In Unused Document    ${ticket_type}
+    Set Ticket Number In Unused Document    ${ticket_number}
+    Set Airline Code In Unused Document    ${airline_code}
+    Set PNR Locator In Unused Document    ${pnr_locator}
+    Run Keyword If    '${ticket_type}' != '3-Electronic'    Set Currency Value In Unused Document    ${currency_value}
+    Run Keyword If    '${ticket_type}' != '3-Electronic'    Select Currency Code In Unused Document    ${currency_code}
+    Run Keyword If    '${ticket_type}' != '3-Electronic'    Set Booking IATA In Unused Document    ${booking_iata}
+    Run Keyword If    '${ticket_type}' != '3-Electronic'    Set Issuing PCC In Unused Document    ${issuing_pcc}
+    Click Save Button In Unused Document
+
+Select Ticket Type In Unused Document
+    [Arguments]    ${ticket_type}
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:TicketTypeComboBox]    window_title=Add Travel Document
+    ${dropdown_list}    Get Value From Dropdown List    [NAME:TicketTypeComboBox]    window_title=Add Travel Document
+    ${ticket_selection}    Get Index From List    ${dropdown_list}    ${ticket_type}
+    Select Value From Dropdown List    [NAME:TicketTypeComboBox]    ${ticket_selection}    window_title=Add Travel Document    by_index=True
+    [Teardown]    Take Screenshot
+
+Set Ticket Number In Unused Document
+    [Arguments]    ${ticket_number}
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:TicketNumberText]    window_title=Add Travel Document
+    Set Control Text Value    [NAME:TicketNumberText]    ${ticket_number}    window_title=Add Travel Document
+
+Set Airline Code In Unused Document
+    [Arguments]    ${airline_code}
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:AirlineCodeText]    window_title=Add Travel Document
+    Set Control Text Value    [NAME:AirlineCodeText]    ${airline_code}    window_title=Add Travel Document
+
+Set PNR Locator In Unused Document
+    [Arguments]    ${pnr_locator}
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:PNRLocatorText]    window_title=Add Travel Document
+    Set Control Text Value    [NAME:PNRLocatorText]    ${pnr_locator}    window_title=Add Travel Document
+
+Set Value and Currency In Unused Document
+    [Arguments]    ${value}
+    ${values}    Split String    ${value}    ${SPACE}
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:ValueText]    window_title=Add Travel Document
+    Set Control Text Value    [NAME:ValueText]    ${values[0]}    window_title=Add Travel Document
+    ${dropdown_list}    Get Value From Dropdown List    [NAME:CurrencyComboBox]    window_title=Add Travel Document
+    ${currency_selection}    Get Index From List    ${dropdown_list}    ${values[1]}
+    Select Value From Dropdown List    [NAME:CurrencyComboBox]    ${currency_selection}    window_title=Add Travel Document    by_index=True
+
+Set Booking IATA In Unused Document
+    [Arguments]    ${booking_iata}
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:BookingIATAText]    window_title=Add Travel Document
+    Set Control Text Value    [NAME:BookingIATAText]    ${booking_iata}    window_title=Add Travel Document
+
+Set Issuing PCC In Unused Document
+    [Arguments]    ${issuing_pcc}
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:IssuingPCCText]    window_title=Add Travel Document
+    Set Control Text Value    [NAME:IssuingPCCText]    ${issuing_pcc}    window_title=Add Travel Document
+
+Click Save Button In Unused Document
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:SaveButton]    Add Travel Document
+    Comment    Click Control Button    [NAME:SaveButton]    Add Travel Document
+    Send    {TAB}
+    Send    {TAB}
+    Send    {ENTER}
+
+Verify Currency Code Default Values is Correct
+    [Arguments]    ${expected_value}
+    Verify Control Object Text Value Is Correct    [NAME:CurrencyComboBox]    ${expected_value}
+    [Teardown]    Take Screenshot
+
+Activate Add Travel Document Window
+    [Arguments]    ${pop_up_title}
+    Wait Until Window Exists    ${pop_up_title}
+    Win Activate    ${pop_up_title}
+
+Set Currency Value In Unused Document
+    [Arguments]    ${currency_value}
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:ValueText]    window_title=Add Travel Document
+    Set Control Text Value    [NAME:ValueText]    ${currency_value}    window_title=Add Travel Document
+
+Click Cancel Button In Unused Document
+    Wait Until Window Exists    Add Travel Document
+    Wait Until Control Object Is Visible    [NAME:CancelAddButton]    window_title=Add Travel Document
+    Click Control Button    [NAME:CancelAddButton]    window_title=Add Travel Document
+
+Verify Currency Code is Selectable In Unused Document
+    [Documentation]    *This Keyword USed to Verify Whether e are we select Any Currency other Than Default Currancy*
+    Select Currency Code In Unused Document    ${currency_code}
+    Verify Actual Value Matches Expected Value

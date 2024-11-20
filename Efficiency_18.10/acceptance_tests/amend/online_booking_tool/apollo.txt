@@ -1,0 +1,142 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../amend_verification.txt
+Resource          ../../../resources/common/utilities.txt
+Resource          ../../../resources/common/core.txt
+Resource          ../../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[AB] Verify That Amend Panel Is Displayed And Touch Level Line Is Written When PNR Has CIC Code D7Q
+    [Tags]    us5509    17.9
+    Open Power Express And Retrieve Profile    ${version}    Test    U001RTM    en-US    rmartinez    NORAM QA
+    Select GDS    Apollo
+    Create Shell PNR Using Default Values    Apollo 2 - SyEx ¦ CIC for OBT Untouched or Exchange    Carlson    Chance    U1A2E ¦ Apollo 2 - SyEx ¦ CIC for OBT Untouched or Exchange
+    Update CTG Web Hotel Matrix Remark    G*CN/    T-G*CN/D7Q
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book One Way Flight X Months From Now    DENLAX+UA    6
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Level Dropdown Values    Online assisted by OSC    Offline    Online unassisted
+    Verify Touch Reason Is Visible
+    Verify Notes Checkbox Is Visible
+    Select Touch Level    Online assisted by OSC
+    Select Touch Reason    Air
+    Tick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For CTG Web Hotel Matrix Remark
+    Retrieve PNR Details From Travelport    *R
+    Verify Specific Line Is Written In The PNR    G*CN/RTM
+    Verify Specific Line Is Written In The PNR    G*EB/CT8/NIA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That CIC Code Is Not Updated When Touch Level Is AM/CT, ChangeBackOfficeAgentIdentifier Is On OBT Untouched Or Exchange, PNR Has No Exchange
+    [Tags]    17.9    us5509
+    Open Power Express And Retrieve Profile    ${version}    Test    U001RTM    en-US    rmartinez    NORAM QA
+    Select GDS    Apollo
+    Create Shell PNR Using Default Values    Apollo 2 - SyEx ¦ CIC for OBT Untouched or Exchange    Carlson    Chance    U1A2E ¦ Apollo 2 - SyEx ¦ CIC for OBT Untouched or Exchange
+    Update CTG Web Hotel Matrix Remark    G*CN/    T-G*CN/D7Q    T-G*EB/CT8/NID
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book One Way Flight X Months From Now    DENORD+UA    6
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Is Visible
+    Verify Touch Reason Default Value    Customized data required by client
+    Verify Notes Checkbox Is Visible
+    Verify Notes Checkbox Is Checked
+    Select Touch Level    Offline
+    Select Touch Reason    Hotel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    *R
+    Verify Specific Line Is Written In The PNR    G*CN/D7Q
+    Verify Specific Line Is Written In The PNR    G*EB/AM8/NIH
+    Click Clear All
+
+[AB] Verify That CIC Code Is Updated When Touch Level Is AM/CT, ChangeBackOfficeAgentIdentifier Is On OBT Untouched Or Exchange, PNR Has Exchange
+    [Tags]    17.9    us5509
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Enter GDS Command    T:$B
+    Enter GDS Command    ¤:5T/TKT1-EXCH-ETREA    T-G*IRP1/PA-150.00/CA-0.00/EA-1691.38/NF-2120.55
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Air Fare
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    E - Exchange
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Is Visible
+    Verify Touch Reason Default Value    Hotel
+    Verify Notes Checkbox Is Visible
+    Verify Notes Checkbox Is Checked
+    Select Touch Level    Online assisted by OSC
+    Select Touch Reason    Exchange
+    Click Panel    Recap
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    *R
+    Verify Specific Line Is Written In The PNR    G*CN/RTM
+    Verify Specific Line Is Written In The PNR    G*EB/CT8/NIE
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That CIC Code Is Not Updated When Touch Level Is EB, ChangeBackOfficeAgentIdentifier Is On OBT Untouched Or Exchange, PNR Has No Exchange
+    [Tags]    17.9    us5509
+    Open Power Express And Retrieve Profile    ${version}    Test    U001RTM    en-US    rmartinez    NORAM QA
+    Select GDS    Apollo
+    Create Shell PNR Using Default Values    Apollo 2 - SyEx ¦ CIC for OBT Untouched or Exchange    Carlson    Chance    U1A2E ¦ Apollo 2 - SyEx ¦ CIC for OBT Untouched or Exchange
+    Update CTG Web Hotel Matrix Remark    G*CN/    T-G*CN/D7Q
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book One Way Flight X Months From Now    ORDDEN+UA    7
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Level Dropdown Values    Online assisted by OSC    Offline    Online unassisted
+    Verify Touch Reason Is Visible
+    Verify Notes Checkbox Is Visible
+    Select Touch Level    Online Unassisted
+    Click Panel    Recap
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    *R
+    Verify Specific Line Is Written In The PNR    G*CN/D7Q
+    Verify Specific Line Is Written In The PNR    G*EB/EB8
+    Click Clear All
+
+[AB] Verify That CIC Code Is Not Updated When Touch Level Is EB, ChangeBackOfficeAgentIdentifier Is On OBT Untouched Or Exchange, PNR Has Exchange
+    [Tags]    17.9    us5509
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    XT
+    Enter GDS Command    T:$B
+    Enter GDS Command    ¤:5T/TKT1-EXCH-ETREA    T-G*IRP1/PA-150.00/CA-0.00/EA-1691.38/NF-2120.55
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Air Fare
+    Click Panel    Air Fare
+    Verify Realised Savings Code Default Value    E - Exchange
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Level Dropdown Values    Online assisted by OSC    Offline    Online unassisted
+    Verify Touch Reason Is Visible
+    Verify Notes Checkbox Is Visible
+    Select Touch Level    Online Unassisted
+    Click Panel    Recap
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    *R
+    Verify Specific Line Is Written In The PNR    G*CN/D7Q
+    Verify Specific Line Is Written In The PNR    G*EB/EB8
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

@@ -1,0 +1,148 @@
+*** Settings ***
+Suite Setup       Set Suite Variable    ${gds_switch}    sabre
+Force Tags        sabre    emea
+Resource          ../third_party_verification.txt
+
+*** Test Cases ***
+[AB] Verify That 3xx Transaction Codes Are Not Changed To 4xx In Remarks
+    [Tags]    us1500    data_dependent    not_ready
+    New Booking Workflow For KDS Remarks Verification
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    MSPORD¥AA    01Y1    WPRQ    6    4
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    ETKT AIR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow for KDS Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *.    ${EMPTY}    4
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 3KD Is Not Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That 2xx Transaction Codes Are Changed To 4xx In Remarks
+    [Tags]    us1500    data_dependent    de6240    not_ready
+    New Booking Workflow For KDS Remarks Verification
+    Sleep    30
+    Modify Transaction Codes    3KD    2KD
+    Remove PNR Remark And End Transaction    *0104*
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *.    4
+    Verify 3KD Is Changed To 2KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Not Written In The PNR    *0104*
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    MSPORD¥AA    01Y1    WPRQ    6    4
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    ETKT AIR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow for KDS Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *.    ${EMPTY}    4
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 2KD Is Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    Modify Transaction Codes    4KD    0KD
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *.    ${EMPTY}    4
+    Verify 4KD Is Changed To 0KD In Remarks For Air, Car, Hotel And Rail
+
+[AB] Verify That 0xx Transaction Codes Are Not Changed To 4xx In Remarks
+    [Tags]    us1500    data_dependent    de6240    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    MSPORD¥AA    01Y1    WPRQ    6    4
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    ETKT AIR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow for KDS Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *.    ${EMPTY}    4
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 0KD Is Not Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That 1xx Transaction Codes Are Changed To 4xx In Remarks
+    [Tags]    us1500    data_dependent    de6240    not_ready
+    New Booking Workflow For KDS Remarks Verification
+    Modify Transaction Codes    3KD    1KD
+    Remove PNR Remark And End Transaction    *0104*
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *.    4
+    Verify 3KD Is Changed To 1KD In Remarks For Air, Car, Hotel And Rail
+    Verify Specific Line Is Not Written In The PNR    *0104*
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    MSPORD¥AA    01Y1    WPRQ    6    4
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    ETKT AIR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow for KDS Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *.    ${EMPTY}    4
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 1KD Is Changed To 4KD In Remarks For Air, Car, Hotel And Rail
+
+[AB] Verify That 4xx Transaction Codes Are Not Changed To 1xx In Remarks
+    [Tags]    us1500    data_dependent    de6240    not_ready
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    MSPORD¥AA    01Y1    WPRQ    6    4
+    Click Read Booking
+    Verify Actual Panel Does Not Contain Expected Panel    Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    ETKT AIR
+    Click Finish PNR
+    Re-Execute Amend Booking Workflow for KDS Remarks Verification If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details from Sabre Red    ${current_pnr}    *.    ${EMPTY}    4
+    Verify Specific Line Is Written In The PNR    *0111*2020
+    Verify Specific Line Is Written In The PNR    *0104*TEST123
+    Verify 4KD Is Not Changed To 1KD In Remarks For Air, Car, Hotel And Rail
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+New Booking Workflow For KDS Remarks Verification
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    fr-FR    AutomationFR    FR AUTO SABRE
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre 211 - Auto ¦ US1500    AUTOTWOONEONE    EmeaTrvlrOne    LAXJFK¥AA    ${EMPTY}
+    Click Panel    Delivery
+    Select Delivery Method    ETKT AIR
+    Click Finish PNR
+
+Amend Booking Workflow For KDS Remarks Verification
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Enter GDS Command    PQD-ALL
+    Enter GDS Command    XI
+    Book Flight X Months From Now    MSPORD¥AA    01Y1    WPRQ    6    4
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Panel    Delivery
+    Select Delivery Method    ETKT AIR
+    Click Finish PNR

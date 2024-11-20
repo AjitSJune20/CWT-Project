@@ -1,0 +1,111 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../resource_sanity.txt
+Resource          ../../acceptance_tests/air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+New Booking
+    Open Power Express And Retrieve Profile    ${version}    Pilot    U001NCB    de-DE    ${EMPTY}    EMEA QA Test Team
+    Select GDS    Amadeus
+    Create New Booking With One Way Flight Using Default Values And Contact Details    DE Amadeus QA test Client ¦ DE Sub 1    Moxom    John    FRASVO    318661 ¦ 3M DEUTSCHLAND GMBH ¦ DE Sub 1    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Panel    Delivery
+    Sleep    5
+    Take Screenshot
+    Select Panel    Air Fare
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Comment    Verify Air Fares In PNR Remarks Are Correct    Fare 1
+    Verify OP Line In Remarks
+    Verify TET Code Line In Remarks    RM *0653*MUSSUUUUUUUA
+    Verify FOP Line in Remarks    FP CCVI4444333322221111/1218
+    Verify SYEX GVS Line In Remarks    RMA SYEXGV
+    Verify Duplicate Remarks    Amadeus
+
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    SVOFRA    SS1Y1    FXP/S3    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Panel    Delivery
+    Sleep    5
+    Take Screenshot
+    Select Panel    Air Fare
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Amend Booking
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Comment    Verify Air Fares In PNR Remarks Are Correct    Fare 2
+    Verify OP Line In Remarks
+    Verify TET Code Line In Remarks    RM *0653*MUSSUUUUUUUA
+    Verify FOP Line in Remarks    FP CCVI4444333322221111/1218
+    Verify SYEX GVS Line In Remarks    RMA SYEXGV
+    Verify Duplicate Remarks    Amadeus
+
+Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Send Itinerary
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify OP Line In Remarks
+    Verify TET Code Line In Remarks    RM *0653*MUSSUUUUUUUA
+    Verify FOP Line in Remarks    FP CCVI4444333322221111/1218
+    Verify SYEX GVS Line In Remarks    RMA SYEXGV
+    Verify Duplicate Remarks    Amadeus
+
+Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Cancel Booking
+    Verify Requested Booking File Segments Is Cancelled
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify TET Code Line In Remarks    RM *0653*MUSSUUUUUUUA
+    Verify FOP Line in Remarks    FP CCVI4444333322221111/1218
+    Verify FULLCXL Line In Remarks    RIR *FULLCXL**FULLCXL*
+    Verify Duplicate Remarks    Amadeus
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Simultaneous Change Handling For Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    SVOFRA    SS1Y1    FXP/S3    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Select Panel    Delivery
+    Sleep    5
+    Take Screenshot
+    Select Panel    Air Fare
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+
+Simultaneous Change Handling For Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Simultaneous Change Handling For Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Simultaneous Change Handling For Quick Amend
+    Retrieve PNR    ${current_pnr}
+    Click Quick Amend
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

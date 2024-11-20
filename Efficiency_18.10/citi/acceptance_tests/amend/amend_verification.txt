@@ -1,0 +1,5 @@
+*** Settings ***
+Resource          ../../../resources/common/utilities.txt
+Resource          ../../../resources/common/core.txt
+
+*** Keywords ***

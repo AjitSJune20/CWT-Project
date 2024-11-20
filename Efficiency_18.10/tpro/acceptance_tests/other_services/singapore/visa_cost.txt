@@ -1,0 +1,87 @@
+*** Settings ***
+Force Tags        visa_cost
+Resource          ../other_services_verification.txt
+
+*** Test Cases ***
+[NB OS] Verify That Visa Cost Fields Behave Correctly In Other Services Panel And Written In The PNR When FOP Is CX
+    [Tags]    US465    us960    backog
+    Create PNR Using Cash As FOP
+    Click Other Services
+    Select Product And Vendor    Visa Cost    VISA ARRANGED BY CONSULTANT
+    Populate Service Info Cost Details    Vendor Contact    344.23    566.00
+    Select Form Of Payment (FOP)    Credit Card (CX)    AX    371449635398431    12    2027
+    Populate Visa Processing Country Details    Singapore    Other    Single    Month(s)    Normal
+    Set Passenger ID Value    1
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number    identifier=visa
+    Generate Data For Specific Product    False    P1    06    Visa Cost    VI    026003
+    ...    ${EMPTY}    New
+    Click Panel    Other Svcs
+    Click Visa Info Tab
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Service Visa Processing Country Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Visa Cost Accounting General Remarks    Visa Cost    VISA ARRANGED BY CONSULTANT    Credit Card (CX)
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    371449635398431    AX    12    2027    Credit Card (CX)    SG
+    [Teardown]
+
+[AOS] Verify That Visa Cost Fields Behave Correctly In Other Services Panel And Written In The PNR When FOP Is CC
+    [Tags]    us832
+    Click Other Services
+    Click Amend EO    ${eo_number_visa}
+    Click Visa Info Tab
+    Get Other Services Cost Details
+    Verify Vendor Contact Value Is Correct    Vendor Contact
+    Verify Nett Cost Value Is Correct    344.23
+    Verify Selling Price Value Is Correct    566.00
+    Verify Commission Fee Value Is Correct    233.09
+    Verify Merchant Fee Value Is Correct    11.32
+    Verify Total Selling Price Value Is Correct    577.32
+    Verify Form Of Payment Details Are Correct    Credit Card (CX)    AX    ************8431    12    2027
+    Verify Visa Processing Country Details    Singapore    Other    Single    Month(s)    Normal    1
+    Verify Exchange Order Number    ${eo_number_visa}
+    Populate Service Info Cost Details    Test    250.00    850.00
+    Get Other Services Form Of Payment Details
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    VISA ARRANGED BY CONSULTANT
+    Verify Address 1 Value Is Correct    c/o CW SINGAPORE
+    Verify Address 2 Value Is Correct    VISA FEE ARRANEGD by AGENTS
+    Verify City Value Is Correct    SINGAPORE
+    Verify Country Value Is Correct    SINGAPORE
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    06    Visa Cost    VI    026003
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_visa}
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Visa Cost Accounting General Remarks    Visa Cost    VISA ARRANGED BY CONSULTANT    Credit Card (CX)
+    Verify Other Services Credit Card Fees Accounting Remarks Are Written    371449635398431    AX    12    2027    Credit Card (CX)    SG
+    Click Other Services
+    Verify Exchange Order Record Is Displayed In The EO Grid    P1
+    [Teardown]
+
+[OS] Verify That Visa Cost Fields Behave Correctly In Other Services Panel And Written In The PNR When FOP Is Cash Or Invoice
+    [Tags]    US465    us960    backog
+    #Click Other Services
+    Select Product And Vendor    Visa Cost    VISA ARRANGED BY CONSULTANT
+    Populate Service Info Cost Details    Vendor Contact    355    488
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Populate Visa Processing Country Details    Singapore    Business    Double    Year(s)    Express
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Click Panel    Other Svcs
+    Click Visa Info Tab
+    Get Other Services Cost Details
+    Get Other Services Form Of Payment Details
+    Get Other Service Visa Processing Country Details
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify Other Services Visa Cost Accounting General Remarks    Visa Cost    VISA ARRANGED BY CONSULTANT    Cash or Invoice
+    Verify Other Services Cash Or Invoice Fees Accounting Remarks Are Written    SG
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

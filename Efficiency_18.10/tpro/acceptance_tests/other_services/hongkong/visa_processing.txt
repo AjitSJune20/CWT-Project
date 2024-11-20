@@ -1,0 +1,182 @@
+*** Settings ***
+Force Tags        visa_processing
+Resource          ../other_services.txt
+
+*** Test Cases ***
+[NB OS] Verify That Visa Processing Behaves Correctly And Written In The PNR When FOP Is CX
+    [Tags]    horton    US463
+    Create PNR Using Cash As FOP    HK
+    Click Other Services
+    Select Product And Vendor    VISA PROCESSING    CWT VISA
+    Click Visa Info Tab
+    Verify FOP Info In Other Services
+    Select Form Of Payment (FOP)    Credit Card (CX)    VI    4444333322221111    12    2022
+    Populate Other Services Visa Processing Fees    500    200    150
+    Get Other Services Visa Processing Cost
+    Compute Visa Processing Fees    2
+    Verify Visa Processing Selling Price Value Is Correct
+    Verify Visa Processing Commission Value Is Correct
+    Verify Visa Processing Total Selling Price Is Correct
+    Tick Merchant Fee CheckBox for Nett Cost
+    Get Other Services Visa Processing Cost
+    Compute Visa Processing Fees    2
+    Verify Visa Processing Selling Price Value Is Correct
+    Verify Visa Processing Commission Value Is Correct
+    Verify Visa Processing Total Selling Price Is Correct
+    Untick Merchant Fee CheckBox For Nett Cost
+    Get Other Services Visa Processing Cost
+    Compute Visa Processing Fees    2
+    Verify Visa Processing Selling Price Value Is Correct
+    Verify Visa Processing Commission Value Is Correct
+    Verify Visa Processing Total Selling Price Is Correct
+    Tick Merchant Fee CheckBox For CWT Handling
+    Get Other Services Visa Processing Cost
+    Compute Visa Processing Fees    2
+    Verify Visa Processing Selling Price Value Is Correct
+    Verify Visa Processing Commission Value Is Correct
+    Verify Visa Processing Total Selling Price Is Correct
+    Untick Merchant Fee CheckBox For CWT Handling
+    Get Other Services Visa Processing Cost
+    Compute Visa Processing Fees    2
+    Verify Visa Processing Selling Price Value Is Correct
+    Verify Visa Processing Commission Value Is Correct
+    Verify Visa Processing Total Selling Price Is Correct
+    Populate Other Services Visa Processing Cost    Vendor Contact    500    200    150
+    Populate Visa Processing Country Details    Philippines    Other    Single    Days    Normal
+    Set Passenger ID Value    AA
+    Get Other Services Visa Processing Cost
+    Get Other Services Form Of Payment Details
+    Get Other Service Visa Processing Country Details
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    VENDOR INVOICE NO [INVOICE NO] /DATE [DATE]
+    Select Itinerary Remarks    PLEASE VERIFY VISA TYPE AND VALIDITY
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number    identifier=visaprocessing
+    Generate Data For Specific Product    False    P1    06    VISA PROCESSING    VI    000811
+    ...    ${EMPTY}    New
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Accounting Lines For Visa Processing Are Written When FOP is CX    VISA PROCESSING    CWT VISA
+    Verify Specific Line Is Written In The PNR X Times    RIR PLEASE VERIFY VISA TYPE AND VALIDITY    1
+
+[AOS] Verify That Visa Processing Behaves Correctly And Written In The PNR When FOP Is CX
+    [Tags]    horton    us832
+    Click Other Services
+    Click Amend EO    ${eo_number_visaprocessing}
+    Click Visa Info Tab
+    Get Other Services Visa Processing Cost
+    Verify Vendor Contact Value Is Correct    Vendor Contact
+    Verify Visa Processing Nett Cost Value Is Correct    500
+    Verify Visa Processing Vendor Handling Value Is Correct    200
+    Verify Visa Processing CWT Handling Value Is Correct    150
+    Verify Visa Processing Selling Price Value Is Correct    850
+    Verify Visa Processing Commission Value Is Correct    150
+    Verify Visa Processing Total Selling Price Is Correct    850
+    Verify Form Of Payment Details Are Correct    Credit Card (CX)    VI    ************1111    12    2022
+    Verify Visa Processing Country Details    Philippines    Other    Single    Days    Normal    AA
+    Verify Passenger ID    AA
+    Verify Exchange Order Number    ${eo_number_visaprocessing}
+    Populate Other Services Visa Processing Cost    Visa Processing Test    800    300    200
+    Populate Visa Processing Country Details    Philippines    Other    Single    Days    Normal    AB
+    Set Passenger ID Value    22
+    Get Other Services Visa Processing Cost
+    Get Other Services Form Of Payment Details
+    Get Other Service Visa Processing Country Details
+    Click Vendor Info Tab
+    Verify Vendor Value Is Correct    CWT VISA
+    Verify Address 1 Value Is Correct    27/F ING TOWER
+    Verify Address 2 Value Is Correct    308 DES VOEUX ROAD
+    Verify City Value Is Correct    CENTRAL
+    Verify Country Value Is Correct    HK
+    Verify Email Value Is Correct    automationtest@cwt.com
+    Verify Contact No Value Is Correct
+    Verify Fax No Value Is Correct    1111
+    Verify Credit Terms Values Is Correct    0
+    Verify Support Email Value Is Correct    automationtest@cwt.com
+    Click Remarks Tab
+    Verify Exchange Order Remarks Are Correct    VENDOR INVOICE NO [INVOICE NO] /DATE [DATE]
+    Click Finish PNR    panel=Other Svcs
+    Generate Data For Specific Product    False    P1    06    VISA PROCESSING    VI    000811
+    ...    ${EMPTY}    New
+    Verify Exchange Order Number Is Retained    ${eo_number_visaprocessing}
+    Retrieve PNR Details From Amadeus    command=RTY
+    Verify That Accounting Lines For Visa Processing Are Written When FOP is CX    VISA PROCESSING    CWT VISA
+
+[AB OS] Verify That Visa Processing Behaves Correctly And Written In The PNR When FOP Is CC
+    [Tags]    horton    US463
+    Amend PNR Using Credit Card As FOP
+    Click Other Services
+    Select Product And Vendor    VISA PROCESSING    CWT VISA
+    Click Visa Info Tab
+    Verify FOP Info In Other Services
+    Select Form Of Payment (FOP)    Credit Card (CX)    DC    378282246310005    12    2022
+    Populate Other Services Visa Processing Fees    500    200    150
+    Get Other Services Visa Processing Cost
+    Compute Visa Processing Fees    2
+    Verify Visa Processing Selling Price Value Is Correct
+    Verify Visa Processing Commission Value Is Correct
+    Verify Visa Processing Total Selling Price Is Correct
+    Tick Merchant Fee CheckBox For CWT Handling
+    Tick Merchant Fee CheckBox for Nett Cost
+    Get Other Services Visa Processing Cost
+    Compute Visa Processing Fees    2
+    Verify Visa Processing Selling Price Value Is Correct
+    Verify Visa Processing Commission Value Is Correct
+    Verify Visa Processing Total Selling Price Is Correct
+    Populate Visa Processing Country Details    Philippines    Other    Single    Days    Normal
+    Get Other Services Visa Processing Cost
+    Get Other Services Form Of Payment Details
+    Get Other Service Visa Processing Country Details
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    VENDOR INVOICE NO [INVOICE NO] /DATE [DATE]
+    Select Itinerary Remarks    PLEASE VERIFY VISA TYPE AND VALIDITY
+    Click Visa Info Tab
+    Click Finish PNR    panel=Other Svcs
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Get Exchange Order Number
+    Verify That Accounting Lines For Visa Processing Are Written When FOP is CX    VISA PROCESSING    CWT VISA
+    Verify Specific Line Is Written In The PNR X Times    RIR PLEASE VERIFY VISA TYPE AND VALIDITY    2
+
+[OS] Verify That Visa Processing Behaves Correctly And Written In The PNR When FOP Is Invoice
+    [Tags]    horton    US463
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Select Product And Vendor    VISA PROCESSING    CWT VISA
+    Click Visa Info Tab
+    Verify FOP Info In Other Services
+    Select Form Of Payment (FOP)    Cash or Invoice
+    Populate Other Services Visa Processing Fees    1000    320    410
+    Get Other Services Visa Processing Cost
+    Compute Visa Processing Fees    2
+    Verify Visa Processing Selling Price Value Is Correct
+    Verify Visa Processing Commission Value Is Correct
+    Verify Visa Processing Total Selling Price Is Correct
+    Populate Visa Processing Country Details    Philippines    Other    Single    Days    Normal
+    Get Other Services Visa Processing Cost
+    Get Other Services Form Of Payment Details
+    Get Other Service Visa Processing Country Details
+    Click Vendor Info Tab
+    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com
+    Click Remarks Tab
+    Select Exchange Order Remarks    VENDOR INVOICE NO [INVOICE NO] /DATE [DATE]
+    Select Itinerary Remarks    PLEASE VERIFY VISA TYPE AND VALIDITY
+    Click Finish PNR    panel=Other Svcs
+    Get Exchange Order Number
+    Retrieve PNR Details from Amadeus    ${current_pnr}
+    Verify That Accounting Lines For Visa Processing Are Written When FOP Is Invoice    VISA PROCESSING    CWT VISA
+    Verify Specific Line Is Written In The PNR X Times    RIR PLEASE VERIFY VISA TYPE AND VALIDITY    3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend PNR Using Credit Card As FOP
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend PNR Using Cash As FOP
+    Execute Simultaneous Change Handling    Amend PNR Using Cash As FOP

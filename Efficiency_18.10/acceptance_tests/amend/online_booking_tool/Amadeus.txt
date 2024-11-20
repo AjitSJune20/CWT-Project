@@ -1,0 +1,149 @@
+*** Settings ***
+Force Tags        amadeus
+Resource          ../amend_verification.txt
+Resource          ../../../resources/common/utilities.txt
+Resource          ../../../resources/common/core.txt
+Resource          ../../air_fare/air_fare_verification.txt
+
+*** Test Cases ***
+[CA][AB] Verify That Amend Panel Is Displayed And Touch Level Line Is Written When PNR Has CIC Code D7Q
+    [Tags]    19.1    us6624    ca    us6942
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Create New Booking With One Way Flight Using Default Values    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree    MSPORD/AAA    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click Finish PNR
+    Update CTG Web Hotel Matrix Remark    RM *CN/-WXR    RM*CN/-D7Q
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Is Visible
+    Verify Notes Checkbox Is Visible
+    Select Touch Level    Online assisted by OSC
+    Select Touch Reason    Air
+    Tick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *CN/-WXR
+    Verify Specific Line Is Written In The PNR    RM *EB/-CT8/-NIA
+
+[CA][AB] Verify That Touch Level Line Is Retained On Second Amend When Touch Level is Online Unassisted is D7Q
+    [Tags]    19.1    us6624    ca    us6942
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Default Value    Air
+    Select Touch Level    Online Unassisted
+    Tick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *CN/-WXR
+    Verify Specific Line Is Written In The PNR    RM *EB/-CT8/-NIA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[CA][AB] Verify That Amend Panel Is Displayed And Touch Level Line Is Written When PNR Has CIC Code AZW
+    [Tags]    19.1    us6624    ca    us6942
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Create New Booking With One Way Flight Using Default Values    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree    YVRYLW/AAC    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click Finish PNR
+    Update CTG Web Hotel Matrix Remark    RM *CN/-WXR    RM*CN/-AZW
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Is Visible
+    Verify Notes Checkbox Is Visible
+    Select Touch Level    Offline
+    Select Touch Reason    Air
+    Tick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *CN/-WXR
+    Verify Specific Line Is Written In The PNR    RM *EB/-AM5/-NIA
+
+[CA][AB] Verify That Touch Level Line Is Retained On Second Amend When Touch Level is Online Unassisted When CIC Code Is AZW
+    [Tags]    19.1    us6624    ca    us6942
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Default Value    Air
+    Select Touch Level    Online Unassisted
+    Tick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *CN/-WXR
+    Verify Specific Line Is Written In The PNR    RM *EB/-AM5/-NIA
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[CA][AB] Verify That CIC Code D7Q Is Not Updated When Touch Level Is AM/CT, ChangeBackOfficeAgentIdentifier Is on OBT untouched or exchange, PNR Has No Exchange
+    [Tags]    19.1    us6624    ca    us6942
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Create New Booking With One Way Flight Using Default Values    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree    MSPORD/AAA    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click Finish PNR
+    Update CTG Web Hotel Matrix Remark    RM *CN/-WXR    RM *CN/-D7Q    RM *EB/-CT8/-NID
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Is Visible
+    Verify Touch Reason Default Value    Customized data required by client
+    Verify Notes Checkbox Is Visible
+    Verify Notes Checkbox Is Checked
+    Select Touch Level    Offline
+    Select Touch Reason    Hotel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *CN/-D7Q
+    Verify Specific Line Is Written In The PNR    RM *EB/-AM8/-NIH
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[CA][AB] Verify That CIC Code AZW Is Not Updated When Touch Level Is AM/CT, ChangeBackOfficeAgentIdentifier Is on OBT untouched or exchange, PNR Has No Exchange
+    [Tags]    19.1    us6624    ca    us6942
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    CA QA Team Amadeus
+    Select GDS    amadeus
+    Create New Booking With One Way Flight Using Default Values    UK Amadeus 1 - SyEx ¦ CA - Amadeus Sub2    AutoOneEighteen    CanadaTrvlrThree    ORDMSP/AAA    ZZZ ¦ Test 1 ¦ CA - Amadeus Sub2
+    Click Finish PNR
+    Update CTG Web Hotel Matrix Remark    RM *CN/-WXR    RM *CN/-AZW    RM *EB/-CT5/-NID
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Is Visible
+    Verify Touch Reason Default Value    Customized data required by client
+    Verify Notes Checkbox Is Visible
+    Verify Notes Checkbox Is Checked
+    Select Touch Level    Offline
+    Select Touch Reason    Hotel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Amadeus    \    RTY
+    Verify Specific Line Is Written In The PNR    RM *CN/-AZW
+    Verify Specific Line Is Written In The PNR    RM *EB/-AM5/-NIH
+    Click Clear All
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}

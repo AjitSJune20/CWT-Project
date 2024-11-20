@@ -1,0 +1,115 @@
+*** Settings ***
+Resource          ../../resources/common/global_resources.txt
+
+*** Keywords ***
+Verify ${expected_tab} Tab Is Present
+    ${visible_tab}    Get Visible Tab
+    Run Keyword And Continue On Failure    List Should Contain Value    ${visible_tab}    ${expected_tab}    ${expected_tab} Tab should be visible
+    [Teardown]    Take Screenshot
+
+Verify Client Account Number Is Correct
+    [Arguments]    ${tab_name}    ${client_account}
+    ${actual_client_account}    Get Client Account Number From Contact Tab    ${tab_name}
+    Should Be Equal    ${client_account}    ${actual_client_account}
+
+Verify Contact Check Box Is ${expected_behaviour}
+    ${is_checked}    Get Checkbox Status    ${chkbx_Arranger}
+    Run Keyword And Continue On Failure    Run Keyword If    "${expected_behaviour.lower()}" == "checked"    Should Be True    "${is_checked}" == "True"    Contact checkbox is not checked.
+    ...    ELSE IF    "${expected_behaviour.lower()}" == "not checked"    Should Be True    "${is_checked}" == "False"    Contact checkbox is checked.
+    ...    ELSE    Log    "${expected_behaviour}" was not in the list. Kindly validate it.    WARN
+    [Teardown]    Take Screenshot
+
+Verify Email Address Is Correct
+    [Arguments]    ${tab_name}    ${expected_email}
+    ${actual_email}    Get Email Address From Contact Tab    ${tab_name}
+    Should Be Equal    ${actual_email}    ${expected_email}
+    [Teardown]
+
+Verify First Name
+    [Arguments]    ${expected_first_name}
+    ${actual_first_name}    Get First Name
+    Should Be True    "${actual_first_name.lower()}" == "${expected_first_name.lower()}"
+    [Teardown]    Take Screenshot
+
+Verify First Name Is Correct
+    [Arguments]    ${tab_name}    ${expected_firstname}
+    ${actual_firstname}    Get First Name From Contact Tab    ${tab_name}
+    Should Be Equal    ${expected_firstname}    ${actual_firstname}
+
+Verify Last Name
+    [Arguments]    ${expected_last_name}
+    ${actual_last_name}    Get Last Name
+    Should Be True    "${actual_last_name.lower()}" == "${expected_last_name.lower()}"
+    [Teardown]    Take Screenshot
+
+Verify Last Name Is Correct
+    [Arguments]    ${tab_name}    ${expected_lastname}
+    ${actual_lastname}    Get Last Name From Contact Tab    ${tab_name}
+    Should Be Equal    ${expected_lastname}    ${actual_lastname}
+
+Verify Mobile Is Correct
+    [Arguments]    ${tab_name}    ${expected_mobile}
+    ${actual_mobile}    Get Mobile From Contact Tab    ${tab_name}
+    Should Be Equal    ${expected_mobile}    ${actual_mobile}
+    [Teardown]
+
+Verify PCC/CompanyProfile/TravellerProfile Is Correct
+    [Arguments]    ${tab_name}    ${expected_pcc_company_traveller_profile}
+    ${actual_pcc_company_traveller_profile}    Get PCC/CompanyProfile/TravellerProfile From Contact Tab    ${tab_name}
+    Should Be Equal    ${expected_pcc_company_traveller_profile}    ${actual_pcc_company_traveller_profile}
+
+Verify Tab Is Not Visible
+    [Arguments]    @{expected_tabs}
+    Mouse Click    LEFT    585    65
+    Click Control Button    [NAME:ContactDetailsTabControl]
+    ${actual_tabs}    Get Visible Tab
+    : FOR    ${tab}    IN    @{expected_tabs}
+    \    Run Keyword And Continue On Failure    List Should Not Contain Value    ${actual_tabs}    ${tab}
+
+Verify Tab Is Visible
+    [Arguments]    @{expected_tabs}
+    Mouse Click    LEFT    585    65
+    Click Control Button    [NAME:ContactDetailsTabControl]
+    ${actual_tabs}    Get Visible Tab
+    : FOR    ${tab}    IN    @{expected_tabs}
+    \    Run Keyword And Continue On Failure    List Should Contain Value    ${actual_tabs}    ${tab}
+
+Verify Telephone Is Correct
+    [Arguments]    ${tab_name}    ${expected_telephone}
+    ${actual_telephone}    Get Telephone From Contact Tab    ${tab_name}
+    Should Be Equal    ${expected_telephone}    ${actual_telephone}
+    [Teardown]
+
+Verify Traveller Check Box Is ${expected_behaviour}
+    ${is_checked}    Get Checkbox Status    ${chkbx_Traveller}
+    Run Keyword And Continue On Failure    Run Keyword If    "${expected_behaviour.lower()}" == "checked"    Should Be True    "${is_checked}" == "True"    Traveller checkbox is not checked.
+    ...    ELSE IF    "${expected_behaviour.lower()}" == "not checked"    Should Be True    "${is_checked}" == "False"    Traveller checkbox is checked.
+    ...    ELSE    Log    "${expected_behaviour}" was not in the list. Kindly validate it.    WARN
+    [Teardown]    Take Screenshot
+
+Verify Traveller Details Is Written
+    [Arguments]    ${firstname}    ${lastname}    ${phone_number}    ${email}
+    Retrieve PNR Details From Travelport
+    Verify Text Contains Expected Value    ${pnr_details}    CTCM*${firstname.upper()} ${lastname.upper()}-${phone_number}
+    ${email}    Replace String    ${email}    @    //
+    Verify Text Contains Expected Value    ${pnr_details}    CTCE*${email.upper()}
+
+Verify First Name From Caller Tab Is Correct
+    [Arguments]    ${tab_name}
+    ${actual_firstname}    Get First Name From Caller Tab    ${tab_name}
+    Should Be Equal    ${actual_firstname}    ${${tab_name}_firstname}
+
+Verify Last Name From Caller Tab Is Correct
+    [Arguments]    ${tab_name}
+    ${actual_lastname}    Get Last Name From Caller Tab    ${tab_name}
+    Comment    Should Be Equal    ${expected_lastname}    ${actual_lastname}
+    Should Be Equal    ${actual_lastname}    ${${tab_name}_lastname}
+
+Verify Telephone From Caller Tab Is Correct
+    [Arguments]    ${tab_name}
+    ${actual_telephone}    Get Telephone From Caller Tab    ${tab_name}
+    Should Be Equal    ${actual_telephone}    ${${tab_name}_telephone}
+
+Verify Trip Type Is Correct
+    [Arguments]    ${expected_trip_type}
+    Verify Control Object Text Contains Expected Value    [NAME:ccboTripType]    ${expected_trip_type}

@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        header_and_ticket_text

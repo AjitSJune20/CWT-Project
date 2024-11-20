@@ -1,0 +1,277 @@
+*** Settings ***
+Force Tags        sabre    US5509    noram
+Resource          ../amend_verification.txt
+
+*** Test Cases ***
+[1S NORAM][AB] Verify That Amend Panel Is Displayed And Touch Level Line Is Written When PNR Has CIC Code D7Q
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U001RTM    en-US    rmartinez    NORAM QA
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Drummers    Bunda    James
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/143217468/
+    Select Client Account    U1SOE ¦ SOE CFA ¦ Drummers
+    Click New Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    ${EMPTY}
+    Click Panel    Client Info
+    Click Create Shell
+    Click Clear All
+    Add CN Remark    X/-CN/RTM    5X/-CN/D7Q
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    DENLAX‡UA    01Y1    WPRQ‡S2    5    1
+    Book Flight X Months From Now    LAXDEN‡UA    01Y1    WPRQ‡S3    5    10
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Reason is Visible
+    Verify Touch Level Default Value    Offline
+    Verify Notes Checkbox Is Checked
+    Select Touch Level    Offline
+    Select Touch Reason    Air
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    0
+    Verify Specific Line Is Written In The PNR    X/-CN/RTM
+    Verify Specific Line Is Written In The PNR    X/-EB/AM8/GIA
+    Populate APIS/SFPD Panel With Default Values
+    Verify Air Fare Restriction Fields Are Disabled
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[1S NORAM][AB] Verify That CIC Code Is Not Updated When Touch Level Is AM/CT, ChangeBackOfficeAgentIdentifier Is on OBT untouched or exchange, PNR Has No Exchange
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U001RTM    en-US    rmartinez    NORAM QA
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Drummers    Bunda    James
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/143217468/
+    Select Client Account    U1SOE ¦ SOE CFA ¦ Drummers
+    Click New Booking
+    Tick Not Known At Time Of Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    ${EMPTY}
+    Click Create Shell
+    Click Clear All
+    Add CN Remark    X/-CN/RTM    5X/-CN/D7Q    5X/-EB/AM8/GID
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    ORDATL‡UA    01Y1    WPRQ‡S2    5    1
+    Book Flight X Months From Now    ATLORD‡UA    01Y1    WPRQ‡S3    5    10
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Dropdown Values    Offline
+    Verify Touch Reason Is Visible
+    Verify Notes Checkbox Is Visible
+    Select Touch Level    Online assisted by OSC
+    Select Touch Reason    Hotel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    0
+    Verify Specific Line Is Written In The PNR    X/-CN/D7Q
+    Verify Specific Line Is Written In The PNR    X/-EB/CT8/GIH
+    [Teardown]    Click Clear All
+
+[1S NORAM][AB] Verify That CIC Code Is Updated When Touch Level Is AM/CT, ChangeBackOfficeAgentIdentifier Is on OBT untouched or exchange, PNR Has Exchange
+    [Tags]
+    Add Exchange Line    5T‡EXCH1    5T‡TKT1-IRP1/PA-200.00/CA-0.00/EA-295.00/NF-1890.95
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Realised Savings Code Default Value    E - Exchange
+    Click Fare Tab    Fare 2
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Is Visible
+    Select Touch Reason    Exchange
+    Tick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Handle Simultaneous Change For Verify That CIC Code Is Updated When Touch Level Is AM/CT
+    Execute Simultaneous Change Handling    Handle Simultaneous Change For Verify That CIC Code Is Updated When Touch Level Is AM/CT
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    0
+    Verify Specific Line Is Written In The PNR    X/-CN/RTM
+    Verify Specific Line Is Written In The PNR    X/-EB/AM8/NIE
+    [Teardown]
+
+[1S NORAM][NB] Verify That CIC Code Is Not Updated When Touch Level Is EB, ChangeBackOfficeAgentIdentifier Is on OBT untouched or exchange, PNR Has No Exchange
+    [Tags]
+    Open Power Express And Retrieve Profile    ${version}    Test    U001RTM    en-US    rmartinez    NORAM QA
+    Select GDS    Sabre
+    Emulate PCC    3W7F
+    Set Client And Traveler    Sabre 1 - SyEx ¦ Drummers    Bunda    James
+    Select PCC/CompanyProfile/TravellerProfile    1S/3W7F/SABRE1SYEX/143217468/
+    Select Client Account    U1SOE ¦ SOE CFA ¦ Drummers
+    Click New Booking
+    Tick Not Known At Time Of Booking
+    Click Panel    Cust Refs
+    Tick Show All Client Defined References
+    Set CDR Value    Matrix DP Code    ${EMPTY}
+    Click Create Shell
+    Click Clear All
+    Add CN Remark    X/-CN/RTM    5X/-CN/D7Q
+    Comment    Enter Specific Command On Native GDS    6CWTPTEST    ER    IG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    CDGLHR‡AF    01Y1    WPRQ‡S2    5    1
+    Book Flight X Months From Now    LHRCDG‡AF    01Y1    WPRQ‡S3    6    1
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Notes Checkbox Is Visible
+    Verify Touch Reason Is Visible
+    Select Touch Level    Online Unassisted
+    Tick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    0
+    Verify Specific Line Is Written In The PNR    X/-CN/D7Q
+    Verify Specific Line Is Written In The PNR    X/-EB/EB8
+    [Teardown]    Click Clear All
+
+[1S NORAM][AB] Verify That CIC Code Is Not Updated When Touch Level Is EB, ChangeBackOfficeAgentIdentifier Is on OBT untouched or exchange, PNR Has Exchange
+    [Tags]
+    Add Exchange Line    5T‡EXCH1    5T‡TKT1-IRP1/PA-200.00/CA-0.00/EA-295.00/NF-1890.95
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Realised Savings Code Default Value    E - Exchange
+    Click Fare Tab    Fare 2
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Is Visible
+    Verify Notes Checkbox Is Checked
+    Select Touch Level    Online Unassisted
+    UnTick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Handle Simultaneous Change For Verify CIC Code Is Not Updated When Touch Level Is EB
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    0
+    Verify Specific Line Is Written In The PNR    X/-CN/D7Q
+    Verify Specific Line Is Written In The PNR    X/-EB/EB8
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Create A Simulated Get There PNR
+    [Tags]    us24    apac    ge
+    Open Power Express And Retrieve Profile    ${version}    Test    U004HXC    en-GB    hcuellar    SG GE TEAM
+    Select GDS    Sabre
+    Set Client And Traveler    General Electric ¦ SG-GE Corporate    Bear    Len
+    Click New Booking
+    Book Flight X Months From Now    SINMNL‡PR    01Y1    WPRQ¥S1    6    5
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    AX    378282246310005    1222
+    Enter GDS Command    5X/-FF25/000000000
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Enter GDS Command    5X/-FF34/*1/EB    5X/-FF35/*1/EBI    5X/-FF36/*1/S
+    Click Finish PNR
+
+[AB] Verify That Agent Assisted Is The Default Value In Amend Panel When FF34 Is EB
+    [Tags]    us24    apac    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    PR
+    Click Panel    Amend
+    Verify Touch Level Default Value    Agent Assisted
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted
+    Populate All Panels (Except Given Panels If Any)    Amend    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify OBT Remarks Are Written In PNR    Fare 1    AA    AMI    S
+    [Teardown]
+
+[AB] Verify That Agent Assisted Is The Default Value In Amend Panel When FF34 Is AA
+    [Tags]    us24    apac    ge
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Fare Type    Published Fare
+    Set LFCC Field    PR
+    Click Panel    Amend
+    Verify Touch Level Default Value    Agent Assisted
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted
+    Populate All Panels (Except Given Panels If Any)    Amend    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    use_copy_content_from_sabre=False
+    Verify OBT Remarks Are Written In PNR    Fare 1    AA    AMI    S
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Add Exchange Line
+    [Arguments]    ${exchange_line}    ${exchange_line2}
+    : FOR    ${INDEX}    IN RANGE    5
+    \    Set Exchange Line    ${exchange_line}    ${exchange_line2}
+    \    Exit For Loop If    ${is_simultaneous} == False
+
+Handle Simultaneous Change For Verify CIC Code Is Not Updated When Touch Level Is EB
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Realised Savings Code Default Value    E - Exchange
+    Click Fare Tab    Fare 2
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Is Visible
+    Verify Notes Checkbox Is Checked
+    Select Touch Level    Online Unassisted
+    UnTick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Add CN Remark
+    [Arguments]    ${cn_remove}    ${cn_add}    ${cn_eb_line}=${EMPTY}
+    : FOR    ${INDEX}    IN RANGE    5
+    \    Retrieve PNR Details From Sabre Red    ${current_pnr}    *X/    0
+    \    ${line_number}    Get Line Number In PNR Remarks    ${cn_remove}
+    \    Enter GDS Command    5${line_number}¤    ${cn_add}    ${cn_eb_line}
+    \    Enter GDS Command    6CWTPTEST    ER
+    \    ${clip_data}    Get Clipboard Data
+    \    ${is_simulataneous}    Run Keyword And Return Status    Should Contain    ${clip_data}    SIMULTANEOUS
+    \    Enter GDS Command    IG
+    \    Exit For Loop If    ${is_simulataneous} == False
+
+Handle Simultaneous Change For Verify That CIC Code Is Updated When Touch Level Is AM/CT
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    Fare 1
+    Verify Realised Savings Code Default Value    E - Exchange
+    Click Fare Tab    Fare 2
+    Select Missed Saving Code Value    A - Alternate Airport Declined
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    Offline
+    Verify Touch Reason Is Visible
+    Select Touch Reason    Exchange
+    Tick Notes Checkbox In Amend Panel
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Set Exchange Line
+    [Arguments]    ${exchange_line}    ${exchange_line2}
+    Comment    Retrieve PNR Details From Sabre Red    ${current_pnr}    MD    0
+    Enter GDS Command    *${current_pnr}    ${exchange_line}    ${exchange_line2}    6CWTPTEST    ER
+    ${clip_data}    Get Clipboard Data Sabre
+    ${is_simultaneous}    Run Keyword And Return Status    Should Contain    ${clip_data}    SIMULTANEOUS CHANGES
+    Set Test Variable    ${is_simultaneous}
+    Enter GDS Command    IG

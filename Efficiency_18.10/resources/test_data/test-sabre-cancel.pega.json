@@ -1,0 +1,394 @@
+{
+  "CaseInfo": {
+    "CaseNumber": "SabreCancel5",
+    "Workflow": "Cancel",
+    "RecordLocator": "KZHCAE",
+    "APIntegration": "MLP1",
+    "Travelers": {
+      "isCaseTraveler": "true",
+      "isCaseArranger": "true",
+      "isCaseSponsor": "false",
+      "TravelerGDSLookUpResponseType": {
+        "ResponseMsgList": {
+          "ResponseMessage": [
+            {
+              "message": "SUCCESS"
+            }
+          ],
+          "responseCode": "10000",
+          "dateTime": "2019-04-02T19:00:18-0700"
+        },
+        "Traveler": {
+          "Client": {
+            "ClientTop": {
+            "Address": null,
+            "Any": null,
+            "guid": "A:11225",
+            "departmentCode": null,
+            "name": "Sabre 1 - SyEx",
+            "AnyAttr": null
+            },
+            "ClientSub": [
+            {
+              "clientMasterCode": null,
+              "Address": null,
+              "Any": null,
+              "guid": "A:11227",
+              "departmentCode": null,
+              "name": "Guitarists",
+              "AnyAttr": null
+            }
+            ],
+            "Any": null
+          },
+          "TravelerType": {
+            "guid": "A:D82E",
+            "name": null,
+            "type": "Non-Employee 1",
+            "typeCode": null,
+            "AnyAttr": null
+          },
+          "ClientTopTravelerType": null,
+          "BaseTravelerType": null,
+          "TravelerExternalIds": null,
+          "Item": {
+            "Person": {
+            "Name": {
+              "namePrefix": null,
+              "firstName": "Istambul",
+              "middleName": null,
+              "lastName": "Zahid",
+              "nameSuffix": null,
+              "preferredName": null,
+              "localLanguageLastName": null,
+              "localLanguageFirstName": null,
+              "AnyAttr": null
+            },
+            "Citizenships": null,
+            "CountryOfResidency": null,
+            "Languages": {
+              "Language": [
+              {
+                "languageCode": "en_US",
+                "preferredSpecified": false,
+                "AnyAttr": null
+              }
+              ],
+              "Any": null
+            },
+            "Any": null,
+            "gender": "Male",
+            "birthDate": "1980-01-01",
+            "passengerType": "Adult",
+            "AnyAttr": null
+            },
+            "Preferences": {
+            "PersonalPreferences": {
+              "PrivacyOptions": [
+              {
+                "type": "Data Protection Act",
+                "clientDpsOption": "TravelerPreference",
+                "clientInformationServiceOptionSpecified": false,
+                "lastDecisionDate": null,
+                "acceptanceFlagSpecified": false,
+                "errorGroupIdRef": null,
+                "AnyAttr": null
+              }
+              ],
+              "PersonRemark": null,
+              "Any": null
+            },
+            "AirPreferences": {
+              "Seat": {
+              "deck": "No Preference",
+              "location": "No Preference",
+              "side": "No Preference",
+              "position": "No Preference",
+              "facingDirection": null,
+              "type": "Aisle",
+              "sippCode": null,
+              "remark": null,
+              "AnyAttr": null
+              },
+              "Meals": [
+              {
+                "remark": null,
+                "mealCode": "NPML",
+                "mealFrequency": null,
+                "AnyAttr": null
+              }
+              ],
+              "AirSpecialRequest": null,
+              "Any": null,
+              "smokingPreference": "Non Smoking",
+              "eTicketFlag": true,
+              "eTicketFlagSpecified": true,
+              "homeAirport": null,
+              "homeCity": null,
+              "remark": null,
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+            },
+            "CarPreferences": {
+              "Any": null,
+              "class": "Intermediate",
+              "type": "Car",
+              "airConditioningFlag": true,
+              "airConditioningFlagSpecified": true,
+              "automaticTransmissionFlag": true,
+              "automaticTransmissionFlagSpecified": true,
+              "smokingPreference": null,
+              "remark": null,
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+            },
+            "HotelPreferences": {
+              "Any": null,
+              "roomType": "No Preference",
+              "bedType": "No Preference",
+              "propertyClass": null,
+              "smokingPreference": "Non Smoking",
+              "remark": null,
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+            },
+            "RailPreferences": {
+              "Seat": {
+              "deck": null,
+              "location": null,
+              "side": null,
+              "position": null,
+              "facingDirection": "No Preference",
+              "type": "Aisle",
+              "sippCode": null,
+              "remark": null,
+              "AnyAttr": null
+              },
+              "Meals": null,
+              "Any": null,
+              "homeStation": null,
+              "smokingPreference": "No Preference",
+              "remark": null,
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+            },
+            "Any": null
+            },
+            "PersonalCarList": null,
+            "ContactInfo": {
+            "Addresses": null,
+            "EmailAddresses": [
+              {
+              "type": "Work",
+              "emailAddress": "istambul@zahid.com",
+              "receiveEInvoice": false,
+              "receiveEInvoiceSpecified": true,
+              "receiveEItinerary": false,
+              "receiveEItinerarySpecified": true,
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+              }
+            ],
+            "Telephones": [
+              {
+              "usage": "Mobile",
+              "deviceType": "Voice",
+              "country": null,
+              "countryAccessCode": null,
+              "areaCode": null,
+              "phoneNumber": "1-1-1",
+              "stdFmtPhoneNumber": "1-11",
+              "extension": null,
+              "preferred": false,
+              "preferredSpecified": true,
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+              }
+            ],
+            "MobileDevices": null,
+            "EmergencyContacts": {
+              "Refused": false,
+              "RefusedSpecified": true,
+              "EmergencyContact": [
+              {
+                "Telephone": null,
+                "EmailAddress": null,
+                "Any": null,
+                "name": null,
+                "relationship": null,
+                "countryCode": null,
+                "errorGroupIdRef": null,
+                "AnyAttr": null
+              }
+              ]
+            },
+            "Any": null
+            },
+            "CreditCards": null,
+            "TravelDocuments": {
+            "Visas": null,
+            "Passports": null,
+            "NationalIds": null,
+            "DriverLicenses": null,
+            "Vaccinations": null,
+            "Redress": null,
+            "KnownTraveler": null,
+            "Any": null
+            },
+            "DiscountCards": null,
+            "Memberships": null,
+            "Relationships": {
+            "Arrangers": [
+              {
+              "guid": "A:4022A8FC",
+              "employeeId": "islam1",
+              "firstName": "ISLAM",
+              "lastName": "ZUBAIR",
+              "cwtTravelerId": "TQS4KS47IQ",
+              "pin": "20129793",
+              "primary": false,
+              "primarySpecified": true,
+              "receiveEInvoiceForTraveler": false,
+              "receiveEInvoiceForTravelerSpecified": true,
+              "receiveEItineraryForTraveler": false,
+              "receiveEItineraryForTravelerSpecified": true,
+              "email": "islam@zubair.com",
+              "phoneNumber": null,
+              "stdFmtPhoneNumber": null,
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+              },
+              {
+              "guid": "A:4022A903",
+              "employeeId": "bunda1",
+              "firstName": "BUNDA",
+              "lastName": "JAMES",
+              "cwtTravelerId": "TESTCYNHYS",
+              "pin": "20128789",
+              "primary": false,
+              "primarySpecified": true,
+              "receiveEInvoiceForTraveler": false,
+              "receiveEInvoiceForTravelerSpecified": true,
+              "receiveEItineraryForTraveler": false,
+              "receiveEItineraryForTravelerSpecified": true,
+              "email": "bunda@james.com",
+              "phoneNumber": null,
+              "stdFmtPhoneNumber": null,
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+              },
+              {
+              "guid": "A:4022A8FD",
+              "employeeId": "michelle1",
+              "firstName": "Michelle",
+              "lastName": "ArrangerTwo",
+              "cwtTravelerId": "T61JFG1A2C",
+              "pin": "20129794",
+              "primary": false,
+              "primarySpecified": true,
+              "receiveEInvoiceForTraveler": false,
+              "receiveEInvoiceForTravelerSpecified": true,
+              "receiveEItineraryForTraveler": false,
+              "receiveEItineraryForTravelerSpecified": true,
+              "email": "automation_arrngr2@carlsonwagonlit.com",
+              "phoneNumber": null,
+              "stdFmtPhoneNumber": null,
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+              },
+              {
+              "guid": "A:4022A912",
+              "employeeId": "sally1",
+              "firstName": "Sally",
+              "lastName": "Berck",
+              "cwtTravelerId": "TU3W7WWMRO",
+              "pin": "20129795",
+              "primary": false,
+              "primarySpecified": true,
+              "receiveEInvoiceForTraveler": false,
+              "receiveEInvoiceForTravelerSpecified": true,
+              "receiveEItineraryForTraveler": false,
+              "receiveEItineraryForTravelerSpecified": true,
+              "email": "sally@berck.com",
+              "phoneNumber": null,
+              "stdFmtPhoneNumber": null,
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+              }
+            ],
+            "Authorizers": null,
+            "Any": null
+            },
+            "ReportingFields": [
+            {
+              "Any": null,
+              "name": "MatrixDPCode",
+              "value": "G101",
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+            },
+            {
+              "Any": null,
+              "name": "DepartmentName",
+              "value": "QATESTER",
+              "errorGroupIdRef": null,
+              "AnyAttr": null
+            }
+            ],
+            "CounselorComments": null,
+            "ETicketFormOfIdList": null,
+            "Any": null,
+            "isVerified": false,
+            "isVerifiedSpecified": true,
+            "errorGroupIdRef": null,
+            "AnyAttr": null
+          },
+          "GDSList": [
+            {
+              "ClientGDSInfo": [
+                {
+                  "TravelerGDSInfo": [
+                    {
+                      "TempClientSub": null,
+                      "TempClientTopTravelerType": null,
+                      "TempBaseTravelerType": null,
+                      "gdsProfileId": "ZAHID/I20128788",
+                      "travelerRecordLocator": "143217374",
+                      "globalIndexId": null,
+                      "idGeneratedBySvs": false,
+                      "idGeneratedBySvsSpecified": true,
+                      "isGDSProfileTemp": false,
+                      "isGDSProfileTempSpecified": true,
+                      "pnrBuilderId": "96904224",
+                      "pnrBuilderName": "SABRE1SYEX"
+                    }
+                  ],
+                  "lineDefName": "",
+                  "companyProfileName": "SABRE1SYEX",
+                  "psuedoCityOfficeId": "3W7F",
+                  "clientRecordLocator": "120936496",
+                  "useExternalIdFlag": false,
+                  "useExternalIdFlagSpecified": true
+                }
+              ],
+              "name": "SABRE"
+            }
+          ],
+          "Any": null,
+          "guid": "A:4022A902",
+          "pin": "20128788",
+          "activationDate": "2015-11-10",
+          "expirationDate": "2200-01-30",
+          "scheduledPurgeDate": null,
+          "status": "Active",
+          "changeVersion": "11",
+          "isArranger": false,
+          "isArrangerSpecified": true,
+          "isAuthorizer": false,
+          "isAuthorizerSpecified": true,
+          "AnyAttr": null
+        }
+      }
+    }
+  }
+}

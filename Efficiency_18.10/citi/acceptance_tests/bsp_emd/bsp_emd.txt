@@ -1,0 +1,904 @@
+*** Settings ***
+Force Tags        galileo
+Resource          bsp_emd_verifications.txt
+Resource          ../../../resources/panels/bsp_emd.txt
+Resource          ../gds/gds_verifications.txt
+
+*** Test Case ***
+[SG] Create Mutliple Ticketed PNR For SG
+    [Tags]    citi    apac
+    Transaction Fee Data In Powerbase    1    3    #Test Data
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    I    SEM/781Q/AG
+    Set Client And Traveler    Citigroup ¦ SG-Citigroup    TEST    ALBERT
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Book Flight X Months From Now    SINSYD/SQ    01Y1    FQS1    6    7
+    Book Flight X Months From Now    SYDMEL/QF    01Y1    FQS2    6    12
+    Click Read Booking
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Select Fare Type    Published Fare
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Get Merchant Fee Amount Value    Fare 1
+    Click Fare Tab    Fare 2
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Select Fare Type    Published Fare
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 2
+    Get Fare Details    Fare 2
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 2
+    Get Merchant Fee Amount Value    Fare 2
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    No
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+    # -- Start of BSP/EMD Process
+    Verify Tickets Are Successfully Issued
+    Get Ticket And Airline Number In The GDS    2    False    Multiple
+    Set Suite Variable    ${current_pnr_for_multiple_ticket}    ${current_pnr}
+    Generate Test Data For Ticket    Multiple    SG
+
+[SG] Verify That BSP/EMD Remarks Are Written For Selected Ticket When There Are Multiple Tickets
+    [Tags]    citi    apac    us2609    us2919
+    Retrieve PNR    ${current_pnr_for_multiple_ticket}
+    Click BSP/EMD Button
+    # -- UI Validations --
+    Verify BSP/EMD Fields Are Blank
+    Verify BSP/EMD Fields Are Optional
+    Verify BSP/EMD Fields Are Disabled
+    Verify BSP/EMD Fields Are Required
+    Verify Commission Percentage Error Icon
+    Verify BSP/EMD Invalid Values
+    Set Ticket Number    ${multiple_ticket_number_collection_sg[0]}
+    Verify BSP/EMD Panel Is Green
+    Verify BSP/EMD Panel Is Red
+    #-- FOP Verification
+    Verify FOP Fields Are Pre-populated Correctly    Cash/Invoice    ${EMPTY}    ${EMPTY}    ${EMPTY}
+    Verify FOP Fields Are Disabled When Cash/Invoice
+    Verify FOP Fields Are Enabled When Cash/Invoice
+    Verify Merchant Fee Field Is Not Displayed
+    # -- Auto Populations --
+    Verify Ticket Number Field Is Pre-populated With Correct Ticket Numbers    @{multiple_ticket_number_collection_sg}
+    Set Ticket Number    ${multiple_ticket_number_collection_sg[0]}
+    Verify Airline Code Field Is Pre-populated With Correct Airline Code    ${multiple_airline_number_collection_sg[0]}
+    Set Ticket Number    ${EMPTY}
+    Verify Airline Code Field Is Pre-populated With Correct Airline Code    ${EMPTY}
+    Set Ticket Number    ${multiple_ticket_number_collection_sg[1]}
+    Verify Airline Code Field Is Pre-populated With Correct Airline Code    ${multiple_airline_number_collection_sg[1]}
+    #-- Nett Cost, Commission Amount, Total Selling Fare And Merchant Fee Computation
+    Set Ticket Number    ${multiple_ticket_number_collection_sg[0]}
+    Set Form Of Payment Type    CX
+    Set Vendor Type    VI
+    Set Credit Card Number    4444333322221111
+    Select Month    12
+    Select Year    2020
+    Set Selling Fare    5000
+    Set Tax Amount 1    15
+    Set Tax Amount 2    10
+    Set Commission Percentage    10
+    Set Transaction Fee    50
+    Verify Merchant Fee Amount Is Computed Correctly    INTL    SG
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Select Route Code    INTL
+    Set Selling Fare    255.36
+    Set Tax Amount 1    15
+    Set Tax Code 1    XT
+    Set Tax Amount 2    0
+    Set Tax Code 2    TX
+    Set Transaction Fee    32.25
+    Verify Merchant Fee Amount Is Computed Correctly    INTL    SG
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Selling Fare    23.25
+    Set Tax Amount 1    20.55
+    Set Tax Amount 2    3.33
+    Set Transaction Fee    26.23
+    Set Reference Fare    1500
+    Set Low Fare    800
+    Verify Merchant Fee Amount Is Computed Correctly    INTL    SG
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Commission Percentage    0
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Tax Amount 1    22.25
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Form Of Payment Type    ${EMPTY}
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Selling Fare    250.25
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Form Of Payment Type    Cash/Invoice
+    Select Missed Saving Code    N - Road Show
+    Select Realized Saving Code    CF - Client Negotiated Fare Saving Accepted
+    Select Class Code    YC - Economy Client Fare
+    Set Lowest Fare Carrier Code    PR
+    Set Destination    MNL
+    Get BSP/EMD Field Values
+    Click Finish PNR    panel=BSP/EMD
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #-- BSP/EMD Remarks
+    Verify Transaction Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    TRANSACTION FEE    ${transaction_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    SG
+    Verify Bsp Air Ticket Remarks Are Written In The DI Lines For BSP/EMD    ${airline_code}    ${ticket_number}    ${passenger_id}    ${selling_fare}    ${commission_amount}    ${nett_cost}
+    ...    ${tax_amount_1}    ${tax_code_1}    ${tax_amount_2}    ${tax_code_2}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${reference_fare}    ${low_fare}    ${missed_saving_code}    ${realized_saving_code}
+    ...    ${destination}    ${class_code}    ${lfcc}    ${fop_type}    SG
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    SINGAPORE AIRLINES    ${city_names_with_slash_1}    SGD ${transaction_fee_value_1}    ${EMPTY}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Itinerary Quote Remarks Are Written In RI    2    QANTAS AIRWAYS    ${city_names_with_slash_2}    SGD ${transaction_fee_value_2}    ${EMPTY}    ${changes_value_2}
+    ...    ${cancellation_value_2}    ${valid_on_value_2}    ${reroute_value_2}    ${min_stay_value_2}    ${max_stay_value_2}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    INTL    SQ    Non-OBT    SG
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #DI Lines Fare 2
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 2    Offline    INTL    QF    Non-OBT    SG
+    Verify LF RF And SF Remarks Are Written In DI    Fare 2
+    Verify Turnaround Is Written In DI    Fare 2    ${point_of_2}
+    Verify LFCC Is Written In DI    Fare 2    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 2    ${realised_code_value_2}    ${missed_code_value_2}    ${class_code_value_2}
+    Verify Booking Identifier Are Written In DI    Fare 2    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+    [Teardown]    Run Keywords    Void Tickets    ${multiple_ticket_collection_sg}
+    ...    AND    Cancel PNR Thru GDS Native    ${current_pnr_for_multiple_ticket}
+
+[SG] Verify That BSP/EMD User Interface Behaves Correctly For Void Tickets
+    [Tags]    citi    apac
+    # -- Voiding a Ticket
+    Retrieve PNR    ${current_pnr_for_multiple_ticket}
+    Click BSP/EMD Button
+    Set Ticket Number    ${multiple_ticket_number_collection_sg[0]}
+    Verify Void Ticket Number Error Icon Is Exist
+    Set Ticket Number    ${multiple_ticket_number_collection_sg[1]}
+    Verify Void Ticket Number Error Icon Is Exist
+    Set Ticket Number    ${EMPTY}
+    Verify Void Ticket Number Error Icon Is Not Exist
+    Cancel PNR Thru GDS Native    ${current_pnr}
+    Comment    Cancel PNR Thru GDS Native    ${current_pnr}    extra_command=/0S1
+
+[SG] Create Single Ticketed PNR For SG
+    [Tags]    citi    apac
+    Transaction Fee Data In Powerbase    1    3    #Test Data
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    I    SEM/781Q/AG
+    Set Client And Traveler    Citigroup ¦ SG-Citigroup    TEST    ALBERT
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Book Flight X Months From Now    SINSYD/SQ    01Y1    FQS1    6    7
+    Enter GDS Command    TMU1FS
+    Click Read Booking
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Select Fare Type    Published Fare
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Get Merchant Fee Amount Value    Fare 1
+    Click Panel    Pspt and Visa
+    Select Is Doc Valid    No
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+    # -- Start of BSP/EMD Process
+    Verify Tickets Are Successfully Issued
+    Get Ticket And Airline Number In The GDS    1    False    Single
+    Set Suite Variable    ${current_pnr_for_single_ticket_sg}    ${current_pnr}
+    Generate Test Data For Ticket    Single    SG
+
+[SG] Verify That BSP/EMD Remarks Are Written For Selected Ticket When There Is Single Ticket
+    [Tags]    citi    apac
+    Retrieve PNR    ${current_pnr_for_single_ticket_sg}
+    Click BSP/EMD Button
+    #-- Ticket Auto Population
+    Verify Airline Code Field Is Pre-populated With Correct Airline Code    ${single_airline_number_collection_sg[0]}
+    Verify Ticket Number Is Defaulted To Correct Ticket Number    ${single_ticket_number_collection_sg[0]}
+    # -- UI Validations --
+    Verify BSP/EMD Fields Are Optional
+    Verify BSP/EMD Fields Are Disabled
+    Verify BSP/EMD Fields Are Required
+    Verify Commission Percentage Error Icon
+    Verify BSP/EMD Invalid Values
+    Set Ticket Number    ${single_ticket_number_collection_sg[0]}
+    Verify BSP/EMD Panel Is Green
+    Verify BSP/EMD Panel Is Red
+    #-- FOP Verification
+    Verify FOP Fields Are Pre-populated Correctly    CC    ${str_card_type}    ${str_card_number}    ${str_exp_date}
+    Verify FOP Fields Are Disabled When Credit Card
+    Verify FOP Fields Are Enabled When Credit Card
+    Verify Merchant Fee Field Is Not Displayed
+    Click Mask Credit Card
+    Verify Credit Card Number Is Correct    ${str_card_number}
+    #-- Ticket Auto Population
+    Verify Ticket Number Field Is Pre-populated With Correct Ticket Numbers    @{single_ticket_number_collection_sg}
+    Comment    Verify Exchange Ticket Number Field Is Pre-populated With Correct Ticket Numbers    @{single_ticket_number_collection_sg}
+    Comment    Set Exchange Ticket Number    ${single_ticket_number_collection_sg[0]}
+    Comment    Verify Airline Code Field Is Pre-populated With Correct Airline Code    ${single_airline_number_collection_sg[0]}
+    Comment    Set Ticket Number    ${EMPTY}
+    Comment    Verify Airline Code Field Is Pre-populated With Correct Airline Code    ${single_airline_number_collection_sg[0]}
+    Comment    Set Exchange Ticket Number    ${EMPTY}
+    Comment    Verify Airline Code Field Is Pre-populated With Correct Airline Code    ${EMPTY}
+    Set Ticket Number    ${single_ticket_number_collection_sg[0]}
+    Verify Airline Code Field Is Pre-populated With Correct Airline Code    ${single_airline_number_collection_sg[0]}
+    #-- Nett Cost, Commission Amount, Total Selling Fare And Merchant Fee Computation
+    Set Ticket Number    ${single_ticket_number_collection_sg[0]}
+    Set Form Of Payment Type    Cash/Invoice
+    Set Form Of Payment Type    CX
+    Set Vendor Type    VI
+    Set Credit Card Number    4444333322221111
+    Select Month    12
+    Select Year    2020
+    Set Selling Fare    5000
+    Set Tax Amount 1    15
+    Set Tax Amount 2    10
+    Set Commission Percentage    10
+    Set Transaction Fee    50
+    Verify Merchant Fee Amount Is Computed Correctly    INTL    SG
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Select Route Code    INTL
+    Set Selling Fare    255.36
+    Set Tax Amount 1    15
+    Set Tax Code 1    XT
+    Set Tax Amount 2    0
+    Set Tax Code 2    TX
+    Set Transaction Fee    32.25
+    Verify Merchant Fee Amount Is Computed Correctly    INTL    SG
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Selling Fare    23.25
+    Set Tax Amount 1    20.55
+    Set Tax Amount 2    20.22
+    Set Transaction Fee    26.23
+    Set Reference Fare    1500
+    Set Low Fare    800
+    Verify Merchant Fee Amount Is Computed Correctly    INTL    SG
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Commission Percentage    0
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Tax Amount 1    22.25
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Form Of Payment Type    ${EMPTY}
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Selling Fare    250.25
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Form Of Payment Type    CX
+    Set Vendor Type    VI
+    Set Credit Card Number    4444333322221111
+    Select Month    12
+    Select Year    2020
+    Select Missed Saving Code    N - Road Show
+    Select Realized Saving Code    CF - Client Negotiated Fare Saving Accepted
+    Select Class Code    YC - Economy Client Fare
+    Set Lowest Fare Carrier Code    PR
+    Set Destination    MNL
+    Get BSP/EMD Field Values
+    Click Finish PNR    panel=BSP/EMD
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #-- BSP/EMD Remarks
+    Verify Merchant Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    Merchant Fee    ${merchant_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    SG
+    Verify Transaction Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    TRANSACTION FEE    ${transaction_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    SG
+    Verify Bsp Air Ticket Remarks Are Written In The DI Lines For BSP/EMD    ${airline_code}    ${ticket_number}    ${passenger_id}    ${selling_fare}    ${commission_amount}    ${nett_cost}
+    ...    ${tax_amount_1}    ${tax_code_1}    ${tax_amount_2}    ${tax_code_2}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${reference_fare}    ${low_fare}    ${missed_saving_code}    ${realized_saving_code}
+    ...    ${destination}    ${class_code}    ${lfcc}    ${fop_type}    SG
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    SINGAPORE AIRLINES    ${city_names_with_slash_1}    SGD ${transaction_fee_value_1}    SGD ${merchant_fee_value_1}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    INTL    SQ    Non-OBT    SG
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    INTL    SQ    Non-OBT    SG
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+    [Teardown]    Run Keywords    Void Tickets    ${single_ticket_collection_sg}
+    ...    AND    Cancel PNR Thru GDS Native    ${current_pnr_for_single_ticket_sg}
+
+[SG] Create Single Conjunction Ticketed PNR For SG
+    [Tags]    citi    apac
+    Transaction Fee Data In Powerbase    1    3    #Test Data
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    I    SEM/781Q/AG
+    Set Client And Traveler    Citigroup ¦ SG-Citigroup    TEST    ALBERT
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Book Flight X Months From Now    SINHKG/SQ    01Y1    ${EMPTY}    6    7
+    Book Flight X Months From Now    HKGSIN/SQ    01Y1    ${EMPTY}    6    12
+    Book Flight X Months From Now    SINMNL/SQ    01Y1    ${EMPTY}    6    16
+    Book Flight X Months From Now    MNLSIN/SQ    01Y1    ${EMPTY}    6    19
+    Book Flight X Months From Now    SINKUL/SQ    01Y1    FQ    6    22
+    Enter GDS Command    TMU1FS
+    Click Read Booking
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Select Fare Type    Published Fare
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Get Merchant Fee Amount Value    Fare 1
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    # -- Start of BSP/EMD Process
+    Verify Tickets Are Successfully Issued
+    Get Ticket And Airline Number In The GDS    1    True    Single
+    Set Suite Variable    ${current_pnr_for_conjunction_ticket}    ${current_pnr}
+    Generate Test Data For Ticket    Conjunction    SG
+
+[SG] Verify That BSP/EMD Remarks Are Written For Selected Ticket When There Is Single Conjunction Ticket
+    [Tags]    citi    apac
+    Retrieve PNR    ${current_pnr_for_conjunction_ticket}
+    Click BSP/EMD Button
+    # -- UI Validations --
+    Verify BSP/EMD Fields Are Optional
+    Verify BSP/EMD Fields Are Disabled
+    Verify BSP/EMD Fields Are Required
+    Verify Commission Percentage Error Icon
+    Verify BSP/EMD Invalid Values
+    Set Ticket Number    ${conjunction_ticket_number_collection_sg[0]}
+    Verify BSP/EMD Panel Is Green
+    Verify BSP/EMD Panel Is Red
+    #-- FOP Verification
+    Verify FOP Fields Are Pre-populated Correctly    CC    ${str_card_type}    ${str_card_number}    ${str_exp_date}
+    Verify FOP Fields Are Disabled When Credit Card
+    Verify FOP Fields Are Enabled When Credit Card
+    Verify Merchant Fee Field Is Not Displayed
+    Click Mask Credit Card
+    Verify Credit Card Number Is Correct    ${str_card_number}
+    # -- Auto Populations --
+    Verify Airline Code Field Is Pre-populated With Correct Airline Code    ${conjunction_airline_number_collection_sg[0]}
+    Verify Ticket Number Is Defaulted To Correct Ticket Number    ${conjunction_ticket_number_collection_sg[0]}
+    Verify Ticket Number Field Is Pre-populated With Correct Ticket Numbers    @{conjunction_ticket_number_collection_sg}
+    Set Ticket Number    ${EMPTY}
+    Verify Airline Code Field Is Pre-populated With Correct Airline Code    ${EMPTY}
+    #-- Nett Cost, Commission Amount, Total Selling Fare And Merchant Fee Computation
+    Set Ticket Number    ${conjunction_ticket_number_collection_sg[0]}
+    Set Selling Fare    5000
+    Set Tax Amount 1    15
+    Set Tax Amount 2    10
+    Set Commission Percentage    10
+    Set Transaction Fee    50
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Form Of Payment Type    Cash/Invoice
+    Set Form Of Payment Type    CX
+    Set Vendor Type    AX
+    Set Credit Card Number    4444333322221111
+    Select Month    12
+    Select Year    2020
+    Verify Merchant Fee Amount Is Computed Correctly    INTL    SG
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Select Route Code    INTL
+    Set Selling Fare    255.36
+    Set Tax Amount 1    15
+    Set Tax Code 1    XT
+    Set Tax Amount 2    0
+    Set Tax Code 2    TX
+    Set Transaction Fee    32.25
+    Verify Merchant Fee Amount Is Computed Correctly    INTL    SG
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Selling Fare    23.25
+    Set Tax Amount 1    20.55
+    Set Tax Amount 2    32.66
+    Set Transaction Fee    26.23
+    Set Reference Fare    1500
+    Set Low Fare    800
+    Verify Merchant Fee Amount Is Computed Correctly    INTL    SG
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Commission Percentage    0
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Tax Amount 1    22.25
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Form Of Payment Type    ${EMPTY}
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Selling Fare    250.25
+    Verify Commission Amount Is Computed Correctly
+    Verify Nett Cost Is Computed Correctly
+    Verify Total Selling Fare Is Computed Correctly
+    Set Form Of Payment Type    CC
+    Set Vendor Type    DC
+    Set Credit Card Number    30569309025904
+    Select Month    12
+    Select Year    2020
+    Select Missed Saving Code    N - Road Show
+    Select Realized Saving Code    CF - Client Negotiated Fare Saving Accepted
+    Select Class Code    YC - Economy Client Fare
+    Set Lowest Fare Carrier Code    PR
+    Set Destination    MNL
+    Get BSP/EMD Field Values
+    Click Finish PNR    panel=BSP/EMD
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #-- BSP/EMD Remarks
+    Verify Transaction Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    TRANSACTION FEE    ${transaction_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    SG
+    Verify Bsp Air Ticket Remarks Are Written In The DI Lines For BSP/EMD    ${airline_code}    ${ticket_number}    ${passenger_id}    ${selling_fare}    ${commission_amount}    ${nett_cost}
+    ...    ${tax_amount_1}    ${tax_code_1}    ${tax_amount_2}    ${tax_code_2}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${reference_fare}    ${low_fare}    ${missed_saving_code}    ${realized_saving_code}
+    ...    ${destination}    ${class_code}    ${lfcc}    ${fop_type}    SG
+    #RI Lines Fare 1 & Fare 2
+    Verify Itinerary Quote Remarks Are Written In RI    1    SINGAPORE AIRLINES    ${city_names_with_slash_1}    SGD ${transaction_fee_value_1}    SGD ${merchant_fee_value_1}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    INTL    SQ    Non-OBT    SG
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    INTL    SQ    Non-OBT    SG
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+    [Teardown]    Run Keywords    Void Tickets    ${conjunction_ticket_collection_sg}
+    ...    AND    Cancel PNR Thru GDS Native    ${current_pnr_for_conjunction_ticket}
+
+[AU] Create Single Ticketed PNR For AU
+    [Tags]    citi    apac    us2543
+    Transaction Fee Data In Powerbase    1    3    #Test Data
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    I    SEM/34RP/AG
+    Set Client And Traveler    Citigroup ¦ Citi AU    BEAR    LEN
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1222
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Update PNR
+    Book Flight X Months From Now    SINSYD/SQ    01Y1    FQS1    6    7
+    Enter GDS Command    TMU1FS
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Get Merchant Fee Amount Value    Fare 1
+    Click Panel    Pspt and Visa
+    Select Nationality/Citizenship    Australia
+    Set Document Number    111111
+    Select Expiry Date X Months
+    Select Is Doc Valid    No
+    Select Visa Requirement    Required
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+    # -- Start of BSP/EMD Process
+    Verify Tickets Are Successfully Issued    SEM/34RP/AG
+    Get Ticket And Airline Number In The GDS    1    False    Single
+    Generate Test Data For Ticket    Single    AU
+
+[AU] Verify That BSP/EMD Remarks Are Written For Selected Ticket When There Is Single Ticket
+    [Tags]    citi    apac
+    Retrieve PNR    ${current_pnr}
+    Click BSP/EMD Button
+    # -- Merchant Fee Computation
+    Set Form Of Payment Type    Cash/Invoice
+    Set Form Of Payment Type    CX
+    Set Vendor Type    VI
+    Set Credit Card Number    4444333322221111
+    Select Month    12
+    Select Year    2020
+    Set Selling Fare    5000
+    Set Tax Amount 1    15
+    Set Tax Amount 2    10
+    Set Transaction Fee    50.00
+    Verify Merchant Fee Amount Is Computed Correctly    ${EMPTY}    AU
+    Select Route Code    DOM
+    Set Selling Fare    23.25
+    Set Tax Amount 1    20.55
+    Set Tax Amount 2    0
+    Verify Merchant Fee Amount Is Computed Correctly    DOM    AU
+    Select Route Code    INT
+    Set Selling Fare    23.25
+    Set Tax Amount 1    20.55
+    Set Tax Amount 2    40.25
+    Verify Merchant Fee Amount Is Computed Correctly    INT    AU
+    Select Route Code    TTAS
+    Set Selling Fare    256.25
+    Set Tax Amount 1    23.34
+    Set Tax Code 1    XT
+    Set Tax Amount 2    20.25
+    Set Tax Code 2    TX
+    Set Reference Fare    200.00
+    Set Low Fare    50.00
+    Verify Merchant Fee Amount Is Computed Correctly    TTAS    AU
+    Select Route Code    INT
+    Populate Air MI With Default Values
+    Get BSP/EMD Field Values
+    Click Finish PNR    panel=BSP/EMD
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #-- BSP/EMD Remarks
+    Verify Merchant Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    Merchant Fee    ${merchant_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    AU
+    Verify Transaction Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    TRANSACTION FEE    ${transaction_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    AU
+    Verify Bsp Air Ticket Remarks Are Written In The DI Lines For BSP/EMD    ${airline_code}    ${ticket_number}    ${passenger_id}    ${selling_fare}    ${commission_amount}    ${nett_cost}
+    ...    ${tax_amount_1}    ${tax_code_1}    ${tax_amount_2}    ${tax_code_2}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${reference_fare}    ${low_fare}    ${missed_saving_code}    ${realized_saving_code}
+    ...    ${destination}    ${class_code}    ${lfcc}    ${fop_type}    AU
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    SINGAPORE AIRLINES    ${city_names_with_slash_1}    AUD ${transaction_fee_value_1}    AUD ${merchant_fee_value_1}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    INTL    SQ    Non-OBT    AU
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    INTL    SQ    Non-OBT    AU
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+
+[AU] Verify That FCX5 Is Written In The DI Lines For BSP Air Ticket, Merchant Fee And Transaction Fee When FOP Is CA And Route Code INT
+    [Tags]    citi    apac    us2543
+    Retrieve PNR    ${current_pnr}
+    Click BSP/EMD Button
+    # -- Merchant Fee Computation
+    Set Form Of Payment Type    Cash/Invoice
+    Set Form Of Payment Type    CX
+    Set Vendor Type    CA
+    Set Credit Card Number    5195880630458791
+    Select Month    06
+    Select Year    2020
+    Set Selling Fare    256.25
+    Set Tax Amount 1    23.34
+    Set Tax Code 1    XT
+    Set Tax Amount 2    20.25
+    Set Tax Code 2    TX
+    Select Route Code    INT
+    Verify Merchant Fee Amount Is Computed Correctly    INT    AU
+    Set Commission Percentage    3
+    Set Transaction Fee    50.55
+    Set Reference Fare    200.00
+    Set Low Fare    50.00
+    Populate Air MI With Default Values
+    Get BSP/EMD Field Values
+    Click Finish PNR    panel=BSP/EMD
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #-- BSP/EMD Remarks
+    Verify Merchant Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    Merchant Fee    ${merchant_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    AU
+    Verify Transaction Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    TRANSACTION FEE    ${transaction_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    AU
+    Verify Bsp Air Ticket Remarks Are Written In The DI Lines For BSP/EMD    ${airline_code}    ${ticket_number}    ${passenger_id}    ${selling_fare}    ${commission_amount}    ${nett_cost}
+    ...    ${tax_amount_1}    ${tax_code_1}    ${tax_amount_2}    ${tax_code_2}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${reference_fare}    ${low_fare}    ${missed_saving_code}    ${realized_saving_code}
+    ...    ${destination}    ${class_code}    ${lfcc}    ${fop_type}    AU
+
+[AU] Verify That FCX5 Is Written In The DI Lines For BSP Air Ticket, Merchant Fee And Transaction Fee When FOP Is CA And Route Code TTAS
+    [Tags]    citi    apac    us2543
+    Retrieve PNR    ${current_pnr}
+    Click BSP/EMD Button
+    # -- Merchant Fee Computation
+    Set Form Of Payment Type    Cash/Invoice
+    Set Form Of Payment Type    CX
+    Set Vendor Type    CA
+    Set Credit Card Number    5195880630458723
+    Select Month    08
+    Select Year    2019
+    Set Selling Fare    235.25
+    Set Tax Amount 1    20.25
+    Set Tax Code 1    ZB
+    Set Tax Amount 2    30.25
+    Set Tax Code 2    CD
+    Select Route Code    TTAS
+    Verify Merchant Fee Amount Is Computed Correctly    TTAS    AU
+    Set Commission Percentage    1
+    Set Transaction Fee    55.55
+    Set Reference Fare    230.03
+    Set Low Fare    30.00
+    Populate Air MI With Default Values
+    Get BSP/EMD Field Values
+    Click Finish PNR    panel=BSP/EMD
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #-- BSP/EMD Remarks
+    Verify Merchant Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    Merchant Fee    ${merchant_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    AU
+    Verify Transaction Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    TRANSACTION FEE    ${transaction_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    AU
+    Verify Bsp Air Ticket Remarks Are Written In The DI Lines For BSP/EMD    ${airline_code}    ${ticket_number}    ${passenger_id}    ${selling_fare}    ${commission_amount}    ${nett_cost}
+    ...    ${tax_amount_1}    ${tax_code_1}    ${tax_amount_2}    ${tax_code_2}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${reference_fare}    ${low_fare}    ${missed_saving_code}    ${realized_saving_code}
+    ...    ${destination}    ${class_code}    ${lfcc}    ${fop_type}    AU
+
+[AU] Verify That FCX5 Is Written In The DI Lines For BSP Air Ticket, Merchant Fee And Transaction Fee When FOP Is CA And Route Code DOM
+    [Tags]    citi    apac    us2543
+    Retrieve PNR    ${current_pnr}
+    Click BSP/EMD Button
+    # -- Merchant Fee Computation
+    Set Form Of Payment Type    Cash/Invoice
+    Set Form Of Payment Type    CX
+    Set Vendor Type    CA
+    Set Credit Card Number    5195880630458444
+    Select Month    07
+    Select Year    2019
+    Set Selling Fare    236.25
+    Set Tax Amount 1    25.34
+    Set Tax Code 1    ZT
+    Set Tax Amount 2    12.25
+    Set Tax Code 2    TT
+    Select Route Code    DOM
+    Verify Merchant Fee Amount Is Computed Correctly    DOM    AU
+    Set Commission Percentage    4
+    Set Transaction Fee    53.57
+    Set Reference Fare    340.00
+    Set Low Fare    3.00
+    Populate Air MI With Default Values
+    Get BSP/EMD Field Values
+    Click Finish PNR    panel=BSP/EMD
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #-- BSP/EMD Remarks
+    Verify Merchant Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    Merchant Fee    ${merchant_fee_no_gst}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    AU
+    Verify Transaction Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    TRANSACTION FEE    ${transaction_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    AU
+    Verify Bsp Air Ticket Remarks Are Written In The DI Lines For BSP/EMD    ${airline_code}    ${ticket_number}    ${passenger_id}    ${selling_fare}    ${commission_amount}    ${nett_cost}
+    ...    ${tax_amount_1}    ${tax_code_1}    ${tax_amount_2}    ${tax_code_2}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${reference_fare}    ${low_fare}    ${missed_saving_code}    ${realized_saving_code}
+    ...    ${destination}    ${class_code}    ${lfcc}    ${fop_type}    AU
+    [Teardown]    Run Keywords    Void Tickets    ${single_ticket_collection_au}    emulate_command=SEM/34RP/AG
+    ...    AND    Cancel PNR Thru GDS Native    ${current_pnr}    extra_command=/0S1
+
+[NZ] Create Single Ticketed PNR For NZ
+    [Tags]    citi    apac    us2543
+    Transaction Fee Data In Powerbase    1    3    #Test Data
+    Open Power Express And Retrieve Profile    ${version}    Test    u004hxc    en-GB    hcuellar    CITI APAC
+    Select GDS    Galileo
+    Enter Specific Command On Native GDS    I    SEM/34VP/AG
+    Set Client And Traveler    Citigroup ¦ NZ-Citi    BEAR    LEN
+    Click New Booking
+    Click Panel    Client Info
+    Manually Set Value In Form Of Payment    VI    4444333322221111    1220
+    Populate All Panels (Except Given Panels If Any)    Client Info
+    Click Update PNR
+    Book Flight X Months From Now    AKLSYD/QF    01Y1    FQS1    6    7
+    Enter GDS Command    TMU1FS
+    Click Read Booking
+    Click Panel    Air Fare
+    Verify No Fares Found Message Is Not Present
+    Set High Fare Field With Charged Fare
+    Set Low Fare Field With Charged Fare
+    Populate Air Fare Savings Code Using Default Values
+    Select Fare Restriction    Fully Flexible
+    Select Turnaround
+    Set LFCC Field    QF
+    Get Route Code Value    Fare 1
+    Get Fare Details    Fare 1
+    Click Pricing Extras Tab
+    Select Airline Commission Percentage    0
+    Get Transaction Fee Amount Value    Fare 1
+    Get Merchant Fee Amount Value    Fare 1
+    Click Panel    Pspt and Visa
+    Select Nationality/Citizenship    New Zealand
+    Set Document Number    111111
+    Select Expiry Date X Months
+    Select Is Doc Valid    No
+    Select Visa Requirement    Required
+    Get Travel Document Details    0
+    Get Visa Requirements    0
+    Click Panel    Delivery
+    Set Header Text    Header Text Test
+    Set Ticket Text    Ticket Text Test
+    Populate All Panels (Except Given Panels If Any)    Air Fare    Pspt and Visa
+    Click Finish PNR
+    # -- Start of BSP/EMD Process
+    Verify Tickets Are Successfully Issued    SEM/34VP/AG
+    Get Ticket And Airline Number In The GDS    1    False    Single
+    Generate Test Data For Ticket    Single    NZ
+
+[NZ] Verify That BSP/EMD Remarks Are Written For Selected Ticket When There Is Single Ticket
+    [Tags]    citi    apac    us2543
+    Retrieve PNR    ${current_pnr}
+    Click BSP/EMD Button
+    # -- Merchant Fee Computation
+    Set Form Of Payment Type    Cash/Invoice
+    Set Form Of Payment Type    CX
+    Set Vendor Type    VI
+    Set Selling Fare    5000
+    Set Tax Amount 1    15
+    Set Tax Amount 2    10
+    Set Transaction Fee    50
+    Verify Merchant Fee Amount Is Computed Correctly    ${EMPTY}    NZ
+    Select Route Code    TTAS
+    Set Selling Fare    255.36
+    Set Tax Amount 1    15
+    Set Tax Amount 2    0
+    Set Transaction Fee    0
+    Verify Merchant Fee Amount Is Computed Correctly    TTAS    NZ
+    Set Selling Fare    23.25
+    Set Tax Amount 1    20.55
+    Set Tax Amount 2    23.00
+    Verify Merchant Fee Amount Is Computed Correctly    TTAS    NZ
+    # -- Populate All Fields
+    Set Credit Card Number    4444333322221111
+    Select Month    01
+    Select Year    2020
+    Set Tax Code 1    NZ
+    Set Tax Code 2    XT
+    Set Commission Percentage    3
+    Set Transaction Fee    50.00
+    Populate Air MI With Default Values
+    Get BSP/EMD Field Values
+    Click Finish PNR    panel=BSP/EMD
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #-- BSP/EMD Remarks
+    Verify Merchant Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    Merchant Fee    ${merchant_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    NZ
+    Verify Transaction Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    Transaction Fee    ${transaction_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    NZ
+    Verify Bsp Air Ticket Remarks Are Written In The DI Lines For BSP/EMD    ${airline_code}    ${ticket_number}    ${passenger_id}    ${selling_fare}    ${commission_amount}    ${nett_cost}
+    ...    ${tax_amount_1}    ${tax_code_1}    ${tax_amount_2}    ${tax_code_2}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${reference_fare}    ${low_fare}    ${missed_saving_code}    ${realized_saving_code}
+    ...    ${destination}    ${class_code}    ${lfcc}    ${fop_type}    NZ
+    #RI Lines Fare 1 & Fare 2
+    Verify Passport And Visa Remarks Are Written In RI    ${nationality_0}    ${passport_valid_0}    ${country_visited_0}    ${visa_required_0}
+    Verify Itinerary Quote Remarks Are Written In RI    1    QANTAS AIRWAYS    ${city_names_with_slash_1}    NZD ${transaction_fee_value_1}    NZD ${merchant_fee_value_1}    ${changes_value_1}
+    ...    ${cancellation_value_1}    ${valid_on_value_1}    ${reroute_value_1}    ${min_stay_value_1}    ${max_stay_value_1}
+    Verify Header And Ticket Text Are Writen In RI    Header Text Test    Ticket Text Test
+    #DI Lines Fare 1
+    Verify Transaction Fee Remarks Are Written In The DI Lines    Fare 1    Offline    TTAS    QF    Non-OBT    NZ
+    Verify Merchant Fee Remarks Are Written In The DI Lines    Fare 1    TTAS    QF    Non-OBT    NZ
+    Verify LF RF And SF Remarks Are Written In DI    Fare 1
+    Verify Turnaround Is Written In DI    Fare 1    ${point_of_1}
+    Verify LFCC Is Written In DI    Fare 1    QF
+    Verify Realised, Missed and Class Code Are Written In DI    Fare 1    ${realised_code_value_1}    ${missed_code_value_1}    ${class_code_value_1}
+    Verify Booking Identifier Are Written In DI    Fare 1    AB    GAL    G
+    #Notepad Lines
+    Verify Specific Remark Is Written In The PNR    INV.AUTOMATION@CARLSONWAGONLIT.COM    #e-mail invoice
+    Verify Specific Remark Is Written In The PNR    HZ*CONF*SEND TO MAIL AUTOMATION#CARLSONWAGONLIT.COM    #notepad mail
+
+[NZ] Verify That FCX5 Is Written In The DI Lines For BSP Air Ticket, Merchant Fee And Transaction Fee When FOP Is MC
+    [Tags]    citi    apac    us2543
+    Retrieve PNR    ${current_pnr}
+    Click BSP/EMD Button
+    Set Form Of Payment Type    Cash/Invoice
+    Set Form Of Payment Type    CX
+    Set Vendor Type    MC
+    Set Credit Card Number    5555555555554444
+    Select Month    08
+    Select Year    2020
+    Set Selling Fare    5000.00
+    Set Tax Amount 1    15.00
+    Set Tax Code 1    NZ
+    Set Tax Amount 2    10.00
+    Set Tax Code 2    XT
+    Set Commission Percentage    3
+    Set Transaction Fee    50.00
+    Select Route Code    TTAS
+    Verify Merchant Fee Amount Is Computed Correctly    TTAS    NZ
+    Populate Air MI With Default Values
+    Get BSP/EMD Field Values
+    Click Finish PNR    panel=BSP/EMD
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    #-- BSP/EMD Remarks
+    Verify Merchant Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    Merchant Fee    ${merchant_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    NZ
+    Verify Transaction Fee Remarks Are Written In The DI Lines For BSP/EMD    ${route_code_1}    ${airline_code}    Transaction Fee    ${transaction_fee}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${fop_type}    NZ
+    Verify Bsp Air Ticket Remarks Are Written In The DI Lines For BSP/EMD    ${airline_code}    ${ticket_number}    ${passenger_id}    ${selling_fare}    ${commission_amount}    ${nett_cost}
+    ...    ${tax_amount_1}    ${tax_code_1}    ${tax_amount_2}    ${tax_code_2}    ${vendor_type}    ${credit_card_number}
+    ...    ${expiry_month}    ${expiry_year}    ${reference_fare}    ${low_fare}    ${missed_saving_code}    ${realized_saving_code}
+    ...    ${destination}    ${class_code}    ${lfcc}    ${fop_type}    NZ
+    [Teardown]    Run Keywords    Void Tickets    ${single_ticket_collection_nz}    emulate_command=SEM/34VP/AG
+    ...    AND    Cancel PNR Thru GDS Native    ${current_pnr}    extra_command=/0S1
+
+*** Keywords ***

@@ -1,0 +1,33 @@
+*** Settings ***
+Resource          unused_documents_verification.txt
+
+*** Test Cases ***
+[NB]Verify that selected unused document using PNR button and double click are written after new booking
+    [Tags]    sabre    us730    noram
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO SABRE
+    Select GDS    sabre
+    Set Client And Traveler    Sabre 16 - Auto ¦ US3700    AutoSixteenSeven    NoramTrvlrEleven
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    2
+    Verify Unused Document Has Been Sent To PNR    2
+    Click New Booking
+    Click Tab In Top Left    Unused Documents
+    Verify Unused Document Has Been Sent To PNR    2
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *T‡
+    Verify Specific Line Is Written In The PNR    T‡EXCH-XX FRA1111111111 13JUN17 1 AUTOSIXTEENSEVEN/NORAMTRV
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Click Tab In Top Left    GDS Screen
+    Book Flight X Months From Now    ORDMSP‡UA    01Y1    WPRQ    5    10
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Tab In Top Left    Unused Documents
+    Select Unused Document Using Row Number    True    3
+    Verify Unused Document Has Been Sent To PNR    2    3
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *T‡
+    Verify Specific Line Is Written In The PNR    T‡EXCH-XX FRA1111111111 13JUN17 1 AUTOSIXTEENSEVEN/NORAMTRV
+    Verify Specific Line Is Written In The PNR    T‡EXCH-PR 0795424343243 07JUN17 32123 AUTOSIXTEENSEVEN/NORA
+    Click Finish PNR
+    Retrieve PNR Details From Sabre Red    ${EMPTY}    *T‡
+    Verify Specific Line Is Written In The PNR    T‡EXCH-XX FRA1111111111 13JUN17 1 AUTOSIXTEENSEVEN/NORAMTRV
+    Verify Specific Line Is Written In The PNR    T‡EXCH-PR 0795424343243 07JUN17 32123 AUTOSIXTEENSEVEN/NORA

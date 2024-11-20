@@ -1,0 +1,193 @@
+*** Settings ***
+Force Tags        galileo    apac
+Resource          ../gds_verification.txt
+
+*** Test Cases ***
+[NB AU] Verify That Tax Amount Is Calculated Excluding UO And Written In The PNR
+    [Tags]    us2911    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationAU    AU AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo AU 16 - Auto ¦ US3859    AutoSixteenSeven    ApacTrvlrSeven
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SYDLSY    01Y1    FQS1    6
+    Book Flight X Months From Now    LSYSYD    01Y1    FQS2    6    5
+    Click Read Booking
+    Populate Fare Tab With Default Values    Fare 1
+    Select Route Code Value    DOM
+    Populate Fare Tab With Default Values    Fare 2
+    Select Route Code Value    DOM
+    Enter GDS Command    T.T*
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FF1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Tax Amount For Specific Tax Type On Fare X    UO    Fare 1
+    Retrieve PNR Details From Travelport    ${current_pnr}    *RI
+    Get Itinerary Remarks From Galileo For Fare X    Fare 1
+    Verify Total Amount Written In The PNR For Fare 1 Excludes UO
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FF2
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Get Tax Amount For Specific Tax Type On Fare X    UO    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}    *RI
+    Get Itinerary Remarks From Galileo For Fare X    Fare 2
+    Verify Total Amount Written In The PNR For Fare 2 Excludes UO
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB NZ] Verify That Tax Amount Is Calculated Excluding UO And Written In The PNR
+    [Tags]    us2911    apac
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationNZ    NZ AUTO GALILEO
+    Select GDS    Galileo
+    Create New Booking With Round Trip Air Flight Using Default Values    Galileo NZ 16 - Auto ¦ US3697    AutoSixteenSeven    ApacTrvlrSixteen    AKLCHC/NZ    01Y1    FQS1
+    ...    CHCAKL/NZ    01Y1    FQS2    ${EMPTY}    AIR FARE
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Enter GDS Command    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FF1
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 1
+    Get Tax Amount For Specific Tax Type On Fare X    NZ    Fare 1
+    Retrieve PNR Details From Travelport    ${current_pnr}    *RI
+    Get Itinerary Remarks From Galileo For Fare X    Fare 1
+    Verify Total Amount Written In The PNR For Fare 1 Excludes UO
+    Retrieve PNR Details From Travelport    ${current_pnr}    *FF2
+    Get Base Fare And Tax From Galileo For Fare X Tab    Fare 2
+    Get Tax Amount For Specific Tax Type On Fare X    NZ    Fare 2
+    Retrieve PNR Details From Travelport    ${current_pnr}    *RI
+    Get Itinerary Remarks From Galileo For Fare X    Fare 2
+    Verify Total Amount Written In The PNR For Fare 2 Excludes UO
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB HK] Verify That HK Agent Backoffice Identifier Is Written In The PNR
+    [Tags]    us4163
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationHK    # HK AUTO GALILEO
+    Select GDS    Galileo
+    Comment    Previous Test Data: Galileo HK 15 - Auto ¦ US2447, AutoFifteenTwelve, OptimizeTrvlrThree
+    Create New Booking With One Way Flight Using Default Values    Galileo HK 16 - Auto ¦ US2816    AutoSixteenTwo    ApacTrvlrThree    MSPORD/UA
+    Handle Ticketing Information Error - Galileo GDS    T.T*
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    *0107*8888
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB UK] Verify That Correct Date Of Birth Is Written To NPHP*DOB Remark
+    [Tags]    emea    uk    uat    de6360    pilot
+    [Setup]
+    Open Power Express And Retrieve Profile    ${version}    Pilot    u002txc    en-GB    AutomationUK    UK Head Office Test Team
+    Select GDS    Galileo
+    Emulate PCC    YW9
+    Set Client And Traveler    UK STAFF TEST ¦ UK-STAFF TEST    TEST    IAIN    \    True
+    Set Client And Traveler    UK STAFF TEST ¦ UK-STAFF TEST    TEST    ARRANGER
+    Click Tab In Contact Details    Traveller
+    Select PCC/CompanyProfile/TravellerProfile    1G/YW9/STAFF/TEST IAIN50683815
+    Select Client Account    208154 ¦ CWT BUSINESS STAFF ACCOUNT ¦ UK-STAFF TEST
+    Set Date Of Birth Using Random Birthdate    1980
+    Click New Booking
+    Click Panel    Cust Refs
+    Populate Cust Refs Panel With Default Values
+    Click Panel    Client Info
+    Select Form Of Payment    PORTRAIT-A-H-C-R/VI************1111/D1018-IAIN TEST'S CARD
+    Click Update PNR
+    Book Flight X Months From Now    LHRCDG/AF    01Y1    FQ    6
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Client Fees
+    Click Panel    Client Fees
+    Select Fee From Dropdown    UK Virtual Card Payment Fee    No Virtual Card Payment
+    Click Finish PNR Expecting Popup Message    The following profile attributes have been added/changed:${\n}Date of Birth - ********${\n}${\n}Store Profile Update in Portrait?
+    Verify Modified Date Of Birth Is Written
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Booking With B-Leisure Trip Type And Write B-Leisure SO Should Write The Wings Remark Upon Finish PNR
+    [Tags]    uk    us6135
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-GB    AutomationUK    UK AUTO GALILEO
+    Select GDS    Galileo
+    Set Client And Traveler    Galileo UK 15 - Auto ¦ UK-STAFF TEST AUTO    LinkedTraveller    John
+    Verify Trip Type Value Is Correct    Business
+    Click New Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Update PNR
+    Select Trip Type Value    B-Leisure
+    Book One Way Flight X Months From Now    LHRCDG/AF    6
+    Click Read Booking
+    Verify Trip Type Value Is Correct    B-Leisure
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}    *DI
+    Verify Specific Line Is Written In The PNR    *7193*P1.BLFEE
+    Verify Duplicate Remarks    Galileo
+    [Teardown]    Click Clear All
+
+[AB] Verify That Existing Booking With B-Leisure Wings Remark Should Retain The Trip Type To B-Leisure Upon Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Trip Type Value Is Correct    B-Leisure
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend B-Leisure Wings Remark Test Case
+    Retrieve PNR Details From Travelport    ${current_pnr}    *DI
+    Verify Specific Line Is Written In The PNR    *7193*P1.BLFEE
+    Verify Duplicate Remarks    Galileo
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Get Current Birthdate
+    Retrieve PNR Details From Travelport
+    ${previous_birthdate} =    Get Lines Containing String    ${pnr_details}    NPHP*DOB
+    ${previous_birthdate} =    Get String Using Marker    ${previous_birthdate}    -    ${SPACE}
+    Set Test Variable    ${previous_birthdate}
+
+Set Date Of Birth Using Random Birthdate
+    [Arguments]    ${preferred_year}
+    ${birthdate}    Generate Random Date    ${preferred_year}    %d/%m/%Y
+    Set Test Variable    ${birthdate}
+    Set Date Of Birth    ${birthdate}
+
+Verify Modified Date Of Birth Is Written
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    ${actual_birthdate} =    Get Lines Containing String    ${pnr_details}    HP*DOB-
+    ${actual_birthdate} =    Get String Using Marker    ${actual_birthdate}    -    /
+    ${modified_birthdate} =    Convert Date    ${birthdate}    result_format=%d%b%y    exclude_millis=True    date_format=%d/%m/%Y
+    Verify Actual Value Matches Expected Value    ${actual_birthdate}    ${modified_birthdate.upper()}
+
+Verify Total Amount Written In The PNR For Fare ${fare_number} Excludes ${tax_type}
+    ${total_tax_amount}    Evaluate    ${tax_amount_${fare_number}} - ${x_tax_value_${fare_number}}
+    Verify Text Contains Expected Value    ${pnr_details}    TAX: ${currency} ${total_tax_amount}
+    Verify Text Contains Expected Value    ${pnr_details}    GST: ${currency} ${x_tax_value_${fare_number}}
+
+Enter DI Remarks
+    Enter GDS Command    DI.FT-FOP/*1/CASH    DI.FT-FF32/*1/50    DI.FT-FF38/*1/E    DI.FT-FF81/*1/SQ    DI.FT-FF30/*1/CF    DI.FT-FF7/*1/DEL
+    ...    DI.FT-LF/*1/2976.40    DI.FT-RF/*1/3796.40    DI.FT-EC/*1/L    DI.FT-MS/PC35/V021007/TKFF01/PX1    DI.FT-MSX/S50.00/SF50.00/C50.00/SG01    DI.FT-MSX/FS
+    ...    DI.FT-MSX/FF81-SQ/FF35-GAL/FF36-G/FF47-CWT    DI.FT-MSX/FF TRANSACTION FEE    DI.FT-OS/CF
+
+Enter RI Remarks
+    ${sg_country}    Run Keyword And Return Status    Should Contain    ${TEST NAME}    SG]
+    ${hk_country}    Run Keyword And Return Status    Should Contain    ${TEST NAME}    HK]
+    Run Keyword If    "${sg_country}" == "True"    Enter GDS Command    RI.***************** FARE QUOTE PER PAX ****************    RI.********* SUBJECT TO CHANGE WITHOUT NOTICE *********    RI.FOR SINGAPORE/SYDNEY    RI.ADULT FARE: SGD 2530 PLUS 446.4 TAXES
+    ...    RI.PLUS TRANSACTION FEE: 50    RI.TOTAL QUOTE: SGD 3026.4    RI.FARE VALID ONLY ON QANTAS    RI.MIN STAY: NON * MAX STAY: 12 MONTHS    RI.*********** NO LOWER FARE OPTION AVAILABLE ***************
+    ...    ELSE IF    "${hk_country}" == "True"    Enter GDS Command    RI.***************** FARE QUOTE PER PAX ****************    RI.********* SUBJECT TO CHANGE WITHOUT NOTICE *********    RI.FOR HONGKONG/SYDNEY
+    ...    RI.ADULT FARE: HKD 2530 PLUS 446.4 TAXES    RI.PLUS TRANSACTION FEE: 50    RI.TOTAL QUOTE: HKD 3026.4    RI.FARE VALID ONLY ON QANTAS    RI.MIN STAY: NON * MAX STAY: 12 MONTHS    RI.*********** NO LOWER FARE OPTION AVAILABLE ***************
+    ...    ELSE    Log    No RI Remarks Entered    WARN
+
+Enter DI Remarks From Tpro
+    Enter GDS Command    DI.FT-SF/*1/1065    DI.FT-FOP/*1/CASH    DI.FT-FF8/*1/FF    DI.FT-FF34/*1/AB    DI.FT-FF35/*1/GAL    DI.FT-FF36/*1/G
+    ...    DI.FT-FF31/*1/N    DI.FT-FF38/*1/E    DI.FT-FF81/*1/QF    DI.FT-FF7/*1/MNL    DI.FT-FF30/*1/CF    DI.FT-LF/*1/1255
+    ...    DI.FT-RF/*1/1255    DI.FT-EC/*1/B    DI.FT-MS/PC41/V000001/TKFF01/PX1    DI.FT-MSX/A30/SF30/C30/FS    DI.FT-MSX/FF81-QF/FF35-GAL/FF36-G/FF47-CWT    DI.FT-MS/PC50/V000001/TKFF01/PX1
+    ...    DI.FT-MSX/A-20/SF-20/C-20/FS/SG01    DI.FT-MSX/FF81-QF/FF35-GAL/FF36-G/FF47-CWT
+
+Enter RI Remarks From Tpro
+    Enter GDS Command    RI.***************** FARE QUOTE PER PAX ****************    RI.********* SUBJECT TO CHANGE WITHOUT NOTICE *********    RI.FOR HONG KONG/MANILA    RI.ADULT FARE: HKD 1045 PLUS 210 TAXES    RI.PLUS FUEL CHARGE SERVICE FEE: 30    RI.TOTAL QUOTE: HKD 1285
+    ...    RI.************ NO LOWER FARE OPTION AVAILABLE ***************
+
+Verify Trip Type Value Is Correct
+    [Arguments]    ${expected_trip_type}
+    Verify Control Object Text Contains Expected Value    [NAME:ccboTripType]    ${expected_trip_type}
+
+Amend B-Leisure Wings Remark Test Case
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Trip Type Value Is Correct    B-Leisure
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

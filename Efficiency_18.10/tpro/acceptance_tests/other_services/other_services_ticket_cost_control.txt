@@ -1,0 +1,593 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Apply Formula Is Applied
+    [Arguments]    ${country}    ${merchant_fee_percentage}    ${is_commission_percent}    ${is_discount_percent}    ${tfinmf}
+    ${computed_commission}    ${computed_total_selling_price}    ${computed_nett_cost_in_eo}    ${computed_selling_price}    ${computed_discount}    ${computed_gross_fare}    ${computed_merchant_fee}
+    ...    Compute Consolidator And LCC Fees    ${country}    ${merchant_fee_percentage}    ${is_commission_percent}    ${is_discount_percent}    ${tfinmf}
+    Set Test Variable    ${computed_total_selling_price}
+    Set Test Variable    ${computed_nett_cost_in_eo}
+    Set Test Variable    ${computed_commission}
+    Comment    Run Keyword If    "${is_discount_percent.lower()}" == "true"    Set Test Variable    ${computed_discount}
+    Set Test Variable    ${computed_discount}
+    Set Test Variable    ${computed_gross_fare}
+    Set Test Variable    ${computed_merchant_fee}
+
+Apply Formula Is Not Applied
+    [Arguments]    ${country}    ${merchant_fee_percentage}    ${is_commission_percent}    ${is_discount_percent}    ${tfinmf}
+    ${computed_nett_cost_in_eo}    ${computed_total_selling_price}    Compute Consolidator And LCC Fees    ${country}    ${merchant_fee_percentage}    ${is_commission_percent}    ${is_discount_percent}
+    ...    ${tfinmf}
+    Set Test Variable    ${computed_total_selling_price}
+    Set Test Variable    ${computed_nett_cost_in_eo}
+
+Compute Consolidator And LCC Fees For Other Services
+    [Arguments]    ${country}    ${merchant_fee_percentage}    ${is_commission_percent}=false    ${is_discount_percent}=false    ${tfinmf}=false
+    ${is_apply_formula_checked}    Get Checkbox State    [NAME:ApplyFormulaCheckBox]
+    ${computed_total_selling_fare}    Set Variable    0
+    ${computed_nett_cost_in_eo}    Set Variable    0
+    ${computed_commission}    Set Variable    0
+    ${computed_discount}    Set Variable    0
+    ${computed_gross_fare}    Set Variable    0
+    ${computed_merchant_fee}    Set Variable    0
+    Run Keyword If    ${is_apply_formula_checked}    Apply Formula Is Applied    ${country}    ${merchant_fee_percentage}    ${is_commission_percent}    ${is_discount_percent}
+    ...    ${tfinmf}
+    ...    ELSE    Apply Formula Is Not Applied    ${country}    ${merchant_fee_percentage}    ${is_commission_percent}    ${is_discount_percent}
+    ...    ${tfinmf}
+
+Get Airline Code And Ticket Number
+    ${airline_code}    Get Control Text Value    [NAME:AirlineCodeTextBox]
+    Set Suite Variable    ${airline_code}
+    ${airline_ticket_number}    Get Control Text Value    [NAME:TicketNumberTextBox]
+    Set Suite Variable    ${airline_ticket_number}
+
+Get Amend Ticket Num Only Checkbox Status
+    ${amend_tkt_only_checkbox_status}    Get Checkbox Status    [NAME:AmendTicketNumCheckbox]
+    Set Suite Variable    ${amend_tkt_only_checkbox_status}
+
+Get Apply Formula Checkbox Status
+    ${apply_formula_checkbox_status}    Get Checkbox Status    [NAME:ApplyFormulaCheckBox]
+    Set Suite Variable    ${apply_formula_checkbox_status}
+
+Get Bill Fare
+    ${bill_fare}    Get Control Text Value    [NAME:BillFareComboBox]
+    Set Suite Variable    ${bill_fare}
+
+Get CWT Absorb Checkbox For Merchant Fee Status
+    ${cwt_absorb_checkbox_status}    Get Checkbox Status    [NAME:CwtAbsorbCheckbox]
+    Set Suite Variable    ${cwt_absorb_checkbox_status}
+
+Get Conjunction Number
+    ${conjunction_number}    Get Control Text Value    [NAME:ConjunctionNumberTextBox]
+    Set Suite Variable    ${conjunction_number}
+
+Get Consolidator Client Type
+    ${consolidator_client_type}    Get Control Text Value    [NAME:ClientTypeComboBox]
+    Set Suite Variable    ${consolidator_client_type}
+
+Get Discount Value
+    ${discount}    Get Control Text Value    [NAME:DiscountTextBox]
+    Set Suite Variable    ${discount}
+
+Get Fuel Surchange
+    ${fuel_surcharge}    Get Control Text Value    [NAME:FuelSurchangeTextBox]
+    Set Suite Variable    ${fuel_surcharge}
+
+Get Gross Fare
+    ${gross_fare}    Get Control Text Value    [NAME:GrossFareTextBox]
+    Set Suite Variable    ${gross_fare}
+
+Get Issue In Exch For
+    ${issue_in_exchange_for}    Get Control Text Value    [NAME:IssueInExchangeForTextBox]
+    Set Suite Variable    ${issue_in_exchange_for}
+
+Get Nett Cost In EO
+    ${nett_cost_in_eo}    Get Control Text Value    [NAME:NettCostEOTextBox]
+    Set Suite Variable    ${nett_cost_in_eo}
+
+Get Nett Fare
+    ${nett_fare}    Get Control Text Value    [NAME:NettFareTextBox]
+    Set Suite Variable    ${nett_fare}
+
+Get Published Fare
+    ${published_fare}    Get Control Text Value    [NAME:PublishFareTextBox]
+    Set Suite Variable    ${published_fare}
+
+Get Selling Fare Fee
+    ${selling_fare}    Get Control Text Value    [NAME:SellingFareClientTextBox]
+    Set Suite Variable    ${selling_fare}
+
+Get Tax Code 1
+    ${tax_code1}    Get Control Text Value    [NAME:TaxCode1TextBox]
+    Set Suite Variable    ${tax_code1}
+
+Get Tax Code 2
+    ${tax_code2}    Get Control Text Value    [NAME:TaxCode2TextBox]
+    Set Suite Variable    ${tax_code2}
+
+Get Tax Value 1
+    ${tax_value1}    Get Control Text Value    [NAME:Tax1TextBox]
+    Set Suite Variable    ${tax_value1}
+
+Get Tax Value 2
+    ${tax_value2}    Get Control Text Value    [NAME:Tax2TextBox]
+    Set Suite Variable    ${tax_value2}
+
+Get Ticket Info Fee Values
+    [Arguments]    ${country}=SG
+    ${is_vendor_contact_visible}    Determine Control Object Is Visible On Active Tab    VendorContactTextBox    False
+    Run Keyword If    ${is_vendor_contact_visible}    Get Vendor Contact Value
+    ${is_selling_fare_visible}    Determine Control Object Is Visible On Active Tab    SellingFareClientTextBox    False
+    Run Keyword If    ${is_selling_fare_visible}    Get Selling Fare Fee
+    ${is_nett_fare_visible}    Determine Control Object Is Visible On Active Tab    NettFareTextBox    False
+    Run Keyword If    ${is_nett_fare_visible}    Get Nett Fare
+    ${is_gross_fare_visible}    Determine Control Object Is Visible On Active Tab    GrossFareTextBox    False
+    Run Keyword If    ${is_gross_fare_visible}    Get Gross Fare
+    ${is_published_fare_visible}    Determine Control Object Is Visible On Active Tab    PublishFareTextBox    False
+    Run Keyword If    ${is_published_fare_visible}    Get Published Fare
+    ${is_bill_fare_visible}    Determine Control Object Is Visible On Active Tab    BillFareComboBox    False
+    Run Keyword If    ${is_bill_fare_visible}    Get Bill Fare
+    ${is_fuel_surcharge_visible}    Determine Control Object Is Visible On Active Tab    FuelSurchangeTextBox    False
+    Run Keyword If    ${is_fuel_surcharge_visible}    Get Fuel Surchange
+    ${is_issue_in_exchange_for_visible}    Determine Control Object Is Visible On Active Tab    IssueInExchangeForTextBox    False
+    Run Keyword If    ${is_issue_in_exchange_for_visible}    Get Issue In Exch For
+    ${is_conjunction_number_visible}    Determine Control Object Is Visible On Active Tab    ConjunctionNumberTextBox    False
+    Run Keyword If    ${is_conjunction_number_visible}    Get Conjunction Number
+    Get Tax Value 1
+    other_services_ticket_cost_control.Get Tax Code 1
+    Get Tax Value 2
+    other_services_ticket_cost_control.Get Tax Code 2
+    Get Nett Cost In EO
+    Get Commision Value
+    Get Discount Value
+    Get Merchant Fee In Other Services
+    Get Total Selling Price
+    Get Tranx/Service Fee Value
+    Get Airline Code And Ticket Number
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Get Tranx/Service Fee Value
+    ${tranx_srv_fee}    Get Control Text Value    [NAME:TransactionServiceFeeTextBox]
+    Set Suite Variable    ${tranx_srv_fee}
+
+Get UATP Checkbox Status
+    ${uatp_checkbox_status}    Get Checkbox Status    [NAME:UatpCheckbox]
+    Set Suite Variable    ${uatp_checkbox_status}
+
+Is Credit Card Number Masked
+    [Arguments]    ${card_number_is_masked}
+    ${credit_card_length_excluding_last_four_digits}    Get Length    ${credit_card_number[:-4]}
+    ${masked_characters_excluding_last_four}    Evaluate    "".join(["X" * ${credit_card_length_excluding_last_four_digits}])
+    ${masked_credit_card_number}    Replace String    ${credit_card_number}    ${credit_card_number[:-4]}    ${masked_characters_excluding_last_four}
+    ${cc_number}    Set Variable If    '${card_number_is_masked.lower()}' == 'false'    ${credit_card_number}    ${masked_credit_card_number}
+    [Return]    ${cc_number}
+
+Populate Airline Code And Ticket Number
+    [Arguments]    ${airline_code}    ${airline_ticket_number}
+    Set Control Text Value    [NAME:AirlineCodeTextBox]    ${airline_code}
+    Set Control Text Value    [NAME:TicketNumberTextBox]    ${airline_ticket_number}
+    Send    {TAB}
+    Take Screenshot
+
+Populate Other Services Ticket Cost For BSP Ticket
+    [Arguments]    ${published_fare}    ${selling_fare}    ${tax_value1}=${EMPTY}    ${tax_code1}=${EMPTY}    ${tax_value2}=${EMPTY}    ${tax_code2}=${EMPTY}
+    ...    ${tranx_svc_fee}=${EMPTY}    ${commission}=${EMPTY}    ${discount}=${EMPTY}
+    Set Published Fare Value    ${published_fare}
+    Set Selling Fare Fee    ${selling_fare}
+    Set Tax 1    ${tax_value1}
+    other_services_ticket_cost_control.Set Tax Code 1    ${tax_code1}
+    Set Tax 2    ${tax_value2}
+    other_services_ticket_cost_control.Set Tax Code 2    ${tax_code2}
+    Set Tranx/Service Fee Value    ${tranx_svc_fee}
+    Set Commission Value    ${commission}
+    Set Discount Value    ${discount}
+    Tick Select All Segments    TICK
+    [Teardown]    Take Screenshot
+
+Populate Ticket Info Fees
+    [Arguments]    ${country}    ${nett_fare}    ${tax_value1}=${EMPTY}    ${tax_code1}=${EMPTY}    ${tax_value2}=${EMPTY}    ${tax_code2}=${EMPTY}
+    Run Keyword If    '${country.upper()}' == 'SG'    Set Selling Fare Fee    ${nett_fare}
+    ...    ELSE    Set Nett Fare    ${nett_fare}
+    Set Tax 1    ${tax_value1}
+    other_services_ticket_cost_control.Set Tax Code 1    ${tax_code1}
+    Set Tax 2    ${tax_value2}
+    other_services_ticket_cost_control.Set Tax Code 2    ${tax_code2}
+
+Select Bill Fare
+    [Arguments]    ${bill_fare}
+    Select Value From Dropdown List    [NAME:BillFareComboBox]    ${bill_fare}
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Select Consolidator Ticket Client Type
+    [Arguments]    ${client_type}
+    Select Value From Dropdown List    [NAME:ClientTypeComboBox]    ${client_type}
+    Take Screenshot
+
+Set Conjunction Number
+    [Arguments]    ${conjunction_ticket_number}
+    Set Control Text Value    [NAME:ConjunctionNumberTextBox]    ${conjunction_ticket_number}
+    Send    {TAB}
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Set Fuel Surcharge Fee
+    [Arguments]    ${fuel_surcharge}
+    Set Control Text Value    [NAME:FuelSurchangeTextBox]    ${fuel_surcharge}
+    Send    {TAB}
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Set Nett Fare
+    [Arguments]    ${nett_fare}
+    Set Control Text Value    [NAME:NettFareTextBox]    ${nett_fare}
+    Send    {TAB}
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Set Published Fare Value
+    [Arguments]    ${published_fare}
+    Set Control Text Value    [NAME:PublishFareTextBox]    ${published_fare}
+    Send    {TAB}
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Set Selling Fare Fee
+    [Arguments]    ${selling_fare}
+    Set Control Text Value    [NAME:SellingFareClientTextBox]    ${selling_fare}
+    Send    {TAB}
+    Take Screenshot
+
+Set Tax 1
+    [Arguments]    ${tax_value1}
+    Set Control Text Value    [NAME:Tax1TextBox]    ${tax_value1}
+    Send    {TAB}
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Set Tax 2
+    [Arguments]    ${tax_value2}
+    Set Control Text Value    [NAME:Tax2TextBox]    ${tax_value2}
+    Send    {TAB}
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Set Tax Code 1
+    [Arguments]    ${tax_code1}
+    Set Control Text Value    [NAME:TaxCode1TextBox]    ${tax_code1}
+    Send    {TAB}
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Set Tax Code 2
+    [Arguments]    ${tax_code2}
+    Set Control Text Value    [NAME:TaxCode2TextBox]    ${tax_code2}
+    Send    {TAB}
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Set Tranx/Service Fee Value
+    [Arguments]    ${tranx_srv_fee}
+    Set Control Text Value    [NAME:TransactionServiceFeeTextBox]    ${tranx_srv_fee}
+    Send    {TAB}
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Tick Amend Ticket Num Only Checkbox
+    [Arguments]    ${checkbox_action}=TICK
+    [Documentation]    Inputs:
+    ...
+    ...    Tick = To tick Amend Ticket Num Only Checkbox.
+    ...
+    ...    Untick = To untick Amend Ticket Num Only Checkbox
+    ${is_checked} =    Get Checkbox Status    [NAME:AmendTicketNumCheckbox]
+    Run Keyword If    '${is_checked}' == 'False' and '${checkbox_action.upper()}' == 'TICK'    Tick Checkbox    [NAME:AmendTicketNumCheckbox]
+    Run Keyword If    '${is_checked}' == 'True' and '${checkbox_action.upper()}' == 'UNTICK'    Untick Checkbox    [NAME:AmendTicketNumCheckbox]
+
+Tick Apply Formula Checkbox
+    [Arguments]    ${checkbox_action}=TICK
+    [Documentation]    Inputs:
+    ...
+    ...    Tick = To tick Apply Formula Checkbox.
+    ...
+    ...    Untick = To untick Apply Formula Checkbox
+    ${is_checked} =    Get Checkbox Status    [NAME:ApplyFormulaCheckBox]
+    Run Keyword If    '${is_checked}' == 'False' and '${checkbox_action.upper()}' == 'TICK'    Tick Checkbox    [NAME:ApplyFormulaCheckBox]
+    Run Keyword If    '${is_checked}' == 'True' and '${checkbox_action.upper()}' == 'UNTICK'    Untick Checkbox    [NAME:ApplyFormulaCheckBox]
+
+Tick TF In NRCC
+    Tick Checkbox    [NAME:IsTfInNrccCheckBox]
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]    Take Screenshot
+
+Tick UATP Checkbox
+    [Arguments]    ${checkbox_action}=TICK
+    [Documentation]    Inputs:
+    ...
+    ...    Tick = To tick UATP Checkbox.
+    ...
+    ...    Untick = To untick UATP Checkbox
+    ${is_checked} =    Get Checkbox Status    [NAME:UatpCheckbox]
+    Run Keyword If    '${is_checked}' == 'False' and '${checkbox_action.upper()}' == 'TICK'    Tick Checkbox    [NAME:UatpCheckbox]
+    Run Keyword If    '${is_checked}' == 'True' and '${checkbox_action.upper()}' == 'UNTICK'    Untick Checkbox    [NAME:UatpCheckbox]
+
+Verify Airline Code And Ticket Number Is Correct
+    [Arguments]    ${expected_airline_code}=${EMPTY}    ${expected_airline_number}=${EMPTY}
+    Get Airline Code And Ticket Number
+    Verify Actual Value Matches Expected Value    ${airline_code}    ${expected_airline_code}
+    Verify Actual Value Matches Expected Value    ${airline_ticket_number}    ${expected_airline_number}
+
+Verify All Air Segments Are Selected/Not Selected
+    [Arguments]    ${selection}
+    [Documentation]    Selected - If all segment are ticked
+    ...
+    ...    Not Selected - If all segment were not ticked
+    @{segments_list}    Get Segments From List Control
+    Log list    ${segments_list}
+    Remove From List    ${segments_list}    0
+    @{segment_state}    Create List
+    ${behavior}    Set Variable If    "${selection}" == "Selected"    Not Selected    Selected
+    : FOR    ${segment}    IN    @{segments_list}
+    \    ${status}    Get Checkbox State From List Control    ${segment}
+    \    ${status}    Set Variable If    "${status}" == "True"    Selected    Not Selected
+    \    Append To List    ${segment_state}    ${status}
+    Log    ${segment_state}
+    List Should Not Contain Value    ${segment_state}    ${behavior}    msg=Air Segment Is ${behavior}
+
+Verify Amend Ticket Num Only Checkbox Status Is Correct
+    [Arguments]    ${expected_status}
+    Get Amend Ticket Num Only Checkbox Status
+    Verify Actual Value Matches Expected Value    ${amend_tkt_only_checkbox_status}    ${expected_status}
+
+Verify Apply Formula Checkbox Status Is Correct
+    [Arguments]    ${expected_status}
+    Get Apply Formula Checkbox Status
+    Verify Actual Value Matches Expected Value    ${apply_formula_checkbox_status}    ${expected_status}
+
+Verify BSP Ticket Accounting Remarks Are Written
+    [Arguments]    ${product_name}    ${vendor_name}    ${country}    ${card_number_is_masked}=True
+    ${product_code_number}    Get Product Code    ${country}    ${product_name}
+    ${vendor_code_number}    Get Vendor Code    ${country}    ${product_name}    ${vendor_name}
+    ${expiry_year}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)" or "${form_of_payment}" == "Credit Card (CC)"    Get Substring    ${expiry_year}    2
+    ${cc_number}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)" or "${form_of_payment}" == "Credit Card (CC)"    Is Credit Card Number Masked    ${card_number_is_masked}
+    ${vendor_code}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)"    Get Credit Card Vendor Code    ${form_of_payment_vendor}
+    ...    ELSE IF    "${form_of_payment}" == "Credit Card (CC)"    Set Variable    CC
+    ...    ELSE    Set Variable    S
+    ${market_identifier}    Set Variable If    "${country.upper()}" == "SG"    S    A
+    Verify BSP Ticket Generic Accounting Remarks Are Written    ${product_name}    ${product_code_number}    ${vendor_code_number}
+    ${fee_value}    Set Variable If    "${country.upper()}" == "SG" and ("${bill_fare}" != "Marked Up Nett Fare" or "${form_of_payment}" != "Credit Card (CX)")    ${selling_fare}    ${total_selling_price}
+    ${commssion+mf}    Evaluate    ${commission}+${merchant_fee}
+    ${computed_nett_fare}    Evaluate    ${total_selling_price}-${tranx_srv_fee}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/${market_identifier}${fee_value}/SF${computed_nett_fare}/C${commssion+mf}/SG${segment_long}/S${segment_short}
+    Run Keyword If    "${bill_fare}" == "Marked Up Net Fare" and "${country.upper()}" == "SG"    Verify Specific Remark Is Written In The PNR    RM *MSX/NF${fee_value}    #
+    ...    # ELSE IF    "${bill_fare}" == "Marked Up Net Fare" and "${country.upper()}" == "HK"    Verify Specific Remark Is Written In The PNR    RM *MSX/NF${total_selling_price}
+    Run Keyword If    ("${tax_value1}" != "0" and "${tax_value1}" != "0.00") and ("${tax_value2}" != "0" and "${tax_value2}" != "0.00")    Verify Specific Remark Is Written In The PNR    RM *MSX/TX${tax_value1}${tax_code1}${tax_value2}${tax_code2}/F${vendor_code}/R${mi_reference_fare}/L${mi_low_fare}/E${mi_missed_saving_code}/FF7-${mi_final_destination}/FF8-${mi_class_of_service}/FF81-${mi_low_fare_carrier.upper()}
+    ...    ELSE IF    ("${tax_value1}" != "0" and "${tax_value1}" != "0.00") and ("${tax_value2}" == "0" or "${tax_value2}" == "0.00")    Verify Specific Remark Is Written In The PNR    RM *MSX/TX${tax_value1}${tax_code1}/F${vendor_code}/R${mi_reference_fare}/L${mi_low_fare}/E${mi_missed_saving_code}/FF7-${mi_final_destination}/FF8-${mi_class_of_service}/FF81-${mi_low_fare_carrier.upper()}
+    ...    ELSE IF    ("${tax_value1}" == "0" or "${tax_value1}" == "0.00") and ("${tax_value2}" != "0" and "${tax_value2}" != "0.00")    Verify Specific Remark Is Written In The PNR    RM *MSX/TX${tax_value2}${tax_code2}/F${vendor_code}/R${mi_reference_fare}/L${mi_low_fare}/E${mi_missed_saving_code}/FF7-${mi_final_destination}/FF8-${mi_class_of_service}/FF81-${mi_low_fare_carrier.upper()}
+    ...    ELSE    Verify Specific Remark Is Written In The PNR    RM *MSX/F${vendor_code}/R${mi_reference_fare}/L${mi_low_fare}/E${mi_missed_saving_code}/FF7-${mi_final_destination}/FF8-${mi_class_of_service}/FF81-${mi_low_fare_carrier.upper()}
+    Run Keyword If    ("${form_of_payment}" == "Credit Card (CX)" or "${form_of_payment}" == "Credit Card (CC)")    Verify Specific Remark Is Written In The PNR    RM *MSX/CCN${form_of_payment_vendor}${cc_number}EXP${expiry_month}${expiry_year}/D${fee_value}
+    Comment    Verify Specific Remark Is Written In The PNR    RM *MSX/FF8-${mi_class_of_service}/FF81-${mi_low_fare_carrier.upper()}/FF38-${et_pt}/FF30-${mi_realised_saving_code}
+    ${expected_booking_remarks}    Set Variable If    "${tranx_srv_fee}" == "0" or "${tranx_srv_fee}" == "0.00"    RM *MSX/FF38-${et_pt}/FF30-${mi_realised_saving_code}/FF31-N/FF34-AB/FF35-OTH/FF36-G    RM *MSX/FF38-${et_pt}/FF30-${mi_realised_saving_code}/FF31-Y/FF32-${tranx_srv_fee}/FF34-AB/FF35-OTH/FF36-G
+    Verify Specific Remark Is Written In The PNR    ${expected_booking_remarks}    false    true    true
+    Run Keyword If    "${issue_in_exchange_for}" != "${EMPTY}"    Verify Specific Remark Is Written In The PNR    RM *MSX/EX${issue_in_exchange_for}
+
+Verify BSP Ticket Air Commission Returned Accounting Remarks Are Not Written
+    [Arguments]    ${product_name}=AIR COMMISSION RETURNED    ${product_code_number}=50    ${vendor_code_number}=027000
+    Verify BSP Ticket Generic Accounting Remarks Are Not Written    ${product_name}    ${product_code_number}    ${vendor_code_number}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S-${discount}/SF-${discount}/C-${discount}/SG${segment_long}/S${segment_short}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FS/FF34-AB/FF35-OTH/FF36-G/FF47-CWT
+
+Verify BSP Ticket Air Commission Returned Accounting Remarks Are Written
+    [Arguments]    ${country}=SG    ${product_name}=AIR COMMISSION RETURNED    ${product_code_number}=50    ${vendor_code_number}=027000
+    ${vendor_code_number}    Set Variable If    "${country.lower()}" == "hk"    000001    ${vendor_code_number}
+    Verify BSP Ticket Generic Accounting Remarks Are Written    ${product_name}    ${product_code_number}    ${vendor_code_number}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/S-${discount}/SF-${discount}/C-${discount}/SG${segment_long}/S${segment_short}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/FS/FF34-AB/FF35-OTH/FF36-G/FF47-CWT
+
+Verify BSP Ticket Generic Accounting Remarks Are Not Written
+    [Arguments]    ${product_name}    ${product_code_number}    ${vendor_code_number}
+    ${passenger_id}    Get Variable Value    ${passenger_id}    1
+    ${bsp_ticket_generic_remark}    Set Variable If    "${airline_ticket_number}" == "${EMPTY}" and "${conjunction_number}" == "${EMPTY}"    RM *MS/PC${product_code_number}/V${vendor_code_number}/AC${airline_code}/TK/PX${passenger_id}    "${airline_ticket_number}" != "${EMPTY}" and "${conjunction_number}" == "${EMPTY}"    RM *MS/PC${product_code_number}/V${vendor_code_number}/AC${airline_code}/TK${airline_ticket_number}/PX${passenger_id}    "${airline_ticket_number}" == "${EMPTY}" and "${conjunction_number}" != "${EMPTY}"
+    ...    RM *MS/PC${product_code_number}/V${vendor_code_number}/AC${airline_code}/TK/PX${passenger_id}    RM *MS/PC${product_code_number}/V${vendor_code_number}/AC${airline_code}/TK${airline_ticket_number}-${conjunction_number}/PX${passenger_id}
+    Verify Specific Remark Is Not Written In The PNR    ${bsp_ticket_generic_remark}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/FF ${product_name.upper()}
+
+Verify BSP Ticket Generic Accounting Remarks Are Written
+    [Arguments]    ${product_name}    ${product_code_number}    ${vendor_code_number}
+    ${passenger_id}    Get Variable Value    ${passenger_id}    1
+    ${bsp_ticket_generic_remark}    Set Variable If    "${airline_ticket_number}" == "${EMPTY}" and "${conjunction_number}" == "${EMPTY}"    RM *MS/PC${product_code_number}/V${vendor_code_number}/AC${airline_code}/TK/PX${passenger_id}    "${airline_ticket_number}" != "${EMPTY}" and "${conjunction_number}" == "${EMPTY}"    RM *MS/PC${product_code_number}/V${vendor_code_number}/AC${airline_code}/TK${airline_ticket_number}/PX${passenger_id}    "${airline_ticket_number}" == "${EMPTY}" and "${conjunction_number}" != "${EMPTY}"
+    ...    RM *MS/PC${product_code_number}/V${vendor_code_number}/AC${airline_code}/TK/PX${passenger_id}    RM *MS/PC${product_code_number}/V${vendor_code_number}/AC${airline_code}/TK${airline_ticket_number}-${conjunction_number}/PX${passenger_id}
+    Verify Specific Remark Is Written In The PNR    ${bsp_ticket_generic_remark}
+    Verify Specific Remark Is Written In The PNR    RM *MSX/FF ${product_name.upper()}
+
+Verify BSP Ticket Transaction Fee Accounting Remarks Are Not Written
+    [Arguments]    ${country}=SG    ${product_name}=TRANSACTION FEE    ${product_code_number}=35    ${vendor_code_number}=021007    ${card_number_is_masked}=True
+    ${vendor_code_number}    Set Variable If    "${country.lower()}" == "hk"    000001    ${vendor_code_number}
+    Verify BSP Ticket Fee Accounting Remarks Are Not Written    ${product_name}    ${product_code_number}    ${vendor_code_number}    ${card_number_is_masked}    ${country}
+
+Verify BSP Ticket Transaction Fee Accounting Remarks Are Written
+    [Arguments]    ${country}=SG    ${product_name}=TRANSACTION FEE    ${product_code_number}=35    ${vendor_code_number}=021007    ${card_number_is_masked}=True
+    ${vendor_code_number}    Set Variable If    "${country.lower()}" == "hk"    000001    ${vendor_code_number}
+    Verify BSP Ticket Fee Accounting Remarks Are Written    ${product_name}    ${product_code_number}    ${vendor_code_number}    ${card_number_is_masked}    ${country}
+
+Verify BSP Ticket Fuel Surcharge Accounting Remarks Are Written
+    [Arguments]    ${country}=SG    ${product_name}=SVC FEE FOR SURCHARGES    ${product_code_number}=35    ${vendor_code_number}=000001    ${card_number_is_masked}=True
+    Verify BSP Ticket Fee Accounting Remarks Are Written    ${product_name}    ${product_code_number}    ${vendor_code_number}    ${card_number_is_masked}    ${country}
+
+Verify BSP Ticket Fuel Surcharge Accounting Remarks Are Not Written
+    [Arguments]    ${country}=SG    ${product_name}=SVC FEE FOR SURCHARGES    ${product_code_number}=35    ${vendor_code_number}=000001    ${card_number_is_masked}=True
+    Verify BSP Ticket Fee Accounting Remarks Are Not Written    ${product_name}    ${product_code_number}    ${vendor_code_number}    ${card_number_is_masked}    ${country}
+
+Verify BSP Ticket Discount Accounting Remarks Are Written
+    [Arguments]    ${country}=SG    ${product_name}=DISCOUNT    ${product_code_number}=50    ${vendor_code_number}=000001    ${card_number_is_masked}=True
+    Verify BSP Ticket Fee Accounting Remarks Are Written    ${product_name}    ${product_code_number}    ${vendor_code_number}    ${card_number_is_masked}    ${country}
+
+Verify BSP Ticket Discount Accounting Remarks Are Not Written
+    [Arguments]    ${country}=SG    ${product_name}=DISCOUNT    ${product_code_number}=50    ${vendor_code_number}=000001    ${card_number_is_masked}=True
+    Verify BSP Ticket Fee Accounting Remarks Are Not Written    ${product_name}    ${product_code_number}    ${vendor_code_number}    ${card_number_is_masked}    ${country}
+
+Verify BSP Ticket Fee Accounting Remarks Are Written
+    [Arguments]    ${product_name}    ${product_code_number}    ${vendor_code_number}    ${country}    ${card_number_is_masked}
+    ${passenger_id}    Get Variable Value    ${passenger_id}    1
+    ${vendor_code}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)"    Get Credit Card Vendor Code    ${form_of_payment_vendor}
+    ...    ELSE IF    "${form_of_payment}" == "Credit Card (CC)"    Set Variable    CC
+    ...    ELSE    Set Variable    S
+    ${fee_amount}    Set Variable If    "${product_name.upper()}" == "TRANSACTION FEE"    ${tranx_srv_fee}    "${product_name.upper()}" == "SVC FEE FOR SURCHARGES"    ${fuel_surcharge}    "${product_name.upper()}" == "DISCOUNT"
+    ...    ${discount}
+    ${expiry_year}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)" or "${form_of_payment}" == "Credit Card (CC)"    Get Substring    ${expiry_year}    2
+    ${cc_number}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)" or "${form_of_payment}" == "Credit Card (CC)"    Is Credit Card Number Masked    ${card_number_is_masked}
+    ${market_identifier}    Set Variable If    "${country}" == "SG"    S    A
+    Verify BSP Ticket Generic Accounting Remarks Are Written    ${product_name}    ${product_code_number}    ${vendor_code_number}
+    Run Keyword If    "${product_name.upper()}" == "TRANSACTION FEE"    Verify Specific Remark Is Written In The PNR    RM *MSX/${market_identifier}${tranx_srv_fee}/SF${tranx_srv_fee}/C${tranx_srv_fee}/SG${segment_long}/S${segment_short}
+    ...    ELSE IF    "${product_name.upper()}" == "SVC FEE FOR SURCHARGES"    Verify Specific Remark Is Written In The PNR    RM *MSX/${market_identifier}${fuel_surcharge}/SF${fuel_surcharge}/C${fuel_surcharge}/F${vendor_code}
+    ...    ELSE IF    "${product_name.upper()}" == "DISCOUNT"    Verify Specific Remark Is Written In The PNR    RM *MSX/${market_identifier}-${discount}/SF-${discount}/C-${discount}/SG${segment_long}/S${segment_short}
+    ...    ELSE    Fail
+    Run Keyword If    ("${form_of_payment}" == "Credit Card (CX)" or "${form_of_payment}" == "Credit Card (CC)")    Verify Specific Remark Is Written In The PNR    RM \\*MSX/CCN${form_of_payment_vendor}.*EXP${expiry_month}${expiry_year}/D${tranx_srv_fee}    True
+    Run Keyword If    "${product_name.upper()}" != "SVC FEE FOR SURCHARGES"    Verify Specific Remark Is Written In The PNR    RM *MSX/F${vendor_code}/FF34-AB/FF35-OTH/FF36-G/FF47-CWT
+
+Verify BSP Ticket Fee Accounting Remarks Are Not Written
+    [Arguments]    ${product_name}    ${product_code_number}    ${vendor_code_number}    ${card_number_is_masked}    ${country}
+    ${passenger_id}    Get Variable Value    ${passenger_id}    1
+    ${vendor_code}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)"    Get Credit Card Vendor Code    ${form_of_payment_vendor}
+    ...    ELSE IF    "${form_of_payment}" == "Credit Card (CC)"    Set Variable    CC
+    ...    ELSE    Set Variable    S
+    ${fee_amount}    Set Variable If    "${product_name.upper()}" == "TRANSACTION FEE"    ${tranx_srv_fee}    "${product_name.upper()}" == "SVC FEE FOR SURCHARGES"    ${fuel_surcharge}    "${product_name.upper()}" == "DISCOUNT"
+    ...    ${discount}
+    ${expiry_year}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)" or "${form_of_payment}" == "Credit Card (CC)"    Get Substring    ${expiry_year}    2
+    ${cc_number}    Run Keyword If    "${form_of_payment}" == "Credit Card (CX)" or "${form_of_payment}" == "Credit Card (CC)"    Is Credit Card Number Masked    ${card_number_is_masked}
+    ${market_identifier}    Set Variable If    "${country}" == "SG"    S    A
+    Verify BSP Ticket Generic Accounting Remarks Are Not Written    ${product_name}    ${product_code_number}    ${vendor_code_number}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/S${fee_amount}/SF${fee_amount}/C${fee_amount}/SG${segment_long}/S${segment_short}
+    Run Keyword If    ("${form_of_payment}" == "Credit Card (CX)" or "${form_of_payment}" == "Credit Card (CC)")    Verify Specific Remark Is Not Written In The PNR    RM *MSX/CCN${form_of_payment_vendor}${cc_number}EXP${expiry_month}${expiry_year}/D${tranx_srv_fee}
+    Verify Specific Remark Is Not Written In The PNR    RM *MSX/F${vendor_code}/FF34-AB/FF35-OTH/FF36-G/FF47-CWT
+
+Verify CWT Absorb Checkbox For Merchant Fee Status Is Correct
+    [Arguments]    ${expected_status}
+    Get CWT Absorb Checkbox For Merchant Fee Status
+    Verify Actual Value Matches Expected Value    ${cwt_absorb_checkbox_status}    ${expected_status}
+
+Verify Conjunction Number Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get Conjunction Number
+    Verify Actual Value Matches Expected Value    ${conjunction_number}    ${expected}
+
+Verify Consolidator And LCC Generic Accounting Remarks
+    [Arguments]    ${product_name}    ${vendor_name}    ${country}
+    ${product_code_number}    Get Product Code    ${country}    ${product_name}
+    ${vendor_code_number}    Get Vendor Code    ${country}    ${product_name}    ${vendor_name}
+    ${passenger_id}    Get Variable Value    ${passenger_id}    1
+    ${passenger_id}    Set Variable If    "${passenger_id}" == "${EMPTY}"    1    ${passenger_id}
+    ${discount}    Get Variable Value    ${discount}    0
+    ${computed_commission_merchant_and_discount}    Evaluate    ${commission} + ${merchant_fee} + ${discount}
+    ${compute_nett_and_merchant_fee}    Evaluate    ${nett_fare} + ${merchant_fee}
+    ${short_segment}    ${long_segment}    Convert Segment Number To GDS Format
+    Verify Specific Line Is Written In The PNR    RM *MSX/A${compute_nett_and_merchant_fee}/SF${compute_nett_and_merchant_fee}/C${computed_amount}/SG${long_segment}/S${short_segment}
+    Verify Specific Line Is Written In The PNR    RM *MS/PC${product_code_number}/V${vendor_code_number}/TK${airline_ticket_number}${eo_number}/PX${passenger_id}
+    Verify Specific Line Is Written In The PNR    RM *MSX/FF ${product_name.upper()}
+
+Verify Consolidator Ticket Remarks Are Written
+    [Arguments]    ${product_name}    ${vendor_name}    ${country}=HK
+    Verify Consolidator And LCC Generic Accounting Remarks    ${product_name}    ${vendor_name}    ${country}
+    ${fop_code}    Get Credit Card Vendor Code    ${form_of_payment}
+    ${is_client_mf_or_tf}    Set Variable If    ${tranx/service_fee} == 0 or "${tranx/service_fee}" == "0.00"    N    Y
+    ${remark_line}    Run Keyword If    "${tax_value1}" == "0" and "${tax_value2}" == "0" or "${tax_value1}" == "0.00" and "${tax_value1}" == "0.00"    F${fop_code}
+    Verify Specific Line Is Written In The PNR    RM *MSX/NF${nett_fare}
+    Verify Specific Line Is Written In The PNR    RM *MSX/PO${ticket_number}/
+    Run Keyword If    "${form_of_payment.lower()}" == "credit card (cx)"    Verify Other Services Consolidator And LCC Credit Card Remarks
+    ...    ELSE    Verify Other Services Consolidator And LCC Cash Or Invoice Remarks
+    Verify Specific Line Is Written In The PNR    RM *MSX/E${mi_missed_saving_code}/FF7-${mi_final_destination}/FF8-${mi_class_of_service}/FF81-${mi_low_fare_carrier}/FF38-${et_pt}
+    Verify Specific Line Is Written In The PNR    RM *MSX/FF30-${mi_realised_saving_code}/FF31-${is_client_mf_or_tf}/FF34-AB/FF35-OTH/FF36-M
+
+Verify Consolidatory Client Type Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get Consolidator Client Type
+    Verify Actual Value Matches Expected Value    ${consolidator_client_type}    ${expected}
+
+Verify Discount Fee Value Is Correct
+    [Arguments]    ${expected_discount_value}=${EMPTY}
+    ${expected_discount}    Run Keyword If    "${expected_discount_value}" == "${EMPTY}"    Get Variable Value    ${computed_discount}    ${expected_discount_value}
+    ...    ELSE    Set Variable    ${expected_discount_value}
+    Get Discount Value
+    Verify Actual Value Matches Expected Value    ${discount}    ${expected_discount}
+
+Verify Fuel Surcharge Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get Fuel Surchange
+    Verify Actual Value Matches Expected Value    ${fuel_surcharge}    ${expected}
+
+Verify Gross Fare Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    ${gross_fare_value}    Get Variable Value    ${computed_gross_fare}    ${expected}
+    Get Gross Fare
+    Verify Actual Value Matches Expected Value    ${gross_fare}    ${gross_fare_value}
+
+Verify Issue In Exchange For Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get Issue In Exch For
+    Verify Actual Value Matches Expected Value    ${issue_in_exchange_for}    ${expected}
+
+Verify Nett Cost In EO Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    ${expected}    Get Variable Value    ${computed_nett_cost_in_eo}    ${expected}
+    Get Nett Cost In EO
+    Verify Actual Value Matches Expected Value    ${nett_cost_in_eo}    ${expected}
+
+Verify Nett Fare Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get Nett Fare
+    Verify Actual Value Matches Expected Value    ${nett_fare}    ${expected}
+
+Verify Other Services Consolidator And LCC Cash Or Invoice Remarks
+    Verify Specific Line Is Written In The PNR    RM *MSX/PO<ticket number>/FS/R<reference fare>/L<low fare>/E<missed saving code>/FF7<final destination>
+
+Verify Other Services Consolidator And LCC Credit Card Remarks
+    ${fop_exp_date}    Set Variable    ${expiry_month}${short_expiry_year}
+    ${credit_card_length_excluding_last_four_digits}    Get Length    ${credit_card_number[:-4]}
+    ${masked_characters_excluding_last_four}    Evaluate    "".join(["X" * ${credit_card_length_excluding_last_four_digits}])
+    ${masked_credit_card_number}    Replace String    ${credit_card_number}    ${credit_card_number[:-4]}    ${masked_characters_excluding_last_four}
+    Verify Specific Line Is Written In The PNR    RM *MSX/CCN${form_of_payment_vendor}${masked_credit_card_number}EXP${fop_exp_date}/D${total_selling_price}/R${mi_reference_fare}/L${mi_low_fare}
+
+Verify Published Fare Fee Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get Published Fare
+    Verify Actual Value Matches Expected Value    ${published_fare}    ${expected}
+
+Verify Selling Fare Fee Is Correct
+    [Arguments]    ${expected_selling_fare}=${EMPTY}
+    ${expected_selling_fare}    Get Variable Value    ${computed_selling_fare}    ${expected_selling_fare}
+    Get Selling Fare Fee
+    Verify Actual Value Matches Expected Value    ${selling_fare}    ${expected_selling_fare}
+
+Verify Specific Product Remarks Are Written X Number Of Times
+    [Arguments]    ${country}=SG    ${is_displayed}=True    ${product_name}=${EMPTY}    ${x_times}=${EMPTY}
+    ${product_code_number}    Get Product Code    ${country}    ${product_name}
+    ${vendor_code_number}    Set Variable If    "${country}" == "SG" and "${product_name.upper()}" == "TRANSACTION FEE"    021007    "${country}" == "SG" and "${product_name.upper()}" == "AIR COMMISSION RETURNED"    027000    000001
+    ${id}    Set Variable If    "${passenger_id}" == "${EMPTY}"    1    ${passenger_id}
+    Run Keyword If    "${is_displayed.upper()}" == "TRUE"    Verify Specific Line Is Written In The PNR    RM *MS/PC${product_code_number}/V${vendor_code_number}/TK${airline_code}${eo_number}/PX${id}
+    ...    ELSE    Verify Specific Line Is Not Written In The PNR    RM *MS/PC${product_code_number}/V${vendor_code_number}/TK${airline_code}${eo_number}/PX${id}
+    Verify Specific Line Is Written In The PNR X Times    RM *MSX/FF ${product_name.upper()}    ${x_times}
+
+Verify Tax 1 Value and Code Are Correct
+    [Arguments]    ${expected_tax_value}=${EMPTY}    ${expected_tax_code}=${EMPTY}
+    Get Tax Value 1
+    other_services_ticket_cost_control.Get Tax Code 1
+    Verify Actual Value Matches Expected Value    ${tax_value1}    ${expected_tax_value}
+    Verify Actual Value Matches Expected Value    ${tax_code1}    ${expected_tax_code}
+
+Verify Tax 2 Value and Code Are Correct
+    [Arguments]    ${expected_tax_value}=${EMPTY}    ${expected_tax_code}=${EMPTY}
+    Get Tax Value 2
+    other_services_ticket_cost_control.Get Tax Code 2
+    Verify Actual Value Matches Expected Value    ${tax_value2}    ${expected_tax_value}
+    Verify Actual Value Matches Expected Value    ${tax_code2}    ${expected_tax_code}
+
+Verify Tranx/Service Fee Value Is Correct
+    [Arguments]    ${expected}=${EMPTY}
+    Get Tranx/Service Fee Value
+    Verify Actual Value Matches Expected Value    ${tranx_srv_fee}    ${expected}
+
+Verify UATP Checkbox Status Is Correct
+    [Arguments]    ${expected_status}
+    Get UATP Checkbox Status
+    Verify Actual Value Matches Expected Value    ${uatp_checkbox_status}    ${expected_status}

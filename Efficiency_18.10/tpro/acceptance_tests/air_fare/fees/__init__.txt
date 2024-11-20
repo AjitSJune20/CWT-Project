@@ -1,0 +1,2 @@
+*** Settings ***
+Force Tags        fees    for_update

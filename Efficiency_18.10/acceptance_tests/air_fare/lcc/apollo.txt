@@ -1,0 +1,291 @@
+*** Settings ***
+Force Tags        apollo    noram
+Resource          ../air_fare_verification.txt
+
+*** Test Case ***
+[NB] Verify That Air Fare Panel Retrieves And Writes Correct Remarks For Different Airline Codes In Correct Order
+    [Tags]    us1423    data_dependent    valid_fail    de7330
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US1423    AutoSixteenTwo    NoramTrvlrThree
+    Click New Booking
+    Update PNR for EN or GB
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0NK1225J${departure_date1}LAXMSPGK1/05121500
+    Enter GDS Command    0UA1021J${departure_date2}MSPORDGK1/05501200
+    Enter GDS Command    0B61025Y${departure_date3}ORDJFKGK1/12251500
+    Enter LCC Remarks For Specific Airline Code    NK    USD    100.50    10.00    20.00    30.00
+    ...    160.50    2014032731    ABCDEF    000SA1    10.50
+    Enter LCC Remarks For Specific Airline Code    UA    USD    200.00    40.00    50.00    60.00
+    ...    350.00    2014032732    ABCDEG    000SA2    20.50
+    Enter LCC Remarks For Specific Airline Code    B6    USD    300.00    70.00    80.00    90.00
+    ...    540.00    2014032733    ABCDEH    000SA3    30.50
+    Click Read Booking
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Verify LCC Fare Tab Details    LAX-MSP    160.50    160.50    160.50    L - Lowest fare available accepted    ${EMPTY}
+    Verify Missed Savings Code Field Is Disabled
+    Verify Fare Not Finalised Is Unticked
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    LCC Fare 2
+    Verify LCC Fare Tab Details    MSP-ORD    350.00    350.00    350.00    L - Lowest fare available accepted    ${EMPTY}
+    Verify Missed Savings Code Field Is Disabled
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    LCC Fare 3
+    Verify LCC Fare Tab Details    ORD-JFK    540.00    540.00    540.00    L - Lowest fare available accepted    ${EMPTY}
+    Verify Missed Savings Code Field Is Disabled
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Panel    Delivery
+    Populate Delivery Panel With Specific Delivery Method    E-Ticket
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Finish PNR
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify LCC Remarks Are Written In The PNR In Correct Order    LCC-NK*BASE FARE USD 100.50    LCC-NK*TAX1 C10.00    LCC-NK*TAX2 H20.00    LCC-NK*TAX3 D30.00    LCC-NK*GRAND TOTAL USD 160.50    LCC-NK*TK-2014032731
+    ...    LCC-NK*CF-ABCDEF    LCC-NK*VN-000SA1    LCC-NK*COMM-10.50 USD    LCC-UA*BASE FARE USD 200.00    LCC-UA*TAX1 C40.00    LCC-UA*TAX2 H50.00
+    ...    LCC-UA*TAX3 D60.00    LCC-UA*GRAND TOTAL USD 350.00    LCC-UA*TK-2014032732    LCC-UA*CF-ABCDEG    LCC-UA*VN-000SA2    LCC-UA*COMM-20.50 USD
+    ...    LCC-B6*BASE FARE USD 300.00    LCC-B6*TAX1 C70.00    LCC-B6*TAX2 H80.00    LCC-B6*TAX3 D90.00    LCC-B6*GRAND TOTAL USD 540.00    LCC-B6*TK-2014032733
+    ...    LCC-B6*CF-ABCDEH    LCC-B6*VN-000SA3    LCC-B6*COMM-30.50 USD
+    Verify Specific Line Is Written In The PNR    T/TKT1-BFUSD100.50-S1
+    Verify Specific Line Is Written In The PNR    TKT1-DOM
+    Verify Specific Line Is Written In The PNR    -FQ160.50/LP-160/FS-L/FF-160
+    Verify Specific Line Is Written In The PNR    TKT2-DOM
+    Verify Specific Line Is Written In The PNR    -FQ350.00/LP-350/FS-L/FF-350
+    Verify Specific Line Is Written In The PNR    TKT3-DOM
+    Verify Specific Line Is Written In The PNR    -FQ540.00/LP-540/FS-L/FF-540
+    Verify Specific Line Is Written In The PNR    TKT1-BA-100.50/TX1-C10.00/TX2-H20.00/TX3-D30.00/COMM-10.50
+    Verify Specific Line Is Written In The PNR    TKT2-BA-200.00/TX1-C40.00/TX2-H50.00/TX3-D60.00/COMM-20.50
+    Verify Specific Line Is Written In The PNR    TKT3-BA-300.00/TX1-C70.00/TX2-H80.00/TX3-D90.00/COMM-30.50
+    Verify Specific Line Is Written In The PNR    TKT1-PC-NK
+    Verify Specific Line Is Written In The PNR    TKT2-PC-UA
+    Verify Specific Line Is Written In The PNR    TKT3-PC-B6
+    Verify Specific Line Is Written In The PNR    HOLD.AWAITING.APPROVAL
+
+[AB] Verify That Air Fare Panel Retrieves And Writes Correct Remarks For Different Airline Codes In Random LCC Remarks Order
+    [Tags]    us1423    data_dependent    valid_fail    de7330
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Verify LCC Fare Tab Details    LAX-MSP    160.50    160.50    160.50    L - Lowest fare available accepted    ${EMPTY}
+    Verify Missed Savings Code Field Is Disabled
+    Verify Fare Not Finalised Is Unticked
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    LCC Fare 2
+    Verify LCC Fare Tab Details    MSP-ORD    350.00    350.00    350.00    L - Lowest fare available accepted    ${EMPTY}
+    Verify Missed Savings Code Field Is Disabled
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    LCC Fare 3
+    Verify LCC Fare Tab Details    ORD-JFK    540.00    540.00    540.00    L - Lowest fare available accepted    ${EMPTY}
+    Verify Missed Savings Code Field Is Disabled
+    Cancel Apollo Stored Fare And Segment Through Mini GDS    I
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Delete LCC Remarks
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0DY1225J${departure_date1}LAXDENGK1/05121500
+    Enter GDS Command    0UA1021J${departure_date2}DENDFWGK1/05501200
+    Enter GDS Command    0NK1025Y${departure_date3}DFWLAXGK1/12251500
+    Enter LCC Remarks For Specific Airline Code    UA    USD    130.00    25.00    10.00    20.00
+    ...    210.50    ${EMPTY}    ABCDEF    000SA3    29.50
+    Enter LCC Remarks For Specific Airline Code    NK    USD    330.00    25.00    10.00    20.00
+    ...    410.50    2014032711    ABCDEF    ${EMPTY}    19.50
+    Enter LCC Remarks For Specific Airline Code    DY    USD    130.00    25.00    10.00    20.00
+    ...    210.50    ${EMPTY}    ABCDEF    000SA3    29.50
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify LCC Fare Tab Details    LAX-DEN    210.50    210.50    210.50    L - Lowest fare available accepted    ${EMPTY}
+    Click Fare Tab    LCC Fare 2
+    Verify LCC Fare Tab Details    DEN-DFW    210.50    210.50    210.50    L - Lowest fare available accepted    ${EMPTY}
+    Click Fare Tab    LCC Fare 3
+    Verify LCC Fare Tab Details    DFW-LAX    410.50    410.50    410.50    L - Lowest fare available accepted    ${EMPTY}
+    Click Panel    Policy Check
+    Populate Policy Check Panel With Default Values
+    Click Finish PNR
+    Re-Execute Amend Workflow For Air Fare Panel Retrieves And Writes Correct Remarks If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify LCC Remarks Are Written In The PNR In Correct Order    LCC-UA*BASE FARE USD 130.00    LCC-UA*TAX1 C25.00    LCC-UA*TAX2 H10.00    LCC-UA*TAX3 D20.00    LCC-UA*GRAND TOTAL USD 210.50    LCC-UA*TK-
+    ...    LCC-UA*CF-ABCDEF    LCC-UA*VN-000SA3    LCC-UA*COMM-29.50 USD    LCC-NK*BASE FARE USD 330.00    LCC-NK*TAX1 C25.00    LCC-NK*TAX2 H10.00
+    ...    LCC-NK*TAX3 D20.00    LCC-NK*GRAND TOTAL USD 410.50    LCC-NK*TK-2014032711    LCC-NK*CF-ABCDEF    LCC-NK*VN-    LCC-NK*COMM-19.50 USD
+    ...    LCC-DY*BASE FARE USD 130.00    LCC-DY*TAX1 C25.00    LCC-DY*TAX2 H10.00    LCC-DY*TAX3 D20.00    LCC-DY*GRAND TOTAL USD 210.50    LCC-DY*TK-
+    ...    LCC-DY*CF-ABCDEF    LCC-DY*VN-000SA3    LCC-DY*COMM-29.50 USD
+    Verify Specific Line Is Written In The PNR    TKT1-BFUSD130.00-S1
+    Verify Specific Line Is Written In The PNR    TKT1-DOM
+    Verify Specific Line Is Written In The PNR    -FQ210.50/LP-210/FS-L/FF-210
+    Verify Specific Line Is Written In The PNR    TKT2-DOM
+    Verify Specific Line Is Written In The PNR    -FQ210.50/LP-210/FS-L/FF-210
+    Verify Specific Line Is Written In The PNR    TKT3-DOM
+    Verify Specific Line Is Written In The PNR    -FQ410.50/LP-410/FS-L/FF-410
+    Verify Specific Line Is Written In The PNR    TKT1-BA-130.00/TX1-C25.00/TX2-H10.00/TX3-D20.00/COMM-29.50
+    Verify Specific Line Is Written In The PNR    TKT2-BA-130.00/TX1-C25.00/TX2-H10.00/TX3-D20.00/COMM-29.50
+    Verify Specific Line Is Written In The PNR    TKT3-BA-330.00/TX1-C25.00/TX2-H10.00/TX3-D20.00/COMM-19.50
+    Verify Specific Line Is Written In The PNR    TKT1-PC-DY
+    Verify Specific Line Is Written In The PNR    TKT2-PC-UA
+    Verify Specific Line Is Written In The PNR    TKT3-PC-NK
+    Verify Specific Line Is Written In The PNR    HOLD.AWAITING.APPROVAL
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[AB] Verify That Air Fare Panel Retrieves And Writes Correct Remarks For Different Airline Codes In Correct Order
+    [Tags]    us1423    data_dependent    de6930
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Create New Booking With One Way Flight Using Default Values    Apollo 16 - Auto ¦ US1423    AutoSixteenTwo    NoramTrvlrThree    SFOLAX+AA
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Cancel Apollo Stored Fare And Segment Through Mini GDS    I
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0DY1225J${departure_date1}LAXDENGK1/05121500
+    Enter GDS Command    0UA1021J${departure_date2}DENDFWGK1/05501200
+    Enter GDS Command    0NK1025Y${departure_date3}DFWLAXGK1/12251500
+    Enter LCC Remarks For Specific Airline Code    DY    USD    130.00    25.00    10.00    20.00
+    ...    210.50    ${EMPTY}    ABCDEF    000SA3    29.50
+    Enter LCC Remarks For Specific Airline Code    UA    USD    130.00    25.00    10.00    20.00
+    ...    210.50    ${EMPTY}    ABCDEF    000SA3    29.50
+    Enter LCC Remarks For Specific Airline Code    NK    USD    330.00    25.00    10.00    20.00
+    ...    410.50    2014032711    ABCDEF    ${EMPTY}    19.50
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify LCC Fare Tab Details    LAX-DEN    210.50    210.50    210.50    L - Lowest fare available accepted    ${EMPTY}
+    Click Fare Tab    LCC Fare 2
+    Verify LCC Fare Tab Details    DEN-DFW    210.50    210.50    210.50    L - Lowest fare available accepted    ${EMPTY}
+    Click Fare Tab    LCC Fare 3
+    Verify LCC Fare Tab Details    DFW-LAX    410.50    410.50    410.50    L - Lowest fare available accepted    ${EMPTY}
+    Click Panel    Policy Check
+    Populate Policy Check Panel With Default Values
+    Click Finish PNR
+    Re-Execute Amend Workflow For Air Fare Panel Retrieves And Writes Correct Remarks If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify LCC Remarks Are Written In The PNR In Correct Order    LCC-DY*BASE FARE USD 130.00    LCC-DY*TAX1 C25.00    LCC-DY*TAX2 H10.00    LCC-DY*TAX3 D20.00    LCC-DY*GRAND TOTAL USD 210.50    LCC-DY*TK-
+    ...    LCC-DY*CF-ABCDEF    LCC-DY*VN-000SA3    LCC-DY*COMM-29.50 USD    LCC-UA*BASE FARE USD 130.00    LCC-UA*TAX1 C25.00    LCC-UA*TAX2 H10.00
+    ...    LCC-UA*TAX3 D20.00    LCC-UA*GRAND TOTAL USD 210.50    LCC-UA*TK-    LCC-UA*CF-ABCDEF    LCC-UA*VN-000SA3    LCC-UA*COMM-29.50 USD
+    ...    LCC-NK*BASE FARE USD 330.00    LCC-NK*TAX1 C25.00    LCC-NK*TAX2 H10.00    LCC-NK*TAX3 D20.00    LCC-NK*GRAND TOTAL USD 410.50    LCC-NK*TK-2014032711
+    ...    LCC-NK*CF-ABCDEF    LCC-NK*VN-    LCC-NK*COMM-19.50 USD
+    Verify Specific Line Is Written In The PNR    TKT1-BFUSD130.00-S1
+    Verify Specific Line Is Written In The PNR    TKT1-DOM
+    Verify Specific Line Is Written In The PNR    -FQ210.50/LP-210/FS-L/FF-210
+    Verify Specific Line Is Written In The PNR    TKT2-DOM
+    Verify Specific Line Is Written In The PNR    -FQ210.50/LP-210/FS-L/FF-210
+    Verify Specific Line Is Written In The PNR    TKT3-DOM
+    Verify Specific Line Is Written In The PNR    -FQ410.50/LP-410/FS-L/FF-410
+    Verify Specific Line Is Written In The PNR    TKT1-BA-130.00/TX1-C25.00/TX2-H10.00/TX3-D20.00/COMM-29.50
+    Verify Specific Line Is Written In The PNR    TKT2-BA-130.00/TX1-C25.00/TX2-H10.00/TX3-D20.00/COMM-29.50
+    Verify Specific Line Is Written In The PNR    TKT3-BA-330.00/TX1-C25.00/TX2-H10.00/TX3-D20.00/COMM-19.50
+    Verify Specific Line Is Written In The PNR    TKT1-PC-DY
+    Verify Specific Line Is Written In The PNR    TKT2-PC-UA
+    Verify Specific Line Is Written In The PNR    TKT3-PC-NK
+    Verify Specific Line Is Written In The PNR    HOLD.AWAITING.APPROVAL
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[NB] Verify That Only Fares Related T & Matrix Remarks Are Suppressed For LCC With Exchange And Rules When Disable Fare Calc And Rules SO Is Set To Yes
+    [Tags]    us4692    data_dependent
+    Open Power Express And Retrieve Profile    ${version}    Test    U003WXR    en-US    AutomationUS    US AUTO APOLLO
+    Select GDS    Apollo
+    Set Client And Traveler    Apollo 16 - Auto ¦ US4692    AutoSeventeenTwo    NoramTrvlrOne
+    Select Client Account Value    U1A3E ¦ Apollo 3 - SyEx ¦ US4692
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    ORDLAX+AA    01Y1BK    \    5    0
+    Book Flight X Months From Now    LAXORD+AA    01Y1BK    \    5    5
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    [Teardown]
+
+[AB] Verify That Only Fares Related T & Matrix Remarks Are Suppressed For LCC With Exchange And Rules When Disable Fare Calc And Rules SO Is Set To Yes
+    [Tags]    us4692    data_dependent    de6931
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Delete All Segments
+    Book Flight X Months From Now    DENORD+NK    01Y1BK    \    5    0
+    Book Flight X Months From Now    ORDDEN+AA    01Y1BK    \    5    5
+    Enter LCC Remarks For Specific Airline Code    NK    USD    795.96    25    10    20
+    ...    850.96    2014032733    ABCDEF    000SA1    30.5
+    Enter LCC Remarks For Specific Airline Code    AA    USD    123    25    10    20
+    ...    178    2014032733    ABCDEF    000SA2    30.5
+    Enter GDS Command    ¤:5T/TKT1-VEN/NE/EX-Y/OTK-3238383888
+    Click Read Booking
+    Verify Panel Is Green    Air Fare
+    Click Panel    Air Fare
+    Verify Fare Tab Is Visible    LCC Fare 1    LCC Fare 2
+    Click Fare Tab    LCC Fare 1
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Not Finalised Is Enabled
+    Verify Fare Tab Details    DEN-ORD    850.96    850.96    850.96    E - Exchange    ${EMPTY}
+    ...    DOM
+    Click Fare Tab    LCC Fare 2
+    Verify High/Charged/Low Fare, Realised/Missed Saving Code, Route Code Fields Are Disabled
+    Verify Fare Tab Details    ORD-DEN    178.00    178.00    178.00    L - Lowest fare available accepted    ${EMPTY}
+    ...    DOM
+    Set Telephone
+    Select Trip Type Value    Personal
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Delivery
+    Select Delivery Method    Vendor sale (Non ARC)
+    Click Finish PNR
+    Re-Execute Amend Workflow For Air Fare Panel Retrieves And Writes Correct Remarks If Simultaneous Change Error Is Displayed
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Verify Specific Line Is Written In The PNR    T/TKT1-BFUSD795.96-S1
+    Verify Specific Line Is Written In The PNR    T/TKT1-DOM
+    Verify Specific Line Is Written In The PNR    T/TKT2-BFUSD123.00-S2
+    Verify Specific Line Is Written In The PNR    T/TKT2-DOM
+    Verify Specific Line Is Written In The PNR    T/TKT1-PC-NK
+    Verify Specific Line Is Written In The PNR    T/TKT1-BA-795.96/TX1-C25/TX2-H10/TX3-D20/COMM-30.5
+    Verify Specific Line Is Written In The PNR    T/TKT2-PC-AA
+    Verify Specific Line Is Written In The PNR    T/TKT2-BA-123.00/TX1-C25/TX2-H10/TX3-D20/COMM-30.5
+    Verify Specific Line Is Written In The PNR    G*LP/850
+    Verify Specific Line Is Written In The PNR    G*FF/850
+    Verify Specific Line Is Written In The PNR    G*CF/A3E0000000N
+    Verify Specific Line Is Written In The PNR    G*BB/U44444
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Amend Workflow For Air Fare Panel Retrieves And Writes Correct Remarks
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Click Fare Tab    LCC Fare 1
+    Verify LCC Fare Tab Details    LAX-MSP    160.50    160.50    160.50    L - Lowest fare available accepted    ${EMPTY}
+    Verify Missed Savings Code Field Is Disabled
+    Verify Fare Not Finalised Is Unticked
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    LCC Fare 2
+    Verify LCC Fare Tab Details    MSP-ORD    350.00    350.00    350.00    L - Lowest fare available accepted    ${EMPTY}
+    Verify Missed Savings Code Field Is Disabled
+    Select Fare Restriction    FULLY FLEXIBLE
+    Click Fare Tab    LCC Fare 3
+    Verify LCC Fare Tab Details    ORD-JFK    540.00    540.00    540.00    L - Lowest fare available accepted    ${EMPTY}
+    Verify Missed Savings Code Field Is Disabled
+    Cancel Apollo Stored Fare And Segment Through Mini GDS    I
+    Retrieve PNR Details From Travelport    ${current_pnr}
+    Delete LCC Remarks
+    Get Future Dates For LCC Remarks    5
+    Enter GDS Command    0DY1225J${departure_date1}LAXDENGK1/05121500
+    Enter GDS Command    0UA1021J${departure_date2}DENDFWGK1/05501200
+    Enter GDS Command    0NK1025Y${departure_date3}DFWLAXGK1/12251500
+    Enter LCC Remarks For Specific Airline Code    UA    USD    130.00    25.00    10.00    20.00
+    ...    210.50    ${EMPTY}    ABCDEF    000SA3    29.50
+    Enter LCC Remarks For Specific Airline Code    NK    USD    330.00    25.00    10.00    20.00
+    ...    410.50    2014032711    ABCDEF    ${EMPTY}    19.50
+    Enter LCC Remarks For Specific Airline Code    DY    USD    130.00    25.00    10.00    20.00
+    ...    210.50    ${EMPTY}    ABCDEF    000SA3    29.50
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Click Panel    Air Fare
+    Verify LCC Fare Tab Details    LAX-DEN    210.50    210.50    210.50    L - Lowest fare available accepted    ${EMPTY}
+    Click Fare Tab    Fare 2
+    Verify LCC Fare Tab Details    DEN-DFW    210.50    210.50    210.50    L - Lowest fare available accepted    ${EMPTY}
+    Click Fare Tab    Fare 3
+    Verify LCC Fare Tab Details    DFW-LAX    410.50    410.50    410.50    L - Lowest fare available accepted    ${EMPTY}
+    Click Finish PNR
+
+Cancel Apollo Stored Fare And Segment Through Mini GDS
+    [Arguments]    ${segment_line_number}
+    Enter GDS Command    XT
+    Enter GDS Command    X${segment_line_number}
+    Enter GDS Command    R:CWTUSER

@@ -1,0 +1,491 @@
+*** Settings ***
+Force Tags        amadeus    apac    howan    not_ready    us438
+Resource          ../obt_verification.txt
+Resource          ../../../../acceptance_tests/car/car_verification.txt
+Resource          ../../../../resources/panels/car.txt
+Resource          ../../car/car_verification.txt
+
+*** Test Cases ***
+[HK AB] Verify That The Correct Identifiers Are Written For Single VFF EB_EBA
+    [Tags]    hk    for_update
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Select GDS    Amadeus
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION HK - US438    BEAR    len
+    Click New Booking
+    Update PNR for EN or GB
+    Book Active Car Segment    LAX    6    1    6    1    ET
+    ...    1    CCAR
+    Click Read Booking
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Add OBT Remark    EBA
+    Update Remark FF VFF And Delete Segment Relate    VFF34    2    EB    ${EMPTY}
+    Comment    Update Remark FF VFF And Delete Segment Relate    VFF35    2    ${EMPTY}    EBA
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Verify Prepopulated Touch level value
+    Verify touch level default value for car panel    ${EMPTY}
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch level in car panel    EB - Online Unassisted
+    Select Booking method in Car panel    Manual
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That The Correct Identifiers Are Written For Single VFF EB_EBA For HK
+    Retrieve PNR Details    ${current_pnr}
+    Verify VFF Remarks Are Written In PNR    EBA    EB    2    Manual
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN AB] Verify That The Correct Identifiers Are Written For Multiple VFF AM_EAM
+    [Tags]    in    for_update
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Select GDS    Amadeus
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION IN - US438    BEAR    hong
+    Click New Booking
+    Update PNR for EN or GB
+    Book Active Car Segment    LAX    6    1    6    1    ET
+    ...    1    CCAR
+    Book Active Car Segment    LAX    7    1    7    1    ET
+    ...    1    CCAR
+    Click Read Booking
+    Click Car Tab    LAX - ${pickup_date_1}
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Click Car Tab    LAX - ${pickup_date_1}
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Add OBT Remark    EAM
+    Update Remark FF VFF And Delete Segment Relate    VFF34    3    AM    ${EMPTY}
+    Update Remark FF VFF And Delete Segment Relate    VFF34    2    AM    ${EMPTY}
+    Delete Remarks For FF And VFF    VFF35    2
+    Delete Remarks For FF And VFF    VFF35    3
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Click Car Tab    LAX - ${pickup_date_1}
+    Verify touch level default value for car panel    AM - Offline
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Booking method in Car panel    GDS
+    Click Car Tab    LAX - ${pickup_date_1}
+    Verify touch level default value for car panel    AM - Offline
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Booking method in Car panel    GDS
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That The Correct Identifiers Are Written For Multiple VFF AM_EAM For IN
+    Verify VFF Remarks Are Written In PNR    EAM    AM    2    GDS
+    Verify VFF Remarks Are Written In PNR    EAM    AM    3    GDS
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG AB] Verify The Correct Identifiers Are Written For FF And VFF AA_CBK
+    [Tags]    sg    for_update
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Select GDS    Amadeus
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION SG - US438    BEAR    HONG
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    FXP/S2    6    5
+    Book Active Car Segment    LAX    6    1    6    1    ET
+    ...    1    CCAR
+    Click Read Booking
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Add OBT Remark    CBK
+    Update Remark FF VFF And Delete Segment Relate    VFF34    2    AM    ${EMPTY}
+    Update Remark FF VFF And Delete Segment Relate    FF34    3    AM    ${EMPTY}
+    Update FF34, FF35 in PNR Remarks    CBK    AM    3
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    ${EMPTY}
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Agent Assisted
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Verify touch level default value for car panel    ${EMPTY}
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch level in car panel    AA - Agent Assisted
+    Select Booking method in Car panel    Manual
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify The Correct Identifiers Are Written For FF And VFF AA_CBK For SG
+    Verify VFF Remarks Are Written In PNR    CBK    AA    2    Manual
+    Verify FF Remarks In PNR    CBK    AA    3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[HK AB] Verify The Correct Identifiers Are Written For FF And VFF EB_CTG
+    [Tags]    hk    for_update
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Select GDS    Amadeus
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION HK - US438    BEAR    LEN
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    HKGSIN/ASQ    SS1Y1    FXP/S2    6    5
+    Book Active Car Segment    LAX    6    1    6    1    ET
+    ...    1    CCAR
+    Click Read Booking
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Add OBT Remark    CTG
+    Update Remark FF VFF And Delete Segment Relate    VFF34    2    EB    ${EMPTY}
+    Update Remark FF VFF And Delete Segment Relate    FF34    3    EB    ${EMPTY}
+    Update FF34, FF35 in PNR Remarks    CTG    EB    3
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    ${EMPTY}
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Online Unassisted
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Comment    Verify Prepopulated Touch level value
+    Verify touch level default value for car panel    ${EMPTY}
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch level in car panel    EB - Online Unassisted
+    Select Booking method in Car panel    Manual
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify The Correct Identifiers Are Written For FF And VFF EB_CTG For HK
+    Verify VFF Remarks Are Written In PNR    CTG    EB    2    Manual
+    Verify FF Remarks In PNR    CTG    EB    3
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[SG AB] Verify That The Correct Identifiers Are Written For Single VFF AA_EBS
+    [Tags]    sg    for_update
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION SG - US438    BEAR    HONG
+    Click New Booking
+    Update PNR for EN or GB
+    Book Passive Car Segment X Months From Now    MNL    7    1    7    8    1
+    ...    120.04    HKD    EP    EUROPCAR    MCAR    WEEKEND
+    Click Read Booking
+    Click Panel    Car
+    Click Car Tab    MNL - ${pickup_date_1}
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA    Daily
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Retrieve PNR Details    ${current_pnr}
+    Add OBT Remark    EBS
+    Update Remark FF VFF And Delete Segment Relate    VFF34    EB
+    Delete Remarks For FF And VFF    VFF35    S2
+    End And Retrieve PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Verify Touch Level Default Value For Car Panel    ${EMPTY}
+    Verify Touch Level Dropdown Values For Car Panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch Level In Car Panel    AA - Agent Assisted
+    Select Booking Method in Car Panel    Manual
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Verify VFF Remarks Are Written In PNR    EBS    AA    2    Manual
+
+[IN AB] Verify That the Correct identifiers Are Written for multiple VFF AA_ZIL
+    [Tags]    in    for_update
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Select GDS    Amadeus
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION IN - US438    BEAR    TEST
+    Click New Booking
+    Update PNR for EN or GB
+    Book Active Car Segment    LAX    6    1    6    1    ET
+    ...    1    CCAR
+    Click Read Booking
+    Click Car Tab    LAX - ${pickup_date_1}
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Add OBT Remark    ZIL
+    Update Remark FF VFF And Delete Segment Relate    VFF34    2    AA    ${EMPTY}
+    Delete Remarks For FF And VFF    VFF35    2
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Active Car Segment    LAX    7    1    6    1    ET
+    ...    2    CCAR
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Click Car Tab    LAX - ${pickup_date_1}
+    Verify touch level default value for car panel    AM - Offline
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Booking method in Car panel    GDS
+    Click Car Tab    LAX - ${pickup_date_2}
+    Verify touch level default value for car panel    AM - Offline
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That the Correct identifiers Are Written for multiple VFF AA_ZIL For IN
+    Verify VFF Remarks Are Written In PNR    ZIL    AM    2    GDS
+    Verify VFF Remarks Are Written In PNR    ZIL    AM    3    GDS
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+[IN AB] Verify That The Correct Identifiers Are Written For FF And VFF AA_GET
+    [Tags]    in    for_update
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    XYZ Company PV2 ¦ AUTOMATION IN - US438    BEAR    Hong
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINHKG/ATR    SS1Y1    FXP/S2    6    3
+    Book Passive Car Segment X Months From Now    MNL    7    1    7    8    1
+    ...    120.04    HKD    EP    EUROPCAR    MCAR    WEEKEND
+    Click Read Booking
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Update Remark FF VFF And Delete Segment Relate    VFF34    AA
+    Update Remark FF VFF And Delete Segment Relate    VFF35    AMI
+    End And Retrieve PNR
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Verify Touch Level Default Value For Car Panel    AM - Offline
+    Verify Touch Level Dropdown Values For Car Panel    AA - Agent Assisted    AM - Offline    EB - Online Unassisted
+    Select Booking method in Car panel    Manual
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Verify VFF Remarks Are Written In PNR    GET    AM    3    Manual
+    Verify FF Remarks In PNR    GET    AM    3
+
+[IN AB] Verify That The Correct Identifiers Are Written For Multiple VFF And Single FF EB_CYT
+    [Tags]    in    for_update
+    Comment    Set Test Variable    ${locale}    en-GB
+    Comment    Select GDS    Amadeus
+    Open Power Express And Retrieve Profile    ${version}    Test    u003axo    en-GB    aobsum    APAC QA
+    Select GDS    Amadeus
+    Set Client And Traveler    APAC SYN CORP ¦ APAC SYN IN    BEAR    DEEIGHTYONE
+    Select Client Account Value    5030500473 ¦ CARLSON WAGONLIT TRAVEL ¦ APAC SYN IN
+    Click New Booking
+    Update PNR for EN or GB
+    Book Flight X Months From Now    SINHKG/ASQ    SS1Y1    FXP/S2    6    3
+    Book Passive Car Segment X Months From Now    SFO    6    0    6    10    1
+    ...    1205.88    GBP    EP    EUROPCAR    CCMR    PACKAGE
+    Book Passive Car Segment X Months From Now    SHA    7    0    7    2    2
+    ...    22.99    CNY    ZI    AVIS    CCMR    PACKAGE
+    Comment    Enter GDS Command    11ACSEPATL15NOV-2/ARR-1500/RT-6P/VT-MCAR/RQ-HKD150- WD/CF-1333344
+    Click Read Booking
+    Click Car Tab    SFO - ${pickup_date_1}
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Click Car Tab    SHA - ${pickup_date_2}
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Add OBT Remark    CYT
+    Update Remark FF VFF And Delete Segment Relate    FF34    2    EB    ${EMPTY}
+    Update Remark FF VFF And Delete Segment Relate    VFF34    3    EB    ${EMPTY}
+    Update Remark FF VFF And Delete Segment Relate    VFF34    4    EB    ${EMPTY}
+    Delete Remarks For FF And VFF    FF35    2
+    Delete Remarks For FF And VFF    VFF35    3
+    Delete Remarks For FF And VFF    VFF35    4
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    AA
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Offline
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Car Tab    SFO - ${pickup_date_1}
+    Verify touch level prepopulated value in dropdown    EB    AA
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch level in car panel    AA - Agent Assisted
+    Select Touch level in car panel    EB - Online Unassisted
+    Select Booking method in Car panel    GDS
+    Click Car Tab    SHA - ${pickup_date_2}
+    Verify touch level prepopulated value in dropdown    AM    AM
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch level in car panel    AA - Agent Assisted
+    Select Booking method in Car panel    GDS
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Amend Booking For Verify That The Correct Identifiers Are Written For Multiple VFF And Single FF EB_CYT For IN
+    Verify VFF Remarks Are Written In PNR    CYT    EB    3    GDS
+    Verify VFF Remarks Are Written In PNR    CYT    EB    4    GDS
+    Verify FF Remarks In PNR    CYT    EB    2
+    [Teardown]    Cancel PNR Thru GDS Native    ${current_pnr}
+
+*** Keywords ***
+Verify FF Remarks In PNR
+    [Arguments]    ${obt_code}    ${touch_level_code}    ${segment}
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    Comment    Verify VFF 34, VFF 35,VFF 36, FF39 remaks for car only    ${touch_level_code}    ${obt_code}    ${segment}    ${expected _booking_method}    FF34
+    Comment    Verify Specific Line Is Written In The PNR    RM *MSX/FF34-${touch_level_code}/FF35-${obt_code}    multi_line_search_flag=true
+    Verify Specific Line Is Written In The PNR    RM *FF34/${touch_level_code}/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="EB"    Verify Specific Line Is Written In The PNR    RM *FF35/${obt_code}/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="AM" or "${touch_level_code}"=="AA" and "${obt_code}"=="EBA"    Verify Specific Line Is Written In The PNR    RM *FF35/AMA/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="AM" or "${touch_level_code}"=="AA" and "${obt_code}"=="EBS"    Verify Specific Line Is Written In The PNR    RM *FF35/AMS/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="AM" or "${touch_level_code}"=="AA" and "${obt_code}"=="CBK"    Verify Specific Line Is Written In The PNR    RM *FF35/AMA/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="AM" or "${touch_level_code}"=="AA" and "${obt_code}"=="GET"    Verify Specific Line Is Written In The PNR    RM *FF35/AMI/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="AM" or "${touch_level_code}"=="AA" and "${obt_code}"=="EAM"    Verify Specific Line Is Written In The PNR    RM *FF35/AME/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="AM" or "${touch_level_code}"=="AA" and "${obt_code}"=="KDS"    Verify Specific Line Is Written In The PNR    RM *FF35/AMK/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="AM" or "${touch_level_code}"=="AA" and "${obt_code}"=="CYT"    Verify Specific Line Is Written In The PNR    RM *FF35/AM6/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="AM" or "${touch_level_code}"=="AA" and "${obt_code}"=="CTG"    Verify Specific Line Is Written In The PNR    RM *FF35/AM5/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="AM" or "${touch_level_code}"=="AA" and "${obt_code}"=="ZIL"    Verify Specific Line Is Written In The PNR    RM *FF35/AMA/S${segment}    multi_line_search_flag=true
+    Run Keyword If    "${touch_level_code}"=="AM" or "${touch_level_code}"=="AA" and "${obt_code}"=="OTH"    Verify Specific Line Is Written In The PNR    RM *FF35/AMA/S${segment}    multi_line_search_flag=true
+
+Update FF34, FF35 in PNR Remarks
+    [Arguments]    ${obt_code}    ${touch_level_code}    ${segment}
+    Retrieve PNR Details From Amadeus    ${current_pnr}    RTY
+    ${line}    Get Lines Containing String    ${pnr_details}    MSX/FF34-AB/FF35-AMA/FF36-G/FF47-CWT/S${segment}
+    Log    ${line}
+    @{line}    Split To Lines    ${line}
+    @{line_numbers}    Create List
+    : FOR    ${each_line}    IN    @{line}
+    \    ${splitted_data}    Split String    ${each_line.strip()}    ${SPACE}
+    \    Comment    Log    ${splitted_data[0]}
+    \    Append To List    ${line_numbers}    ${splitted_data[0]}
+    : FOR    ${each_line}    IN    @{line_numbers}
+    \    Enter GDS Command    ${each_line}/ *MSX/FF34-${touch_level_code}/FF35-${obt_code}/FF36-G/FF47-CWT/S${segment}
+    End And Retrieve PNR
+
+Amend Booking For Verify That The Correct Identifiers Are Written For Single VFF EB_EBA For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Verify Prepopulated Touch level value
+    Verify touch level default value for car panel    ${EMPTY}
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch level in car panel    EB - Online Unassisted
+    Select Booking method in Car panel    Manual
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+
+Amend Booking For Verify That The Correct Identifiers Are Written For Multiple VFF AM_EAM For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Click Car Tab    LAX - ${pickup_date_1}
+    Verify touch level default value for car panel    AM - Offline
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Booking method in Car panel    GDS
+    Click Car Tab    LAX - ${pickup_date_1}
+    Verify touch level default value for car panel    AM - Offline
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Booking method in Car panel    GDS
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+
+Amend Booking For Verify The Correct Identifiers Are Written For FF And VFF AA_CBK For SG
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    ${EMPTY}
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Agent Assisted
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Verify touch level default value for car panel    ${EMPTY}
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch level in car panel    AA - Agent Assisted
+    Select Booking method in Car panel    Manual
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+
+Amend Booking For Verify The Correct Identifiers Are Written For FF And VFF EB_CTG For HK
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    ${EMPTY}
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Online Unassisted
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Comment    Verify Prepopulated Touch level value
+    Verify touch level default value for car panel    ${EMPTY}
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch level in car panel    EB - Online Unassisted
+    Select Booking method in Car panel    Manual
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+
+Amend Booking For Verify That the Correct identifiers Are Written for multiple VFF AA_ZIL For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Active Car Segment    LAX    7    1    6    1    ET
+    ...    2    CCAR
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Panel    Car
+    Click Car Tab    LAX - ${pickup_date_1}
+    Verify touch level default value for car panel    AM - Offline
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Booking method in Car panel    GDS
+    Click Car Tab    LAX - ${pickup_date_2}
+    Verify touch level default value for car panel    AM - Offline
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Populate Car Tab With Values    150.00    150.00    150.00    MC - MISCELLANEOUS    M - MISCELLANEOUS    1 - Prepaid
+    ...    No    0.00    GDS    NA
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR
+
+Amend Booking For Verify That The Correct Identifiers Are Written For Multiple VFF And Single FF EB_CYT For IN
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Read Booking
+    Verify Actual Panel Contains Expected Panel    Amend
+    Click Panel    Amend
+    Verify Touch Level Default Value    AA
+    Verify Touch Level Dropdown Values    Online Unassisted    Agent Assisted    Offline
+    Select Touch Level    Offline
+    Verify Actual Panel Contains Expected Panel    Car
+    Click Car Tab    SFO - ${pickup_date_1}
+    Verify touch level prepopulated value in dropdown    EB    AA
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch level in car panel    AA - Agent Assisted
+    Select Touch level in car panel    EB - Online Unassisted
+    Select Booking method in Car panel    GDS
+    Click Car Tab    SHA - ${pickup_date_2}
+    Verify touch level prepopulated value in dropdown    AM    AM
+    Verify Touch level Dropdown values for Car panel    AA - Agent Assisted    EB - Online Unassisted    AM - Offline
+    Select Touch level in car panel    AA - Agent Assisted
+    Select Booking method in Car panel    GDS
+    Populate All Panels (Except Given Panels If Any)    Car
+    Click Finish PNR

@@ -1,0 +1,9 @@
+*** Settings ***
+Resource          ../../../resources/common/global_resources.txt
+
+*** Keywords ***
+Get Grid Data In Associated Charges For Validation
+    [Arguments]    ${identifier}
+    ${associated_charges_collection}    Get All Records In Associated Charges Grid
+    Set Suite Variable    ${associated_charges_collection${identifier.lower()}}    ${associated_charges_collection}
+    Log List    ${associated_charges_collection${identifier.lower()}}

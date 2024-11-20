@@ -1,0 +1,90 @@
+*** Settings ***
+Force Tags        sabre
+Resource          ../../resources/common/global_resources.txt
+Resource          ../resource_sanity.txt
+
+*** Test Cases ***
+New Booking
+    Open Power Express And Retrieve Profile    ${version}    Pilot    u003kxr    fr-FR    kronquillofr    FR Head Office Test Team
+    Select GDS    Sabre
+    Create New Booking With One Way Flight Using Default Values    Sabre ¦ FR-TEST SABRE    BEAR    TEDDi    CDGLHR    ${EMPTY}    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Select Panel    Recap
+    Comment    Verify Masked Credit Card Is Displayed By Default In Recap Panel    VI************1111/D1218
+    Comment    Verify Unmasked Credit Card Has Correct Details In Recap Panel    VI4444333322221111/D1218
+    Comment    Select Panel    Delivery
+    Comment    Sleep    5
+    Comment    Take Screenshot
+    Comment    Select Panel    Air Fare
+    Comment    Sleep    5
+    Comment    Take Screenshot
+    Comment    Click Finish PNR
+    Comment    Retrieve PNR Details from Sabre Red    ${current_pnr}
+    Comment    Comment    Verify Air Fares In PNR Remarks Are Correct    Fare 1
+    Comment    Verify TET Code Line In Remarks    .*0653*
+    Comment    Verify TAW Line In Remarks    TAW
+    Comment    Verify SYEX GVS Line In Remarks    A‡SYEXGVS
+
+Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    LHRORY    01Y1    WPRQ‡S2    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Amend Booking
+    Retrieve PNR Details from Sabre Red    ${current_pnr}
+    Comment    Verify Air Fares In PNR Remarks Are Correct    Fare 1
+    Verify TET Code Line In Remarks    .*0653*
+
+Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)    Delivery
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Send Itinerary
+    Retrieve PNR Details from Sabre Red    ${current_pnr}
+    Verify TET Code Line In Remarks    .*0653*
+    Verify SYEX GVS Line In Remarks    A‡SYEXGVS
+
+Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+    Execute Simultaneous Change Handling    Simultaneous Change Handling For Cancel Booking
+    Verify Requested Booking File Segments Is Cancelled
+    Retrieve PNR Details from Sabre Red    ${current_pnr}
+    Verify TET Code Line In Remarks    .*0653*
+    Verify SYEX GVS Line In Remarks    A‡SYEXGVS
+    Verify FULLCXL Line In Remarks    ‡S0*FULLCXL**FULLCXL*
+    [Teardown]    Click Clear All
+
+*** Keywords ***
+Simultaneous Change Handling For Amend Booking
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Book Flight X Months From Now    LHRORY    01Y1    WPRQ‡S2    7
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Air Fare
+    Populate Fare Tab With Default Values    Fare 1
+    Populate Fare Tab With Default Values    Fare 2
+    Sleep    5
+    Take Screenshot
+    Click Finish PNR
+
+Simultaneous Change Handling For Cancel Booking
+    Retrieve PNR    ${current_pnr}
+    Click Cancel Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR
+
+Simultaneous Change Handling For Send Itinerary
+    Retrieve PNR    ${current_pnr}
+    Click Send Itinerary
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR

@@ -1,0 +1,697 @@
+*** Settings ***
+Resource          other_services_associated_charges_control.robot
+Resource          other_services_charges_control.robot
+Resource          other_services_remarks_verification.robot
+Resource          other_services_request_info_control.robot
+Resource          other_services_mi_control.robot
+Resource          ../air_fare/air_fare_verification.robot
+Resource          other_services_vendor_info_control.robot
+Resource          other_services_request_verification.robot
+Resource          other_services_mi_verification.robot
+Resource          other_services_charges_verification.robot
+
+*** Variables ***
+@{air_products}    air bsp    air domestic    air sales-non bsp int    air conso-dom
+
+*** Keywords ***
+Amend PNR Using Cash As FOP
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    Cash
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    Click Finish PNR    Amend PNR Using Cash As FOP
+    Execute Simultaneous Change Handling    Amend PNR Using Cash As FOP
+
+Click Add Button In EO Panel
+    [Arguments]    ${tab}
+    Click Tab In Other Services Panel    ${tab}
+    ${add_button}    Determine Multiple Object Name Based On Active Tab    Charges_AddOrUpdateButton,AddOrUpdateButton    False
+    Wait Until Control Object Is Visible    ${add_button}
+    Click Control Button    ${add_button}
+    Wait Until Exchange Order Grid Is Displayed
+    [Teardown]    Take Screenshot
+
+Click Amend EO
+    [Arguments]    ${eo_number}
+    Click Amend EO Button    ${eo_number}
+    Wait Until Control Object Is Visible    [NAME:OtherServicesTabControl]
+    Wait Until Other Service Loader Is Not Visible
+    [Teardown]
+
+Click Back To List In Other Svcs
+    Activate Power Express Window
+    ${object}    Determine Multiple Object Name Based On Active Tab    BackToGridButton,AssociatedCharges_BackToGridButton,Charges_BackToGridButton    False
+    Click Control Button    ${object}
+
+Click Cancel Button In EO Grid
+    [Arguments]    ${eo_number}    ${country}=IN    ${cancel_eo}=yes
+    Click Button In Eo Grid    ${eo_number}    ${country}    Cancel
+    Wait Until Window Exists    Exchange Order Cancel    timeout=8    retry_interval=4
+    ${is_eo_cancelled}    Is Exchange Order Cancelled
+    Run Keyword If    ${is_eo_cancelled}    Log    EO Number "${eo_number}" is already cancelled.    WARN
+    Run Keyword If    "${cancel_eo.lower()}" == "yes" and "${is_eo_cancelled}" == "False"    Run Keywords    Win Activate    Exchange Order Cancel
+    ...    AND    Send    {ALTDOWN}Y{ALTUP}
+    ...    AND    Wait Until Other Service Loader Is Not Visible
+    ...    AND    Wait Until Progress Info is Completed
+    ...    ELSE IF    "${cancel_eo.lower()}" == "no" and "${is_eo_cancelled}" == "False"    Run Keywords    Win Activate    Exchange Order Cancel
+    ...    AND    Send    {ALTDOWN}N{ALTUP}
+    Run Keyword If    ${is_eo_cancelled}    Get Expected Last Amend Date
+    [Teardown]    Take Screenshot
+
+Click Cell In EO Grid
+    [Arguments]    ${row_num}    ${eo_action}
+    [Documentation]    Description: Simulates the User Action Click on Grid Panes to click a certain cell. Based on Row and EO_Action values supplied (Note that the minimum selected_row/selected_column value is 1)
+    ...    Sample: Click Cell In Data Grid Table By Row And Eo Action | 3 | "amend" Click Cell In Data Grid Table By Row And Eo Action | 2 | "pdf" Click Cell In Data Grid Table By Row And Eo Action | 4 | "raise cheque"
+    Click Cell In Data Grid Table By Row And Eo Action    ${row_num}    ${eo_action}
+
+Click Email Button In EO Grid
+    [Arguments]    ${country}
+    Click Other Services
+    Comment    Click Send Email Eo    ${eo_number}
+    Click Button In Eo Grid    ${eo_number}    ${country}    email
+    Wait Until Window Exists    Exchange Order    timeout=8    retry_interval=4
+    ${actual_email_confirm_message}    Get Control Text Value    [CLASS:Static; INSTANCE:1]    Exchange Order
+    ${actual_email_confirm_message}    Remove String Using Regexp    ${actual_email_confirm_message}    \\n
+    ${actual_email_confirm_message}    Strip String    ${actual_email_confirm_message}
+    ${actual_email_confirm_message}    Replace String    ${actual_email_confirm_message}    ${SPACE}${SPACE}    ${SPACE}
+    Should Be Equal As Strings    ${actual_email_confirm_message}    Email has been successfully sent to: JIlagan@Carlsonwagonlit.com
+    Send    {ENTER}
+    Get Expected Last Amend Date
+    Take Screenshot
+
+Click Go To Other Services Button In Complete Panel
+    Wait Until Control Object Is Visible    [NAME:GoToOtherServicesPanelButton]
+    Click Control Button    [NAME:GoToOtherServicesPanelButton]
+    Wait Until Exchange Order Grid Is Displayed
+    Screenshot.Take Screenshot
+    [Teardown]
+
+Click MI Tab
+    Click Tab In Other Services Panel    MI
+
+Click PDF Button In EO Grid
+    [Arguments]    ${eo_number}    ${country}
+    Set Suite Variable    ${eo_status}    ${actual_eo_collection[7]}
+    Click Button In Eo Grid    ${eo_number}    ${country}    PDF
+    Run Keyword If    "${grid_option.lower}" == "Pdf"    Wait Until Control Object Is Visible    [NAME:OtherServicesTabControl]
+    Wait Until Other Service Loader Is Not Visible
+    Take Screenshot
+
+Click Raise Cheque Button In EO Grid
+    [Arguments]    ${eo_number}    ${country}
+    Set Suite Variable    ${eo_status}    ${actual_eo_collection[7]}
+    Click Button In Eo Grid    ${eo_number}    ${country}    Raise Cheque
+    Comment    Run Keyword If    "${grid_option.lower}" == "amend"    Wait Until Control Object Is Visible    [NAME:OtherServicesTabControl]
+    Wait Until Other Service Loader Is Not Visible
+
+Click Cancel Or Remove
+    Activate Power Express Window
+    Click Control Button    [NAME:Charges_RemoveButton]
+
+Click Ticket Type Tab
+    Activate Power Express Window
+    Select Tab Control    Ticket Type
+
+Click Update Button In EO Panel
+    [Arguments]    ${tab}
+    Click Tab In Other Services Panel    ${tab}
+    Activate Power Express Window
+    Click Control Button    [NAME:Charges_AddOrUpdateButton]
+    Wait Until Exchange Order Grid Is Displayed
+    [Teardown]    Take Screenshot
+
+Create PNR Using Cash As FOP
+    [Arguments]    ${country}=SG    ${air_segment}=False    ${car_segment}=False    ${hotel_segment}=False    ${ticketing_rir_remark}=${EMPTY}    ${fop}=Cash
+    ...    ${passive_air_segment}=False
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    ${country}    Convert To Uppercase    ${country}
+    Set Client And Traveler    APAC SYN CORP ¦ APAC ${country} OS AUTOMATION    BEAR    ${country}OTHERS
+    Comment    Select Client Account Using Default Value
+    Select Client Account    3176300003 ¦ Leisure7 ¦ APAC IN OS AUTOMATION
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    ${fop}
+    Update PNR With Default Values
+    Run Keyword If    "${hotel_segment}" == "True"    Book Hotel Segment Using Default Values
+    Run Keyword If    "${car_segment}" == "True"    Book Car Segment Using Default Vaues
+    Run Keyword If    "${air_segment}" == "True"    Book Air Segment Using Default Values    ${country}
+    Run Keyword If    "${passive_air_segment}" == "True"    Book Passive Flight X Months From Now    AUHDEL    EY    6    10
+    Run Keyword If    "${ticketing_rir_remark}" != "${EMPTY}"    Enter GDS Command    ${ticketing_rir_remark}
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)    Other Svcs
+
+Create PNR Using Credit Card As FOP
+    [Arguments]    ${country}=SG    ${air_segment}=False    ${car_segment}=False    ${hotel_segment}=False    ${fop_dropdown_value}=PORTRAIT-A/AX***********0002/D1235-TEST-AX    ${passive_air_segment}=False
+    ...    ${add_multiple_passenger}=False
+    Open Power Express And Retrieve Profile    ${version}    Test    uexr493    en-GB    erepolidoru    APAC QA
+    ...    Amadeus
+    ${country}    Convert To Uppercase    ${country}
+    Set Client And Traveler    APAC SYN CORP ¦ APAC ${country} OS AUTOMATION    BEAR    ${country}OTHERS
+    Select Client Account    3176300003 ¦ Leisure7 ¦ APAC IN OS AUTOMATION    #comment for now till Set Client MI Field keyword is created
+    Click New Booking
+    Click Panel    Client Info
+    Select Form Of Payment    ${fop_dropdown_value}
+    Update PNR With Default Values
+    Run Keyword If    "${hotel_segment}" == "True"    Book Hotel Segment Using Default Values
+    Run Keyword If    "${car_segment}" == "True"    Book Car Segment Using Default Vaues
+    Run Keyword If    "${air_segment}" == "True"    Book Air Segment Using Default Values    ${country}
+    Run Keyword If    "${passive_air_segment}" == "True"    Book Passive Flight X Months From Now    AUHDEL    EY    6    10
+    Run Keyword If    "${add_multiple_passenger}" == "True"    Add Multiple Passengers With Default Values
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+    [Teardown]    Take Screenshot
+
+Get Exchange Order Number Using Product
+    [Arguments]    ${product_name}
+    ${eo_record}    Get Row Values From Datagrid    ${product_name}    EoGrid
+    ${eo_number}    Get From List    ${eo_record}    2
+    Set Suite Variable    ${eo_number}
+    Set Suite Variable    ${eo_number_${product_name.lower()}}    ${eo_number}
+
+Populate Additional Information
+    [Arguments]    ${other_related_no}    ${vendor_reference}
+    Set Other Related No (PO)    ${other_related_no}
+    Set Vendor Reference No (GSA)    ${vendor_reference}
+
+Populate All Tabs In Other Svc Panel (Except Given Tab)
+    [Arguments]    @{exclude_tabs}
+    ${visible_tabs}    Get Tab Items    OtherServicesTabControl
+    Remove Values From List    ${visible_tabs}    @{exclude_tabs}
+    : FOR    ${tab_name}    IN    @{visible_tabs}
+    \    Click Tab In Other Services Panel    ${tab_name}
+    \    Run Keyword    Populate ${tab_name} Tab With Default Values
+    Click Tab In Other Services Panel    ${visible_tabs[0]}
+    [Teardown]    Take Screenshot
+
+Populate Associated Charges Tab With Default Values
+    [Arguments]    ${product}    ${vendor}
+    Select Associated Product    ${product}
+    Select Associated Vendor    ${vendor}
+    Populate Cost Details    2500    12.5    500
+    Populate Additional Information    PONUMBA    VENDOR
+
+Populate Car With Default Values
+    ${is_visible}    Is Control Visible    [NAME:DepArrTabControl]
+    Run Keyword If    ${is_visible}    Click Tab In Other Services Panel    Departure From
+    Run Keyword If    ${is_visible}    Select Location Value    Other
+    Run Keyword If    ${is_visible}    Set Description Value    Automation Test
+    Run Keyword If    ${is_visible}    Click Tab In Other Services Panel    Departure To
+    Run Keyword If    ${is_visible}    Select Location Value    Home
+    Run Keyword If    ${is_visible}    Set Description Value    Automation Test
+    Run Keyword If    ${is_visible}    Click Tab In Other Services Panel    Arrival From
+    Run Keyword If    ${is_visible}    Select Location Value    Office
+    Run Keyword If    ${is_visible}    Set Description Value    31st Floor Zuellig, Philippines, 2010
+    Run Keyword If    ${is_visible}    Tick Date & Time Checkbox
+    Run Keyword If    ${is_visible}    Click Tab In Other Services Panel    Arrival To
+    Run Keyword If    ${is_visible}    Select Location Value    Other
+    Run Keyword If    ${is_visible}    Set Description Value    Automation Test
+    [Teardown]    Take Screenshot
+
+Populate Charges Tab With Default Values
+    ${status}    Run Keyword And Return Status    List Should Contain Value    ${air_products}    ${product.lower()}
+    Run Keyword If    ${status}    Populate Air Charges Tab With Default Values
+    ...    ELSE    Run Keywords    Populate Cost Details    2500    12.5    500
+    ...    AND    Populate Additional Information    PONUMBA    VENDOR
+
+Populate Cost Details
+    [Arguments]    ${cost_amount}    ${discount}    ${commission}
+    Set Cost Amount    ${cost_amount}    #Put determine if the field is visible before populating it    #${is_vendor_handling_visible}    Determine Control Object Is Visible On Active Tab    Details${index}TextBox    FALSE
+    ...    # \ Run Keyword If    ${is_vendor_handling_visible}    Set Control Text Value    Details${index}TextBox    ${details}
+    Set Discount    ${discount}
+    Set Commission    ${commission}
+    [Teardown]    Take Screenshot
+
+Populate Exchange Order Product
+    [Arguments]    ${product_name}    ${vendor_name}    ${fop}=Cash    @{exclude_tabs}
+    Select Product And Vendor    ${product_name}    ${vendor_name}
+    Run Keyword If    "${fop.lower()}" != "cash" and "${fop.lower()}" != "invoice" and "${fop.lower()}" != "${EMPTY}"    Select FOP Type    ${fop}
+    Run Keyword If    "${fop.lower()}" == "cash" or "${fop.lower()}" == "invoice" and "${fop.lower()}" != "${EMPTY}"    Select Value From Dropdown List    [NAME:FormsOfPaymentComboBox]    ${fop}
+    Populate All Tabs In Other Svc Panel (Except Given Tab)    @{exclude_tabs}
+
+Populate Hotel Info Tab With Default Values
+    Populate Service Info Cost Details    Vendor Test    1000    2500
+    Select Hotel Segment
+    [Teardown]    Take Screenshot
+
+Populate Insurance Tab With Default Values
+    Select Geographical Area    Asean
+    Set Number Of Days    50
+    Select Plan Selected    Family Budget Plan
+    Set Name    AUTOMATION TEST
+    Set Relationship    ME
+    Set Premium Amount    20000.00
+    Set Address Of First Name Insured Person    CWT PHILIPPINES1
+    Click Add
+    [Teardown]    Take Screenshot
+
+Populate MI Tab With Default Values
+    ${status}    Run Keyword And Return Status    List Should Contain Value    ${air_products}    ${product.lower()}
+    Run Keyword If    "${status}"=="True"    Populate Client MI Control Details    5000    1000    FD - First Class Discounted Fare    3K
+    ...    Agent Booked    CF - CLIENT NEGOTIATED FARE SAVING ACCEPTED    A - PARTIAL MISSED SAVING    AI    8000    9W
+    ...    9000    FF25=11111    FF14=22222    FF13=COST1    FF66=COST2    FF63=333
+    ...    ELSE    Run Keywords    Populate MI Fields    1234    500    MNL
+    ...    PR
+    ...    AND    Select MI Realised Saving Code    XX - NO SAVING
+    ...    AND    Select MI Missed Saving Code    F - PASSENGER REQUESTED SPECIFIC CLASS
+    ...    AND    Select MI Class Of Service    YF - Economy Class Full Fare
+
+Populate Other Service Product With Default Values
+    ${visible_tabs}    Get Tab Items    OtherServicesTabControl
+    : FOR    ${tab}    IN    @{visible_tabs}
+    \    Populate ${panel_name} Panel With Default Values
+    \    Click Add Button In EO Panel    ${visible_tabs[0]}
+
+Populate Request Tab With Default Values
+    ${status}    Run Keyword And Return Status    List Should Contain Value    ${air_products}    ${product.lower()}
+    Run Keyword If    ${status}    Populate Air Request Tab With Default Values
+    ...    ELSE    Populate Non-Air Request Tab With Default Values
+    [Teardown]    Take Screenshot
+
+Populate Segments And Fop In Other Services Error EO
+    [Arguments]    ${fop_identifier}==${EMPTY}    ${fop_dropdown_value}==${EMPTY}    ${select_val_from_dropdown}==False    ${fop_type_value}=="Credit Card (CX)"
+    Activate Power Express Window
+    Get Passive HHL Hotel Segment From The PNR
+    Get Passive HTL Hotel Segment From The PNR
+    @{error_eos}    Get Row Index In Error Eo Grid
+    : FOR    ${error_eo_number}    IN    @{error_eos}
+    \    Click Amend In Eo Grid    ${error_eo_number}
+    \    Get Product
+    \    Wait Until Control Object Is Visible    [NAME:OtherServicesTabControl]
+    \    ${visible_tabs}    Get Tab Items    OtherServicesTabControl
+    \    ${actual_tab}    Set Variable    ${visible_tabs[0]}
+    \    ${ticket_type_tab}    Set Variable    ${visible_tabs[1]}
+    \    ${hotel_segment_visibility}    Is Control Visible    [NAME:SegmentListView]
+    \    Run Keyword If    "${actual_tab.lower()}"=="hotel info" and "${hotel_segment_visibility}"=="True" and "${hhl_segments_list}"!="${EMPTY}"    Select Hotel Segment    ${hhl_segments_list[0]}
+    \    Run Keyword If    "${actual_tab.lower()}"=="hotel info" and "${hotel_segment_visibility}"=="True" and "${htl_segments_list}"!="${EMPTY}"    Select Hotel Segment    ${htl_segments_list[0]}
+    \    ${object_visibility}    Is Control Visible    [NAME:FormsOfPaymentComboBox]
+    \    Run Keyword If    "${object_visibility}"=="True"    Get FOP Type In Other Services
+    \    ${fop_is}    Get Control Field Mandatory State    [NAME:FormsOfPaymentComboBox]
+    \    Run Keyword If    "${object_visibility}"=="True" and "${fop_is.lower()}"=="mandatory"    Select Form Of Payment (FOP) In Other Services    ${EMPTY}    Invoice
+    \    ${air_segment_visibility}    Is Control Visible    [NAME:SegmentListView]
+    \    Run Keyword If    ("${actual_tab.lower()}"=="ticket info" or "${actual_tab.lower()}"=="service info" ) and "${air_segment_visibility}"=="True" and "${actual_tab.lower()}"!="visa info" and "${actual_tab.lower()}"!="hotel info"    Tick Select All Segments
+    \    Run Keyword If    "${ticket_type_tab.lower()}"=="ticket type"    Click Tab In Other Services Panel    Ticket Type
+    \    ${ticket_type_air_segment}    Is Control Visible    [NAME:SegmentListView]
+    \    Run Keyword If    "${ticket_type_tab.lower()}"=="ticket type" and "${ticket_type_air_segment}"=="True"    Tick Select All Segments
+    \    ${ticket_type}    Run Keyword If    "${ticket_type_tab.lower()}"=="ticket type"    Get Ticket Type Current Value
+    \    ${object_fare_no_visible}    Is Control Visible    [NAME:FiledFareNumberComboBox]
+    \    ${is_fare_no_mandatory}    Run Keyword If    "${ticket_type_tab.lower()}"=="ticket type" and "${object_fare_no_visible}"=="True"    Get Control Field Mandatory State    [NAME:FiledFareNumberComboBox]
+    \    Run Keyword If    "${is_fare_no_mandatory}"=="Mandatory"    Select Value From Dropdown List    [NAME:FiledFareNumberComboBox]    1    by_index=True
+    \    Take Screenshot
+    \    Click Update Button In EO Panel    ${actual_tab}
+    [Teardown]    Take Screenshot
+
+Populate Service Info Tab With Default Values
+    Populate Service Info Cost Details    Vendor Test    1000    2500
+    Populate Train And Ferry With Default Values
+    Populate Car With Default Values
+
+Populate Ticket Info Tab With Default Values
+    Set Published Fare Value    800.00
+    Set Nett Fare    500.05
+    Set Selling Fare Fee    500.05
+    Set Tax 1    10.55
+    other_services_ticket_cost_control.Set Tax Code 1    XT
+    Set Tax 2    10.55
+    other_services_ticket_cost_control.Set Tax Code 2    TX
+    Set Commission Value    50.55
+    Set Discount Value    275.55
+    Set Tranx/Service Fee Value    500.55
+    Set Fuel Surcharge Fee    150.55
+    Tick Select All Segments
+    Populate Airline Code And Ticket Number    123    1234555525
+    [Teardown]    Take Screenshot
+
+Populate Ticket Type Tab With Default Values
+    Populate Ticket Type With Default Values    BSP (without File Fare)
+    Tick Select All Segments
+    [Teardown]    Take Screenshot
+
+Populate Train And Ferry With Default Values
+    Populate Departure Routing    Singapore    Philippines    Train Ride
+    Populate Return Routing    Philippines    Singapore    Train Ride
+    [Teardown]    Take Screenshot
+
+Populate Vendor Info Tab With Default Values
+    Comment    Populate Vendor Info Tab    automationtest@cwt.com    1111    automationtest@cwt.com    #For SG and HK Keyword
+    Populate Other Services Vendor Info Control Details
+    [Teardown]    Take Screenshot
+
+Populate Visa Info Tab With Default Values
+    Populate Service Info Cost Details    Vendor Test    1000    2500
+    ${validity_type_option}    Get Dropdown Values    [NAME:ValidityComboBox]
+    ${validity_type}    Get From List    ${validity_type_option}    2
+    Populate Visa Processing Country Details    Singapore    Other    Single    ${validity_type}    Normal    0137563466343
+    [Teardown]    Take Screenshot
+
+Retrieve And Amend EO
+    Click Clear All
+    Retrieve PNR    ${current_pnr}
+    Click Other Services
+    Click Amend EO    ${eo_number}
+    Comment    Run Keyword If    "${form_of_payment}"=="${EMPTY}"    Manually Add Form Of Payment (FOP)    ${fop_type_value}    ${os_card_vendor}    ${os_card_number}
+    ...    ${os_exp_month}    ${os_exp_year}
+    ...    ELSE    Select Form Of Payment (FOP)    ${form_of_payment}
+    Run Keyword If    "${form_of_payment}"=="${EMPTY}"    Manually Add Form Of Payment (FOP)    ${fop_type_value}    ${form_of_payment_vendor}    ${credit_card_number}    ${expiry_month}
+    ...    ${short_expiry_year}
+    ...    ELSE    Select Form Of Payment (FOP)    ${form_of_payment}
+    Click Finish PNR    Retrieve And Amend EO    panel=Other Svcs
+
+Retrieve PNR And Populate Amend Workflow
+    [Arguments]    ${country}=SG    ${air_segment}=False    ${car_segment}=False    ${hotel_segment}=False    ${fop_dropdown_value}=BTA CTCL VI/VI************7710/D0823
+    Retrieve PNR    ${current_pnr}
+    Click Amend Booking
+    Click Panel    Client Info
+    Select Form Of Payment    ${fop_dropdown_value}
+    Update PNR With Default Values
+    Run Keyword If    "${hotel_segment}" == "True"    Book Hotel Segment Using Default Values
+    Run Keyword If    "${car_segment}" == "True"    Book Car Segment Using Default Vaues
+    Run Keyword If    "${air_segment}" == "True"    Book Air Segment Using Default Values    ${country}
+    Click Read Booking
+    Populate All Panels (Except Given Panels If Any)
+
+Select Associated Product
+    [Arguments]    ${product}
+    Activate Power Express Window
+    Wait Until Other Service Loader Is Not Visible
+    Select Value From Dropdown List    [NAME:AssociatedCharges_ProductCombobox]    ${product}
+    [Teardown]    Take Screenshot
+
+Select Associated Vendor
+    [Arguments]    ${vendor}
+    Activate Power Express Window
+    Wait Until Other Service Loader Is Not Visible
+    Select Value From Dropdown List    [NAME:AssociatedCharges_VendorComboBox]    ${vendor}
+    [Teardown]    Take Screenshot
+
+Select Product And Vendor
+    [Arguments]    ${product}    ${vendor}
+    Wait Until Control Object Is Visible    [NAME:OtherServicesExhangeOrdersControl]
+    @{product_list}    Get Col Data From Eo Grid    5
+    ${eo_size_before_adding}    Get Length    ${product_list}
+    Set Suite Variable    ${eo_size_before_adding}
+    Select Product    ${product}
+    Select Vendor    ${vendor}
+    Click Continue In Other Svcs
+    Run Keyword And Continue On Failure    Wait Until Control Object Is Not Visible    [NAME:btnContinue]
+    [Teardown]    Take Screenshot
+
+Wait Until Exchange Order Grid Is Displayed
+    Wait Until Control Object Is Visible    [NAME:OtherServicesExhangeOrdersControl]
+
+Populate Non-Air Request Tab With Default Values
+    Run Keyword If    "${product.lower()}" == "despatch" or "${product.lower()}" == "oths handling fee" or "${product.lower()}" == "rebate"    Populate Other Services Request Info    Detail 1    Detail 2    Detail 3    Internal Remarks
+    Run Keyword If    "${product.lower()}" == "meet & greet"    other_services_request_info_control.Populate Request Fields When Product Is Meet And Greet    VXE    INDIA
+    Run Keyword If    "${product.lower()}" == "insurance"    Populate Other Services Insurance Control Details    Detail 1    Detail 2    Detail 3    Internal Remarks
+    Run Keyword If    "${product.lower()}" == "train" or "${product.lower()}" == "train- dom" or "${product.lower()}" == "transaction charges"    Populate Other Services Train Control Details    NORTH    SOUTH    11111    GUADA
+    ...    BUSINESS
+    Run Keyword If    "${product.lower()}" == "train- dom" or "${product.lower()}" == "transaction charges"    Populate Other Services Custom Fields Group
+    Run Keyword If    "${product.lower()}" == "tour intl"    Populate Other Services Tour Information Control    ABD    INDIAN PACKAGE    Details    Internal Remarks
+    Run Keyword If    "${product}" == "visa dd" or "${product}" == "visa handling fee" or "${product}" == "visa fee"    Populate Request Fields When Product Is Visa Group
+    Run Keyword If    "${product}" == "car dom" or "${product}"=="car intl"    Populate Other Services Car Segment Control Details
+    Run Keyword If    "${product}" == "hotel pre paid- intl" or "${product}" == "hotel prepaid-dom"    Populate Other Services Request Tab For Hotel Group    1    GBP \ \ \ Great British Pound    1200    Deluxe
+    ...    1    Credit Card    12345678    Cancel By    12    ${EMPTY}
+    ...    4988438843884305    CORP    VI
+
+Populate Air Request Tab With Default Values
+    ${product}    Convert To Lower Case    ${product}
+    Run Keyword If    "${product}" == "air bsp" or "${product}" == "air domestic"    Populate Request Tab For Air Bsp And Air Domestic
+    Run Keyword If    "${product}" == "air conso-dom" or "${product}" == "air sales-non bsp int"    Populate Request Tab For Air Conso-Dom Or Air Sales-Non Bsp Int    ${product}
+
+Create Associated Product And Vendor
+    [Arguments]    ${product}    ${vendor}    ${identifier}    ${exclude_cost_details}=False    ${exclude_additional_information}=False    ${exclude_air_charges}=True
+    Click Associated Charges Tab
+    Click Add
+    Populate Associated Charges Tab With Default Values    ${product}    ${vendor}
+    Get Other Services Charges Tab Details    ${identifier}    ${exclude_cost_details}    ${exclude_additional_information}    ${exclude_air_charges}
+    Comment    Verify Other Services India Cost Details    ${identifier}
+    Click Save
+
+Create Exchange Order Product And Vendor
+    [Arguments]    ${product}    ${vendor}    ${identifier}    ${exclude_cost_details}=False    ${exclude_additional_information}=False    ${exclude_air_charges}=True
+    ...    @{exclude_tabs}
+    Populate Exchange Order Product    ${product}    ${vendor}    ${EMPTY}    @{exclude_tabs}
+    Click Charges Tab
+    Get Other Services Charges Tab Details    ${identifier}    ${exclude_cost_details}    ${exclude_additional_information}    ${exclude_air_charges}
+    Comment    Verify Other Services India Cost Details    ${identifier}
+    Click Request Tab
+    Get Other Services Request Details    ${identifier}    ${product}
+
+Populate Air Charges Tab With Default Values
+    Populate Other Services Pricing Paramerters Details
+    Populate Other Services Related Details
+    Populate Other Services Fare Calculation
+
+Populate Request Tab For Air Bsp And Air Domestic
+    [Arguments]    ${reason_for_issue}=LOST TICKET FEE (CHARGE FOR REPLACEMENT)    ${fare}=5000    ${headline_currency}=INR \ \ \ Indian Rupee    ${taxes}=20    ${eqivalent_amt_paid}=8000    ${fop}=Cash
+    ...    ${cc_type}=${EMPTY}    ${cc_number}=${EMPTY}    ${exp_month}=${EMPTY}    ${exp_year}=${EMPTY}    ${issue_in_exchange_for}=1111111111    ${in_conjunction_with}=2222222222
+    ...    ${original_place_of_issue}=INDIA    ${remark}=Air BSP Request Remark    ${plating_carrier}=${EMPTY}    ${fare_type}=${EMPTY}    ${passenger}=${EMPTY}
+    Populate Air Segments VMPD Details    ${reason_for_issue}    ${fare}    ${headline_currency}    ${taxes}    ${eqivalent_amt_paid}    ${fop}
+    ...    ${cc_type}    ${cc_number}    ${exp_month}    ${exp_year}    ${issue_in_exchange_for}    ${in_conjunction_with}
+    ...    ${original_place_of_issue}    ${remark}
+    Populate Other Services Air Segment Control Details
+    Run Keyword If    "${plating_carrier}"!="${EMPTY}"    Select Plating Carrier    ${plating_carrier}
+    Run Keyword If    "${fare_type}"!="${EMPTY}"    Select Fare Type In Request Tab    ${fare_type}
+    Select Passenger    ${passenger}
+
+Set Reference Fare
+    [Arguments]    ${ref_fare}
+    Send Control Text Value    [NAME:ReferenceFareTextbox]    ${ref_fare}
+
+Select Class Of Service
+    [Arguments]    ${class_service}
+    Select Value From Dropdown List    [NAME:ClassOfServiceComboBox]    ${class_service}
+
+Set Low Fare Carrier
+    [Arguments]    ${low_fare_carrier}
+    Send Control Text Value    [NAME:LowFareCarrierTextBox]    ${low_fare_carrier}
+
+Select Booking Action
+    [Arguments]    ${booking_action}
+    Select Value From Dropdown List    [NAME:BookingActionComboBox]    ${booking_action}
+
+Set Declined Airline
+    [Arguments]    ${declined_airline}    ${index}=1
+    Send Control Text Value    [NAME:DeclinedAirline${index}Textbox]    ${declined_airline}
+
+Set Declined Fare
+    [Arguments]    ${declined_fare}    ${index}=1
+    Send Control Text Value    [NAME:DeclinedFare${index}Textbox]    ${declined_fare}
+
+Get Client Mi Control Details
+    [Arguments]    ${identifier}
+    Get Reference Fare    ${identifier}
+    Get Low Fare Value    identifier=${identifier}    default_control_counter=False
+    Get Class Of Service    ${identifier}
+    Get Low Fare Carrier    ${identifier}
+    Get Booking Action    ${identifier}
+    Get Realised Saving Code    ${identifier}
+    Get Missed Saving Code    ${identifier}
+    Get Declined Airline    ${identifier}
+    Get Declined Airline    ${identifier}    2
+    Get Declined Fare    ${identifier}
+    Get Declined Fare    ${identifier}    2
+
+Get Reference Fare
+    [Arguments]    ${identifier}
+    ${reference_fare}    Get Control Text Value    [NAME:ReferenceFareTextbox]
+    Set Suite Variable    ${reference_fare${identifier}}    ${reference_fare}
+
+Get Class Of Service
+    [Arguments]    ${identifier}
+    ${class_service}    Get Control Text Value    [NAME:ClassOfServiceComboBox]
+    Set Suite Variable    ${class_service_full_${identifier}}    ${class_service}
+    ${class_service}    Fetch From Left    ${class_service}    ${SPACE}-
+    Set Suite Variable    ${class_service_${identifier}}    ${class_service}
+
+Get Low Fare Carrier
+    [Arguments]    ${identifier}
+    ${low_fare_carrier}    Get Control Text Value    [NAME:LowFareCarrierTextBox]
+    Set Suite Variable    ${low_fare_carrier_${identifier}}    ${low_fare_carrier}
+
+Get Booking Action
+    [Arguments]    ${identifier}
+    ${booking_action}    Get Control Text Value    [NAME:BookingActionComboBox]
+    Set Test Variable    ${booking_action_${identifier}}    ${booking_action}
+
+Get Realised Saving Code
+    [Arguments]    ${identifier}
+    ${realise_saving_code}    Get Control Text Value    [NAME:RealisedSavingCodeComboBox]
+    Set Suite Variable    ${realise_saving_code_full_${identifier}}    ${realise_saving_code}
+    ${realise_saving_code}    Fetch From Left    ${realise_saving_code}    ${SPACE}-
+    Set Suite Variable    ${realise_saving_code_${identifier}}    ${realise_saving_code}
+
+Get Missed Saving Code
+    [Arguments]    ${identifier}
+    ${missed_saving_code}    Get Control Text Value    [NAME:MissedSavingCodeComboBox]
+    Set Suite Variable    ${missed_saving_code_full_${identifier}}    ${missed_saving_code}
+    ${missed_saving_code}    Fetch From Left    ${missed_saving_code}    ${SPACE}-
+    Set Suite Variable    ${missed_saving_code_${identifier}}    ${missed_saving_code}
+
+Get Declined Airline
+    [Arguments]    ${identifier}    ${index}=1
+    ${declined_airline}    Get Control Text Value    [NAME:DeclinedAirline${index}Textbox]
+    Set Suite Variable    ${declined_airline_${index}_${identifier}}    ${declined_airline}
+
+Get Declined Fare
+    [Arguments]    ${identifier}    ${index}=1
+    ${declined_fare}    Get Control Text Value    [NAME:DeclinedFare${index}Textbox]
+    Set Suite Variable    ${declined_fare_${index}_${identifier}}    ${declined_fare}
+
+Populate FOP Fields
+    [Arguments]    ${cc_type}    ${cc_number}    ${exp_month}    ${exp_year}
+    Select Credit Card Type    ${cc_type}
+    Set Credit Card Number    ${cc_number}
+    Select Expiry Date    ${exp_month}    ${exp_year}
+
+Select Credit Card Type
+    [Arguments]    ${cc_type}
+    Select Value From Dropdown List    [NAME:CreditCardTypeCombobox]    ${cc_type}
+
+Set Credit Card Number
+    [Arguments]    ${cc_number}
+    Set Control Text Value    [NAME:CreditCardNumberTextbox]    ${cc_number}
+
+Select Expiry Date
+    [Arguments]    ${exp_month}    ${exp_year}
+    Click Control Button    [NAME:ExpiryDateDatePicker]
+    Send    ${exp_year}    1
+    Send    {LEFT}
+    Send    ${exp_month}    1
+
+Select Plating Carrier
+    [Arguments]    ${plating_carrier}
+    Select Value From Dropdown List    [NAME:PlatingCarrierComboBox]    ${plating_carrier}
+
+Get Other Services Request Details
+    [Arguments]    ${identifier}    ${product}
+    ${product}    Convert To Lower Case    ${product}
+    Run Keyword If    "${product}"=="air bsp" or "${product}"=="air domestic"    Get Other Services Request Details For Air Bsp And Air Domestic    ${identifier}
+    Run Keyword If    "${product}"=="train" or "${product}"=="train- dom" or "${product}"=="transaction charges"    Get Request Field Values When Product Is Train Group    ${product}    ${identifier}
+    Run Keyword If    "${product}"=="meet & greet"    Get Other Services Meet And Greet Control Details    ${identifier}
+    Run Keyword If    "${product}"=="despatch" or "${product}" == "oths handling fee"    Get Other Services Request Info    ${identifier}
+    Run Keyword If    "${product}"=="insurance"    Get Request Tab Field Details When Product Is Insurance    ${identifier}
+    Run Keyword If    "${product}" == "visa dd" or "${product}" == "visa handling fee" or "${product}" == "visa fee"    Get Request Fields When Product Is Visa Group    ${identifier}
+    Run Keyword If    "${product}" == "car dom" or "${product}"=="car intl"    Get Other Services Car Segment Control Details    ${identifier}
+    Run Keyword If    "${product}"=="air conso-dom" or "${product}"=="air sales-non bsp int"    Get Other Services Request Details For Air Conso-Dom Or Air Sales-Non Bsp Int    ${identifier}    ${product}
+    Run Keyword If    "${product}" == "hotel pre paid- intl" or "${product}" == "hotel prepaid-dom"    Get Other Services Request Details For Hotel Group    ${identifier}
+    [Teardown]    Take Screenshot
+
+Get Other Services Request Details For Air Bsp And Air Domestic
+    [Arguments]    ${identifier}
+    Get Plating Carrier    ${identifier}
+    Get Fare Type    ${identifier}
+    Get PNR    ${identifier}
+    Get Reason For Issue    ${identifier}
+    Get Fare In Request VMPD    ${identifier}
+    Get Headline Currency    ${identifier}
+    Get Taxes    ${identifier}
+    Get Equivalent Amt Paid    ${identifier}
+    Get FOP In Request VMPD    ${identifier}
+    Run Keyword If    "${fop_type_${identifier}}"=="Credit"    Run Keywords    Get CC Type    ${identifier}
+    ...    AND    Get CC Number    ${identifier}
+    ...    AND    Get Expiration Date    ${identifier}
+    Get Issue In Exchange For In Request Tab When Products Are Air BSp Or Air Domestic    ${identifier}
+    Get In Conjunction With In Request Tab When Products Are Air BSp Or Air Domestic    ${identifier}
+    Get Original Place Of Issue In Request Tab When Products Are Air BSp Or Air Domestic    ${identifier}
+    Get Remark Issue In Request Tab When Products Are Air BSp Or Air Domestic    ${identifier}
+
+Get PNR
+    [Arguments]    ${identifier}
+    ${pnr_in_request_tab}    Get Control Text Value    [NAME:PNRTextbox]
+    Set Suite Variable    ${pnr_in_request_tab_${identifier}}    ${pnr_in_request_tab}
+
+Get Fare In Request VMPD
+    [Arguments]    ${identifier}
+    ${fare}    Get Control Text Value    [NAME:FareTextbox]
+    Set Suite Variable    ${fare_${identifier}}    ${fare}
+
+Get Taxes
+    [Arguments]    ${identifier}
+    ${taxes}    Get Control Text Value    [NAME:TaxesTextbox]
+    Set Test Variable    ${taxes_${identifier}}    ${taxes}
+
+Get Reason For Issue
+    [Arguments]    ${identifier}
+    ${reason_for_issue}    Get Control Text Value    [NAME:ReasonForIssueComboBox]
+    Set Suite Variable    ${reason_for_issue_${identifier}}    ${reason_for_issue}
+
+Get Headline Currency
+    [Arguments]    ${identifier}
+    ${headline_currency}    Get Control Text Value    [NAME:HeadlineCurrencyComboBox]
+    Set Suite Variable    ${headline_currency_${identifier}}    ${headline_currency}
+
+Get Equivalent Amt Paid
+    [Arguments]    ${identifier}
+    ${equivalent_amount_paid}    Get Control Text Value    [NAME:EquivalentAmountPaidTextbox]
+    Set Suite Variable    ${equivalent_amount_paid_${identifier}}    ${equivalent_amount_paid}
+
+Get FOP In Request VMPD
+    [Arguments]    ${identifier}
+    ${fop_type}    Get Control Text Value    [NAME:FormOfPaymentCombobox]
+    Set Suite Variable    ${fop_type_${identifier}}    ${fop_type}
+
+Get Expiration Date
+    [Arguments]    ${identifier}
+    ${object}    Determine Multiple Object Name Based On Active Tab    ExpiryDateDatePicker,Request_ExpiryDateDatePicker    False
+    ${exp_date}    Get Control Text Value    ${object}    ${title_power_express}
+    Set Suite Variable    ${exp_date_${identifier}}    ${exp_date}
+
+Populate Client MI Control Details
+    [Arguments]    ${ref_fare}    ${low_fare}    ${class_service}    ${low_fare_carrier}    ${booking_action}    ${realise_saving_code}
+    ...    ${missed_saving_code}    ${declined_airline_1}    ${declined_fare_1}    ${declined_airline_2}    ${declined_fare_2}    &{dict}
+    Wait Until Control Object Is Visible    [NAME:OtherServicesMIForIndiaControl]
+    Set Reference Fare    ${ref_fare}
+    Comment    Set Low Fare Field    ${low_fare}    False
+    Send Control Text Value    [NAME:LowFareTextBox]    ${low_fare}
+    Select Class Of Service    ${class_service}
+    Set Low Fare Carrier    ${low_fare_carrier}
+    Select Booking Action    ${booking_action}
+    Select Realised Saving Code Value    ${realise_saving_code}    False
+    Select Missed Saving Code Value    ${missed_saving_code}    False
+    Set Declined Airline    ${declined_airline_1}
+    Set Declined Airline    ${declined_airline_2}    2
+    Set Declined Fare    ${declined_fare_1}
+    Set Declined Fare    ${declined_fare_2}    2
+    Populate Client MI Grid    &{dict}
+    [Teardown]    Take Screenshot
+
+Populate Other Svcs Panel With Default Values
+    ${eo_numbers_with_error_icon}    Get EO Number With Error Icon
+    : FOR    ${eo_number}    IN    @{eo_numbers_with_error_icon}
+    \    Exit For Loop If    "${eo_number}" == "[]"
+    \    Click Amend EO    ${eo_number}
+    \    ${visible_tabs}    Get Tab Items    OtherServicesTabControl
+    \    Remove Values From List    ${visible_tabs}    MCO/MPD    Vendor Info    Remarks    Service Info
+    \    ...    Insurance    Visa Info
+    \    Run Keyword If    "${visible_tabs[0]}" == "Request"    Run Keywords    Populate Other Svcs Panel With Default Values For IN    @{visible_tabs}
+    \    ...    AND    Click Add Button In EO Panel    Charges
+
+Populate Other Svcs Panel With Default Values For IN
+    [Arguments]    @{visible_tabs}
+    : FOR    ${visible_tab}    IN    @{visible_tabs}
+    \    Run Keyword If    "${visible_tab}" == "Request"    Run Keywords    Click Tab In Other Services Panel    ${visible_tab}
+    \    ...    AND    Tick Select All Segments
+    \    Run Keyword If    "${visible_tab}" == "Hotel Info"    Run Keywords    Click Tab In Other Services Panel    ${visible_tab}
+    \    ...    AND    Select Default Hotel Segment
+    \    Comment    ${is_fop_mandatory}    Get Control Field Mandatory State    [NAME:FormsOfPaymentComboBox]
+    \    Comment    Run Keyword If    "${is_fop_mandatory.lower()}"=="mandatory"    Select Form Of Payment (FOP) In Other Services    ${EMPTY}    Cash
+    \    Comment    ${is_filed_fare_mandatory}    Get Control Field Mandatory State    [NAME:FiledFareNumberComboBox]
+    \    Comment    Run Keyword If    "${is_filed_fare_mandatory.lower()}"=="mandatory"    Select Value From Dropdown List    [NAME:FiledFareNumberComboBox]    1
+    \    ...    by_index=True
+
+Click Request Tab
+    Click Tab In Other Services Panel    Request
+
+Click Charges Tab
+    Click Tab In Other Services Panel    Charges
+
+Click Associated Charges Tab
+    Click Tab In Other Services Panel    Associated Charges
+
+Verify Exchange Order Does Not Exists
+    [Arguments]    ${product_name}
+    ${eo_list}    Get All Fields From Eo Grid
+    Run Keyword And Continue On Failure    List Should Not Contain Value    ${eo_list}    ${product_name}
